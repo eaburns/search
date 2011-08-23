@@ -43,6 +43,17 @@ TilesMdist::TilesMdist(FILE *in) : Tiles(in) {
 	initincr();
 }
 
+TilesMdist::State TilesMdist::initstate(void) {
+	State s;
+	for (int i = 0; i < Ntiles; i++) {
+		if (init[i] == 0)
+			s.b = i;
+		s.ts[i] = init[i];
+	}
+	s.h = mdist(init);
+	return s;
+}
+
 void TilesMdist::initmd(void) {
 	for (int t = 1; t < Ntiles; t++) {
 		unsigned int row = goalpos[t] / Width;
@@ -65,11 +76,11 @@ void TilesMdist::initincr(void) {
 	}
 }
 
-Tiles::Cost TilesMdist::mdist(State *s) {
+Tiles::Cost TilesMdist::mdist(Tile ts[]) {
 	unsigned int sum = 0;
 
 	for (int i = 0; i < Ntiles; i++) {
-		Tile t = s->ts[i];
+		Tile t = ts[i];
 		if (t == 0)
 			continue;
 		sum += md[t][i];

@@ -8,6 +8,7 @@ OBJS=\
 
 HDRS=\
 	incl/utils.hpp\
+	incl/search.hpp\
 
 BINS=
 

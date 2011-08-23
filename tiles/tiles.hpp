@@ -49,6 +49,8 @@ public:
 
 	TilesMdist(FILE*);
 
+	State initstate(void);
+
 	Cost h(State *s) { return s->h; }
 
 	unsigned int nops(State *s) { return ops[s->b].n; }
@@ -73,7 +75,7 @@ public:
 		s->h += incr[t][op][s->b];
 	}
 
-	Cost mdist(State*);
+	Cost mdist(Tile[]);
 
 private:
 	void initmd(void);
