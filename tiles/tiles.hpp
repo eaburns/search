@@ -34,6 +34,13 @@ private:
 
 class TilesMdist : Tiles {
 public:
+
+	typedef Tiles::Tile Tile;
+
+	typedef Tiles::Pos Pos;
+
+	typedef Tiles::Cost Cost;
+
 	class State {
 		Cost h;
 		Pos b;
