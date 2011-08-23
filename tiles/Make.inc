@@ -1,0 +1,2 @@
+OBJS+=\
+	tiles/tiles.o\

@@ -1,0 +1,1 @@
+utils/%.o: incl/utils.hpp
