@@ -17,7 +17,7 @@ all: bins
 include utils/Make.inc
 include tiles/Make.inc
 
-bins: $(OBJS) $(BINS)
+bins: $(BINS)
 
 clean:
 	rm -f $(OBJS) $(BINS)
