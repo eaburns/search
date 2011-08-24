@@ -1,9 +1,10 @@
 BINS:=\
-	15unitmd_solver\
+	tiles/15unitmd_solver\
 
-TILESRC=\
+TILESSRC=\
 	tiles/tiles.cc\
 
-15unitmd_solver: $(OBJS) $(HDRS) tiles/tiles.cc tiles/main.cc
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(OBJS) $(TILESRC) tiles/main.cc\
-		-DWIDTH=4 -DHEIGHT=4 -o 15unitmd_solver
+tiles/15unitmd_solver: $(OBJS) $(HDRS) $(TILENSRC) tiles/main.cc
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(OBJS) $(TILESSRC)\
+		-DWIDTH=4 -DHEIGHT=4 tiles/main.cc\
+		-o tiles/15unitmd_solver
