@@ -1,3 +1,4 @@
 syntax: glob
 *.o
 tiles/15*
+tiles/24*
