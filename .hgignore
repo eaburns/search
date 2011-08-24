@@ -1,0 +1,3 @@
+syntax: glob
+*.o
+tiles/15*
