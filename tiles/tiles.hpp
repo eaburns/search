@@ -10,15 +10,11 @@ public:
 	};
 
 	typedef unsigned int Tile;
-
 	typedef unsigned int Pos;
-
 	typedef int Cost;
-
 	typedef int Oper;
 
 	Tiles(FILE*);
-
 	static void dumptiles(FILE*, Tile []);
 
 protected:
@@ -40,16 +36,13 @@ class TilesMdist : Tiles {
 public:
 
 	typedef Tiles::Tile Tile;
-
 	typedef Tiles::Pos Pos;
 
 	typedef Tiles::Cost Cost;
-
 	enum { InfCost = -1 };
 	enum { UnitCost = true };
 
 	typedef int Oper;
-
 	enum { Nop = -1 };
 
 	class State {
