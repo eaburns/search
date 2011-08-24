@@ -2,9 +2,11 @@
 #include "../incl/utils.hpp"
 #include <cstdlib>
 #include <cerrno>
+#include <cstdio>
 
 Tiles::Tiles(FILE *in) {
 	readruml(in);
+	initops();
 }
 
 void Tiles::readruml(FILE *in) {
@@ -38,6 +40,31 @@ void Tiles::readruml(FILE *in) {
 	}
 }
 
+void Tiles::initops(void) {
+	for (int i = 0; i < Ntiles; i++) {
+		ops[i].n = 0;
+		if (i >= Width)
+			ops[i].mvs[ops[i].n++] = i - Width;
+		if (i % Width > 0)
+			ops[i].mvs[ops[i].n++] = i - 1;
+		if (i % Width < Width - 1)
+			ops[i].mvs[ops[i].n++] = i + 1;
+		if (i < Ntiles - Width)
+			ops[i].mvs[ops[i].n++] = i + Width;
+	}
+}
+
+void Tiles::dumptiles(FILE *out, Tile ts[]) {
+	for (int i = 0; i < Ntiles; i++) {
+		if (i > 0 && i % Width == 0)
+			fprintf(out, "\n");
+		else if (i > 0)
+			fprintf(out, "\t");
+		fprintf(out, "%2d", ts[i]);
+	}
+	fprintf(out, "\n");
+}
+
 TilesMdist::TilesMdist(FILE *in) : Tiles(in) {
 	initmd();
 	initincr();
@@ -45,12 +72,14 @@ TilesMdist::TilesMdist(FILE *in) : Tiles(in) {
 
 TilesMdist::State TilesMdist::initstate(void) {
 	State s;
+	s.h = 0;
 	for (int i = 0; i < Ntiles; i++) {
 		if (init[i] == 0)
 			s.b = i;
+		else
+			s.h += md[init[i]][i];
 		s.ts[i] = init[i];
 	}
-	s.h = mdist(init);
 	return s;
 }
 
@@ -70,21 +99,10 @@ void TilesMdist::initincr(void) {
 	for (int t = 1; t < Ntiles; t++) {
 	for (int old = 0; old < Ntiles; old++) {
 		unsigned int cur = md[t][old];
-		for (int nw = 0; nw <Ntiles; nw++)
-			incr[t][old][nw] = cur - md[t][nw];
+		for (unsigned int n = 0; n <ops[old].n; n++) {
+			unsigned int nw = ops[old].mvs[n];
+			incr[t][old][nw] = md[t][nw] - cur;
+		}
 	}
 	}
-}
-
-Tiles::Cost TilesMdist::mdist(Tile ts[]) {
-	unsigned int sum = 0;
-
-	for (int i = 0; i < Ntiles; i++) {
-		Tile t = ts[i];
-		if (t == 0)
-			continue;
-		sum += md[t][i];
-	}
-
-	return sum;
 }

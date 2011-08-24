@@ -1,7 +1,5 @@
 CXX=g++
-CXXFLAGS=-Wall -Werror -g\
-	-DWIDTH=4 -DHEIGHT=4
-
+CXXFLAGS=-Wall -Werror -O3
 
 OBJS=\
 	utils/fatal.o\
@@ -9,6 +7,8 @@ OBJS=\
 HDRS=\
 	incl/utils.hpp\
 	incl/search.hpp\
+	\
+	search/idastar.hpp\
 
 BINS=
 

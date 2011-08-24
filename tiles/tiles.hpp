@@ -1,4 +1,5 @@
 #include <cstdio>
+#include <cassert>
 
 class Tiles {
 public:
@@ -12,16 +13,18 @@ public:
 
 	typedef unsigned int Pos;
 
-	typedef unsigned int Cost;
+	typedef int Cost;
 
 	typedef int Oper;
 
 	Tiles(FILE*);
 
+	static void dumptiles(FILE*, Tile []);
+
 protected:
 	struct {
-		int n;
-		Pos mv[4];
+		unsigned int n;
+		Pos mvs[4];
 	} ops[Ntiles];
 
 	Tile init[Ntiles];
@@ -29,6 +32,7 @@ protected:
 
 private:
 	void readruml(FILE*);
+	void initops(void);
 };
 
 
@@ -41,6 +45,13 @@ public:
 
 	typedef Tiles::Cost Cost;
 
+	enum { InfCost = -1 };
+	enum { UnitCost = true };
+
+	typedef int Oper;
+
+	enum { Nop = -1 };
+
 	class State {
 		Cost h;
 		Pos b;
@@ -48,7 +59,7 @@ public:
 		friend class TilesMdist;
 	};
 
-	struct Undo {
+	class Undo {
 		Pos b;
 		Cost h;
 		friend class TilesMdist;
@@ -58,36 +69,59 @@ public:
 
 	State initstate(void);
 
-	Cost h(State *s) { return s->h; }
-
-	unsigned int nops(State *s) { return ops[s->b].n; }
-
-	Oper nthop(State *s, unsigned int n) { return ops[s->b].mv[n]; }
-
-	void undoinfo(Undo *u, State *s, Oper op) {
-		u->h = s->h;
-		u->b = op;
+	Cost h(State *s) {
+		return s->h;
 	}
 
-	void undo(State *s, Undo *u) {
-		s->ts[s->b] = s->ts[u->b];
-		s->b = u->b;
-		s->h = u->h;
+	bool isgoal(State *s) {
+		return s->h == 0;
 	}
 
-	void apply(State *s, Oper op) {
-		Tile t = s->ts[op];
+	unsigned int nops(State *s) {
+		return ops[s->b].n;
+	}
+
+	Oper nthop(State *s, unsigned int n) {
+		assert (n < ops[s->b].n);
+		return ops[s->b].mvs[n];
+	}
+
+	Oper revop(State *s, Oper op) {
+		return s->b;
+	}
+
+	Cost opcost(State *s, Oper op) {
+		return 1;
+	}
+
+	void undoinfo(Undo &u, State *s, Oper op) {
+		u.h = s->h;
+		u.b = s->b;
+	}
+
+	void undo(State *s, Undo &u) {
+		s->ts[s->b] = s->ts[u.b];
+		s->b = u.b;
+		s->h = u.h;
+	}
+
+	void apply(State *s, Oper newb) {
+		Tile t = s->ts[newb];
 		s->ts[s->b] = t;
-		s->b = op;
-		s->h += incr[t][op][s->b];
+		s->h += incr[t][newb][s->b];
+		s->b = newb;
 	}
 
-	Cost mdist(Tile[]);
+	void dumpstate(FILE *out, State *s) {
+		s->ts[s->b] = 0;
+		Tiles::dumptiles(out, s->ts);
+		fprintf(out, "h=%u\n", s->h);
+	}
 
 private:
 	void initmd(void);
 	void initincr(void);
 
-	Cost md[Ntiles][Ntiles];
-	Cost incr[Ntiles][Ntiles][Ntiles];
+	unsigned int md[Ntiles][Ntiles];
+	int incr[Ntiles][Ntiles][Ntiles];
 };
