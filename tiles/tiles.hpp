@@ -56,6 +56,11 @@ public:
 		Pos b;
 		Cost h;
 		friend class TilesMdist;
+	public:
+		Undo(State *s, Oper op) {
+			h = s->h;
+			b = s->b;
+		}
 	};
 
 	TilesMdist(FILE*);
@@ -85,11 +90,6 @@ public:
 
 	Cost opcost(State *s, Oper op) {
 		return 1;
-	}
-
-	void undoinfo(Undo &u, State *s, Oper op) {
-		u.h = s->h;
-		u.b = s->b;
 	}
 
 	void undo(State *s, Undo &u) {

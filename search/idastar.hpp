@@ -52,8 +52,7 @@ private:
 
 			res.gend++;
 
-			Undo u;
-			d.undoinfo(u, s, op);
+			Undo u(s, op);
 			Oper rev = d.revop(s, op);
 			Cost c = d.opcost(s, op);
 
