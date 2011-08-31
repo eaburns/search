@@ -12,6 +12,7 @@ TMPLS=\
 	structs/intpq.hpp\
 	structs/binheap.hpp\
 	structs/htable.hpp\
+	structs/openlist.hpp\
 
 HDRS=\
 	incl/utils.hpp\
@@ -26,7 +27,7 @@ all: everything
 include utils/Make.inc
 include tiles/Make.inc
 
-everything: $(BINS) $(TMPLS:.hpp=.gch)
+everything: $(TMPLS:.hpp=.gch) $(BINS)
 
 %.gch: %.hpp
 	$(CXX) $(CXXFLAGS) -c $^
