@@ -3,6 +3,7 @@ CXXFLAGS=-Wall -Werror -O3
 
 OBJS=\
 	utils/fatal.o\
+	utils/time.o\
 
 HDRS=\
 	incl/utils.hpp\
