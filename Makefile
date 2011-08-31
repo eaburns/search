@@ -8,11 +8,11 @@ OBJS=\
 
 TMPLS=\
 	search/idastar.hpp\
+	search/openlist.hpp\
 	\
 	structs/intpq.hpp\
 	structs/binheap.hpp\
 	structs/htable.hpp\
-	structs/openlist.hpp\
 
 HDRS=\
 	incl/utils.hpp\
