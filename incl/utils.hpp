@@ -1,3 +1,5 @@
+#include <cstdio>
+
 void warn(const char *, ...);
 void warnx(int, const char *, ...);
 void fatal(const char*, ...);
@@ -5,7 +7,6 @@ void fatalx(int, const char*, ...);
 
 double walltime(void);
 double cputime(void);
-
 
 void dfpair(FILE *, const char *key, const char *fmt, ...);
 void dfrowhdr(FILE *, const char *name, int ncols, ...);
