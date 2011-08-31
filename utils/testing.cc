@@ -11,7 +11,7 @@ static bool runtest(const Test &);
 static void runbench(const Benchmark &);
 static void msgreset(void);
 
-enum { Bufsz = 256 };
+enum { Bufsz = 1024 };
 static char msg[Bufsz];
 static int msgn;
 

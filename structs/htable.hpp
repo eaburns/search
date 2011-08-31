@@ -52,7 +52,7 @@ public:
 		unsigned int ind = k.hash() % bkts.size();
 		Bucket bkt = bkts[ind];
 
-		for (int i = 0; i < bkt.size(); i++) {
+		for (unsigned int i = 0; i < bkt.size(); i++) {
 			std::pair<Key, Val> &e = bkt[i];
 			if (k == e.first)
 				return boost::optional<Val>(e.second);
@@ -65,7 +65,7 @@ public:
 		unsigned int ind = k.hash() % bkts.size();
 		Bucket bkt = bkts[ind];
 
-		for (int i = 0; i < bkt.size(); i++) {
+		for (unsigned int i = 0; i < bkt.size(); i++) {
 			std::pair<Key, Val> &e = bkt[i];
 			if (k == e.first) {
 				Val res = e.second;

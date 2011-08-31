@@ -1,9 +1,11 @@
 #include "../incl/utils.hpp"
 
 bool htable_add_test(void);
+bool htable_find_test(void);
 
 static const Test tests[] = {
 	Test("htable add test", htable_add_test),
+	Test("htable find test", htable_find_test),
 };
 
 enum { Ntests = sizeof(tests) / sizeof(tests[0]) };
