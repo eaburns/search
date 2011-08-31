@@ -11,7 +11,9 @@ public:
 	typedef typename D::Oper Oper;
 
 	Result<D> search(D &d, State *s0) {
+		res = Result<D>(false);
 		bound = d.h(s0);
+
 		for (int i = 0; /* forever */; i++) {
 			minoob = D::InfCost;
 
@@ -23,6 +25,8 @@ public:
 
 			bound = minoob;
 		}
+
+		res.finish();
 		return res;
 	}
 

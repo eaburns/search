@@ -8,8 +8,7 @@ int main(int argc, char *argv[]) {
 
 	Idastar<TilesMdist> idas;
 	Result<TilesMdist> res = idas.search(t, &s0);
-
-	printf("%u cost\n", res.cost);
+	res.output(stdout);
 
 	return 0;
 }
