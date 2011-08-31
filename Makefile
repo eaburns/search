@@ -27,10 +27,10 @@ all: everything
 include utils/Make.inc
 include tiles/Make.inc
 
-everything: $(TMPLS:.hpp=.gch) $(BINS)
+everything: $(TMPLS:.hpp=.hpp.gch) $(BINS)
 
-%.gch: %.hpp
+%.hpp.gch: %.hpp
 	$(CXX) $(CXXFLAGS) -c $^
 
 clean:
-	rm -f $(OBJS) $(BINS) $(TMPLS:.hpp=.gch)
+	rm -f $(OBJS) $(BINS) $(TMPLS:.hpp=.hpp.gch)

@@ -1,4 +1,5 @@
 syntax: glob
 *.o
+*.gch
 tiles/15*
 tiles/24*
