@@ -7,7 +7,7 @@ int main(int argc, char *argv[]) {
 	TilesMdist::State s0 = t.initstate();
 
 	Idastar<TilesMdist> idas;
-	Result<TilesMdist> res = idas.search(t, &s0);
+	Result<TilesMdist> res = idas.search(t, s0, true);
 	res.output(stdout);
 
 	return 0;
