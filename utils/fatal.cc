@@ -3,8 +3,27 @@
 #include <cstring>
 #include <cstdlib>
 
-void fatal(const char *fmt, ...)
-{
+enum { Bufsz = 256 };
+
+void warn(const char *fmt, ...) {
+	va_list args;
+	va_start(args, fmt);
+	vfprintf(stderr, fmt, args);
+	va_end(args);
+}
+
+void warnx(int err, const char *fmt, ...) {
+	char mbuf[Bufsz];
+
+	va_list args;
+	va_start(args, fmt);
+	vsnprintf(mbuf, Bufsz, fmt, args);
+	va_end(args);
+
+	warn("%s: %s", mbuf, strerror(err));
+}
+
+void fatal(const char *fmt, ...) {
 	va_list args;
 	va_start(args, fmt);
 	vfprintf(stderr, fmt, args);
@@ -12,10 +31,7 @@ void fatal(const char *fmt, ...)
 	exit(1);
 }
 
-enum { Bufsz = 256 };
-
-void fatalx(int err, const char *fmt, ...)
-{
+void fatalx(int err, const char *fmt, ...) {
 	char mbuf[Bufsz];
 
 	va_list args;

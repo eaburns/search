@@ -4,21 +4,31 @@ CXXFLAGS=-Wall -Werror -O3
 OBJS=\
 	utils/fatal.o\
 	utils/time.o\
+	utils/datafile.o\
+
+TMPLS=\
+	search/idastar.hpp\
+	\
+	structs/intpq.hpp\
+	structs/binheap.hpp\
 
 HDRS=\
 	incl/utils.hpp\
 	incl/search.hpp\
-	\
-	search/idastar.hpp\
+
+HDRS+=$(TMPLS)
 
 BINS=
 
-all: bins
+all: everything
 
 include utils/Make.inc
 include tiles/Make.inc
 
-bins: $(BINS)
+everything: $(BINS) $(TMPLS:.hpp=.gch)
+
+%.gch: %.hpp
+	$(CXX) $(CXXFLAGS) -c $^
 
 clean:
-	rm -f $(OBJS) $(BINS)
+	rm -f $(OBJS) $(BINS) $(TMPLS:.hpp=.gch)

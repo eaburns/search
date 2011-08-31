@@ -3,9 +3,9 @@
 
 double walltime(void);
 double cputime(void);
+void dfpair(FILE *f, const char *key, const char *fmt, ...);
 
-template <class D>
-struct Result {
+template <class D> struct Result {
 	double wallstrt, cpustrt;
 	double wallend, cpuend;
 	unsigned long expd, gend;
@@ -30,13 +30,18 @@ struct Result {
 	}
 
 	void output(FILE *f) {
-		fprintf(f, "total CPU time: %g\n", cpuend - cpustrt);
-		fprintf(f, "total wall time: %g\n", wallend - wallstrt);
-		fprintf(f, "total nodes expanded: %lu\n", expd);
-		fprintf(f, "total nodes generated: %lu\n", gend);
+		dfpair(f, "total CPU time", "%g", cpuend - cpustrt);
+		dfpair(f, "total wall time", "%g", wallend - wallstrt);
+		dfpair(f, "total nodes expanded", "%lu", expd);
+		dfpair(f, "total nodes generated", "%lu", gend);
 		if (dups >= 0)
-			fprintf(f, "total nodes duplicated: %ld\n", dups);
-		fprintf(f, "total solution cost: %g\n", (double) cost);
-		fprintf(f, "total solution length: %lu\n", (unsigned long) path.size());
+			dfpair(f, "total nodes duplicated", "%ld", dups);
+		dfpair(f, "total solution cost", "%g", (double) cost);
+		dfpair(f, "total solution length", "%lu", (unsigned long) path.size());
 	}
+};
+
+template <class D> class Search {
+public:
+	virtual Result<D> search(D &, typename D::State &) = 0;
 };

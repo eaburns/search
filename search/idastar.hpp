@@ -1,7 +1,10 @@
+#include <cstdio>
 #include "../incl/search.hpp"
 
-template <class D>
-class Idastar {
+void dfrowhdr(FILE *, const char *name, int ncols, ...);
+void dfrow(FILE *, const char *name, const char *colfmt, ...);
+
+template <class D> class Idastar : public Search<D> {
 
 public:
 
@@ -10,23 +13,25 @@ public:
 	typedef typename D::Cost Cost;
 	typedef typename D::Oper Oper;
 
-	Result<D> search(D &d, State &s0, bool inplace = false) {
+	Result<D> search(D &d, State &s0) {
 		res = Result<D>(false);
 		bound = d.h(s0);
+		dfrowhdr(stdout, "iter", 4, "iter no", "iter bound",
+			"iter expd", "iter gend");
 
 		for (int i = 0; /* forever */; i++) {
 			minoob = D::InfCost;
 
-			if (inplace) {
+			if (D::Inplace) {
 				if (dfs_inplace(d, s0, D::Nop, 0, 0))
 					break;
 			} else {
-				if (dfs_inplace(d, s0, D::Nop, 0, 0))
+				if (dfs(d, s0, D::Nop, 0, 0))
 					break;
 			}
 
-			printf("iter %d, bound=%g, expd=%ld, gend=%ld\n",
-				i, (double) bound, res.expd, res.gend);
+			dfrow(stdout, "iter", "dguu", (long) i, (double) bound,
+				res.expd, res.gend); 
 
 			bound = minoob;
 		}
@@ -63,9 +68,9 @@ private:
 
 			Oper rev = d.revop(s, op);
 			Cost c = d.opcost(s, op);
-
 			State kid = s;
 			d.apply(kid, op);
+
 			bool goal = dfs(d, kid, rev, g + c, depth+1);
 
 			if (goal) {

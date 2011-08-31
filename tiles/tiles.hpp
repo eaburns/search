@@ -35,6 +35,8 @@ private:
 class TilesMdist : Tiles {
 public:
 
+	enum { Inplace = true };
+
 	typedef Tiles::Tile Tile;
 	typedef Tiles::Pos Pos;
 
@@ -103,6 +105,21 @@ public:
 		s.ts[s.b] = t;
 		s.h += incr[t][newb][s.b];
 		s.b = newb;
+	}
+
+	void applyinto(State &cpy, State &s, Oper newb) {
+		Tile t = s.ts[newb];
+		cpy.h = s.h + incr[t][newb][s.b];
+		cpy.b = newb;
+
+		for (int i = 0; i < Ntiles; i++) {
+			if (i == newb)
+				cpy.ts[i] = 0;
+			else if ((unsigned int) i == s.b)
+				cpy.ts[i] = t;
+			else
+				cpy.ts[i] = s.ts[i];
+		}
 	}
 
 	void dumpstate(FILE *out, State &s) {
