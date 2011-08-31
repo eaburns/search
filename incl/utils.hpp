@@ -22,3 +22,22 @@ void dfrowhdr(FILE *, const char *name, int ncols, ...);
 void dfrow(FILE *, const char *name, const char *colfmt, ...);
 void dfheader(FILE *);
 void dffooter(FILE *);
+
+struct Test {
+	const char *name;
+	bool (*run)(void);
+
+	Test(const char *n, bool (*r)(void)) : name(n), run(r) {}
+};
+
+struct Benchmark {
+	const char *name;
+	void (*run)(unsigned long n, double *strt, double *end);
+
+	Benchmark(const char *n, void (*r)(unsigned long, double *, double *)) :
+		name(n), run(r) {}
+};
+
+bool runtests(const Test [], int, const char *regexp);
+void runbenches(const Benchmark[], int, const char *regexp);
+void testpr(const char *fmt, ...);

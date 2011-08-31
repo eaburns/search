@@ -5,6 +5,7 @@ OBJS=\
 	utils/fatal.o\
 	utils/time.o\
 	utils/datafile.o\
+	utils/testing.o\
 
 TMPLS=\
 	search/idastar.hpp\
@@ -24,6 +25,7 @@ BINS=
 
 all: everything
 
+include structs/Make.inc
 include utils/Make.inc
 include tiles/Make.inc
 
