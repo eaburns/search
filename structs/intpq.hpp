@@ -39,7 +39,7 @@ public:
 	bool rm(Elm e) {
 		std::vector<Elm> bin = bins[Ops::prio(e)];
 
-		int i;
+		unsigned int i;
 		for (i = 0; i < bin.size() && bin[i] != e; i++)
 			;
 

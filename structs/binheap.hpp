@@ -53,9 +53,9 @@ private:
 	}
 
 	int pushdown(int i) {
-		int l = left(i), r = right(i);
+		unsigned int l = left(i), r = right(i);
 
-		int sml = i;
+		unsigned int sml = i;
 		if (l < heap.size() && Ops::pred(heap[l], heap[i]))
 			sml = l;
 		if (r < heap.size() && Ops::pred(heap[r], heap[sml]))

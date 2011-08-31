@@ -13,7 +13,7 @@ static void msgreset(void);
 
 enum { Bufsz = 256 };
 static char msg[Bufsz];
-static unsigned int msgn;
+static int msgn;
 
 bool runtests(const Test tests[], int num, const char *regexp) {
 	regex_t re;
@@ -51,6 +51,9 @@ void runbenches(const Benchmark benchs[], int num, const char *regexp) {
 }
 
 void testpr(const char *fmt, ...) {
+	if (Bufsz - msgn <= 0)
+		return;
+
 	va_list ap;
 	va_start(ap, fmt);
 	msgn += vsnprintf(msg+msgn, Bufsz-msgn, fmt, ap);

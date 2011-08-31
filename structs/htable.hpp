@@ -5,7 +5,7 @@ template <class Key, class Val> class Htable {
 public:
 
 	Htable(unsigned int sz = 256) : fill(0) {
-		bkts.reserve(sz);
+		bkts.resize(sz);
 	}
 
 	void add(Key k, Val v) {
@@ -13,7 +13,7 @@ public:
 			grow();
 
 		unsigned int ind = k.hash() % bkts.size();
-		bkts[ind].push_back(pair(k, v));
+		bkts[ind].push_back(std::pair<Key,Val>(k, v));
 		fill++;
 	}
 
@@ -83,15 +83,17 @@ public:
 	}
 
 private:
+	friend bool htable_add_test(void);
+
 	typedef std::vector< std::pair<Key, Val> > Bucket;
 	typedef std::vector<Bucket> Buckets;
 
 	void grow(void) {
 		Buckets b(bkts.size() * 2);
 
-		for (int i = 0; i < bkts.size(); i++) {
+		for (unsigned int i = 0; i < bkts.size(); i++) {
 			Bucket bkt = bkts[i];
-			for (int j = 0; j < bkt.size(); j++) {
+			for (unsigned int j = 0; j < bkt.size(); j++) {
 				std::pair<Key, Val> &e = bkt[j];
 				unsigned int ind = e.first.hash() % b.size();
 				b[ind].push_back(e);

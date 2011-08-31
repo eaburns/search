@@ -1,11 +1,14 @@
 #include "../incl/utils.hpp"
 
-const static Test tests[] = {
+bool htable_add_test(void);
+
+static const Test tests[] = {
+	Test("htable add test", htable_add_test),
 };
 
 enum { Ntests = sizeof(tests) / sizeof(tests[0]) };
 
-const static Benchmark benches[] = {
+static const Benchmark benches[] = {
 };
 
 enum { Nbenches = sizeof(benches) / sizeof(benches[0]) };
