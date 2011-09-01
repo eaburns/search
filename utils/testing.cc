@@ -8,10 +8,10 @@
 enum { MaxN = 10000000 };
 static const double Mintime = 1.0;	// seconds
 
+static std::string msg;
+
 static bool runtest(const Test &);
 static void runbench(const Benchmark &);
-
-static std::string msg;
 
 bool runtests(const Test tests[], int num, const char *regexp) {
 	regex_t re;
