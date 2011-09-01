@@ -1,4 +1,7 @@
- #include <cstdio>
+#ifndef _SEARCH_HPP_
+#define _SEARCH_HPP_
+
+#include <cstdio>
 #include <vector>
 
 double walltime(void);
@@ -45,3 +48,5 @@ template <class D> class Search {
 public:
 	virtual Result<D> search(D &, typename D::State &) = 0;
 };
+
+#endif	// _SEARCH_HPP_

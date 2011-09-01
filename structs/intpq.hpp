@@ -9,7 +9,8 @@ public:
 	void push(Elm e) {
 		unsigned int p = Ops::prio(e);
 
-		bins.reserve(p);
+		if (p >= bins.size())
+			bins.resize(p+1);
 		bins[p].push_back(e);
 
 		if (p < min)
@@ -21,7 +22,12 @@ public:
 		if (fill == 0)
 			return NULL;
 
-		for ( ; min < bins.size() && !bins[min].empty(); min++)
+		unsigned int i;
+		for (i = 0; i < bins.size() && bins[i].empty(); i++)
+			;
+		assert (i >= min);
+		assert (i < bins.size());
+		for ( ; min < bins.size() && bins[min].empty(); min++)
 			;
 		assert (min < bins.size());
 
@@ -49,6 +55,8 @@ public:
 		if (i < bin.size() - 1)
 			bin[i] = bin[bin.size() - 1];
 		bin.pop_back();
+
+		fill--;
 
 		return true;
 	}

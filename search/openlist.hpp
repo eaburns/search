@@ -41,12 +41,12 @@ public:
 
 	void push(Ent e) {
 		pq.push(e);
-		Ops::setindex(e, 1);
+		Ops::setind(e, 1);
 	}
 
 	Ent pop(void) {
-		Ent &e = pq.pop();
-		Ops::setindex(e, -1);
+		Ent e = pq.pop();
+		Ops::setind(e, -1);
 		return e;
 	}
 

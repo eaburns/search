@@ -14,6 +14,7 @@ public:
 
 		Elm res = heap[0];
 		heap[0] = heap[heap.size() - 1];
+		Ops::setind(res, -1);
 		pushdown(0);
 
 		return res;

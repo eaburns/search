@@ -1,7 +1,7 @@
 #include <vector>
 #include <boost/optional.hpp>
 
-template <class Key, class Val> class Htable {
+template <class Ops, class Key, class Val> class Htable {
 public:
 
 	Htable(unsigned int sz = 256) : fill(0) {
@@ -12,17 +12,17 @@ public:
 		if (fill * 3 >= bkts.size())
 			grow();
 
-		unsigned int ind = k.hash() % bkts.size();
+		unsigned int ind = Ops::hash(k) % bkts.size();
 		bkts[ind].push_back(std::pair<Key,Val>(k, v));
 		fill++;
 	}
 
 	boost::optional<Val>  repl(Key k, Val v) {
-		unsigned int ind = k.hash() % bkts.size();
+		unsigned int ind = Ops::hash(k) % bkts.size();
 
 		for (int i = 0; i < bkts[ind].size(); i++) {
 			std::pair<Key, Val> &e = bkts[ind][i];
-			if (k == e.first) {
+			if (Ops::eq(k, e.first)) {
 				Val old = e.second;
 				e.second = e.v;
 				return boost::optional<Val>(old);
@@ -36,12 +36,12 @@ public:
 	}
 
 	bool mem(Key k) {
-		unsigned int ind = k.hash() % bkts.size();
+		unsigned int ind = Ops::hash(k) % bkts.size();
 		Bucket bkt = bkts[ind];
 
 		for (int i = 0; i < bkt.size(); i++) {
 			std::pair<Key, Val> &e = bkt[i];
-			if (k == e.first)
+			if (Ops::eq(k, e.first))
 				return true;
 		}
 
@@ -49,12 +49,12 @@ public:
 	}
 
 	boost::optional<Val> find(Key k) {
-		unsigned int ind = k.hash() % bkts.size();
+		unsigned int ind = Ops::hash(k) % bkts.size();
 		Bucket bkt = bkts[ind];
 
 		for (unsigned int i = 0; i < bkt.size(); i++) {
 			std::pair<Key, Val> &e = bkt[i];
-			if (k == e.first)
+			if (Ops::eq(k, e.first))
 				return boost::optional<Val>(e.second);
 		}
 
@@ -62,12 +62,12 @@ public:
 	}
 
 	Val rm(Key k) {
-		unsigned int ind = k.hash() % bkts.size();
+		unsigned int ind = Ops::hash(k) % bkts.size();
 		Bucket bkt = bkts[ind];
 
 		for (unsigned int i = 0; i < bkt.size(); i++) {
 			std::pair<Key, Val> &e = bkt[i];
-			if (k == e.first) {
+			if (Ops::eq(k, e.first)) {
 				Val res = e.second;
 
 				if (i < bkt.size() - 1)
@@ -95,7 +95,7 @@ private:
 			Bucket bkt = bkts[i];
 			for (unsigned int j = 0; j < bkt.size(); j++) {
 				std::pair<Key, Val> &e = bkt[j];
-				unsigned int ind = e.first.hash() % b.size();
+				unsigned int ind = Ops::hash(e.first) % b.size();
 				b[ind].push_back(e);
 			}
 		}

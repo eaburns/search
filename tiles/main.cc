@@ -1,5 +1,6 @@
-#include "tiles.hpp"
+#include "mdist.hpp"
 #include "../search/idastar.hpp"
+#include "../search/astar.hpp"
 #include "../incl/utils.hpp"
 #include <cstdio>
 
@@ -7,9 +8,10 @@ static void search(TilesMdist &, Search<TilesMdist> &, TilesMdist::State &);
 
 int main(int argc, char *argv[]) {
 	TilesMdist d(stdin);
-	Idastar<TilesMdist> idas;
+//	Idastar<TilesMdist> srch;
+	Astar<TilesMdist> srch;
 	TilesMdist::State s0 = d.initstate();
-	search(d, idas, s0);
+	search(d, srch, s0);
 	return 0;
 }
 

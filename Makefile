@@ -6,10 +6,12 @@ OBJS=\
 	utils/time.o\
 	utils/datafile.o\
 	utils/testing.o\
+	utils/hash.o\
 
 TMPLS=\
-	search/idastar.hpp\
 	search/openlist.hpp\
+	search/idastar.hpp\
+	search/astar.hpp\
 	\
 	structs/intpq.hpp\
 	structs/binheap.hpp\

@@ -9,9 +9,14 @@ struct Int {
 	bool operator==(Int &a) const { return a.vl == vl; }
 };
 
+struct Ops {
+	static unsigned long hash(Int i) { return i.vl; }
+	static bool eq(Int a, Int b) { return a.vl == b.vl; }
+};
+
 bool htable_add_test(void) {
 	bool res = true;
-	Htable<Int, unsigned int> ht;
+	Htable<Ops, Int, unsigned int> ht;
 
 	if (ht.fill != 0) {
 		testpr("Hash table fill is not initialized to zero\n");
@@ -31,7 +36,7 @@ bool htable_add_test(void) {
 
 bool htable_find_test(void) {
 	bool res = true;
-	Htable<Int, unsigned int> ht;
+	Htable<Ops, Int, unsigned int> ht;
 
 	for (unsigned int i = 0; i < 100; i++)
 		ht.add(Int(i), i);
