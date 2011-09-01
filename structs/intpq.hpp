@@ -11,10 +11,11 @@ public:
 		unsigned int p = Ops::prio(e);
 
 		if (p >= bins.size())
-			bins.resize(p+1);
+			bins.resize(p*2);
 
-		Ops::setind(e, bins[p].size());
-		bins[p].push_back(e);
+		Bin &bin = bins[p];
+		Ops::setind(e, bin.size());
+		bin.push_back(e);
 
 		if (p < min)
 			min = p;
@@ -25,20 +26,17 @@ public:
 		if (fill == 0)
 			return boost::optional<Elm>();
 
-		unsigned int i;
-		for (i = 0; i < bins.size() && bins[i].empty(); i++)
-			;
-		assert (i >= min);
-		assert (i < bins.size());
 		for ( ; min < bins.size() && bins[min].empty(); min++)
 			;
 		assert (min < bins.size());
 
 		fill--;
 
-		Elm res = bins[min].back();
-		bins[min].pop_back();
+		Bin &bin = bins[min];
+		Elm res = bin.back();
+		bin.pop_back();
 		Ops::setind(res, -1);
+
 		return boost::optional<Elm>(res);
 	}
 
@@ -47,7 +45,7 @@ public:
 	}
 
 	bool rm(Elm e) {
-		std::vector<Elm> bin = bins[Ops::prio(e)];
+		std::vector<Elm> &bin = bins[Ops::prio(e)];
 
 		unsigned int i = Ops::getind(e);
 		if (i < 0) {
@@ -59,9 +57,12 @@ public:
 			assert (bin[i] == e);
 		}
 
-		if (i < bin.size() - 1)
+		if (i < bin.size() - 1) {
 			bin[i] = bin[bin.size() - 1];
+			Ops::setind(bin[i], i);
+		}
 		bin.pop_back();
+		Ops::setind(e, -1);
 
 		fill--;
 
@@ -74,5 +75,6 @@ private:
 
 	unsigned int min;
 	unsigned long fill;
-	std::vector< std::vector<Elm> >bins;
+	typedef std::vector<Elm> Bin;
+	std::vector<Bin>bins;
 };

@@ -1,8 +1,6 @@
 #include "tiles.hpp"
 #include <cstring>
 
-extern "C" unsigned long hashbytes(unsigned char[], unsigned int);
-
 class TilesMdist : Tiles {
 public:
 

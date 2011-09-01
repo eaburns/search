@@ -54,7 +54,7 @@ private:
 		return i;
 	}
 
-	int pushdown(int i) {
+	int pushdown(unsigned int i) {
 		unsigned int l = left(i), r = right(i);
 
 		unsigned int sml = i;

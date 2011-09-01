@@ -1,10 +1,11 @@
 #include <vector>
+#include <list>
 #include <boost/optional.hpp>
 
 template <class Ops, class Key, class Val> class Htable {
 public:
 
-	Htable(unsigned int sz = 256) : fill(0) {
+	Htable(unsigned int sz = 1024) : fill(0), collides(0) {
 		bkts.resize(sz);
 	}
 
@@ -13,15 +14,18 @@ public:
 			grow();
 
 		unsigned int ind = Ops::hash(k) % bkts.size();
+		if (!bkts[ind].empty())
+			collides++;
 		bkts[ind].push_back(std::pair<Key,Val>(k, v));
 		fill++;
 	}
 
 	boost::optional<Val>  repl(Key k, Val v) {
 		unsigned int ind = Ops::hash(k) % bkts.size();
+		Bucket &bkt = bkts[ind];
 
-		for (int i = 0; i < bkts[ind].size(); i++) {
-			std::pair<Key, Val> &e = bkts[ind][i];
+		for (typename Bucket::iterator it = bkt.begin(); it != bkt.end(); it++) {
+			std::pair<Key, Val> &e = *it;
 			if (Ops::eq(k, e.first)) {
 				Val old = e.second;
 				e.second = e.v;
@@ -37,10 +41,10 @@ public:
 
 	bool mem(Key k) {
 		unsigned int ind = Ops::hash(k) % bkts.size();
-		Bucket bkt = bkts[ind];
+		Bucket &bkt = bkts[ind];
 
-		for (int i = 0; i < bkt.size(); i++) {
-			std::pair<Key, Val> &e = bkt[i];
+		for (typename Bucket::iterator it = bkt.begin(); it != bkt.end(); it++) {
+			std::pair<Key, Val> &e = *it;
 			if (Ops::eq(k, e.first))
 				return true;
 		}
@@ -50,10 +54,10 @@ public:
 
 	boost::optional<Val> find(Key k) {
 		unsigned int ind = Ops::hash(k) % bkts.size();
-		Bucket bkt = bkts[ind];
+		Bucket &bkt = bkts[ind];
 
-		for (unsigned int i = 0; i < bkt.size(); i++) {
-			std::pair<Key, Val> &e = bkt[i];
+		for (typename Bucket::iterator it = bkt.begin(); it != bkt.end(); it++) {
+			std::pair<Key, Val> &e = *it;
 			if (Ops::eq(k, e.first))
 				return boost::optional<Val>(e.second);
 		}
@@ -63,15 +67,15 @@ public:
 
 	Val rm(Key k) {
 		unsigned int ind = Ops::hash(k) % bkts.size();
-		Bucket bkt = bkts[ind];
+		Bucket &bkt = bkts[ind];
 
-		for (unsigned int i = 0; i < bkt.size(); i++) {
-			std::pair<Key, Val> &e = bkt[i];
+		for (typename Bucket::iterator it = bkt.begin(); it != bkt.end(); it++) {
+			std::pair<Key, Val> &e = *it;
+
 			if (Ops::eq(k, e.first)) {
 				Val res = e.second;
 
-				if (i < bkt.size() - 1)
-					bkt[i] = bkt[bkt.size() - 1];
+				bkt.erase(it);
 				bkt.pop_back();
 				fill--;
 
@@ -85,7 +89,7 @@ public:
 private:
 	friend bool htable_add_test(void);
 
-	typedef std::vector< std::pair<Key, Val> > Bucket;
+	typedef std::list< std::pair<Key, Val> > Bucket;
 	typedef std::vector<Bucket> Buckets;
 
 	void grow(void) {
@@ -94,10 +98,9 @@ private:
 
 		unsigned int oldsz = bkts.size();
 		for (unsigned int i = 0; i < oldsz; i++) {
-			Bucket bkt = bkts[i];
-			unsigned int bktsz = bkt.size();
-			for (unsigned int j = 0; j < bktsz; j++) {
-				std::pair<Key, Val> &e = bkt[j];
+			Bucket &bkt = bkts[i];
+			for (typename Bucket::iterator it = bkt.begin(); it != bkt.end(); it++) {
+				std::pair<Key, Val> &e = *it;
 				unsigned int ind = Ops::hash(e.first) % newsz;
 				b[ind].push_back(e);
 			}
@@ -106,6 +109,6 @@ private:
 		bkts.swap(b);
 	}
 
-	unsigned int fill;
+	unsigned long fill, collides;
 	Buckets bkts;
 };
