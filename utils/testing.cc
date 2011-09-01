@@ -48,13 +48,16 @@ void runbenches(const Benchmark benchs[], int num, const char *regexp) {
 	}
 }
 
-enum { Bufsz = 256 };
-
 void testpr(const char *fmt, ...) {
-	char buf[Bufsz];
 	va_list ap;
+
 	va_start(ap, fmt);
-	vsnprintf(buf, Bufsz, fmt, ap);
+	int sz = vsnprintf(NULL, 0, fmt, ap);
+	va_end(ap);
+
+	char buf[sz+1];
+	va_start(ap, fmt);
+	vsnprintf(buf, sz+1, fmt, ap);
 	va_end(ap);
 
 	msg.append(buf);
