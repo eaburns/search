@@ -8,8 +8,8 @@ static void search(TilesMdist &, Search<TilesMdist> &, TilesMdist::State &);
 
 int main(int argc, char *argv[]) {
 	TilesMdist d(stdin);
-//	Idastar<TilesMdist> srch;
-	Astar<TilesMdist> srch;
+	Idastar<TilesMdist, true, true> srch;
+//	Astar<TilesMdist> srch;
 	TilesMdist::State s0 = d.initstate();
 	search(d, srch, s0);
 	return 0;

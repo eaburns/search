@@ -3,7 +3,13 @@
 #include <cstdlib>
 #include <boost/optional.hpp>
 
-struct Ops { static int prio(int i) { return i; } };
+struct Ops {
+	static int prio(int i) { return i; }
+
+	static void setind(int i, int j) { }
+
+	static int getind(int i) { return -1; }
+};
 
 bool intpq_push_test(void) {
 	bool res = true;

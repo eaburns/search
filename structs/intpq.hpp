@@ -12,6 +12,8 @@ public:
 
 		if (p >= bins.size())
 			bins.resize(p+1);
+
+		Ops::setind(e, bins[p].size());
 		bins[p].push_back(e);
 
 		if (p < min)
@@ -36,6 +38,7 @@ public:
 
 		Elm res = bins[min].back();
 		bins[min].pop_back();
+		Ops::setind(res, -1);
 		return boost::optional<Elm>(res);
 	}
 
@@ -46,12 +49,15 @@ public:
 	bool rm(Elm e) {
 		std::vector<Elm> bin = bins[Ops::prio(e)];
 
-		unsigned int i;
-		for (i = 0; i < bin.size() && bin[i] != e; i++)
-			;
-
-		if (bin[i] != e)
-			return false;
+		unsigned int i = Ops::getind(e);
+		if (i < 0) {
+			for (i = 0; i < bin.size() && bin[i] != e; i++)
+				;
+			if (bin[i] != e)
+				return false;
+		} else {
+			assert (bin[i] == e);
+		}
 
 		if (i < bin.size() - 1)
 			bin[i] = bin[bin.size() - 1];

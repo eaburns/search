@@ -1,5 +1,5 @@
 CXX=g++
-CXXFLAGS=-Wall -Werror -g -pg
+CXXFLAGS=-Wall -Werror -O3
 
 OBJS=\
 	utils/fatal.o\

@@ -6,14 +6,11 @@ extern "C" unsigned long hashbytes(unsigned char[], unsigned int);
 class TilesMdist : Tiles {
 public:
 
-	enum { Inplace = true };
-
 	typedef Tiles::Tile Tile;
 	typedef Tiles::Pos Pos;
 
 	typedef Tiles::Cost Cost;
 	enum { InfCost = -1 };
-	enum { UnitCost = true };
 
 	typedef int Oper;
 	enum { Nop = -1 };

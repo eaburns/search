@@ -42,14 +42,10 @@ public:
 
 	void push(Elm e) {
 		pq.push(e);
-		Ops::setind(e, 1);
 	}
 
 	boost::optional<Elm> pop(void) {
-		boost::optional<Elm> e = pq.pop();
-		if (e)
-			Ops::setind(*e, -1);
-		return e;
+		return pq.pop();
 	}
 
 	void pre_update(Elm e) {

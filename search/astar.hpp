@@ -41,6 +41,7 @@ private:
 		State state;
 		Key key;
 		Cost g, f;
+		Oper pop;
 		Node *parent;
 		int openind;
 	};
@@ -48,7 +49,10 @@ private:
 	void expand(D &d, Node *n) {
 		res.expd++;
 		for (unsigned int i = 0; i < d.nops(n->state); i++) {
-			Node *k = kid(d, n, d.nthop(n->state, i));
+			Oper op = d.nthop(n->state, i);
+			if (op == n->pop)
+				continue;
+			Node *k = kid(d, n, op);
 			res.gend++;
 			considerkid(d, k);
 		}
@@ -63,7 +67,6 @@ private:
 				nodes.free(k);
 				return;
 			}
-			assert (false);
 			if (!open.mem(dup)) {
 				open.push(dup);
 			} else {
@@ -85,6 +88,7 @@ private:
 		kid->key = kid->state.key();
 		kid->g = parent->g + d.opcost(parent->state, op);
 		kid->f = kid->g + d.h(kid->state);
+		kid->pop = d.revop(parent->state, op);
 		kid->parent = parent;
 		kid->openind = OpenList<Openops, Node*, Cost>::InitInd;
 		return kid;
@@ -96,6 +100,7 @@ private:
 		n0->key = s0.key();
 		n0->g = 0;
 		n0->f = d.h(s0);
+		n0->pop = D::Nop;
 		n0->parent = NULL;
 		n0->openind = OpenList<Openops, Node*, Cost>::InitInd;
 		return n0;

@@ -4,7 +4,7 @@
 void dfrowhdr(FILE *, const char *name, int ncols, ...);
 void dfrow(FILE *, const char *name, const char *colfmt, ...);
 
-template <class D> class Idastar : public Search<D> {
+template <class D, bool inplace = false, bool unitcost=false> class Idastar : public Search<D> {
 
 public:
 
@@ -22,7 +22,7 @@ public:
 		for (int i = 0; /* forever */; i++) {
 			minoob = D::InfCost;
 
-			if (D::Inplace) {
+			if (inplace) {
 				if (dfs_inplace(d, s0, D::Nop, 0, 0))
 					break;
 			} else {
@@ -45,7 +45,7 @@ private:
 	bool dfs(D &d, State &s, Oper pop, Cost g, int depth) {
 		Cost f = g + d.h(s);
 
-		if ((D::UnitCost || f <= bound) && d.isgoal(s)) {
+		if ((unitcost || f <= bound) && d.isgoal(s)) {
 			res.cost = g;
 			res.path.push_back(s);
 			return true;
@@ -85,7 +85,7 @@ private:
 	bool dfs_inplace(D &d, State &s, Oper pop, Cost g, int depth) {
 		Cost f = g + d.h(s);
 
-		if ((D::UnitCost || f <= bound) && d.isgoal(s)) {
+		if ((unitcost || f <= bound) && d.isgoal(s)) {
 			res.cost = g;
 			res.path.push_back(s);
 			return true;
