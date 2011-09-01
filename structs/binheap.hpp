@@ -1,4 +1,5 @@
 #include <vector>
+#include <boost/optional.hpp>
 
 template <class Ops, class Elm> class Binheap {
 public:
@@ -8,16 +9,16 @@ public:
 		pullup(heap.size() - 1);
 	}
 
-	Elm pop(void) {
+	boost::optional<Elm> pop(void) {
 		if (heap.size() == 0)
-			return NULL;
+			return boost::optional<Elm>();
 
 		Elm res = heap[0];
 		heap[0] = heap[heap.size() - 1];
 		Ops::setind(res, -1);
 		pushdown(0);
 
-		return res;
+		return boost::optional<Elm>(res);
 	}
 
 	void update(int i) {

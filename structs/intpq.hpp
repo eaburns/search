@@ -1,5 +1,6 @@
 #include <cassert>
 #include <vector>
+#include <boost/optional.hpp>
 
 template <class Ops, class Elm> class Intpq {
 public:
@@ -18,9 +19,9 @@ public:
 		fill++;
 	}
 
-	Elm pop(void) {
+	boost::optional<Elm> pop(void) {
 		if (fill == 0)
-			return NULL;
+			return boost::optional<Elm>();
 
 		unsigned int i;
 		for (i = 0; i < bins.size() && bins[i].empty(); i++)
@@ -35,7 +36,7 @@ public:
 
 		Elm res = bins[min].back();
 		bins[min].pop_back();
-		return res;
+		return boost::optional<Elm>(res);
 	}
 
 	bool empty(void) {
@@ -62,6 +63,9 @@ public:
 	}
 
 private:
+	friend bool intpq_push_test(void);
+	friend bool intpq_pop_test(void);
+
 	unsigned int min;
 	unsigned long fill;
 	std::vector< std::vector<Elm> >bins;

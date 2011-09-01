@@ -39,6 +39,7 @@ public:
 	public:
 		typedef Hashkey Key;
 		Key key(void) {
+			ts[b] = 0;
 			return Hashkey(ts);
 		};
 	};

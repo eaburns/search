@@ -1,23 +1,24 @@
 #include "../structs/intpq.hpp"
 #include "../structs/binheap.hpp"
+#include <boost/optional.hpp>
 
-template <class Ops, class Ent, class Cost> class OpenList {
+template <class Ops, class Elm, class Cost> class OpenList {
 public:
 
 	enum { InitInd = -1 };
 
-	void push(Ent e) {
+	void push(Elm e) {
 		heap.push(e);
 	}
 
-	Ent pop(void) { 
+	boost::optional<Elm> pop(void) { 
 		return heap.pop();
 	}
 
-	void pre_update(Ent e) {
+	void pre_update(Elm e) {
 	}
 
-	void post_update(Ent e) {
+	void post_update(Elm e) {
 		heap.update(Ops::getind(e));
 	}
 
@@ -25,36 +26,37 @@ public:
 		return heap.empty();
 	}
 
-	bool mem(Ent e) {
+	bool mem(Elm e) {
 		return Ops::getind(e) >= 0;
 	}
 
 private:
-	Binheap<Ops, Ent> heap;
+	Binheap<Ops, Elm> heap;
 };
 
 
-template <class Ops, class Ent> class OpenList <Ops, Ent, int> {
+template <class Ops, class Elm> class OpenList <Ops, Elm, int> {
 public:
 
 	enum { InitInd = -1 };
 
-	void push(Ent e) {
+	void push(Elm e) {
 		pq.push(e);
 		Ops::setind(e, 1);
 	}
 
-	Ent pop(void) {
-		Ent e = pq.pop();
-		Ops::setind(e, -1);
+	boost::optional<Elm> pop(void) {
+		boost::optional<Elm> e = pq.pop();
+		if (e)
+			Ops::setind(*e, -1);
 		return e;
 	}
 
-	void pre_update(Ent e) {
+	void pre_update(Elm e) {
 		pq.rm(e);
 	}
 
-	void post_update(Ent e) {
+	void post_update(Elm e) {
 		pq.push(e);
 	}
 
@@ -62,10 +64,10 @@ public:
 		return pq.empty();
 	}
 
-	bool mem(Ent e) {
+	bool mem(Elm e) {
 		return Ops::getind(e) >= 0;
 	}
 
 private:
-	Intpq<Ops, Ent> pq;
+	Intpq<Ops, Elm> pq;
 };

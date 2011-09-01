@@ -15,7 +15,7 @@ public:
 		open.push(n0);
 
 		while (!open.empty()) {
-			Node *n = open.pop();
+			Node *n = *open.pop();
 
 			if (d.isgoal(n->state)) {
 				handlesol(n);
@@ -63,6 +63,7 @@ private:
 				nodes.free(k);
 				return;
 			}
+			assert (false);
 			if (!open.mem(dup)) {
 				open.push(dup);
 			} else {
