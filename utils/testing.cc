@@ -1,6 +1,7 @@
 #include "../incl/utils.hpp"
 #include <cstdarg>
 #include <cstdio>
+#include <string>
 #include <sys/types.h>
 #include <regex.h>
 
@@ -9,11 +10,8 @@ static const double Mintime = 1.0;	// seconds
 
 static bool runtest(const Test &);
 static void runbench(const Benchmark &);
-static void msgreset(void);
 
-enum { Bufsz = 1024 };
-static char msg[Bufsz];
-static int msgn;
+static std::string msg;
 
 bool runtests(const Test tests[], int num, const char *regexp) {
 	regex_t re;
@@ -50,18 +48,20 @@ void runbenches(const Benchmark benchs[], int num, const char *regexp) {
 	}
 }
 
-void testpr(const char *fmt, ...) {
-	if (Bufsz - msgn <= 0)
-		return;
+enum { Bufsz = 256 };
 
+void testpr(const char *fmt, ...) {
+	char buf[Bufsz];
 	va_list ap;
 	va_start(ap, fmt);
-	msgn += vsnprintf(msg+msgn, Bufsz-msgn, fmt, ap);
+	vsnprintf(buf, Bufsz, fmt, ap);
 	va_end(ap);
+
+	msg += buf;
 }
 
 static bool runtest(const Test &t) {
-	msgreset();
+	msg.clear();
 	bool ok = t.run();
 
 	printf("Running %s...", t.name);
@@ -72,14 +72,14 @@ static bool runtest(const Test &t) {
 	else
 		printf("FAILED\n");
 
-	if (msgn > 0)
-		puts(msg);
+	if (msg.size() > 0)
+		puts(msg.c_str());
 
 	return ok;
 }
 
 static void runbench(const Benchmark &b) {
-	msgreset();
+	msg.clear();
 
 	printf("Running %s...\t", b.name);
 
@@ -100,11 +100,6 @@ static void runbench(const Benchmark &b) {
 	printf("%lu op/s (%g sec)\n", (unsigned long) (n / ttime),
 		ttime);
 
-	if (msgn > 0)
-		puts(msg);
-}
-
-static void msgreset(void) {
-	msgn = 0;
-	msg[0] = '\0';
+	if (msg.size() > 0)
+		puts(msg.c_str());
 }
