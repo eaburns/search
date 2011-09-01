@@ -41,3 +41,5 @@ struct Benchmark {
 bool runtests(const Test [], int, const char *regexp);
 void runbenches(const Benchmark[], int, const char *regexp);
 void testpr(const char *fmt, ...);
+
+extern "C" unsigned long hashbytes(unsigned char[], unsigned int);
