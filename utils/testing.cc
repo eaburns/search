@@ -57,7 +57,7 @@ void testpr(const char *fmt, ...) {
 	vsnprintf(buf, Bufsz, fmt, ap);
 	va_end(ap);
 
-	msg += buf;
+	msg.append(buf);
 }
 
 static bool runtest(const Test &t) {
