@@ -14,9 +14,12 @@ public:
 			return boost::optional<Elm>();
 
 		Elm res = heap[0];
-		heap[0] = heap[heap.size() - 1];
+		if (heap.size() > 1) {
+			heap[0] = heap.back();
+			heap.pop_back();
+			pushdown(0);
+		}
 		Ops::setind(res, -1);
-		pushdown(0);
 
 		return boost::optional<Elm>(res);
 	}

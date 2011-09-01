@@ -21,10 +21,6 @@ public:
 	static void dumptiles(FILE*, Tile []);
 
 	static unsigned long hash(Tile ts[]) {
-/*
-		return hashbytes((unsigned char*) ts, sizeof(Tile)*Ntiles);
-*/
-
 		unsigned long h = 0;
 		for (int i = 0; i < Ntiles; i++)
 			h += hashvec[i][ts[i]];

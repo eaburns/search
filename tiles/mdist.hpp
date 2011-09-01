@@ -22,7 +22,11 @@ public:
 			return Tiles::hash(ts);
 		}
 		bool eq(Hashkey &b) const {
-			return memcmp(ts, b.ts, sz) == 0;
+			for (int i = 0; i < Ntiles; i++) {
+				if (ts[i] != b.ts[i])
+					return false;
+			}
+			return true;
 		}
 	};
 
