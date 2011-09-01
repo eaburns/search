@@ -72,7 +72,8 @@ static bool runtest(const Test &t) {
 	else
 		printf("FAILED\n");
 
-	puts(msg);
+	if (msgn > 0)
+		puts(msg);
 
 	return ok;
 }
@@ -98,7 +99,9 @@ static void runbench(const Benchmark &b) {
 
 	printf("%lu op/s (%g sec)\n", (unsigned long) (n / ttime),
 		ttime);
-	puts(msg);
+
+	if (msgn > 0)
+		puts(msg);
 }
 
 static void msgreset(void) {
