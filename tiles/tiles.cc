@@ -2,10 +2,16 @@
 #include "../incl/utils.hpp"
 #include <cerrno>
 #include <cstdio>
+#include <ctime>
+
+bool Tiles::hashvecinit = false;
+unsigned long Tiles::hashvec[Ntiles][Ntiles];
 
 Tiles::Tiles(FILE *in) {
 	readruml(in);
 	initops();
+	if (!hashvecinit)
+		inithashvec();
 }
 
 void Tiles::readruml(FILE *in) {
@@ -50,6 +56,15 @@ void Tiles::initops(void) {
 			ops[i].mvs[ops[i].n++] = i + 1;
 		if (i < Ntiles - Width)
 			ops[i].mvs[ops[i].n++] = i + Width;
+	}
+}
+
+void Tiles::inithashvec(void) {
+	hashvecinit = true;
+	Rand r(time(NULL));
+	for (int i = 0; i < Ntiles; i++) {
+	for (int j = 0; j < Ntiles; j++)
+		hashvec[i][j] = r.bits();
 	}
 }
 

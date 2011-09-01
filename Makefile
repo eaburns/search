@@ -1,5 +1,7 @@
 CXX=g++
-CXXFLAGS=-Wall -Werror -O3
+FLAGS=-Wall -Werror -O3
+CXXFLAGS=$(FLAGS)
+CFLAGS=$(FLAGS)
 
 OBJS=\
 	utils/fatal.o\
@@ -7,6 +9,7 @@ OBJS=\
 	utils/datafile.o\
 	utils/testing.o\
 	utils/hash.o\
+	utils/rand.o\
 
 TMPLS=\
 	search/openlist.hpp\

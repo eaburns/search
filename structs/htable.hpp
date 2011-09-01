@@ -89,18 +89,21 @@ private:
 	typedef std::vector<Bucket> Buckets;
 
 	void grow(void) {
-		Buckets b(bkts.size() * 2);
+		unsigned int newsz = bkts.size() * 2;
+		Buckets b(newsz);
 
-		for (unsigned int i = 0; i < bkts.size(); i++) {
+		unsigned int oldsz = bkts.size();
+		for (unsigned int i = 0; i < oldsz; i++) {
 			Bucket bkt = bkts[i];
-			for (unsigned int j = 0; j < bkt.size(); j++) {
+			unsigned int bktsz = bkt.size();
+			for (unsigned int j = 0; j < bktsz; j++) {
 				std::pair<Key, Val> &e = bkt[j];
-				unsigned int ind = Ops::hash(e.first) % b.size();
+				unsigned int ind = Ops::hash(e.first) % newsz;
 				b[ind].push_back(e);
 			}
 		}
 
-		bkts = b;
+		bkts.swap(b);
 	}
 
 	unsigned int fill;

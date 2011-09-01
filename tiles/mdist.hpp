@@ -21,7 +21,7 @@ public:
 	public:
 		Hashkey(Tile *t) : ts(t) {}
 		unsigned long hash(void) {
-			return hashbytes((unsigned char*) ts, sz);
+			return Tiles::hash(ts);
 		}
 		bool eq(Hashkey &b) const {
 			return memcmp(ts, b.ts, sz) == 0;

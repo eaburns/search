@@ -15,7 +15,15 @@ public:
 	typedef int Oper;
 
 	Tiles(FILE*);
+
 	static void dumptiles(FILE*, Tile []);
+
+	static unsigned long hash(Tile ts[]) {
+		unsigned long h = 0;
+		for (int i = 0; i < Ntiles; i++)
+			h += hashvec[i][ts[i]];
+		return h;
+	}
 
 protected:
 	struct {
@@ -25,8 +33,11 @@ protected:
 
 	Tile init[Ntiles];
 	Pos goalpos[Ntiles];
-
 private:
 	void readruml(FILE*);
 	void initops(void);
+
+	void inithashvec(void);
+	static bool hashvecinit;
+	static unsigned long hashvec[Ntiles][Ntiles];
 };

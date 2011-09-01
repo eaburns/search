@@ -1,4 +1,5 @@
 #include <cstdio>
+#include <stdint.h>
 
 void warn(const char *, ...);
 void warnx(int, const char *, ...);
@@ -43,3 +44,12 @@ void runbenches(const Benchmark[], int, const char *regexp);
 void testpr(const char *fmt, ...);
 
 extern "C" unsigned long hashbytes(unsigned char[], unsigned int);
+
+class Rand {
+public:
+	Rand(unsigned long);
+	unsigned long bits(void);
+	long integer(long min, long max);
+private:
+	uint64_t v;
+};
