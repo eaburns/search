@@ -20,11 +20,11 @@ public:
 		friend class TilesMdist;
 	public:
 		unsigned long hash(void) {
-			return Tiles::hash(ts);
+			return Tiles::hash(ts, b);
 		}
-		bool eq(State &b) const {
-			for (int i = 0; i < Ntiles; i++) {
-				if (ts[i] != b.ts[i])
+		bool eq(State &other) const {
+			for (unsigned int i = 0; i < Ntiles; i++) {
+				if (i != b && ts[i] != other.ts[i])
 					return false;
 			}
 			return true;
