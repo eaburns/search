@@ -1,6 +1,10 @@
 #include <vector>
 #include <list>
+#include <cstring>
+#include <cstdio>
 #include <boost/optional.hpp>
+
+void dfpair(FILE *, const char *key, const char *fmt, ...);
 
 template <class Ops, class Key, class Val> class Htable {
 public:
@@ -84,6 +88,17 @@ public:
 		}
 
 		return boost::optional<Val>();
+	}
+
+	void prstats(FILE *f, const char *prefix) {
+		char key[strlen(prefix) + strlen("collisions") + 1];
+		strcpy(key, prefix);
+
+		strcat(key+strlen(prefix), "fill");
+		dfpair(f, key, "%lu", fill);
+
+		strcat(key+strlen(prefix), "collisions");
+		dfpair(f, key, "%lu", collides);
 	}
 
 private:

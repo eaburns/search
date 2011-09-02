@@ -26,6 +26,8 @@ public:
 		}
 
 		res.finish();
+		closed.prstats(stdout, "closed ");
+
 		return res;
 	}
 
