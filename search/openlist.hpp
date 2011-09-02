@@ -34,6 +34,7 @@ private:
 	Binheap<Ops, Elm> heap;
 };
 
+/*
 template <class Ops, class Elm> class OpenList <Ops, Elm, int> {
 public:
 
@@ -66,3 +67,4 @@ public:
 private:
 	Intpq<Ops, Elm> pq;
 };
+*/

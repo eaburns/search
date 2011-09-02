@@ -13,34 +13,22 @@ public:
 	typedef int Oper;
 	enum { Nop = -1 };
 
-	class Hashkey {
-		Tile *ts;
-		static const unsigned int sz = Ntiles * sizeof(Tile);
-	public:
-		Hashkey(Tile *t) : ts(t) {}
-		unsigned long hash(void) {
-			return Tiles::hash(ts);
-		}
-		bool eq(Hashkey &b) const {
-			for (int i = 0; i < Ntiles; i++) {
-				if (ts[i] != b.ts[i])
-					return false;
-			}
-			return true;
-		}
-	};
-
 	class State {
 		Cost h;
 		Pos b;
 		Tile ts[Ntiles];
 		friend class TilesMdist;
 	public:
-		typedef Hashkey Key;
-		Key key(void) {
-			ts[b] = 0;
-			return Hashkey(ts);
-		};
+		unsigned long hash(void) {
+			return Tiles::hash(ts);
+		}
+		bool eq(State &b) const {
+			for (int i = 0; i < Ntiles; i++) {
+				if (ts[i] != b.ts[i])
+					return false;
+			}
+			return true;
+		}
 	};
 
 	class Undo {

@@ -11,7 +11,7 @@ public:
 		res = Result<D>(true);
 
 		Node *n0 = init(d, s0);
-		closed.add(&n0->key, n0);
+		closed.add(&n0->state, n0);
 		open.push(n0);
 
 		while (!open.empty()) {
@@ -32,14 +32,12 @@ public:
 private:
 
 	typedef typename D::State State;
-	typedef typename D::State::Key Key;
 	typedef typename D::Undo Undo;
 	typedef typename D::Cost Cost;
 	typedef typename D::Oper Oper;
 
 	struct Node {
 		State state;
-		Key key;
 		Cost g, f;
 		Oper pop;
 		Node *parent;
@@ -59,7 +57,7 @@ private:
 	}
 
 	void considerkid(D &d, Node *k) {
-		boost::optional<Node*> dupopt = closed.find(&k->key);
+		boost::optional<Node*> dupopt = closed.find(&k->state);
 		if (dupopt) {
 			res.dups++;
 			Node *dup = *dupopt;
@@ -77,7 +75,7 @@ private:
 			}
 			nodes.free(k);
 		} else {
-			closed.add(&k->key, k);
+			closed.add(&k->state, k);
 			open.push(k);
 		}
 	}
@@ -85,7 +83,6 @@ private:
 	Node *kid(D &d, Node *parent, Oper op) {
 		Node *kid = nodes.malloc();
 		d.applyinto(kid->state, parent->state, op);
-		kid->key = kid->state.key();
 		kid->g = parent->g + d.opcost(parent->state, op);
 		kid->f = kid->g + d.h(kid->state);
 		kid->pop = d.revop(parent->state, op);
@@ -97,7 +94,6 @@ private:
 	Node *init(D &d, State &s0) {
 		Node *n0 = nodes.malloc();
 		n0->state = s0;
-		n0->key = s0.key();
 		n0->g = 0;
 		n0->f = d.h(s0);
 		n0->pop = D::Nop;
@@ -134,16 +130,16 @@ private:
 	};
 
 	struct Closedops {
-		static unsigned long hash(Key *k) {
-			return k->hash();
+		static unsigned long hash(State *st) {
+			return st->hash();
 		}
-		static bool eq(Key *a, Key *b) {
+		static bool eq(State *a, State *b) {
 			return a->eq(*b);
 		}
 	};
 
 	Result<D> res;
 	OpenList<Openops, Node*, Cost> open;
- 	Htable<Closedops, Key*, Node*> closed;
+ 	Htable<Closedops, State*, Node*> closed;
 	boost::object_pool<Node> nodes;
 };
