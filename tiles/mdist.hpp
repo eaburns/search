@@ -23,6 +23,8 @@ public:
 			return Tiles::hash(ts, b);
 		}
 		bool eq(State &other) const {
+			if (b != other.b)
+				return false;
 			for (unsigned int i = 0; i < Ntiles; i++) {
 				if (i != b && ts[i] != other.ts[i])
 					return false;
