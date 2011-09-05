@@ -8,9 +8,10 @@ public:
 
 	enum {
 		Defsz = 1024,
-		Fillfact = 3,
 		Growfact = 2,
 	};
+
+	static const float Fillfact = 1.5;
 
 	Htable(unsigned int sz = Defsz) :
 		fill(0), ncollide(0), nresize(0), nbins(0), bins(NULL) {
