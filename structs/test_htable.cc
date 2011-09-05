@@ -22,7 +22,7 @@ enum { N = 1000 };
 
 bool htable_add_test(void) {
 	bool res = true;
-	Htable<Ops, Ent, Key> ht;
+	Htable<Ops, Key, Ent> ht;
 	Ent ents[N];
 
 	if (ht.fill != 0) {
@@ -44,7 +44,7 @@ bool htable_add_test(void) {
 
 bool htable_find_test(void) {
 	bool res = true;
-	Htable<Ops, Ent, Key> ht;
+	Htable<Ops, Key, Ent> ht;
 	Ent ents[N];
 
 	for (unsigned int i = 0; i < 100; i++) {
@@ -68,7 +68,7 @@ bool htable_find_test(void) {
 
 bool htable_find_rand_test(void) {
 	bool res = true;
-	Htable<Ops, Ent, Key> ht;
+	Htable<Ops, Key, Ent> ht;
 	Rand r(time(NULL));
 	Ent ents[N];
 	unsigned int inds[N];
@@ -97,7 +97,7 @@ Ent *ents;
 unsigned int *inds;
 
 void htable_add_bench(unsigned long n, double *strt, double *end) {
-	Htable<Ops, Ent, Key> ht;
+	Htable<Ops, Key, Ent> ht;
 	Rand r(time(NULL));
 
 	ents = new Ent[n];
@@ -115,7 +115,7 @@ void htable_add_bench(unsigned long n, double *strt, double *end) {
 }
 
 void htable_find_bench(unsigned long n, double *strt, double *end) {
-	Htable<Ops, Ent, Key> ht;
+	Htable<Ops, Key, Ent> ht;
 	Rand r(time(NULL));
 
 	ents = new Ent[n];

@@ -11,7 +11,7 @@ public:
 		res = Result<D>(true);
 
 		Node *n0 = init(d, s0);
-		closed.add(&n0->state, n0);
+		closed.add(n0);
 		open.push(n0);
 
 		while (!open.empty()) {
@@ -42,7 +42,7 @@ private:
 		State state;
 		Cost g, f;
 		Oper pop;
-		Node *parent;
+		Node *htblnxt, *parent;
 		int openind;
 	};
 
@@ -59,10 +59,10 @@ private:
 	}
 
 	void considerkid(D &d, Node *k) {
-		boost::optional<Node*> dupopt = closed.find(&k->state);
-		if (dupopt) {
+		unsigned long h = k->state.hash();
+		Node *dup = closed.find(&k->state, h);
+		if (dup) {
 			res.dups++;
-			Node *dup = *dupopt;
 			if (k->g >= dup->g) {
 				nodes.free(k);
 				return;
@@ -77,7 +77,7 @@ private:
 			}
 			nodes.free(k);
 		} else {
-			closed.add(&k->state, k);
+			closed.add(k, h);
 			open.push(k);
 		}
 	}
@@ -112,36 +112,26 @@ private:
 	}
 
 	struct Openops {
-		static Cost prio(Node *n) {
-			return n->f;
-		}
+		static void setind(Node *n, int i) {n->openind = i;}
+		static int getind(Node *n) {return n->openind;}
+		static Cost prio(Node *n) {return n->f;}
 
 		static bool pred(Node *a, Node *b) {
 			if (a->f == b->f)
 				return a->g > b->g;
 			return a->f < b->f;
 		}
-
-		static void setind(Node *n, int i) {
-			n->openind = i;
-		}
-
-		static int getind(Node *n) {
-			return n->openind;
-		}
 	};
 
 	struct Closedops {
-		static unsigned long hash(State *st) {
-			return st->hash();
-		}
-		static bool eq(State *a, State *b) {
-			return a->eq(*b);
-		}
+		static State *key(Node *n) { return &n->state; }
+		static unsigned long hash(State *s) { return s->hash(); }
+		static bool eq(State *a, State *b) { return a->eq(*b); }
+		static Node **nxt(Node *n) { return &n->htblnxt; }
 	};
 
 	Result<D> res;
 	OpenList<Openops, Node*, Cost> open;
- 	Htable<Closedops, State*, Node*> closed;
+ 	Htable<Closedops, State*, Node> closed;
 	boost::object_pool<Node> nodes;
 };

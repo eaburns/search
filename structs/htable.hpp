@@ -3,7 +3,7 @@
 
 void dfpair(FILE *, const char *key, const char *fmt, ...);
 
-template <class Ops, class Elm, class Key> class Htable {
+template <class Ops, class Key, class Elm> class Htable {
 public:
 
 	enum {
