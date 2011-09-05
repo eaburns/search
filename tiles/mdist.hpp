@@ -16,9 +16,9 @@ public:
 
 	class State {
 		friend class TilesMdist;
-		Cost h;
-		Pos b;
 		Tile ts[Ntiles];
+		Pos b;
+		Cost h;
 	public:
 		unsigned long hash(void) {
 			return Tiles::hash(ts, b);

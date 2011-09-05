@@ -109,6 +109,7 @@ public:
 
 		closed.prstats(stdout, "closed ");
 		dfpair(stdout, "open list type", "%s", open.kind());
+		dfpair(stdout, "node size", "%u", sizeof(Node<D, Cost>));
 
 		return res;
 	}
