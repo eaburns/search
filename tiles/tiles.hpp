@@ -13,8 +13,8 @@ public:
 
 	typedef unsigned int Tile;
 	typedef unsigned int Pos;
-	typedef int Cost;
-	typedef int Oper;
+	typedef char Cost;
+	typedef char Oper;
 
 	Tiles(FILE*);
 

@@ -69,14 +69,18 @@ private:
 				nodes.free(k);
 				return;
 			}
-			if (!open.mem(dup)) {
-				open.push(dup);
-			} else {
+			if (!open.mem(dup))
 				open.pre_update(dup);
-				dup->f = dup->f - dup->g + k->g;
-				dup->g = k->g;
+
+			dup->f = dup->f - dup->g + k->g;
+			dup->g = k->g;
+			dup->pop = k->pop;
+			dup->parent = k->parent;
+
+			if (!open.mem(dup))
+				open.push(dup);
+			else
 				open.post_update(dup);
-			}
 			nodes.free(k);
 		} else {
 			closed.add(k, h);
