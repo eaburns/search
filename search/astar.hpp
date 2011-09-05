@@ -31,7 +31,7 @@ public:
 	bool mem(Node<D, Cost> *n) { return n->openind != -1; }
 private:
 	struct Ops {
- 			static bool pred(Node<D, Cost> *a, Node<D, Cost> *b) {
+ 		static bool pred(Node<D, Cost> *a, Node<D, Cost> *b) {
 			if (a->f == b->f)
 				return a->g > b->g;
 			return a->f < b->f;
