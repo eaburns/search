@@ -17,7 +17,6 @@ TMPLS=\
 	search/astar.hpp\
 	\
 	structs/intpq.hpp\
-	structs/intpq2d.hpp\
 	structs/binheap.hpp\
 	structs/htable.hpp\
 

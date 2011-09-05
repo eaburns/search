@@ -56,10 +56,10 @@ public:
 		strcat(key+strlen(prefix), "fill");
 		dfpair(f, key, "%lu", fill);
 
-		strcat(key+strlen(prefix), "collisions");
+		strcpy(key+strlen(prefix), "collisions");
 		dfpair(f, key, "%lu", collides);
 
-		strcat(key+strlen(prefix), "resizes");
+		strcpy(key+strlen(prefix), "resizes");
 		dfpair(f, key, "%lu", nresize);
 	}
 
