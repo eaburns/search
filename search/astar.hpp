@@ -70,7 +70,7 @@ private:
 	Intpq< Ops, Node<D, Cost> > pq;
 };
 
-template <class D> class Astar : public Search<D> {
+template <class D, bool unitcost=false> class Astar : public Search<D> {
 public:
 
 	Result<D> search(D &d, typename D::State &s0) {
@@ -83,12 +83,13 @@ public:
 		while (!open.empty()) {
 			Node<D, Cost> *n = open.pop();
 
-			if (d.isgoal(n->state)) {
+			if (!unitcost && d.isgoal(n->state)) {
 				handlesol(n);
 				break;
 			}
 
-			expand(d, n);
+			if (expand(d, n))
+				break;
 		}
 
 		res.finish();
@@ -108,16 +109,25 @@ private:
 	typedef typename D::Oper Oper;
 
 
-	void expand(D &d, Node<D, Cost> *n) {
+	bool expand(D &d, Node<D, Cost> *n) {
 		res.expd++;
+
 		for (unsigned int i = 0; i < d.nops(n->state); i++) {
 			Oper op = d.nthop(n->state, i);
 			if (op == n->pop)
 				continue;
 			Node<D, Cost> *k = kid(d, n, op);
 			res.gend++;
+
+			if (unitcost && d.isgoal(k->state)) {
+				handlesol(k);
+				return true;
+			}
+				
 			considerkid(d, k);
 		}
+
+		return false;
 	}
 
 	void considerkid(D &d, Node<D, Cost> *k) {
