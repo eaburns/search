@@ -1,5 +1,6 @@
-#include "tiles.hpp"
 #include <cstring>
+#include <boost/integer/static_log2.hpp>
+#include "tiles.hpp"
 
 class TilesMdist : Tiles {
 public:
@@ -14,10 +15,10 @@ public:
 	enum { Nop = -1 };
 
 	class State {
+		friend class TilesMdist;
 		Cost h;
 		Pos b;
 		Tile ts[Ntiles];
-		friend class TilesMdist;
 	public:
 		unsigned long hash(void) {
 			return Tiles::hash(ts, b);
@@ -30,6 +31,21 @@ public:
 					return false;
 			}
 			return true;
+		}
+	};
+
+	class PackedState {
+		friend class TilesMdist;
+		static const unsigned int nbits = boost::static_log2<Ntiles>::value;
+		static const unsigned int nbytes = (int) ((nbits / 8.0) * Ntiles);
+
+		unsigned char bytes[nbytes];
+	public:
+		unsigned long hash(void) {
+			return hashbytes(bytes, sizeof(bytes));
+		}
+		bool eq(PackedState &other) const {
+			return memcmp(bytes, other.bytes, sizeof(bytes)) == 0;
 		}
 	};
 

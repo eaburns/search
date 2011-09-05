@@ -18,6 +18,7 @@ template <class D, class Cost> struct Node {
 template <class D, class Cost> class OpenList {
 public:
 	const char *kind(void) { return "binary heap"; }
+
 	void push(Node<D, Cost> *n) { heap.push(n); }
 	Node<D, Cost> *pop(void) {
 		boost::optional< Node<D, Cost>* > p = heap.pop();
@@ -25,10 +26,15 @@ public:
 			return NULL;
 		return *p;
 	}
+
 	void pre_update(Node<D, Cost> *n) { }
+
 	void post_update(Node<D, Cost> *n) { heap.update(n->openind); }
+
 	bool empty(void) { return heap.empty(); }
+
 	bool mem(Node<D, Cost> *n) { return n->openind != -1; }
+
 private:
 	struct Ops {
  		static bool pred(Node<D, Cost> *a, Node<D, Cost> *b) {
@@ -56,12 +62,19 @@ private:
 	typedef typename D::Cost Cost;
 public:
 	static const char *kind(void) { return "bucketed"; }
+
 	void push(Node<D, Cost> *n) { pq.push(n, n->f); }
+
 	Node<D, Cost> *pop(void) { return pq.pop(); }
+
 	void pre_update(Node<D, Cost> *n) { pq.rm(n); }
+
 	void post_update(Node<D, Cost> *n) { push(n); }
+
 	bool empty(void) { return pq.empty(); }
+
 	bool mem(Node<D, Cost> *n) { return pq.mem(n); }
+
 private:
 	struct Ops {
 		static Node<D, Cost> **nxt(Node<D, Cost> *n) { return &n->nxt; }
@@ -92,8 +105,8 @@ public:
 				break;
 		}
 
-		dfpair(stdout, "initial heuristic", "%g", (double) n0->f - n0->g);
 		res.finish();
+
 		closed.prstats(stdout, "closed ");
 		dfpair(stdout, "open list type", "%s", open.kind());
 

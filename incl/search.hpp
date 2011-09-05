@@ -33,6 +33,8 @@ template <class D> struct Result {
 	}
 
 	void output(FILE *f) {
+		dfpair(stdout, "state size", "%u", sizeof(typename D::State));
+		dfpair(stdout, "packed state size", "%u", sizeof(typename D::PackedState));
 		dfpair(f, "total CPU time", "%g", cpuend - cpustrt);
 		dfpair(f, "total wall time", "%g", wallend - wallstrt);
 		dfpair(f, "total nodes expanded", "%lu", expd);
