@@ -1,8 +1,9 @@
+#include <boost/pool/object_pool.hpp>
+#include <boost/optional.hpp>
 #include "../incl/search.hpp"
 #include "../structs/htable.hpp"
 #include "../structs/intpq.hpp"
 #include "../structs/binheap.hpp"
-#include <boost/pool/object_pool.hpp>
 
 template <class D, class Cost> struct Node {
 	typename D::State state;
@@ -18,7 +19,12 @@ template <class D, class Cost> class OpenList {
 public:
 	const char *kind(void) { return "binary heap"; }
 	void push(Node<D, Cost> *n) { heap.push(n); }
-	Node<D, Cost> *pop(void) { return heap.pop(); }
+	Node<D, Cost> *pop(void) {
+		boost::optional< Node<D, Cost>* > p = heap.pop();
+		if (!p)
+			return NULL;
+		return *p;
+	}
 	void pre_update(Node<D, Cost> *n) { }
 	void post_update(Node<D, Cost> *n) { heap.update(n->openind); }
 	bool empty(void) { return heap.empty(); }
@@ -32,7 +38,7 @@ private:
 		}
 		static void setind(Node<D, Cost> *n, int i) { n->openind = i; }
 	};
-	Binheap< Ops, Node<D, Cost> > heap;
+	Binheap< Ops, Node<D, Cost>* > heap;
 };
 
 template <class D> struct Node <D, char> {
