@@ -7,6 +7,7 @@
 
 template <class D, class Cost> struct Node {
 	typename D::State state;
+	typename D::Oper pop;
 	Cost g, f;
 	Node *htblnxt, *parent;
 	int openind;
@@ -42,6 +43,7 @@ private:
 
 template <class D> struct Node <D, char> {
 	typename D::State state;
+	typename D::Oper pop;
 	typename D::Cost g, f;
 	Node *htblnxt, *parent;
 	Node *nxt, *prev;
@@ -110,6 +112,8 @@ private:
 		res.expd++;
 		for (unsigned int i = 0; i < d.nops(n->state); i++) {
 			Oper op = d.nthop(n->state, i);
+			if (op == n->pop)
+				continue;
 			Node<D, Cost> *k = kid(d, n, op);
 			res.gend++;
 			considerkid(d, k);
@@ -130,6 +134,7 @@ private:
 
 			dup->f = dup->f - dup->g + k->g;
 			dup->g = k->g;
+			dup->pop = k->pop;
 			dup->parent = k->parent;
 
 			if (!open.mem(dup))
@@ -148,6 +153,7 @@ private:
 		d.applyinto(kid->state, parent->state, op);
 		kid->g = parent->g + d.opcost(parent->state, op);
 		kid->f = kid->g + d.h(kid->state);
+		kid->pop = d.revop(parent->state, op);
 		kid->parent = parent;
 		return kid;
 	}
@@ -157,6 +163,7 @@ private:
 		n0->state = s0;
 		n0->g = 0;
 		n0->f = d.h(s0);
+		n0->pop = D::Nop;
 		n0->parent = NULL;
 		return n0;
 	}
