@@ -31,6 +31,8 @@ public:
 		return res;
 	}
 
+	Astar(void) : closed(30000001) {}
+
 private:
 
 	typedef typename D::State State;

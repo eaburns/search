@@ -13,7 +13,7 @@ public:
 	};
 
 	Htable(unsigned int sz = Defsz) :
-		fill(0), collides(0), nresize(0), nbins(0), bins(NULL) {
+		fill(0), ncollide(0), nresize(0), nbins(0), bins(NULL) {
 		resize(sz);
 	}
 
@@ -57,7 +57,7 @@ public:
 		dfpair(f, key, "%lu", fill);
 
 		strcpy(key+strlen(prefix), "collisions");
-		dfpair(f, key, "%lu", collides);
+		dfpair(f, key, "%lu", ncollide);
 
 		strcpy(key+strlen(prefix), "resizes");
 		dfpair(f, key, "%lu", nresize);
@@ -67,6 +67,8 @@ private:
 
 	void add(Elm *b[], unsigned int n, Elm *e, unsigned long h) {
 		unsigned int i = h % n;
+		if (b[i])
+			ncollide++;
 		*Ops::nxt(e) = b[i];
 		b[i] = e;
 	}
@@ -92,7 +94,7 @@ private:
 
 	friend bool htable_add_test(void);
 
-	unsigned long fill, collides;
+	unsigned long fill, ncollide;
 	unsigned int nresize, nbins;
 	Elm **bins;
 };
