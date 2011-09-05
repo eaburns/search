@@ -1,150 +1,111 @@
 #include <cassert>
-#include <vector>
-#include <boost/optional.hpp>
+#include <cstdlib>
 
-template <class Elm> class Intpqmin {
+template <class Ops, class Elm> class Intpq {
 public:
 
-	Intpqmin() : min(0), fill(0) { }
+	enum { Defsz = 64 };
 
-	int add(Elm e, unsigned int p) {
-		if (p >= bins.size())
-			bins.resize(p*2);
+	Intpq(unsigned int sz = Defsz)
+		: fill(0), nresize(0), end(0), nbins(0), bins(NULL) {
+		resize(sz);
+	}
 
-		Bin &bin = bins[p];
-		bin.push_back(e);
+	~Intpq(void) {
+		if (bins)
+			free(bins);
+	}
 
-		if (fill == 0 || p < min)
-			min = p;
+	void push(Elm *e, unsigned int prio) {
+		if (prio > nbins)
+			resize(prio == 0 ? Defsz : (prio + 1) * 1.5);
+
+		Elm **nxt =Ops::nxt(bins + prio);
+		*Ops::nxt(e) = *nxt;
+		*Ops::prev(*nxt) = e;
+		*Ops::nxt(bins + prio) = e;
+		*Ops::prev(e) = bins + prio;
+
+		if (fill == 0 || prio < end)
+			end = prio;
+
 		fill++;
+	}
 
-		return bin.size() - 1;
- 	}
-
-	boost::optional<Elm> pop(void) {
+	Elm *pop(void) {
 		if (fill == 0)
-			return boost::optional<Elm>();
+			return NULL;
 
-		for ( ; min < bins.size() && bins[min].empty(); min++)
+		for ( ; empty(end); end++)
 			;
-		assert (min < bins.size());
+		assert(!empty(end));
+
+		Elm *e = *Ops::nxt(bins + end);
+		rm(e);
+		return e;
+	}
+
+	void rm(Elm *e) {
+		Elm **nxt = Ops::nxt(e);
+		Elm **prev = Ops::prev(e);
+		*Ops::prev(*nxt) = *prev;
+		*Ops::nxt(*prev) = *nxt;
+
+		*Ops::nxt(e) = NULL;
+		*Ops::prev(e) = NULL;
 
 		fill--;
-
-		Bin &bin = bins[min];
-		Elm res = bin.back();
-		bin.pop_back();
-
-		return boost::optional<Elm>(res);
 	}
 
 	bool empty(void) {
 		return fill == 0;
 	}
 
-	boost::optional<Elm> rm(Elm e, unsigned int p, int ind = -1) {
-		boost::optional<Elm> res;
-		std::vector<Elm> &bin = bins[p];
-
-		if (ind < 0) {
-			for (ind = 0; ind < (int) bin.size() && bin[ind] != e; ind++)
-				;
-			if (bin[ind] != e)
-				return res;
-		} else {
-			assert (bin[ind] == e);
-		}
-
-		if (ind < (int) bin.size() - 1) {
-			bin[ind] = bin[bin.size() - 1];
-			res = bin[ind];
-		}
-		bin.pop_back();
-
-		fill--;
-
-		return res;
+	bool mem(Elm *e) {
+		Elm *nxt = *Ops::nxt(e);
+		return nxt == NULL;
 	}
 
 private:
-	friend bool intpqmin_push_test(void);
-	friend bool intpqmin_pop_test(void);
 
-	unsigned int min;
-	unsigned long fill;
-	typedef std::vector<Elm> Bin;
-	std::vector<Bin> bins;
-};
-
-template <class Elm> class Intpqmax {
-public:
-
-	Intpqmax() : max(0), fill(0) { }
-
-	int add(Elm e, unsigned int p) {
-		if (p >= bins.size())
-			bins.resize(p*2);
-
-		Bin &bin = bins[p];
-		bin.push_back(e);
-
-		if (fill == 0 || p > max)
-			max = p;
-		fill++;
-
-		return bin.size() - 1;
- 	}
-
-	boost::optional<Elm> pop(void) {
-		if (fill == 0)
-			return boost::optional<Elm>();
-
-		for ( ; max > 0 && bins[max].empty(); max--)
-			;
-
-		fill--;
-
-		Bin &bin = bins[max];
-		Elm res = bin.back();
-		bin.pop_back();
-
-		return boost::optional<Elm>(res);
+	bool empty(unsigned int p) {
+		return *Ops::nxt(bins + p) == bins + p;
 	}
 
-	bool empty(void) {
-		return fill == 0;
-	}
+	void resize(unsigned int sz) {
+		Elm *b = (Elm*) malloc(sz * sizeof(*b));
 
-	boost::optional<Elm> rm(Elm e, unsigned int p, int ind = -1) {
-		boost::optional<Elm> res;
-		std::vector<Elm> &bin = bins[p];
-
-		if (ind < 0) {
-			for (ind = 0; ind < (int) bin.size() && bin[ind] != e; ind++)
-				;
-			if (bin[ind] != e)
-				return res;
-		} else {
-			assert (bin[ind] == e);
+		for (unsigned int i = 0; i < nbins; i++) {
+			if (empty(i)) {
+				*Ops::prev(b + i) = b + i;
+				*Ops::nxt(b + i) = b + i;
+			} else {
+				Elm **nxt = Ops::nxt(bins + i);
+				Elm **prev = Ops::prev(bins + i);
+				*Ops::nxt(b + i) = *nxt;
+				*Ops::prev(*nxt) = b + i;
+				*Ops::nxt(*prev) = b + i;
+				*Ops::prev(b + i) = *prev;
+			}
 		}
 
-		if (ind < (int) bin.size() - 1) {
-			bin[ind] = bin[bin.size() - 1];
-			res = bin[ind];
+		for (unsigned int i = nbins; i < sz; i++) {
+			*Ops::prev(b + i) = b + i;
+			*Ops::nxt(b + i) = b + i;
 		}
-		bin.pop_back();
 
-		fill--;
+		if (bins)
+			free(bins);
 
-		return res;
+		nbins = sz;
+		bins = b;
+		nresize++;
 	}
 
-private:
-	friend bool intpqmax_push_test(void);
-	friend bool intpqmax_pop_test(void);
+	friend bool intpq_push_test(void);
+	friend bool intpq_pop_test(void);
 
-	unsigned int max;
 	unsigned long fill;
-	typedef std::vector<Elm> Bin;
-	std::vector<Bin> bins;
+	unsigned int nresize, end, nbins;
+	Elm *bins;
 };

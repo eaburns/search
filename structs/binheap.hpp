@@ -1,19 +1,18 @@
 #include <vector>
-#include <boost/optional.hpp>
 
 template <class Ops, class Elm> class Binheap {
 public:
 
-	void push(Elm e) {
+	void push(Elm *e) {
 		heap.push_back(e);
 		pullup(heap.size() - 1);
 	}
 
-	boost::optional<Elm> pop(void) {
+	Elm *pop(void) {
 		if (heap.size() == 0)
-			return boost::optional<Elm>();
+			return NULL;
 
-		Elm res = heap[0];
+		Elm *res = heap[0];
 		if (heap.size() > 1) {
 			heap[0] = heap.back();
 			heap.pop_back();
@@ -21,7 +20,7 @@ public:
 		}
 		Ops::setind(res, -1);
 
-		return boost::optional<Elm>(res);
+		return res;
 	}
 
 	void update(int i) {
@@ -77,10 +76,10 @@ private:
 	void swap(int i, int j) {
 		Ops::setind(heap[i], j);
 		Ops::setind(heap[j], i);
-		Elm tmp = heap[i];
+		Elm *tmp = heap[i];
 		heap[i] = heap[j];
 		heap[j] = tmp;
 	}
 
-	std::vector<Elm> heap;
+	std::vector<Elm*> heap;
 };

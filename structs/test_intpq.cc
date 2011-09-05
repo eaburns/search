@@ -1,17 +1,29 @@
 #include "../incl/utils.hpp"
 #include "intpq.hpp"
 #include <cstdlib>
-#include <boost/optional.hpp>
 
-bool intpqmin_push_test(void) {
+struct Elm {
+	Elm *prev, *nxt;
+	unsigned int vl;
+};
+
+struct Ops {
+	static Elm **nxt(Elm *e) { return &e->nxt; }
+	static Elm **prev(Elm *e) { return &e->prev; }
+};
+
+enum { N = 1000 };
+
+bool intpq_push_test(void) {
 	bool res = true;
-	Intpqmin<int> pq;
+	Intpq<Ops, Elm> pq;
+	Elm elms[N];
 
-	for (unsigned int i = 0; i < 100; i++) {
-		unsigned int p = rand() % 1000;
-		pq.add(p, p);
-		if (pq.fill != i+1) {
-			testpr("Expected fill of %d got %d\n", i+1, pq.fill);
+	for (unsigned int i = 0; i < N; i++) {
+		elms[i].vl = rand() % 1000;
+		pq.push(&elms[i], elms[i].vl);
+		if (pq.fill != (unsigned long) i+1) {
+			testpr("Expected fill of %u got %lu\n", i+1, pq.fill);
 			res = false;
 		}
 	}
@@ -19,32 +31,33 @@ bool intpqmin_push_test(void) {
 	return res;
 }
 
-bool intpqmin_pop_test(void) {
+bool intpq_pop_test(void) {
 	bool res = true;
-	Intpqmin<unsigned int> pq;
+	Intpq<Ops, Elm> pq;
+	Elm elms[N];
 
-	for (int i = 0; i < 100; i++) {
-		unsigned int p = rand() % 1000;
-		pq.add(p, p);
+	for (int i = 0; i < N; i++) {
+		elms[i].vl = rand() % 1000;
+		pq.push(&elms[i], elms[i].vl);
 	}
 
-	boost::optional<unsigned int> minopt = pq.pop();
-	if (!minopt) {
+	Elm *e = pq.pop();
+	if (!e) {
 		testpr("Empty pop");
 		res = false;
 	}
-	int min = *minopt;
+	int min = e->vl;
 
-	for (unsigned int i = 1; i < 100; i++) {
-		boost::optional<unsigned int> iopt = pq.pop();
-		if (!iopt) {
+	for (unsigned int i = 1; i < N; i++) {
+		e = pq.pop();
+		if (!e) {
 			testpr("Empty pop");
 			res = false;
 		}
 
-		int m = *iopt;
-		if (pq.fill != 100 - (i+1)) {
-			testpr("Expected fill of %d got %d\n", 100-(i+1), pq.fill);
+		int m = e->vl;
+		if (pq.fill != (unsigned long) N - (i+1)) {
+			testpr("Expected fill of %u got %lu\n", N-(i+1), pq.fill);
 			res = false;
 		}
 
@@ -58,57 +71,41 @@ bool intpqmin_pop_test(void) {
 	return res;
 }
 
-bool intpqmax_push_test(void) {
-	bool res = true;
-	Intpqmax<int> pq;
+Elm *elms;
 
-	for (unsigned int i = 0; i < 100; i++) {
-		unsigned int p = rand() % 1000;
-		pq.add(p, p);
-		if (pq.fill != i+1) {
-			testpr("Expected fill of %d got %d\n", i+1, pq.fill);
-			res = false;
-		}
-	}
+void intpq_push_bench(unsigned long n, double *strt, double *end) {
+	Intpq<Ops, Elm> pq;
+	elms = new Elm[n];
+
+	for (unsigned long i = 0; i < n; i++)
+		elms[i].vl = rand() % 1000;
+
+	*strt = walltime();
+
+	for (unsigned long i = 0; i < n; i++)
+		pq.push(&elms[i], elms[i].vl);
+
+	*end = walltime();
  
-	return res;
+	delete[] elms;
 }
 
-bool intpqmax_pop_test(void) {
-	bool res = true;
-	Intpqmax<unsigned int> pq;
+void intpq_pop_bench(unsigned long n, double *strt, double *end) {
+	Intpq<Ops, Elm> pq;
+	elms = new Elm[n];
 
-	for (int i = 0; i < 100; i++) {
-		unsigned int p = rand() % 1000;
-		pq.add(p, p);
+	for (unsigned long i = 0; i < n; i++) {
+		elms[i].vl = rand() % 1000;
+		pq.push(&elms[i], elms[i].vl);
 	}
 
-	boost::optional<unsigned int> maxopt = pq.pop();
-	if (!maxopt) {
-		testpr("Empty pop");
-		res = false;
-	}
-	int max = *maxopt;
 
-	for (unsigned int i = 1; i < 100; i++) {
-		boost::optional<unsigned int> iopt = pq.pop();
-		if (!iopt) {
-			testpr("Empty pop");
-			res = false;
-		}
-
-		int m = *iopt;
-		if (pq.fill != 100 - (i+1)) {
-			testpr("Expected fill of %d got %d\n", 100-(i+1), pq.fill);
-			res = false;
-		}
-
-		if (m > max) {
-			testpr("%d came out after %d\n", m, max);
-			res = false;
-		}
-		max = m;
-	}
+	*strt = walltime();
  
-	return res;
+	for (unsigned long i = 0; i < n; i++)
+		pq.pop();
+
+	*end = walltime();
+ 
+	delete[] elms;
 }
