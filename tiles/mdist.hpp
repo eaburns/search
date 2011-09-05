@@ -104,7 +104,6 @@ public:
 	void dumpstate(FILE *out, State &s) {
 		s.ts[s.b] = 0;
 		Tiles::dumptiles(out, s.ts);
-		fprintf(out, "h=%u\n", s.h);
 	}
 
 private:

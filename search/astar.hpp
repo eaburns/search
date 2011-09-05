@@ -92,6 +92,7 @@ public:
 				break;
 		}
 
+		dfpair(stdout, "initial heuristic", "%g", (double) n0->f - n0->g);
 		res.finish();
 		closed.prstats(stdout, "closed ");
 		dfpair(stdout, "open list type", "%s", open.kind());
@@ -107,7 +108,6 @@ private:
 	typedef typename D::Undo Undo;
 	typedef typename D::Cost Cost;
 	typedef typename D::Oper Oper;
-
 
 	bool expand(D &d, Node<D, Cost> *n) {
 		res.expd++;
