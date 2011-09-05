@@ -12,6 +12,7 @@ OBJS=\
 	utils/rand.o\
 
 TMPLS=\
+	search/openlist.hpp\
 	search/idastar.hpp\
 	search/astar.hpp\
 	\
