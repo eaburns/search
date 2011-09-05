@@ -5,6 +5,7 @@
 #include <cstring>
 #include <sys/utsname.h>
 #include <unistd.h>
+#include <sys/stat.h>
 #include "../incl/utils.hpp"
 
 enum { Bufsz = 256 };
@@ -12,7 +13,8 @@ enum { Bufsz = 256 };
 static const char *start4 = "#start data file format 4\n";
 static const char *end4 = "#end data file format 4\n";
 
-static void machineid(FILE *);
+static void machineid(FILE*);
+static void tryprocstatus(FILE*);
 
 void dfpair(FILE *f, const char *key, const char *fmt, ...) {
 	char buf[Bufsz];
@@ -111,6 +113,7 @@ void dffooter(FILE *f) {
 	char *tstr = ctime(&tm);
 	tstr[strlen(tstr)-1] = '\0';
 	dfpair(f, "wall finish date", "%s", tstr);
+	tryprocstatus(f);
 	fputs(end4, f);
 }
 
@@ -129,4 +132,36 @@ static void machineid(FILE *f) {
 	}
 
 	dfpair(f, "machine id", "%s-%s-%s-%s", hname, u.sysname, u.release, u.machine);
+}
+
+static void tryprocstatus(FILE *out)
+{
+	static const char *field = "VmPeak:";
+	static const char *key = "max virtual kilobytes";
+	char buf[Bufsz];
+
+	int n = snprintf(buf, Bufsz, "/proc/%d/status", getpid());
+	if (n <= 0 || n > Bufsz)
+		return;
+
+	struct stat sb;
+	if (stat(buf, &sb) < 0)
+		return;
+
+	FILE *in = fopen(buf, "r");
+
+	for (;;) {
+		if (!fgets(buf, Bufsz, in))
+			break;
+		if (!strstr(buf, field))
+			continue;
+		size_t skip = strspn(buf + strlen(field), " \t");
+		char *strt = buf + strlen(field) + skip;
+		char *end = strchr(strt, ' ');
+		*end = '\0';
+		dfpair(out, key, "%s", strt);
+		break;
+	}
+
+	fclose(in);
 }
