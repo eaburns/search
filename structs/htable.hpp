@@ -1,93 +1,52 @@
-#include <vector>
-#include <list>
 #include <cstring>
 #include <cstdio>
-#include <boost/optional.hpp>
 
 void dfpair(FILE *, const char *key, const char *fmt, ...);
 
-template <class Ops, class Key, class Val> class Htable {
+template <class Ops, class Elm, class Key> class Htable {
 public:
 
-	Htable(unsigned int sz = 1024) : fill(0), collides(0) {
-		bkts.resize(sz);
+	enum {
+		Defsz = 1024,
+		Fillfact = 3,
+		Growfact = 2,
+	};
+
+	Htable(unsigned int sz = Defsz) :
+		fill(0), collides(0), nresize(0), nbins(0), bins(NULL) {
+		resize(sz);
 	}
 
-	void add(Key k, Val v) {
-		if (fill * 3 >= bkts.size())
-			grow();
+	~Htable(void) {
+		if (bins)
+			delete[] bins;
+	}
 
-		unsigned int ind = Ops::hash(k) % bkts.size();
-		if (!bkts[ind].empty())
-			collides++;
-		bkts[ind].push_back(std::pair<Key,Val>(k, v));
+	void add(Elm *e) {
+		add(e, Ops::hash(Ops::key(e)));
+	}
+
+	void add(Elm *e, unsigned long h) {
+		if (fill * Fillfact >= nbins)
+			resize(nbins == 0 ? Defsz : nbins * Growfact);
+
+		add(bins, nbins, e, h);
 		fill++;
 	}
 
-	boost::optional<Val>  repl(Key k, Val v) {
-		unsigned int ind = Ops::hash(k) % bkts.size();
-		Bucket &bkt = bkts[ind];
-
-		for (typename Bucket::iterator it = bkt.begin(); it != bkt.end(); it++) {
-			std::pair<Key, Val> &e = *it;
-			if (Ops::eq(k, e.first)) {
-				Val old = e.second;
-				e.second = e.v;
-				return boost::optional<Val>(old);
-			}
-		}
-
-		bkts[ind].push_back(pair(k, v));
-		fill++;
-
-		return boost::optional<Val>();
+	Elm *find(Key k) {
+		return find(k, Ops::hash(k));
 	}
 
-	bool mem(Key k) {
-		unsigned int ind = Ops::hash(k) % bkts.size();
-		Bucket &bkt = bkts[ind];
+	Elm *find(Key k, unsigned long h) {
+		unsigned int i = h % nbins;
 
-		for (typename Bucket::iterator it = bkt.begin(); it != bkt.end(); it++) {
-			std::pair<Key, Val> &e = *it;
-			if (Ops::eq(k, e.first))
-				return true;
+		for (Elm *p = bins[i]; p; p = *Ops::nxt(p)) {
+			if (Ops::eq(Ops::key(p), k))
+				return p;
 		}
 
-		return false;
-	}
-
-	boost::optional<Val> find(Key k) {
-		unsigned int ind = Ops::hash(k) % bkts.size();
-		Bucket &bkt = bkts[ind];
-
-		for (typename Bucket::iterator it = bkt.begin(); it != bkt.end(); it++) {
-			std::pair<Key, Val> &e = *it;
-			if (Ops::eq(k, e.first))
-				return boost::optional<Val>(e.second);
-		}
-
-		return boost::optional<Val>();
-	}
-
-	Val rm(Key k) {
-		unsigned int ind = Ops::hash(k) % bkts.size();
-		Bucket &bkt = bkts[ind];
-
-		for (typename Bucket::iterator it = bkt.begin(); it != bkt.end(); it++) {
-			std::pair<Key, Val> &e = *it;
-
-			if (Ops::eq(k, e.first)) {
-				Val res = e.second;
-
-				bkt.erase(it);
-				bkt.pop_back();
-				fill--;
-
-				return boost::optional<Val>(res);
-			};
-		}
-
-		return boost::optional<Val>();
+		return NULL;
 	}
 
 	void prstats(FILE *f, const char *prefix) {
@@ -99,31 +58,41 @@ public:
 
 		strcat(key+strlen(prefix), "collisions");
 		dfpair(f, key, "%lu", collides);
+
+		strcat(key+strlen(prefix), "resizes");
+		dfpair(f, key, "%lu", nresize);
 	}
 
 private:
-	friend bool htable_add_test(void);
 
-	typedef std::list< std::pair<Key, Val> > Bucket;
-	typedef std::vector<Bucket> Buckets;
-
-	void grow(void) {
-		unsigned int newsz = bkts.size() * 2;
-		Buckets b(newsz);
-
-		unsigned int oldsz = bkts.size();
-		for (unsigned int i = 0; i < oldsz; i++) {
-			Bucket &bkt = bkts[i];
-			for (typename Bucket::iterator it = bkt.begin(); it != bkt.end(); it++) {
-				std::pair<Key, Val> &e = *it;
-				unsigned int ind = Ops::hash(e.first) % newsz;
-				b[ind].push_back(e);
-			}
-		}
-
-		bkts.swap(b);
+	void add(Elm *b[], unsigned int n, Elm *e, unsigned long h) {
+		unsigned int i = h % n;
+		*Ops::nxt(e) = b[i];
+		b[i] = e;
 	}
 
+	void resize(unsigned int sz) {
+		Elm **b = new Elm*[sz];
+
+		for (unsigned int i = 0; i < sz; i++)
+			b[i] = NULL;
+
+		for (unsigned int i = 0; i < nbins; i++) {
+		for (Elm *p = bins[i]; p; p = *Ops::nxt(p))
+			add(b, sz, p, Ops::hash(Ops::key(p)));
+		}
+
+		if (bins)
+			delete[] bins;
+
+		bins = b;
+		nbins = sz;
+		nresize++;
+	}
+
+	friend bool htable_add_test(void);
+
 	unsigned long fill, collides;
-	Buckets bkts;
+	unsigned int nresize, nbins;
+	Elm **bins;
 };

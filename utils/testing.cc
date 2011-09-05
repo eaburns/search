@@ -100,8 +100,8 @@ static void runbench(const Benchmark &b) {
 			break;
 	}
 
-	printf("%lu op/s (%g sec)\n", (unsigned long) (n / ttime),
-		ttime);
+	printf("%lu op/s (%g sec, n=%lu)\n", (unsigned long) (n / ttime),
+		ttime, n);
 
 	if (msg.size() > 0)
 		puts(msg.c_str());

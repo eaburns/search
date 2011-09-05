@@ -1,7 +1,7 @@
 BINS+=\
-	structs/struct_test\
+	structs/test\
 
-structs/struct_test: $(OBJS) $(HDRS)\
+structs/test: $(OBJS) $(HDRS)\
 	structs/test_htable.cc\
 	structs/test_intpq.cc\
 	structs/test.cc
@@ -9,4 +9,4 @@ structs/struct_test: $(OBJS) $(HDRS)\
 		structs/test.cc\
 		structs/test_htable.cc\
 		structs/test_intpq.cc\
-		-o structs/struct_test
+		-o structs/test
