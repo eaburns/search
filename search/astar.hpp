@@ -122,7 +122,7 @@ private:
 		if (dup) {
 			res.dups++;
 			if (k->g >= dup->g) {
-				nodes.free(k);
+				nodes.destroy(k);
 				return;
 			}
 			if (!open.mem(dup))
@@ -136,7 +136,7 @@ private:
 				open.push(dup);
 			else
 				open.post_update(dup);
-			nodes.free(k);
+			nodes.destroy(k);
 		} else {
 			closed.add(k, h);
 			open.push(k);
