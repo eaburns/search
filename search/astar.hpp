@@ -8,7 +8,8 @@ template <class D, class Cost> struct Node {
 	typename D::State state;
 	typename D::Oper pop;
 	Cost g, f;
-	Node *htblnxt, *parent;
+	HtableEnt<Node> htent;
+	Node *parent;
 	int openind;
 
 	Node(void) : openind(-1) {}
@@ -27,7 +28,8 @@ template <class D> struct Node <D, char> {
 	typename D::State state;
 	typename D::Oper pop;
 	typename D::Cost g, f;
-	Node *htblnxt, *parent;
+	HtableEnt<Node> htent;
+	Node *parent;
 	Node *n, *p;
 
 	Node(void) : n(NULL), p(NULL) {}
@@ -38,6 +40,7 @@ template <class D> struct Node <D, char> {
 
 template <class D> struct Node <D, short> : public Node <D, char> {};
 template <class D> struct Node <D, int> : public Node <D, char> {};
+template <class D> struct Node <D, long> : public Node <D, char> {};
 
 template <class D, bool unitcost=false> class Astar : public Search<D> {
 public:
@@ -102,7 +105,7 @@ private:
 
 	void considerkid(D &d, Node<D, Cost> *k) {
 		unsigned long h = k->state.hash();
-		Node<D, Cost> *dup = closed.find(&k->state, h);
+		Node<D, Cost> *dup = closed.find(k->state, h);
 		if (dup) {
 			res.dups++;
 			if (k->g >= dup->g) {
@@ -156,14 +159,16 @@ private:
 	}
 
 	struct Closedops {
-		static State *key(Node<D, Cost> *n) { return &n->state; }
-		static unsigned long hash(State *s) { return s->hash(); }
-		static bool eq(State *a, State *b) { return a->eq(*b); }
-		static Node<D, Cost> **nxt(Node<D, Cost> *n) { return &n->htblnxt; }
+		static State &key(Node<D, Cost> *n) { return n->state; }
+		static unsigned long hash(State &s) { return s.hash(); }
+		static bool eq(State &a, State &b) { return a.eq(b); }
+		static HtableEnt< Node<D, Cost> > &entry(Node<D, Cost> *n) {
+			return n->htent;
+		}
 	};
 
 	Result<D> res;
 	OpenList< Node<D, Cost>, Node<D, Cost>, Cost > open;
- 	Htable< Closedops, State*, Node<D, Cost> > closed;
+ 	Htable< Closedops, State&, Node<D, Cost> > closed;
 	boost::object_pool< Node<D, Cost> > nodes;
 };

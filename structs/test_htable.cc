@@ -4,7 +4,7 @@
 
 struct Ent {
 	unsigned int vl;
-	Ent *nxt;
+	HtableEnt<Ent> htent;
 	Ent(int i) : vl(i) {}
 	Ent() {}
 };
@@ -14,7 +14,7 @@ typedef unsigned int Key;
 struct Ops {
 	static Key key(Ent *e) { return e->vl; }
 	static unsigned long hash(Key k) { return k; }
-	static Ent **nxt(Ent *e) { return &e->nxt; }
+	static HtableEnt<Ent> &entry(Ent *e) { return e->htent; }
 	static bool eq(Key a, Key b) { return a == b; }
 };
 

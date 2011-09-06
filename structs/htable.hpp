@@ -3,6 +3,10 @@
 
 void dfpair(FILE *, const char *key, const char *fmt, ...);
 
+template <class Elm> struct HtableEnt {
+	Elm *nxt;
+};
+
 template <class Ops, class Key, class Elm> class Htable {
 public:
 
@@ -42,7 +46,7 @@ public:
 	Elm *find(Key k, unsigned long h) {
 		unsigned int i = h % nbins;
 
-		for (Elm *p = bins[i]; p; p = *Ops::nxt(p)) {
+		for (Elm *p = bins[i]; p; p = Ops::entry(p).nxt) {
 			if (Ops::eq(Ops::key(p), k))
 				return p;
 		}
@@ -70,7 +74,7 @@ private:
 		unsigned int i = h % n;
 		if (b[i])
 			ncollide++;
-		*Ops::nxt(e) = b[i];
+		Ops::entry(e).nxt = b[i];
 		b[i] = e;
 	}
 
@@ -81,7 +85,7 @@ private:
 			b[i] = NULL;
 
 		for (unsigned int i = 0; i < nbins; i++) {
-		for (Elm *p = bins[i]; p; p = *Ops::nxt(p))
+		for (Elm *p = bins[i]; p; p = Ops::entry(p).nxt)
 			add(b, sz, p, Ops::hash(Ops::key(p)));
 		}
 
