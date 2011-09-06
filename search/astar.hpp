@@ -36,6 +36,9 @@ template <class D> struct Node <D, char> {
 	static Node **prev(Node *n) { return &n->p; }
 };
 
+template <class D> struct Node <D, short> : public Node <D, char> {};
+template <class D> struct Node <D, int> : public Node <D, char> {};
+
 template <class D, bool unitcost=false> class Astar : public Search<D> {
 public:
 

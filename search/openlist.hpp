@@ -55,3 +55,11 @@ private:
 	Intpq< Intpqops, Node > pq;
 };
 
+template <class Ops, class Node>
+class OpenList <Ops, Node, short> : public OpenList <Ops, Node, char > {};
+
+template <class Ops, class Node>
+class OpenList <Ops, Node, int> : public OpenList <Ops, Node, char > {};
+
+template <class Ops, class Node>
+class OpenList <Ops, Node, long> : public OpenList <Ops, Node, char > {};
