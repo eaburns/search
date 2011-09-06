@@ -10,9 +10,9 @@ template<class Elm> struct IntpqEntry {
 template <class Ops, class Elm> class Intpq {
 public:
 
-	enum { Defsz = 64 };
+	enum { Initsz = 64 };
 
-	Intpq(unsigned int sz = Defsz)
+	Intpq(unsigned int sz = Initsz)
 		: fill(0), nresize(0), end(0), nbins(0), bins(NULL) {
 		resize(sz);
 	}
@@ -24,7 +24,7 @@ public:
 
 	void push(Elm *e, unsigned int prio) {
 		if (prio > nbins)
-			resize(prio == 0 ? Defsz : (prio + 1) * 1.5);
+			resize(prio == 0 ? Initsz : (prio + 1) * 1.5);
 
 		IntpqEntry<Elm> &bin = Ops::entry(bins + prio);
 		IntpqEntry<Elm> &ent = Ops::entry(e);
