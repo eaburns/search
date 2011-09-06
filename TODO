@@ -1,1 +1,11 @@
-<stk5> You could also make Ops the third parameter of Htable, so you can give it a default argument that's a class that just does k.hash() and then you won't have to make up Ops classes for things that will be stored by value
+<stk5> You could also make Ops the third parameter of Htable, so you
+can give it a default argument that's a class that just does k.hash()
+and then you won't have to make up Ops classes for things that will be
+stored by value
+
+
+applyinto takes a State& and a PackedState& to fill in and returns a
+State&.  The State& argument doesn't need to be used, it is just a buffer
+that may be used if needed.  This is way, states where PackedState==State
+can just fillin and return the PackedState, but other domains can use
+the State& buffer.
