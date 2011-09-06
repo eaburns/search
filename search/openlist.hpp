@@ -49,8 +49,7 @@ public:
 
 private:
 	struct Intpqops {
-		static Node **nxt(Node *n) { return Ops::nxt(n); }
-		static Node **prev(Node *n) { return Ops::prev(n); }
+		static IntpqEnt<Node> &entry(Node *n) { return Ops::openentry(n); }
 	};
 	Intpq< Intpqops, Node > pq;
 };

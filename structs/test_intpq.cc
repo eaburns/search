@@ -3,20 +3,17 @@
 #include <cstdlib>
 
 struct Elm {
-	Elm *prev, *nxt;
+	IntpqEnt<Elm> ent;
 	unsigned int vl;
-};
 
-struct Ops {
-	static Elm **nxt(Elm *e) { return &e->nxt; }
-	static Elm **prev(Elm *e) { return &e->prev; }
+	static IntpqEnt<Elm> &entry(Elm *e) { return e->ent; }
 };
 
 enum { N = 1000 };
 
 bool intpq_push_test(void) {
 	bool res = true;
-	Intpq<Ops, Elm> pq;
+	Intpq<Elm, Elm> pq;
 	Elm elms[N];
 
 	for (unsigned int i = 0; i < N; i++) {
@@ -33,7 +30,7 @@ bool intpq_push_test(void) {
 
 bool intpq_pop_test(void) {
 	bool res = true;
-	Intpq<Ops, Elm> pq;
+	Intpq<Elm, Elm> pq;
 	Elm elms[N];
 
 	for (int i = 0; i < N; i++) {
@@ -74,7 +71,7 @@ bool intpq_pop_test(void) {
 Elm *elms;
 
 void intpq_push_bench(unsigned long n, double *strt, double *end) {
-	Intpq<Ops, Elm> pq;
+	Intpq<Elm, Elm> pq;
 	elms = new Elm[n];
 
 	for (unsigned long i = 0; i < n; i++)
@@ -91,7 +88,7 @@ void intpq_push_bench(unsigned long n, double *strt, double *end) {
 }
 
 void intpq_pop_bench(unsigned long n, double *strt, double *end) {
-	Intpq<Ops, Elm> pq;
+	Intpq<Elm, Elm> pq;
 	elms = new Elm[n];
 
 	for (unsigned long i = 0; i < n; i++) {

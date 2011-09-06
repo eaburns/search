@@ -1,6 +1,11 @@
 #include <cassert>
 #include <cstdlib>
 
+template <class Elm> struct IntpqEnt {
+	Elm *nxt, *prev;
+	IntpqEnt(void) : nxt(NULL), prev(NULL) {}
+};
+
 template <class Ops, class Elm> class Intpq {
 public:
 
@@ -20,11 +25,12 @@ public:
 		if (prio > nbins)
 			resize(prio == 0 ? Defsz : (prio + 1) * 1.5);
 
-		Elm **nxt =Ops::nxt(bins + prio);
-		*Ops::nxt(e) = *nxt;
-		*Ops::prev(*nxt) = e;
-		*Ops::nxt(bins + prio) = e;
-		*Ops::prev(e) = bins + prio;
+		IntpqEnt<Elm> &bin = Ops::entry(bins + prio);
+		IntpqEnt<Elm> &ent = Ops::entry(e);
+		ent.nxt = bin.nxt;
+		Ops::entry(bin.nxt).prev = e;
+		bin.nxt = e;
+		ent.prev = bins + prio;
 
 		if (fill == 0 || prio < end)
 			end = prio;
@@ -40,19 +46,17 @@ public:
 			;
 		assert(!empty(end));
 
-		Elm *e = *Ops::nxt(bins + end);
+		Elm *e = Ops::entry(bins + end).nxt;
 		rm(e);
 		return e;
 	}
 
 	void rm(Elm *e) {
-		Elm **nxt = Ops::nxt(e);
-		Elm **prev = Ops::prev(e);
-		*Ops::prev(*nxt) = *prev;
-		*Ops::nxt(*prev) = *nxt;
-
-		*Ops::nxt(e) = NULL;
-		*Ops::prev(e) = NULL;
+		IntpqEnt<Elm> &ent = Ops::entry(e);
+		Ops::entry(ent.nxt).prev = ent.prev;
+		Ops::entry(ent.prev).nxt = ent.nxt;
+		ent.nxt = NULL;
+		ent.prev = NULL;
 
 		fill--;
 	}
@@ -62,14 +66,13 @@ public:
 	}
 
 	bool mem(Elm *e) {
-		Elm *nxt = *Ops::nxt(e);
-		return nxt == NULL;
+		return Ops::entry(e).nxt == NULL;
 	}
 
 private:
 
 	bool empty(unsigned int p) {
-		return *Ops::nxt(bins + p) == bins + p;
+		return Ops::entry(bins + p).nxt == bins + p;
 	}
 
 	void resize(unsigned int sz) {
@@ -77,21 +80,21 @@ private:
 
 		for (unsigned int i = 0; i < nbins; i++) {
 			if (empty(i)) {
-				*Ops::prev(b + i) = b + i;
-				*Ops::nxt(b + i) = b + i;
+				Ops::entry(b + i).prev = b + i;
+				Ops::entry(b + i).nxt = b + i;
 			} else {
-				Elm **nxt = Ops::nxt(bins + i);
-				Elm **prev = Ops::prev(bins + i);
-				*Ops::nxt(b + i) = *nxt;
-				*Ops::prev(*nxt) = b + i;
-				*Ops::nxt(*prev) = b + i;
-				*Ops::prev(b + i) = *prev;
+				IntpqEnt<Elm> &bin = Ops::entry(bins + i);
+				IntpqEnt<Elm> &nw = Ops::entry(b + i);
+				nw.nxt = bin.nxt;
+				Ops::entry(bin.nxt).prev = b + i;
+				Ops::entry(bin.prev).nxt = b + i;
+				nw.prev = bin.prev;
 			}
 		}
 
 		for (unsigned int i = nbins; i < sz; i++) {
-			*Ops::prev(b + i) = b + i;
-			*Ops::nxt(b + i) = b + i;
+			Ops::entry(b + i).prev = b + i;
+			Ops::entry(b + i).nxt = b + i;
 		}
 
 		if (bins)

@@ -8,7 +8,7 @@ template <class D, class Cost> struct Node {
 	typename D::State state;
 	typename D::Oper pop;
 	Cost g, f;
-	HtableEnt<Node> htent;
+	HtableEnt<Node> closedent;
 	Node *parent;
 	int openind;
 
@@ -28,14 +28,12 @@ template <class D> struct Node <D, char> {
 	typename D::State state;
 	typename D::Oper pop;
 	typename D::Cost g, f;
-	HtableEnt<Node> htent;
+	HtableEnt<Node> closedent;
+	IntpqEnt<Node> openent;
 	Node *parent;
-	Node *n, *p;
 
-	Node(void) : n(NULL), p(NULL) {}
 	static typename D::Cost prio(Node *n) { return n->f; }
-	static Node **nxt(Node *n) { return &n->n; }
-	static Node **prev(Node *n) { return &n->p; }
+	static IntpqEnt<Node> &openentry(Node *n) { return n->openent; }
 };
 
 template <class D> struct Node <D, short> : public Node <D, char> {};
@@ -163,7 +161,7 @@ private:
 		static unsigned long hash(State &s) { return s.hash(); }
 		static bool eq(State &a, State &b) { return a.eq(b); }
 		static HtableEnt< Node<D, Cost> > &entry(Node<D, Cost> *n) {
-			return n->htent;
+			return n->closedent;
 		}
 	};
 
