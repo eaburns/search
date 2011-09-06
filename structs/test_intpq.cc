@@ -3,10 +3,10 @@
 #include <cstdlib>
 
 struct Elm {
-	IntpqEnt<Elm> ent;
+	IntpqEntry<Elm> ent;
 	unsigned int vl;
 
-	static IntpqEnt<Elm> &entry(Elm *e) { return e->ent; }
+	static IntpqEntry<Elm> &entry(Elm *e) { return e->ent; }
 };
 
 enum { N = 1000 };

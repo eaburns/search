@@ -3,7 +3,7 @@
 
 void dfpair(FILE *, const char *key, const char *fmt, ...);
 
-template <class Elm> struct HtableEnt {
+template <class Elm> struct HtableEntry {
 	Elm *nxt;
 };
 

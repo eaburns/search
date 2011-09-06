@@ -49,7 +49,7 @@ public:
 
 private:
 	struct Intpqops {
-		static IntpqEnt<Node> &entry(Node *n) { return Ops::openentry(n); }
+		static IntpqEntry<Node> &entry(Node *n) { return Ops::openentry(n); }
 	};
 	Intpq< Intpqops, Node > pq;
 };

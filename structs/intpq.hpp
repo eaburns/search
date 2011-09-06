@@ -1,9 +1,10 @@
 #include <cassert>
 #include <cstdlib>
 
-template <class Elm> struct IntpqEnt {
+
+template<class Elm> struct IntpqEntry {
 	Elm *nxt, *prev;
-	IntpqEnt(void) : nxt(NULL), prev(NULL) {}
+	IntpqEntry(void) : nxt(NULL), prev(NULL) {}
 };
 
 template <class Ops, class Elm> class Intpq {
@@ -25,8 +26,8 @@ public:
 		if (prio > nbins)
 			resize(prio == 0 ? Defsz : (prio + 1) * 1.5);
 
-		IntpqEnt<Elm> &bin = Ops::entry(bins + prio);
-		IntpqEnt<Elm> &ent = Ops::entry(e);
+		IntpqEntry<Elm> &bin = Ops::entry(bins + prio);
+		IntpqEntry<Elm> &ent = Ops::entry(e);
 		ent.nxt = bin.nxt;
 		Ops::entry(bin.nxt).prev = e;
 		bin.nxt = e;
@@ -52,7 +53,7 @@ public:
 	}
 
 	void rm(Elm *e) {
-		IntpqEnt<Elm> &ent = Ops::entry(e);
+		IntpqEntry<Elm> &ent = Ops::entry(e);
 		Ops::entry(ent.nxt).prev = ent.prev;
 		Ops::entry(ent.prev).nxt = ent.nxt;
 		ent.nxt = NULL;
@@ -83,8 +84,8 @@ private:
 				Ops::entry(b + i).prev = b + i;
 				Ops::entry(b + i).nxt = b + i;
 			} else {
-				IntpqEnt<Elm> &bin = Ops::entry(bins + i);
-				IntpqEnt<Elm> &nw = Ops::entry(b + i);
+				IntpqEntry<Elm> &bin = Ops::entry(bins + i);
+				IntpqEntry<Elm> &nw = Ops::entry(b + i);
 				nw.nxt = bin.nxt;
 				Ops::entry(bin.nxt).prev = b + i;
 				Ops::entry(bin.prev).nxt = b + i;
