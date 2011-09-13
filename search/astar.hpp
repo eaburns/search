@@ -5,7 +5,7 @@
 #include "../search/openlist.hpp"
 
 template <class D, class Cost> struct Node {
-	typename D::PackedState state;
+	typename D::PackedState packed;
 	typename D::Oper pop;
 	Cost g, f;
 	HtableEntry<Node> closedent;
@@ -25,7 +25,7 @@ template <class D, class Cost> struct Node {
 };
 
 template <class D> struct Node <D, char> {
-	typename D::PackedState state;
+	typename D::PackedState packed;
 	typename D::Oper pop;
 	typename D::Cost g, f;
 	HtableEntry<Node> closedent;
@@ -52,7 +52,7 @@ public:
 
 		while (!open.empty()) {
 			Node<D, Cost> *n = open.pop();
-			State buf, &state = d.unpack(buf, n->state);
+			State buf, &state = d.unpack(buf, n->packed);
 
 			if (d.isgoal(state)) {
 				handlesol(d, n);
@@ -89,14 +89,14 @@ private:
 				continue;
 			Node<D, Cost> *k = kid(d, n, state, op);
 			res.gend++;
-				
+
 			considerkid(d, k);
 		}
 	}
 
 	void considerkid(D &d, Node<D, Cost> *k) {
-		unsigned long h = k->state.hash();
-		Node<D, Cost> *dup = closed.find(k->state, h);
+		unsigned long h = k->packed.hash();
+		Node<D, Cost> *dup = closed.find(k->packed, h);
 		if (dup) {
 			res.dups++;
 			if (k->g >= dup->g) {
@@ -124,17 +124,20 @@ private:
 
 	Node<D, Cost> *kid(D &d, Node<D, Cost> *pnode, State &pstate, Oper op) {
 		Node<D, Cost> *kid = nodes.construct();
-		State buf, &kidst = d.applyinto(kid->state, buf, pstate, op);
 		kid->g = pnode->g + d.opcost(pstate, op);
-		kid->f = kid->g + d.h(kidst);
 		kid->pop = d.revop(pstate, op);
 		kid->parent = pnode;
+		Undo u(pstate, op);
+		State buf, &kidst = d.apply(buf, pstate, op);
+		kid->f = kid->g + d.h(kidst);
+		d.pack(kid->packed, kidst);
+		d.undo(pstate, u);
 		return kid;
 	}
 
 	Node<D, Cost> *init(D &d, State &s0) {
 		Node<D, Cost> *n0 = nodes.construct();
-		d.pack(n0->state, s0);
+		d.pack(n0->packed, s0);
 		n0->g = 0;
 		n0->f = d.h(s0);
 		n0->pop = D::Nop;
@@ -147,13 +150,13 @@ private:
 
 		for ( ; n; n = n->parent) {
 			State buf;
-			State &state = d.unpack(buf, n->state);
+			State &state = d.unpack(buf, n->packed);
 			res.path.push_back(state);
 		}
 	}
 
 	struct Closedops {
-		static PackedState &key(Node<D, Cost> *n) { return n->state; }
+		static PackedState &key(Node<D, Cost> *n) { return n->packed; }
 		static unsigned long hash(PackedState &s) { return s.hash(); }
 		static bool eq(PackedState &a, PackedState &b) { return a.eq(b); }
 		static HtableEntry< Node<D, Cost> > &entry(Node<D, Cost> *n) {

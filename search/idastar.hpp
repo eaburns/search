@@ -4,7 +4,7 @@
 void dfrowhdr(FILE *, const char *name, int ncols, ...);
 void dfrow(FILE *, const char *name, const char *colfmt, ...);
 
-template <class D, bool inplace = false, bool unitcost=false> class Idastar : public Search<D> {
+template <class D, bool unitcost=false> class Idastar : public Search<D> {
 
 public:
 
@@ -22,13 +22,8 @@ public:
 		for (int i = 0; /* forever */; i++) {
 			minoob = D::InfCost;
 
-			if (inplace) {
-				if (dfs_inplace(d, s0, D::Nop, 0, 0))
-					break;
-			} else {
-				if (dfs(d, s0, D::Nop, 0, 0))
-					break;
-			}
+			if (dfs(d, s0, D::Nop, 0, 0))
+				break;
 
 			dfrow(stdout, "iter", "dguu", (long) i, (double) bound,
 				res.expd, res.gend); 
@@ -41,48 +36,7 @@ public:
 	}
 
 private:
-
 	bool dfs(D &d, State &s, Oper pop, Cost g, int depth) {
-		Cost f = g + d.h(s);
-
-		if ((unitcost || f <= bound) && d.isgoal(s)) {
-			res.cost = g;
-			res.path.push_back(s);
-			return true;
-		}
-
-		if (f > bound) {
-			if (minoob == D::InfCost || f < minoob)
-				minoob = f;
-			return false;
-		}
-
-		res.expd++;
-
-		for (unsigned int n = 0; n < d.nops(s); n++) {
-			Oper op = d.nthop(s, n);
-			if (op == pop)
-				continue;
-
-			res.gend++;
-
-			Oper rev = d.revop(s, op);
-			Cost c = d.opcost(s, op);
-			State kid = s;
-			d.apply(kid, op);
-
-			bool goal = dfs(d, kid, rev, g + c, depth+1);
-
-			if (goal) {
-				res.path.push_back(s);
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	bool dfs_inplace(D &d, State &s, Oper pop, Cost g, int depth) {
 		Cost f = g + d.h(s);
 
 		if ((unitcost || f <= bound) && d.isgoal(s)) {
@@ -110,8 +64,8 @@ private:
 			Oper rev = d.revop(s, op);
 			Cost c = d.opcost(s, op);
 
-			d.apply(s, op);
-			bool goal = dfs_inplace(d, s, rev, g + c, depth+1);
+			State buf, &kid = d.apply(buf, s, op);
+			bool goal = dfs(d, kid, rev, g + c, depth+1);
 			d.undo(s, u);
 
 			if (goal) {

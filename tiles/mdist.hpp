@@ -83,22 +83,12 @@ public:
 		s.h = u.h;
 	}
 
-	void apply(State &s, Oper newb) {
+	State &apply(State &buf, State &s, Oper newb) {
 		Tile t = s.ts[newb];
 		s.ts[s.b] = t;
 		s.h += incr[t][newb][s.b];
 		s.b = newb;
-	}
-
-	State &applyinto(PackedState &dst, State &buf, State &s, Oper newb) {
-		Tile t = s.ts[newb];
-		memcpy(buf.ts, s.ts, sizeof(s.ts));
-		buf.h = s.h + incr[t][newb][s.b];
-		buf.b = newb;
-		buf.ts[s.b] = t;
-		buf.ts[newb] = 0;
-		dst.pack(buf.ts);
-		return buf;
+		return s;
 	}
 
 	void pack(PackedState &dst, State &s) {
