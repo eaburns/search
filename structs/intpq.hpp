@@ -23,7 +23,7 @@ public:
 	}
 
 	void push(Elm *e, unsigned int prio) {
-		if (prio > nbins)
+		if (prio >= nbins)
 			resize(prio == 0 ? Initsz : (prio + 1) * 1.5);
 
 		IntpqEntry<Elm> &bin = Ops::entry(bins + prio);
