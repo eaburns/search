@@ -52,9 +52,7 @@ public:
 
 		while (!open.empty()) {
 			Node<D, Cost> *n = open.pop();
-
-			State buf;
-			State &state = d.unpack(buf, n->state);
+			State buf, &state = d.unpack(buf, n->state);
 
 			if (d.isgoal(state)) {
 				handlesol(d, n);
@@ -130,8 +128,7 @@ private:
 
 	Node<D, Cost> *kid(D &d, Node<D, Cost> *pnode, State &pstate, Oper op) {
 		Node<D, Cost> *kid = nodes.construct();
-		State buf;
-		State &kidst = d.applyinto(kid->state, buf, pstate, op);
+		State buf, &kidst = d.applyinto(kid->state, buf, pstate, op);
 		kid->g = pnode->g + d.opcost(pstate, op);
 		kid->f = kid->g + d.h(kidst);
 		kid->pop = d.revop(pstate, op);

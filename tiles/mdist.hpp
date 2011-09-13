@@ -114,6 +114,13 @@ public:
 
 	State &unpack(State &buf, PackedState &pkd) {
 		buf.b = pkd.unpack_md(md, buf.ts, &buf.h);
+//		buf.b = pkd.unpack(buf.ts);
+//		buf.h = 0;
+//		for (int i = 0; i < Ntiles; i++) {
+//			if (buf.ts[i] == 0)
+//				continue;
+//			buf.h += md[buf.ts[i]][i];
+//		}
 		return buf;
 	}
 
