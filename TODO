@@ -3,6 +3,4 @@ can give it a default argument that's a class that just does k.hash()
 and then you won't have to make up Ops classes for things that will be
 stored by value
 
-* Re-simplify applyinto.  Only wrap kids if they pass the hash table test
-
 * A* should pick a better hash table size based on memory capacity.
