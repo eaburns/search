@@ -7,15 +7,13 @@ template <class Elm> struct HtableEntry {
 	Elm *nxt;
 };
 
-template <class Ops, class Key, class Elm> class Htable {
+template <class Ops, class Key, class Elm,int Fillfact=2> class Htable {
 public:
 
 	enum {
 		Defsz = 1024,
 		Growfact = 2,
 	};
-
-	static const float Fillfact = 1.5;
 
 	Htable(unsigned int sz = Defsz)
 		: fill(0), ncollide(0), nbins(0), bins(NULL) {

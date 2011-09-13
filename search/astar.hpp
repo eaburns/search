@@ -163,6 +163,6 @@ private:
 
 	Result<D> res;
 	OpenList< Node<D, Cost>, Node<D, Cost>, Cost > open;
- 	Htable< Closedops, PackedState&, Node<D, Cost> > closed;
+ 	Htable< Closedops, PackedState&, Node<D, Cost>, 0 > closed;
 	boost::object_pool< Node<D, Cost> > nodes;
 };
