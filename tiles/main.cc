@@ -4,14 +4,15 @@
 #include "../incl/utils.hpp"
 #include <cstdio>
 
-static void search(TilesMdist &, Search<TilesMdist> &, TilesMdist::State &);
+static void search(TilesMdist&, Search<TilesMdist>&, TilesMdist::State&);
+static Search<TilesMdist> *getsearch(int, char *[]);
 
 int main(int argc, char *argv[]) {
 	TilesMdist d(stdin);
-//	Idastar<TilesMdist, true, true> srch;
-	Astar<TilesMdist, true> srch;
+	Search<TilesMdist> *srch = getsearch(argc, argv);
 	TilesMdist::State s0 = d.initstate();
-	search(d, srch, s0);
+	search(d, *srch, s0);
+	delete srch;
 	return 0;
 }
 
@@ -23,3 +24,13 @@ static void search(TilesMdist &d, Search<TilesMdist> &srch, TilesMdist::State &s
 	dffooter(stdout);
 }
 
+static Search<TilesMdist> *getsearch(int argc, char *argv[]) {
+	Search<TilesMdist> *srch = NULL;
+
+	if (argc > 1 && strcmp(argv[1], "idastar") == 0)
+		srch = new Idastar<TilesMdist, true, true>();
+	else
+		srch = new Astar<TilesMdist, true>();
+
+	return srch;
+}
