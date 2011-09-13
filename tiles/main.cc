@@ -30,7 +30,7 @@ static Search<TilesMdist> *getsearch(int argc, char *argv[]) {
 	if (argc > 1 && strcmp(argv[1], "idastar") == 0)
 		srch = new Idastar<TilesMdist, true, true>();
 	else
-		srch = new Astar<TilesMdist, true>();
+		srch = new Astar<TilesMdist>();
 
 	return srch;
 }

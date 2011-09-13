@@ -31,14 +31,15 @@ public:
 
 	}
 
-//	static unsigned long hash(Tile ts[], Pos b) {
-//		unsigned long h = ts[0];
-//		for (int i = 1; i < Ntiles; i++)
-//			h += h * 3 + ts[i];
-//		return h;
-//	}
+	static unsigned long korf_hash(Tile ts[], Pos b) {
+		unsigned long h = ts[0];
+		for (int i = 1; i < Ntiles; i++)
+			h += h * 3 + ts[i];
+		return h;
+	}
 
 protected:
+
 	struct {
 		unsigned int n;
 		Pos mvs[4];

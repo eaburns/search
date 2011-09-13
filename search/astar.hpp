@@ -5,7 +5,7 @@
 #include "../search/openlist.hpp"
 
 template <class D, class Cost> struct Node {
-	typename D::State state;
+	typename D::PackedState state;
 	typename D::Oper pop;
 	Cost g, f;
 	HtableEntry<Node> closedent;
@@ -25,7 +25,7 @@ template <class D, class Cost> struct Node {
 };
 
 template <class D> struct Node <D, char> {
-	typename D::State state;
+	typename D::PackedState state;
 	typename D::Oper pop;
 	typename D::Cost g, f;
 	HtableEntry<Node> closedent;
@@ -40,7 +40,7 @@ template <class D> struct Node <D, short> : public Node <D, char> {};
 template <class D> struct Node <D, int> : public Node <D, char> {};
 template <class D> struct Node <D, long> : public Node <D, char> {};
 
-template <class D, bool unitcost=false> class Astar : public Search<D> {
+template <class D> class Astar : public Search<D> {
 public:
 
 	Result<D> search(D &d, typename D::State &s0) {
@@ -53,12 +53,15 @@ public:
 		while (!open.empty()) {
 			Node<D, Cost> *n = open.pop();
 
-			if (!unitcost && d.isgoal(n->state)) {
-				handlesol(n);
+			State buf;
+			State &state = d.unpack(buf, n->state);
+
+			if (d.isgoal(state)) {
+				handlesol(d, n);
 				break;
 			}
 
-			if (expand(d, n))
+			if (expand(d, n, state))
 				break;
 		}
 
@@ -76,24 +79,20 @@ public:
 private:
 
 	typedef typename D::State State;
+	typedef typename D::PackedState PackedState;
 	typedef typename D::Undo Undo;
 	typedef typename D::Cost Cost;
 	typedef typename D::Oper Oper;
 
-	bool expand(D &d, Node<D, Cost> *n) {
+	bool expand(D &d, Node<D, Cost> *n, State &state) {
 		res.expd++;
 
-		for (unsigned int i = 0; i < d.nops(n->state); i++) {
-			Oper op = d.nthop(n->state, i);
+		for (unsigned int i = 0; i < d.nops(state); i++) {
+			Oper op = d.nthop(state, i);
 			if (op == n->pop)
 				continue;
-			Node<D, Cost> *k = kid(d, n, op);
+			Node<D, Cost> *k = kid(d, n, state, op);
 			res.gend++;
-
-			if (unitcost && d.isgoal(k->state)) {
-				handlesol(k);
-				return true;
-			}
 				
 			considerkid(d, k);
 		}
@@ -129,19 +128,20 @@ private:
 		}
 	}
 
-	Node<D, Cost> *kid(D &d, Node<D, Cost> *parent, Oper op) {
+	Node<D, Cost> *kid(D &d, Node<D, Cost> *pnode, State &pstate, Oper op) {
 		Node<D, Cost> *kid = nodes.construct();
-		d.applyinto(kid->state, parent->state, op);
-		kid->g = parent->g + d.opcost(parent->state, op);
-		kid->f = kid->g + d.h(kid->state);
-		kid->pop = d.revop(parent->state, op);
-		kid->parent = parent;
+		State buf;
+		State &kidst = d.applyinto(kid->state, buf, pstate, op);
+		kid->g = pnode->g + d.opcost(pstate, op);
+		kid->f = kid->g + d.h(kidst);
+		kid->pop = d.revop(pstate, op);
+		kid->parent = pnode;
 		return kid;
 	}
 
 	Node<D, Cost> *init(D &d, State &s0) {
 		Node<D, Cost> *n0 = nodes.construct();
-		n0->state = s0;
+		d.pack(n0->state, s0);
 		n0->g = 0;
 		n0->f = d.h(s0);
 		n0->pop = D::Nop;
@@ -149,17 +149,20 @@ private:
 		return n0;
 	}
 
-	void handlesol(Node<D, Cost> *n) {
+	void handlesol(D &d, Node<D, Cost> *n) {	
 		res.cost = n->g;
 
-		for ( ; n; n = n->parent)
-			res.path.push_back(n->state);
+		for ( ; n; n = n->parent) {
+			State buf;
+			State &state = d.unpack(buf, n->state);
+			res.path.push_back(state);
+		}
 	}
 
 	struct Closedops {
-		static State &key(Node<D, Cost> *n) { return n->state; }
-		static unsigned long hash(State &s) { return s.hash(); }
-		static bool eq(State &a, State &b) { return a.eq(b); }
+		static PackedState &key(Node<D, Cost> *n) { return n->state; }
+		static unsigned long hash(PackedState &s) { return s.hash(); }
+		static bool eq(PackedState &a, PackedState &b) { return a.eq(b); }
 		static HtableEntry< Node<D, Cost> > &entry(Node<D, Cost> *n) {
 			return n->closedent;
 		}
@@ -167,6 +170,6 @@ private:
 
 	Result<D> res;
 	OpenList< Node<D, Cost>, Node<D, Cost>, Cost > open;
- 	Htable< Closedops, State&, Node<D, Cost> > closed;
+ 	Htable< Closedops, PackedState&, Node<D, Cost> > closed;
 	boost::object_pool< Node<D, Cost> > nodes;
 };

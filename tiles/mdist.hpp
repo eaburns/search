@@ -1,6 +1,6 @@
 #include <cstring>
-#include <boost/integer/static_log2.hpp>
 #include "tiles.hpp"
+#include "packed.hpp"
 
 class TilesMdist : Tiles {
 public:
@@ -14,6 +14,8 @@ public:
 	typedef int Oper;
 	enum { Nop = -1 };
 
+	typedef PackedTiles<Ntiles> PackedState;
+
 	class State {
 		friend class TilesMdist;
 		Tile ts[Ntiles];
@@ -23,6 +25,7 @@ public:
 		unsigned long hash(void) {
 			return Tiles::hash(ts, b);
 		}
+
 		bool eq(State &other) const {
 			if (b != other.b)
 				return false;
@@ -31,21 +34,6 @@ public:
 					return false;
 			}
 			return true;
-		}
-	};
-
-	class PackedState {
-		friend class TilesMdist;
-		static const unsigned int nbits = boost::static_log2<Ntiles>::value;
-		static const unsigned int nbytes = (int) ((nbits / 8.0) * Ntiles);
-
-		unsigned char bytes[nbytes];
-	public:
-		unsigned long hash(void) {
-			return hashbytes(bytes, sizeof(bytes));
-		}
-		bool eq(PackedState &other) const {
-			return memcmp(bytes, other.bytes, sizeof(bytes)) == 0;
 		}
 	};
 
@@ -102,19 +90,31 @@ public:
 		s.b = newb;
 	}
 
-	void applyinto(State &cpy, State &s, Oper newb) {
+	State &applyinto(PackedState &dst, State &buf, State &s, Oper newb) {
 		Tile t = s.ts[newb];
-		cpy.h = s.h + incr[t][newb][s.b];
-		cpy.b = newb;
+		buf.h = s.h + incr[t][newb][s.b];
+		buf.b = newb;
 
 		for (int i = 0; i < Ntiles; i++) {
 			if (i == newb)
-				cpy.ts[i] = 0;
+				buf.ts[i] = 0;
 			else if ((unsigned int) i == s.b)
-				cpy.ts[i] = t;
+				buf.ts[i] = t;
 			else
-				cpy.ts[i] = s.ts[i];
+				buf.ts[i] = s.ts[i];
 		}
+		dst.pack(buf.ts);
+		return buf;
+	}
+
+	void pack(PackedState &dst, State &s) {
+		s.ts[s.b] = 0;
+		dst.pack(s.ts);
+	}
+
+	State &unpack(State &buf, PackedState &pkd) {
+		buf.b = pkd.unpack_md(md, buf.ts, &buf.h);
+		return buf;
 	}
 
 	void dumpstate(FILE *out, State &s) {

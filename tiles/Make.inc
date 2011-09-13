@@ -8,6 +8,7 @@ TILESSRC=\
 
 TILESHDR=\
 	tiles/tiles.hpp\
+	tiles/packed.hpp\
 	tiles/mdist.hpp\
 
 tiles/15unitmd_solver: $(OBJS) $(HDRS) $(TILESHDR) $(TILENSRC) tiles/main.cc
