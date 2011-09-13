@@ -18,8 +18,9 @@ public:
 	static const float Fillfact = 1.5;
 
 	Htable(unsigned int sz = Defsz)
-		: fill(0), ncollide(0), nresize(0), nbins(0), bins(NULL) {
+		: fill(0), ncollide(0), nbins(0), bins(NULL) {
 		resize(sz);
+		nresize = 0;	// don't count the initial resize
 	}
 
 	~Htable(void) {
