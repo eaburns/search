@@ -103,6 +103,7 @@ private:
 				nodes.destroy(k);
 				return;
 			}
+			res.reopnd++;
 			if (!open.mem(dup))
 				open.pre_update(dup);
 

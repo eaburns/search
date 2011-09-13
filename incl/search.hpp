@@ -11,12 +11,14 @@ void dfpair(FILE *f, const char *key, const char *fmt, ...);
 template <class D> struct Result {
 	double wallstrt, cpustrt;
 	double wallend, cpuend;
-	unsigned long expd, gend;
+	unsigned long expd, gend, reopnd;
 	long dups;
 	typename D::Cost cost;
 	std::vector<typename D::State> path;
 
-	Result(bool dups = false) : expd(0), gend(0), dups(-1), cost(D::InfCost) {
+	Result(bool dups = false) :
+		expd(0), gend(0), reopnd(0),
+		dups(-1), cost(D::InfCost) {
 		if (dups)
 			dups = 0;
 		start();
@@ -41,6 +43,7 @@ template <class D> struct Result {
 		dfpair(f, "total nodes generated", "%lu", gend);
 		if (dups >= 0)
 			dfpair(f, "total nodes duplicated", "%ld", dups);
+		dfpair(f, "total reopened", "%ld", reopnd);
 		dfpair(f, "total solution cost", "%g", (double) cost);
 		dfpair(f, "total solution length", "%lu", (unsigned long) path.size());
 	}
