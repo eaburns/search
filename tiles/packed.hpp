@@ -38,14 +38,12 @@ template<> class PackedTiles<16> {
 	enum { Ntiles = 16 };
 public:
 	void pack(Tiles::Tile ts[]) {
-		for (int i = 0; i < Ntiles; i++) {
-			word <<= 4;
-			word |= ts[i];
-		}
+		for (int i = 0; i < Ntiles; i++)
+			word = (word << 4) | ts[i];
 	}
 
 	Tiles::Pos unpack(Tiles::Tile ts[]) {
-		int b = -1;
+		int b;
 		boost::uint64_t w = word;
 		for (int i = Ntiles - 1; i >= 0; i--) {
 			Tiles::Tile t = w & 0xF;
@@ -58,7 +56,7 @@ public:
 	}
 
 	Tiles::Pos unpack_md(unsigned int md[][Ntiles], Tiles::Tile ts[], Tiles::Cost *hp) {
-		int b = -1;
+		int b;
 		Tiles::Cost h = 0;
 		boost::uint64_t w = word;
 		for (int i = Ntiles - 1; i >= 0; i--) {
