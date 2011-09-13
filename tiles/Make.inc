@@ -1,6 +1,6 @@
 BINS+=\
 	tiles/15unitmd_solver\
-	tiles/24unitmd_solver\
+	#tiles/24unitmd_solver\
 
 TILESSRC=\
 	tiles/tiles.cc\
