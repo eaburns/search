@@ -59,10 +59,8 @@ public:
 				break;
 			}
 
-			if (expand(d, n, state))
-				break;
+			expand(d, n, state);
 		}
-
 		res.finish();
 
 		closed.prstats(stdout, "closed ");
@@ -82,7 +80,7 @@ private:
 	typedef typename D::Cost Cost;
 	typedef typename D::Oper Oper;
 
-	bool expand(D &d, Node<D, Cost> *n, State &state) {
+	void expand(D &d, Node<D, Cost> *n, State &state) {
 		res.expd++;
 
 		for (unsigned int i = 0; i < d.nops(state); i++) {
@@ -94,8 +92,6 @@ private:
 				
 			considerkid(d, k);
 		}
-
-		return false;
 	}
 
 	void considerkid(D &d, Node<D, Cost> *k) {
