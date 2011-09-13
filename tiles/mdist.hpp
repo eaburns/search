@@ -92,17 +92,11 @@ public:
 
 	State &applyinto(PackedState &dst, State &buf, State &s, Oper newb) {
 		Tile t = s.ts[newb];
+		memcpy(buf.ts, s.ts, sizeof(s.ts));
 		buf.h = s.h + incr[t][newb][s.b];
 		buf.b = newb;
-
-		for (int i = 0; i < Ntiles; i++) {
-			if (i == newb)
-				buf.ts[i] = 0;
-			else if ((unsigned int) i == s.b)
-				buf.ts[i] = t;
-			else
-				buf.ts[i] = s.ts[i];
-		}
+		buf.ts[s.b] = t;
+		buf.ts[newb] = 0;
 		dst.pack(buf.ts);
 		return buf;
 	}
