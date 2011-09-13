@@ -124,14 +124,17 @@ private:
 
 	Node<D, Cost> *kid(D &d, Node<D, Cost> *pnode, State &pstate, Oper op) {
 		Node<D, Cost> *kid = nodes.construct();
+
 		kid->g = pnode->g + d.opcost(pstate, op);
 		kid->pop = d.revop(pstate, op);
 		kid->parent = pnode;
+
 		Undo u(pstate, op);
 		State buf, &kidst = d.apply(buf, pstate, op);
 		kid->f = kid->g + d.h(kidst);
 		d.pack(kid->packed, kidst);
 		d.undo(pstate, u);
+
 		return kid;
 	}
 
@@ -145,7 +148,7 @@ private:
 		return n0;
 	}
 
-	void handlesol(D &d, Node<D, Cost> *n) {	
+	void handlesol(D &d, Node<D, Cost> *n) {
 		res.cost = n->g;
 
 		for ( ; n; n = n->parent) {
