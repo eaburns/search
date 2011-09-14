@@ -44,8 +44,8 @@ template <class D> struct Result {
 		if (dups >= 0)
 			dfpair(f, "total nodes duplicated", "%ld", dups);
 		dfpair(f, "total reopened", "%ld", reopnd);
-		dfpair(f, "total sol cost", "%g", (double) cost);
-		dfpair(f, "total sol length", "%lu", (unsigned long) path.size());
+		dfpair(f, "final sol cost", "%g", (double) cost);
+		dfpair(f, "final sol length", "%lu", (unsigned long) path.size());
 	}
 };
 
