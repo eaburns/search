@@ -4,3 +4,5 @@ and then you won't have to make up Ops classes for things that will be
 stored by value
 
 * A* should pick a better hash table size based on memory capacity.
+
+* Port PDB code from C
