@@ -23,6 +23,7 @@ void dfrowhdr(FILE *, const char *name, int ncols, ...);
 void dfrow(FILE *, const char *name, const char *colfmt, ...);
 void dfheader(FILE *);
 void dffooter(FILE *);
+void dfprocstatus(FILE*);
 
 struct Test {
 	const char *name;

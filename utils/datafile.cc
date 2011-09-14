@@ -117,6 +117,10 @@ void dffooter(FILE *f) {
 	fputs(end4, f);
 }
 
+void dfprocstatus(FILE *f) {
+	tryprocstatus(f);
+}
+
 static void machineid(FILE *f) {
 	char hname[Bufsz];
 	memset(hname, '\0', Bufsz);
