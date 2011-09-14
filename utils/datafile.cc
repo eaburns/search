@@ -19,7 +19,7 @@ static void tryprocstatus(FILE*);
 void dfpair(FILE *f, const char *key, const char *fmt, ...) {
 	char buf[Bufsz];
 
-	int n = snprintf(buf, Bufsz, "#pair \"%s\"\t\"", key);
+	int n = snprintf(buf, Bufsz, "#pair  \"%s\"\t\"", key);
 
 	va_list ap;
 	va_start(ap, fmt);

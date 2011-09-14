@@ -37,15 +37,15 @@ template <class D> struct Result {
 	void output(FILE *f) {
 		dfpair(f, "state size", "%u", sizeof(typename D::State));
 		dfpair(f, "packed state size", "%u", sizeof(typename D::PackedState));
-		dfpair(f, "total CPU time", "%g", cpuend - cpustrt);
+		dfpair(f, "total raw cpu time", "%g", cpuend - cpustrt);
 		dfpair(f, "total wall time", "%g", wallend - wallstrt);
 		dfpair(f, "total nodes expanded", "%lu", expd);
 		dfpair(f, "total nodes generated", "%lu", gend);
 		if (dups >= 0)
 			dfpair(f, "total nodes duplicated", "%ld", dups);
 		dfpair(f, "total reopened", "%ld", reopnd);
-		dfpair(f, "total solution cost", "%g", (double) cost);
-		dfpair(f, "total solution length", "%lu", (unsigned long) path.size());
+		dfpair(f, "total sol cost", "%g", (double) cost);
+		dfpair(f, "total sol length", "%lu", (unsigned long) path.size());
 	}
 };
 
