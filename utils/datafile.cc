@@ -54,36 +54,22 @@ void dfrow(FILE *f, const char *name, const char *colfmt, ...) {
 		double g = 0;
 		long d = 0;
 		unsigned long u = 0;
-		const char *s = "";
-		int c = 0;
 		switch (colfmt[i]) {
 		case 'g':
 			g = va_arg(ap, double);
-			n += snprintf(buf+n, Bufsz-n, "\t\"%g\"", g);
+			n += snprintf(buf+n, Bufsz-n, "\t%g", g);
 			break;
 		case 'f':
 			g = va_arg(ap, double);
-			n += snprintf(buf+n, Bufsz-n, "\t\"%lf\"", g);
+			n += snprintf(buf+n, Bufsz-n, "\t%lf", g);
 			break;
 		case 'd':
 			d = va_arg(ap, long);
-			n += snprintf(buf+n, Bufsz-n, "\t\"%ld\"", d);
+			n += snprintf(buf+n, Bufsz-n, "\t%ld", d);
 			break;
 		case 'u':
 			u = va_arg(ap, unsigned long);
-			n += snprintf(buf+n, Bufsz-n, "\t\"%lu\"", u);
-			break;
-		case 's':
-			s = va_arg(ap, const char *);
-			n += snprintf(buf+n, Bufsz-n, "\t\"%s\"", s);
-			break;
-		case 'c':
-			c = va_arg(ap, int);
-			n += snprintf(buf+n, Bufsz-n, "\t\"%c\"", c);
-			break;
-		case 'b':
-			c = va_arg(ap, int);
-			n += snprintf(buf+n, Bufsz-n, "\t\"%s\"", c ? "true" : "false");
+			n += snprintf(buf+n, Bufsz-n, "\t%lu", u);
 			break;
 		}
 	}

@@ -17,9 +17,6 @@ void dfrowhdr(FILE *, const char *name, int ncols, ...);
 // f is a %f formatted double
 // d is a %ld formatted long
 // u is a %lu formatted unsigned long
-// s is a %s formatted string
-// c is a %c formatted char
-// b is a "true"/"false" formatted bool
 void dfrow(FILE *, const char *name, const char *colfmt, ...);
 void dfheader(FILE *);
 void dffooter(FILE *);
