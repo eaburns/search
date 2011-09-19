@@ -22,7 +22,7 @@ public:
 		for (int i = 0; /* forever */; i++) {
 			minoob = D::InfCost;
 
-			if (dfs(d, s0, D::Nop, 0, 0))
+			if (dfs(d, s0, D::Nop, 0))
 				break;
 
 			dfrow(stdout, "iter", "dguu", (long) i, (double) bound,
@@ -36,7 +36,7 @@ public:
 	}
 
 private:
-	bool dfs(D &d, State &s, Oper pop, Cost g, int depth) {
+	bool dfs(D &d, State &s, Oper pop, Cost g) {
 		Cost f = g + d.h(s);
 
 		if ((unitcost || f <= bound) && d.isgoal(s)) {
@@ -65,7 +65,7 @@ private:
 			Cost c = d.opcost(s, op);
 
 			State buf, &kid = d.apply(buf, s, op);
-			bool goal = dfs(d, kid, rev, g + c, depth+1);
+			bool goal = dfs(d, kid, rev, g + c);
 			d.undo(s, u);
 
 			if (goal) {
