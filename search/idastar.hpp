@@ -25,6 +25,8 @@ public:
 			if (dfs(d, s0, D::Nop, 0))
 				break;
 
+			d.checkpoint();
+
 			dfrow(stdout, "iter", "dguu", (long) i, (double) bound,
 				res.expd, res.gend); 
 

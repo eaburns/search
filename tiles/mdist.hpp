@@ -8,6 +8,7 @@ public:
 
 	class State {
 		friend class TilesMdist;
+		friend class TilesMDLearn;
 		Tile ts[Ntiles];
 		Pos b;
 		Cost h;
@@ -95,6 +96,8 @@ public:
 		s.ts[s.b] = 0;
 		Tiles::dumptiles(out, s.ts);
 	}
+
+	void checkpoint(void) { }
 
 private:
 	void initmd(void);
