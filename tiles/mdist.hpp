@@ -2,18 +2,8 @@
 #include "tiles.hpp"
 #include "packed.hpp"
 
-class TilesMdist : Tiles {
+class TilesMdist : public Tiles {
 public:
-
-	typedef Tiles::Tile Tile;
-	typedef Tiles::Pos Pos;
-
-	typedef Tiles::Cost Cost;
-	enum { InfCost = -1 };
-
-	typedef int Oper;
-	enum { Nop = -1 };
-
 	typedef PackedTiles<Ntiles> PackedState;
 
 	class State {

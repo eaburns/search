@@ -13,8 +13,12 @@ public:
 
 	typedef unsigned int Tile;
 	typedef unsigned int Pos;
+
 	typedef char Cost;
-	typedef char Oper;
+	enum { InfCost = -1 };
+
+	typedef int Oper;
+	enum { Nop = -1 };
 
 	Tiles(FILE*);
 
