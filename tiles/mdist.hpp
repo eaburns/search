@@ -7,8 +7,8 @@ public:
 	typedef PackedTiles<Ntiles> PackedState;
 
 	class State {
+	protected:
 		friend class TilesMdist;
-		friend class TilesMDLearn;
 		Tile ts[Ntiles];
 		Pos b;
 		Cost h;
@@ -99,10 +99,13 @@ public:
 
 	void checkpoint(void) { }
 
+protected:
+
+	unsigned int md[Ntiles][Ntiles];
+
 private:
 	void initmd(void);
 	void initincr(void);
 
-	unsigned int md[Ntiles][Ntiles];
 	int incr[Ntiles][Ntiles][Ntiles];
 };

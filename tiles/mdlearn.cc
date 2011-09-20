@@ -3,40 +3,48 @@
 #include <cstring>
 
 TilesMDLearn::TilesMDLearn(FILE *in) : TilesMdist(in) {
-	initops();
+	initops(10);
 }
 
-void TilesMDLearn::initops(void) {
-	for (int i = 0; i < Ntiles; i++) {
-		ops[i].n = 0;
-		memset(ops[i].dests, 0, sizeof(ops[i].dests));
-		if (i >= Width)
-			ops[i].mvs[ops[i].n++].b = i - Width;
-		if (i % Width > 0)
-			ops[i].mvs[ops[i].n++].b = i - 1;
-		if (i % Width < Width - 1)
-			ops[i].mvs[ops[i].n++].b = i + 1;
-		if (i < Ntiles - Width)
-			ops[i].mvs[ops[i].n++].b = i + Width;
+void TilesMDLearn::initops(unsigned int dmax) {
+	unsigned int oldsz = ops.size();
+	ops.resize(dmax+1);
+	for (unsigned int d = 0; d < oldsz; d++)
+		initdests(d);
+	for (unsigned int d = oldsz; d <= dmax; d++) {
+		for (unsigned int i = 0; i < Ntiles; i++) {
+			ops[d][i].n = 0;
+			memset(ops[d][i].dests, 0, sizeof(ops[d][i].dests));
+			if (i >= Width)
+				ops[d][i].mvs[ops[d][i].n++].b = i - Width;
+			if (i % Width > 0)
+				ops[d][i].mvs[ops[d][i].n++].b = i - 1;
+			if (i % Width < Width - 1)
+				ops[d][i].mvs[ops[d][i].n++].b = i + 1;
+			if (i < Ntiles - Width)
+				ops[d][i].mvs[ops[d][i].n++].b = i + Width;
+		}
+		initdests(d);
 	}
-	initdests();
 }
 
-void TilesMDLearn::initdests(void) {
+void TilesMDLearn::initdests(unsigned int d) {
 	for (unsigned int i = 0; i < Ntiles; i++) {
-		for (unsigned int j = 0; j < ops[i].n; j++) {
-			Pos b = ops[i].mvs[j].b;
-			ops[i].dests[b] = ops[i].mvs + j;
+		for (unsigned int j = 0; j < ops[d][i].n; j++) {
+			Pos b = ops[d][i].mvs[j].b;
+			ops[d][i].dests[b] = &ops[d][i].mvs[j];
 		}
 	}
 }
 
 void TilesMDLearn::resetprobs(void) {
+	for (unsigned int d = 0; d < ops.size(); d++) {
 	for (unsigned int i = 0; i < Ntiles; i++) {
-		for (unsigned int j = 0; j < ops[i].n; j++) {
-			ops[i].mvs[j].nused = 0;
-			ops[i].mvs[j].ndec = 0;
-		}
+	for (unsigned int j = 0; j < ops[d][i].n; j++) {
+		ops[d][i].mvs[j].nused = 0;
+		ops[d][i].mvs[j].ndec = 0;
+	}
+	}
 	}
 }
 
@@ -53,6 +61,11 @@ int cmpmv(const void *_a, const void *_b) {
 }
 
 void TilesMDLearn::sortops(void) {
-	for (int i = 0; i < Ntiles; i++)
-		qsort(ops[i].mvs, ops[i].n, sizeof(ops[i].mvs[0]), cmpmv);
+	for (unsigned int d = 0; d < ops.size(); d++) {
+		for (unsigned int i = 0; i < Ntiles; i++) {
+			qsort(ops[d][i].mvs, ops[d][i].n,
+				sizeof(ops[d][i].mvs[0]), cmpmv);
+		}
+		initdests(d);
+	}
 }
