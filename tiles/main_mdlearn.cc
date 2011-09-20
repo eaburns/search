@@ -1,6 +1,5 @@
 #include "mdlearn.hpp"
 #include "../search/idastar.hpp"
-#include "../search/astar.hpp"
 #include "../incl/utils.hpp"
 #include <cstdio>
 
@@ -27,11 +26,7 @@ static void search(TilesDomain &d, Search<TilesDomain> &srch, TilesDomain::State
 
 static Search<TilesDomain> *getsearch(int argc, char *argv[]) {
 	Search<TilesDomain> *srch = NULL;
-
-	if (argc > 1 && strcmp(argv[1], "idastar") == 0)
-		srch = new Idastar<TilesDomain, true>();
-	else
-		srch = new Astar<TilesDomain>();
-
+	srch = new Idastar<TilesDomain, true>();
 	return srch;
+
 }

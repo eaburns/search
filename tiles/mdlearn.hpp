@@ -20,10 +20,12 @@ public:
 		return State(TilesMdist::initstate());
 	}
 
+	enum { Div = 1000 };
+
 	Oper nthop(State &s, unsigned int n) {
-		if (s.d >= ops.size())
-			initops(s.d * 2);
-		return ops[s.d][s.b].mvs[n].b;
+		if (s.d / Div >= ops.size())
+			initops(s.d / Div * 2);
+		return ops[s.d / Div][s.b].mvs[n].b;
 	}
 
 	void undo(State &s, Undo &u) {
@@ -32,27 +34,15 @@ public:
 	}
 
 	State &apply(State &buf, State &s, Oper newb) {
-		assert (s.d < ops.size());
-		Pos oldb = s.b;
-		Opinfo *info = ops[s.d][oldb].dests[newb];
+		Opinfo *info = ops[s.d / Div][s.b].dests[newb];
 		Cost oldh = s.h;
 		TilesMdist::apply(buf, s, newb);
 		s.d++;
-		Cost newh = s.h;
-		info->nused++;
-		if (newh < oldh)
+		if (s.h < oldh)
 			info->ndec++;
+		else
+			info->nother++;
 		return s;
-	}
-
-	void pack(PackedState &dst, State &s) {
-		s.ts[s.b] = 0;
-		dst.pack(s.ts);
-	}
-
-	State &unpack(State &buf, PackedState &pkd) {
-		buf.b = pkd.unpack_md(md, buf.ts, &buf.h);
-		return buf;
 	}
 
 	void checkpoint(void) {
@@ -70,7 +60,7 @@ private:
 
 	struct Opinfo {
 		Pos b;
-		unsigned int nused;
+		unsigned int nother;
 		unsigned int ndec;	// Number of times h decreased.
 	};
 	struct Opvec {
