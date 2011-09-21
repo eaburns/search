@@ -10,6 +10,8 @@ TilesMDLearn::TilesMDLearn(FILE *in) : TilesMdist(in) {
 
 void TilesMDLearn::initops(unsigned int dmax) {
 	unsigned int oldsz = ops.size();
+	if (dmax+1 > ops.capacity())
+		ops.reserve((dmax+1) * 2);
 	ops.resize(dmax+1);
 	for (unsigned int d = 0; d < oldsz; d++)
 		initdests(d);
