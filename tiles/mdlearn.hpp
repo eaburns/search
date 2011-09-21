@@ -20,12 +20,10 @@ public:
 		return State(TilesMdist::initstate());
 	}
 
-	enum { Div = 1000 };
-
 	Oper nthop(State &s, unsigned int n) {
-		if (s.d / Div >= ops.size())
-			initops(s.d / Div * 2);
-		return ops[s.d / Div][s.b].mvs[n].b;
+		if (s.d >= ops.size())
+			initops(s.d);
+		return ops[s.d][s.b].mvs[n].b;
 	}
 
 	void undo(State &s, Undo &u) {
@@ -34,7 +32,7 @@ public:
 	}
 
 	State &apply(State &buf, State &s, Oper newb) {
-		Opinfo *info = ops[s.d / Div][s.b].dests[newb];
+		Opinfo *info = ops[s.d][s.b].dests[newb];
 		Cost oldh = s.h;
 		TilesMdist::apply(buf, s, newb);
 		s.d++;
@@ -62,10 +60,14 @@ private:
 		Pos b;
 		unsigned int nother;
 		unsigned int ndec;	// Number of times h decreased.
+		bool operator<(const Opinfo &o) const {
+			return (double) ndec / (double) (nother + ndec)
+				> (double) o.ndec / (double) (o.nother + o.ndec);
+		}
 	};
 	struct Opvec {
 		unsigned int n;
-		Opinfo mvs[4];
+		boost::array<Opinfo,4> mvs;
 		Opinfo *dests[Ntiles];
 	};
 	std::vector< boost::array<Opvec, Ntiles> > ops;

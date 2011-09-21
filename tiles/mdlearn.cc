@@ -1,6 +1,8 @@
 #include "mdlearn.hpp"
 #include <cstdlib>
 #include <cstring>
+#include <boost/array.hpp>
+#include <algorithm>
 
 TilesMDLearn::TilesMDLearn(FILE *in) : TilesMdist(in) {
 	initops(10);
@@ -59,10 +61,8 @@ int cmpmv(const void *_a, const void *_b) {
 
 void TilesMDLearn::sortops(void) {
 	for (unsigned int d = 0; d < ops.size(); d++) {
-		for (unsigned int i = 0; i < Ntiles; i++) {
-			qsort(ops[d][i].mvs, ops[d][i].n,
-				sizeof(ops[d][i].mvs[0]), cmpmv);
-		}
+		for (unsigned int i = 0; i < Ntiles; i++)
+			std::sort(ops[d][i].mvs.begin(), ops[d][i].mvs.begin() + ops[d][i].n);
 		initdests(d);
 	}
 }
