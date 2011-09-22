@@ -39,7 +39,7 @@ public:
 
 	Node *pop(void) { return pq.pop(); }
 
-	void pre_update(Node*n) { pq.rm(n); }
+	void pre_update(Node*n) { pq.rm(n, n->f); }
 
 	void post_update(Node *n) { push(n); }
 

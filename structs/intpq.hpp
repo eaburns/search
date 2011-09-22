@@ -25,13 +25,11 @@ public:
 	void push(Elm *e, unsigned int prio) {
 		if (prio >= nbins)
 			resize(prio == 0 ? Initsz : (prio + 1) * 1.5);
-
-		IntpqEntry<Elm> &bin = Ops::entry(bins + prio);
-		IntpqEntry<Elm> &ent = Ops::entry(e);
-		ent.nxt = bin.nxt;
-		Ops::entry(bin.nxt).prev = e;
-		bin.nxt = e;
-		ent.prev = bins + prio;
+		if (bins[prio]) {
+			Ops::entry(bins[prio]).prev = e;
+			Ops::entry(e).nxt = bins[prio];
+		}
+		bins[prio] = e;
 
 		if (fill == 0 || prio < end)
 			end = prio;
@@ -43,22 +41,31 @@ public:
 		if (fill == 0)
 			return NULL;
 
-		for ( ; empty(end); end++)
+		for ( ; !bins[end]; end++)
 			;
-		assert(!empty(end));
+		assert(bins[end]);
 
-		Elm *e = Ops::entry(bins + end).nxt;
-		rm(e);
+		Elm *e = bins[end];
+		IntpqEntry<Elm> &ent = Ops::entry(e);
+		if (ent.nxt)
+			Ops::entry(ent.nxt).prev = NULL;
+
+		bins[end] = ent.nxt;
+		ent.nxt = ent.prev = NULL;
+		fill--;
+
 		return e;
 	}
 
-	void rm(Elm *e) {
+	void rm(Elm *e, unsigned int prio) {
 		IntpqEntry<Elm> &ent = Ops::entry(e);
-		Ops::entry(ent.nxt).prev = ent.prev;
-		Ops::entry(ent.prev).nxt = ent.nxt;
-		ent.nxt = NULL;
-		ent.prev = NULL;
-
+		if (ent.nxt)
+			Ops::entry(ent.nxt).prev = ent.prev;
+		if (ent.prev)
+			Ops::entry(ent.prev).nxt = ent.nxt;
+		else
+			bins[prio] = ent.nxt;
+		ent.nxt = ent.prev = NULL;
 		fill--;
 	}
 
@@ -72,31 +79,14 @@ public:
 
 private:
 
-	bool empty(unsigned int p) {
-		return Ops::entry(bins + p).nxt == bins + p;
-	}
-
 	void resize(unsigned int sz) {
-		Elm *b = (Elm*) malloc(sz * sizeof(*b));
+		Elm **b = (Elm**) malloc(sz * sizeof(*b));
 
-		for (unsigned int i = 0; i < nbins; i++) {
-			if (empty(i)) {
-				Ops::entry(b + i).prev = b + i;
-				Ops::entry(b + i).nxt = b + i;
-			} else {
-				IntpqEntry<Elm> &bin = Ops::entry(bins + i);
-				IntpqEntry<Elm> &nw = Ops::entry(b + i);
-				nw.nxt = bin.nxt;
-				Ops::entry(bin.nxt).prev = b + i;
-				Ops::entry(bin.prev).nxt = b + i;
-				nw.prev = bin.prev;
-			}
-		}
+		for (unsigned int i = 0; i < nbins; i++)
+			b[i] = bins[i];
 
-		for (unsigned int i = nbins; i < sz; i++) {
-			Ops::entry(b + i).prev = b + i;
-			Ops::entry(b + i).nxt = b + i;
-		}
+		for (unsigned int i = nbins; i < sz; i++)
+			b[i] = NULL;
 
 		if (bins)
 			free(bins);
@@ -111,5 +101,5 @@ private:
 
 	unsigned long fill;
 	unsigned int nresize, end, nbins;
-	Elm *bins;
+	Elm **bins;
 };
