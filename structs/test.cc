@@ -20,12 +20,16 @@ void htable_add_bench(unsigned long n, double *, double *);
 void htable_find_bench(unsigned long n, double *, double *);
 void intpq_push_bench(unsigned long n, double *, double *);
 void intpq_pop_bench(unsigned long n, double *, double *);
+void binheap_push_bench(unsigned long n, double*, double*);
+void binheap_pop_bench(unsigned long n, double*, double*);
 
 static const Benchmark benches[] = {
 	Benchmark("htable add benchmark", htable_add_bench),
 	Benchmark("htable find benchmark", htable_find_bench),
 	Benchmark("intpq push benchmark", intpq_push_bench),
 	Benchmark("intpq pop benchmark", intpq_pop_bench),
+	Benchmark("binheap push benchmark", binheap_push_bench),
+	Benchmark("binheap pop benchmark", binheap_pop_bench),
 };
 
 enum { Nbenches = sizeof(benches) / sizeof(benches[0]) };

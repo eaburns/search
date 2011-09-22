@@ -43,9 +43,7 @@ public:
 	}
 
 	Elm *find(Key k, unsigned long h) {
-		unsigned int i = h % nbins;
-
-		for (Elm *p = bins[i]; p; p = Ops::entry(p).nxt) {
+		for (Elm *p = bins[h % nbins]; p; p = Ops::entry(p).nxt) {
 			if (Ops::eq(Ops::key(p), k))
 				return p;
 		}

@@ -1,5 +1,5 @@
 CXX=g++
-FLAGS=-Wall -Werror -O3
+FLAGS=-Wall -Werror -O3 -pg -g
 CXXFLAGS=$(FLAGS)
 CFLAGS=$(FLAGS)
 

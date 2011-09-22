@@ -53,7 +53,6 @@ private:
 			swap(i, p);
 			return pullup(p);
 		}
-
 		return i;
 	}
 
