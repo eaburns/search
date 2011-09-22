@@ -49,8 +49,6 @@ public:
 	}
 
 private:
-	friend int cmpmv(const void*, const void*);
-
 	void initops(unsigned int);
 	void initdests(unsigned int);
 	void sortops(void);

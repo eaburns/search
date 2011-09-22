@@ -51,16 +51,6 @@ void TilesMDLearn::resetprobs(void) {
 	}
 }
 
-int cmpmv(const void *_a, const void *_b) {
-	const TilesMDLearn::Opinfo *a = (const TilesMDLearn::Opinfo *) _a;
-	const TilesMDLearn::Opinfo *b = (const TilesMDLearn::Opinfo *) _b;
-	double aprob = (double) a->ndec / (double) (a->nother + a->ndec);
-	double bprob = (double) b->ndec / (double) (b->nother + b->ndec);
-	if (aprob > bprob)
-		return -1;
-	return 1;
-}
-
 void TilesMDLearn::sortops(void) {
 	for (unsigned int d = 0; d < ops.size(); d++) {
 		for (unsigned int i = 0; i < Ntiles; i++)
