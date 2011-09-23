@@ -1,6 +1,7 @@
 #include "../incl/search.hpp"
 #include <cstdlib>
 #include <cstring>
+#include <cstdio>
 
 SearchStats::SearchStats(void) : expd(0), gend(0), reopnd(0), dups(-1) {
 	start();
@@ -37,4 +38,11 @@ Limit::Limit(int argc, char *argv[]) : expd(0), gend(0) {
 			i++;
 		}
 	}
+}
+
+void Limit::output(FILE *f) {
+	if (expd > 0)
+		dfpair(f, "expanded limit", "%lu", expd);
+	if (gend > 0)
+		dfpair(f, "generated limit", "%lu", gend);
 }

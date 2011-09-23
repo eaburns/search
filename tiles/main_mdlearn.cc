@@ -20,7 +20,7 @@ int main(int argc, char *argv[]) {
 static void search(TilesDomain &d, Search<TilesDomain> &srch, TilesDomain::State &s0) {
 	dfpair(stdout, "initial heuristic", "%d", d.h(s0));
 	Result<TilesDomain> res = srch.search(d, s0);
-	res.output(stdout);
+	srch.output(stdout);
 	dfprocstatus(stdout);
 }
 

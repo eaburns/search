@@ -44,12 +44,19 @@ struct Limit {
 
 	Limit(void);
 	Limit(int, char*[]);
+	void output(FILE*);
 };
 
 template <class D> class Search {
 public:
 	virtual Result<D> search(D &, typename D::State &) = 0;
 	Search(int argc, char *argv[]) : lim(argc, argv) { }
+
+	void output(FILE *f) {
+		lim.output(f);
+		res.output(f);
+	}
+
 protected:
 	bool limit(void) { return lim.reached(res); }
 	Result<D> res;
