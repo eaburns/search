@@ -17,7 +17,7 @@ bool intpq_push_test(void) {
 	Elm elms[N];
 
 	for (unsigned int i = 0; i < N; i++) {
-		elms[i].vl = rand() % 1000;
+		elms[i].vl = rand() % 100;
 		pq.push(&elms[i], elms[i].vl);
 		if (pq.fill != (unsigned long) i+1) {
 			testpr("Expected fill of %u got %lu\n", i+1, pq.fill);
@@ -34,7 +34,7 @@ bool intpq_pop_test(void) {
 	Elm elms[N];
 
 	for (int i = 0; i < N; i++) {
-		elms[i].vl = rand() % 1000;
+		elms[i].vl = rand() % 100;
 		pq.push(&elms[i], elms[i].vl);
 	}
 

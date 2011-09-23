@@ -4,7 +4,7 @@
 
 template<class Elm> struct IntpqEntry {
 	Elm *nxt, *prev;
-	IntpqEntry(void) : nxt(NULL), prev(NULL) {}
+	IntpqEntry(void) : prev(NULL) {}
 };
 
 template <class Ops, class Elm> class Intpq {
@@ -25,10 +25,10 @@ public:
 	void push(Elm *e, unsigned int prio) {
 		if (prio >= nbins)
 			resize(prio == 0 ? Initsz : (prio + 1) * 1.5);
-		if (bins[prio]) {
+		if (bins[prio])
 			Ops::entry(bins[prio]).prev = e;
-			Ops::entry(e).nxt = bins[prio];
-		}
+		Ops::entry(e).nxt = bins[prio];
+		Ops::entry(e).prev = e;
 		bins[prio] = e;
 
 		if (fill == 0 || prio < end)
@@ -48,10 +48,10 @@ public:
 		Elm *e = bins[end];
 		IntpqEntry<Elm> &ent = Ops::entry(e);
 		if (ent.nxt)
-			Ops::entry(ent.nxt).prev = NULL;
-
+			Ops::entry(ent.nxt).prev = ent.nxt;
 		bins[end] = ent.nxt;
-		ent.nxt = ent.prev = NULL;
+		ent.prev = NULL;
+
 		fill--;
 
 		return e;
@@ -59,13 +59,18 @@ public:
 
 	void rm(Elm *e, unsigned int prio) {
 		IntpqEntry<Elm> &ent = Ops::entry(e);
-		if (ent.nxt)
-			Ops::entry(ent.nxt).prev = ent.prev;
-		if (ent.prev)
-			Ops::entry(ent.prev).nxt = ent.nxt;
-		else
+		assert(mem(e));
+		if (fst(e)) {
+			if (ent.nxt)
+				Ops::entry(ent.nxt).prev = ent.nxt;
 			bins[prio] = ent.nxt;
-		ent.nxt = ent.prev = NULL;
+		} else {
+			assert (ent.prev != e);
+			if (ent.nxt)
+				Ops::entry(ent.nxt).prev = ent.prev;
+			Ops::entry(ent.prev).nxt = ent.nxt;
+		}
+		ent.prev = NULL;
 		fill--;
 	}
 
@@ -74,7 +79,11 @@ public:
 	}
 
 	bool mem(Elm *e) {
-		return Ops::entry(e).nxt == NULL;
+		return Ops::entry(e).prev != NULL;
+	}
+
+	bool fst(Elm *e) {
+		return Ops::entry(e).prev == e;
 	}
 
 private:
