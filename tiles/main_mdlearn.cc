@@ -26,7 +26,7 @@ static void search(TilesDomain &d, Search<TilesDomain> &srch, TilesDomain::State
 
 static Search<TilesDomain> *getsearch(int argc, char *argv[]) {
 	Search<TilesDomain> *srch = NULL;
-	srch = new Idastar<TilesDomain, true>();
+	srch = new Idastar<TilesDomain, true>(argc, argv);
 	return srch;
 
 }

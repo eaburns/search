@@ -27,9 +27,9 @@ static Search<TilesMdist> *getsearch(int argc, char *argv[]) {
 	Search<TilesMdist> *srch = NULL;
 
 	if (argc > 1 && strcmp(argv[1], "idastar") == 0)
-		srch = new Idastar<TilesMdist, true>();
+		srch = new Idastar<TilesMdist, true>(argc, argv);
 	else
-		srch = new Astar<TilesMdist>();
+		srch = new Astar<TilesMdist>(argc, argv);
 
 	return srch;
 }

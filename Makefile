@@ -10,6 +10,8 @@ OBJS=\
 	utils/testing.o\
 	utils/hash.o\
 	utils/rand.o\
+	\
+	search/search.o\
 
 TMPLS=\
 	search/openlist.hpp\

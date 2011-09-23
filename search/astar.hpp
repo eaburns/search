@@ -44,13 +44,11 @@ template <class D> class Astar : public Search<D> {
 public:
 
 	Result<D> search(D &d, typename D::State &s0) {
-		res = Result<D>(true);
-
 		Node<D, Cost> *n0 = init(d, s0);
 		closed.add(n0);
 		open.push(n0);
 
-		while (!open.empty()) {
+		while (!open.empty() && !Search<D>::limit()) {
 			Node<D, Cost> *n = open.pop();
 			State buf, &state = d.unpack(buf, n->packed);
 
@@ -61,16 +59,18 @@ public:
 
 			expand(d, n, state);
 		}
-		res.finish();
+		Search<D>::res.finish();
 
 		closed.prstats(stdout, "closed ");
 		dfpair(stdout, "open list type", "%s", open.kind());
 		dfpair(stdout, "node size", "%u", sizeof(Node<D, Cost>));
 
-		return res;
+		return Search<D>::res;
 	}
 
-	Astar(void) : closed(30000001) {}
+	Astar(int argc, char *argv[]) :
+		Search<D>(argc, argv),
+		closed(30000001) {}
 
 private:
 
@@ -81,14 +81,15 @@ private:
 	typedef typename D::Oper Oper;
 
 	void expand(D &d, Node<D, Cost> *n, State &state) {
-		res.expd++;
+		Search<D>::res.expd++;
 
-		for (unsigned int i = 0; i < d.nops(state); i++) {
+		unsigned int nops = d.nops(state);
+		for (unsigned int i = 0; i < nops; i++) {
 			Oper op = d.nthop(state, i);
 			if (op == n->pop)
 				continue;
 			Node<D, Cost> *k = kid(d, n, state, op);
-			res.gend++;
+			Search<D>::res.gend++;
 
 			considerkid(d, k);
 		}
@@ -98,12 +99,12 @@ private:
 		unsigned long h = k->packed.hash();
 		Node<D, Cost> *dup = closed.find(k->packed, h);
 		if (dup) {
-			res.dups++;
+			Search<D>::res.dups++;
 			if (k->g >= dup->g) {
 				nodes.destroy(k);
 				return;
 			}
-			res.reopnd++;
+			Search<D>::res.reopnd++;
 			if (open.mem(dup))
 				open.pre_update(dup);
 
@@ -150,12 +151,12 @@ private:
 	}
 
 	void handlesol(D &d, Node<D, Cost> *n) {
-		res.cost = n->g;
+		Search<D>::res.cost = n->g;
 
 		for ( ; n; n = n->parent) {
 			State buf;
 			State &state = d.unpack(buf, n->packed);
-			res.path.push_back(state);
+			Search<D>::res.path.push_back(state);
 		}
 	}
 
@@ -168,7 +169,6 @@ private:
 		}
 	};
 
-	Result<D> res;
 	OpenList< Node<D, Cost>, Node<D, Cost>, Cost > open;
  	Htable< Closedops, PackedState&, Node<D, Cost>, 0 > closed;
 	boost::object_pool< Node<D, Cost> > nodes;

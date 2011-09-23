@@ -14,12 +14,11 @@ public:
 	typedef typename D::Oper Oper;
 
 	Result<D> search(D &d, State &s0) {
-		res = Result<D>(false);
 		bound = d.h(s0);
 		dfrowhdr(stdout, "iter", 4, "iter no", "iter bound",
 			"iter expd", "iter gend");
 
-		for (int i = 0; /* forever */; i++) {
+		for (int i = 0; !Search<D>::limit(); i++) {
 			minoob = D::InfCost;
 
 			if (dfs(d, s0, D::Nop, 0))
@@ -28,22 +27,24 @@ public:
 			d.checkpoint();
 
 			dfrow(stdout, "iter", "dguu", (long) i, (double) bound,
-				res.expd, res.gend); 
+				Search<D>::res.expd, Search<D>::res.gend); 
 
 			bound = minoob;
 		}
 
-		res.finish();
-		return res;
+		Search<D>::res.finish();
+		return Search<D>::res;
 	}
+
+	Idastar(int argc, char *argv[]) : Search<D>(argc, argv) { }
 
 private:
 	bool dfs(D &d, State &s, Oper pop, Cost g) {
 		Cost f = g + d.h(s);
 
 		if ((unitcost || f <= bound) && d.isgoal(s)) {
-			res.cost = g;
-			res.path.push_back(s);
+			Search<D>::res.cost = g;
+			Search<D>::res.path.push_back(s);
 			return true;
 		}
 
@@ -53,14 +54,17 @@ private:
 			return false;
 		}
 
-		res.expd++;
+		Search<D>::res.expd++;
 
-		for (unsigned int n = 0; n < d.nops(s); n++) {
+		unsigned int nops = d.nops(s);
+		for (unsigned int n = 0; n < nops; n++) {
+			if (Search<D>::limit())
+				return false;
 			Oper op = d.nthop(s, n);
 			if (op == pop)
 				continue;
 
-			res.gend++;
+			Search<D>::res.gend++;
 
 			Undo u(s, op);
 			Oper rev = d.revop(s, op);
@@ -71,7 +75,7 @@ private:
 			d.undo(s, u);
 
 			if (goal) {
-				res.path.push_back(s);
+				Search<D>::res.path.push_back(s);
 				return true;
 			}
 		}
@@ -79,7 +83,6 @@ private:
 		return false;
 	}
 	
-	Result<D> res;
 	Cost bound;
 	Cost minoob;
 };
