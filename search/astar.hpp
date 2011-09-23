@@ -104,7 +104,7 @@ private:
 				return;
 			}
 			res.reopnd++;
-			if (!open.mem(dup))
+			if (open.mem(dup))
 				open.pre_update(dup);
 
 			dup->f = dup->f - dup->g + k->g;
