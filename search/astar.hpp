@@ -1,8 +1,7 @@
-#include <boost/pool/object_pool.hpp>
-#include <boost/optional.hpp>
 #include "../incl/search.hpp"
 #include "../structs/htable.hpp"
 #include "../search/openlist.hpp"
+#include "../utils/pool.hpp"
 
 template <class D, class Cost> struct Node {
 	typename D::PackedState packed;
@@ -70,7 +69,8 @@ public:
 
 	Astar(int argc, char *argv[]) :
 		Search<D>(argc, argv),
-		closed(30000001) {}
+		closed(30000001),
+		nodes(35000000) {}
 
 private:
 
@@ -171,5 +171,5 @@ private:
 
 	OpenList< Node<D, Cost>, Node<D, Cost>, Cost > open;
  	Htable< Closedops, PackedState&, Node<D, Cost>, 0 > closed;
-	boost::object_pool< Node<D, Cost> > nodes;
+	Pool< Node<D, Cost> > nodes;
 };
