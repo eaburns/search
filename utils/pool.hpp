@@ -37,7 +37,7 @@ public:
 		return new (o) Obj();
 	}
 
-	void destroy(Obj *o) {
+	void destruct(Obj *o) {
 		o->~Obj();
 		put(o);
 	}

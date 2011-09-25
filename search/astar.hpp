@@ -101,7 +101,7 @@ private:
 		if (dup) {
 			Search<D>::res.dups++;
 			if (k->g >= dup->g) {
-				nodes.destroy(k);
+				nodes.destruct(k);
 				return;
 			}
 			Search<D>::res.reopnd++;
@@ -117,7 +117,7 @@ private:
 				open.push(dup);
 			else
 				open.post_update(dup);
-			nodes.destroy(k);
+			nodes.destruct(k);
 		} else {
 			closed.add(k, h);
 			open.push(k);
