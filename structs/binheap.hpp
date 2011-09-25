@@ -52,8 +52,10 @@ private:
 	}
 
 	int pullup(int i) {
+		if (i == 0)
+			return i;
 		int p = parent(i);
-		if (i > 0 && Ops::pred(heap[i], heap[p])) {
+		if (Ops::pred(heap[i], heap[p])) {
 			swap(i, p);
 			return pullup(p);
 		}
