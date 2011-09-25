@@ -5,6 +5,8 @@ bool htable_find_test(void);
 bool htable_find_rand_test(void);
 bool intpq_push_test(void);
 bool intpq_pop_test(void);
+bool binheap_push_test(void);
+bool binheap_pop_test(void);
 
 static const Test tests[] = {
 	Test("htable add test", htable_add_test),
@@ -12,6 +14,8 @@ static const Test tests[] = {
 	Test("htable find rand test", htable_find_test),
 	Test("intpq push test", intpq_push_test),
 	Test("intpq pop test", intpq_pop_test),
+	Test("binheap push test", binheap_push_test),
+	Test("binheap pop test", binheap_pop_test),
 };
 
 enum { Ntests = sizeof(tests) / sizeof(tests[0]) };

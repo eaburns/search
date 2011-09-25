@@ -7,6 +7,64 @@ struct UIntOps {
 	static bool pred(unsigned int a, unsigned int b) { return a < b; }
 };
 
+enum { N = 1000 };
+
+bool binheap_push_test(void) {
+	bool res = true;
+	Binheap<UIntOps, unsigned int> pq;
+	unsigned int ints[N];
+
+	for (unsigned int i = 0; i < N; i++) {
+		ints[i] = rand() % 100;
+		pq.push(ints[i]);
+		if (pq.heap.size() != (unsigned long) i+1) {
+			testpr("Expected fill of %u got %lu\n", i+1, pq.heap.size());
+			res = false;
+		}
+	}
+ 
+	return res;
+}
+
+bool binheap_pop_test(void) {
+	bool res = true;
+	Binheap<UIntOps, unsigned int> pq;
+	unsigned int ints[N];
+
+	for (int i = 0; i < N; i++) {
+		ints[i] = rand() % 100;
+		pq.push(ints[i]);
+	}
+
+	boost::optional<unsigned int> e = pq.pop();
+	if (!e) {
+		testpr("Empty pop");
+		res = false;
+	}
+	int min = *e;
+
+	for (unsigned int i = 1; i < N; i++) {
+		e = pq.pop();
+		if (!e) {
+			testpr("Empty pop");
+			res = false;
+		}
+
+		int m = *e;
+		if (pq.heap.size() != (unsigned long) N - (i+1)) {
+			testpr("Expected fill of %u got %lu\n", N-(i+1), pq.heap.size());
+			res = false;
+		}
+
+		if (m < min) {
+			testpr("%d came out after %d\n", m, min);
+			res = false;
+		}
+		min = m;
+	}
+	return res;
+}
+
 unsigned int *ints;
 
 void binheap_push_bench(unsigned long n, double *strt, double *end) {

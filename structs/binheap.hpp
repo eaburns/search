@@ -18,6 +18,8 @@ public:
 			heap[0] = heap.back();
 			heap.pop_back();
 			pushdown(0);
+		} else {
+			heap.pop_back();
 		}
 		Ops::setind(res, -1);
 
@@ -34,6 +36,8 @@ public:
 	}
 
 private:
+	friend bool binheap_push_test(void);
+	friend bool binheap_pop_test(void);
 
 	int parent(int i) {
 		return (i - 1) / 2;
@@ -49,7 +53,7 @@ private:
 
 	int pullup(int i) {
 		int p = parent(i);
-		if (p > 0 && Ops::pred(heap[i], heap[p])) {
+		if (p >= 0 && Ops::pred(heap[i], heap[p])) {
 			swap(i, p);
 			return pullup(p);
 		}
