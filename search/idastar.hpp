@@ -56,8 +56,7 @@ private:
 
 		Search<D>::res.expd++;
 
-		unsigned int nops = d.nops(s);
-		for (unsigned int n = 0; n < nops; n++) {
+		for (unsigned int n = 0; n < d.nops(s); n++) {
 			if (Search<D>::limit())
 				return false;
 			Oper op = d.nthop(s, n);

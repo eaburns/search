@@ -3,7 +3,7 @@
 #include <cstring>
 #include <cstdio>
 
-SearchStats::SearchStats(void) : expd(0), gend(0), reopnd(0), dups(-1) {
+SearchStats::SearchStats(void) : expd(0), gend(0), reopnd(0), dups(0) {
 	start();
 }
 

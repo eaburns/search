@@ -83,8 +83,7 @@ private:
 	void expand(D &d, Node<D, Cost> *n, State &state) {
 		Search<D>::res.expd++;
 
-		unsigned int nops = d.nops(state);
-		for (unsigned int i = 0; i < nops; i++) {
+		for (unsigned int i = 0; i < d.nops(state); i++) {
 			Oper op = d.nthop(state, i);
 			if (op == n->pop)
 				continue;
