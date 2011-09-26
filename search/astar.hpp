@@ -35,10 +35,6 @@ template <class D> struct Node <D, char> {
 	static IntpqEntry<Node> &openentry(Node *n) { return n->openent; }
 };
 
-template <class D> struct Node <D, short> : public Node <D, char> {};
-template <class D> struct Node <D, int> : public Node <D, char> {};
-template <class D> struct Node <D, long> : public Node <D, char> {};
-
 template <class D> class Astar : public Search<D> {
 public:
 
