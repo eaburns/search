@@ -10,7 +10,7 @@ template<class Elm> struct IntpqEntry {
 template <class Ops, class Elm> class Intpq {
 public:
 
-	enum { Initsz = 64 };
+	enum { Initsz = 1024 };
 
 	Intpq(unsigned int sz = Initsz)
 		: fill(0), nresize(0), end(0), nbins(0), bins(NULL) {
