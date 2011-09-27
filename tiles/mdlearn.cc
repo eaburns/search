@@ -5,7 +5,7 @@
 #include <algorithm>
 
 TilesMDLearn::TilesMDLearn(FILE *in) : TilesMdist(in) {
-	initops(10);
+	initops(100);
 }
 
 void TilesMDLearn::initops(unsigned int dmax) {
