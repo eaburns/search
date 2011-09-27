@@ -85,7 +85,7 @@ private:
 		OpinfoPtr(void) : ptr(NULL) { }
 
 		bool operator<(const OpinfoPtr &other) const {
-			return ptr->prob() < other.ptr->prob();
+			return ptr->prob() > other.ptr->prob();
 		}
 
 		Pos b(void) const { return ptr->b; }
