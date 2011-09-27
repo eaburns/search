@@ -50,23 +50,60 @@ public:
 
 private:
 	void initops(unsigned int);
-	void initdests(unsigned int);
-	void sortops(void);
-	void resetprobs(void);
 
+	void sortops(void) {
+		for (unsigned int d = 0; d < ops.size(); d++) {
+			for (unsigned int i = 0; i < Ntiles; i++)
+				ops[d][i].sort();
+		}
+	}
+	
+	void resetprobs(void) {
+		for (unsigned int d = 0; d < ops.size(); d++) {
+		for (unsigned int i = 0; i < Ntiles; i++)
+			ops[d][i].resetcounts();
+		}
+	}
+	 
 	struct Opinfo {
 		Pos b;
 		unsigned int nother;
 		unsigned int ndec;	// Number of times h decreased.
-		bool operator<(const Opinfo &o) const {
-			return (double) ndec / (double) (nother + ndec)
-				> (double) o.ndec / (double) (o.nother + o.ndec);
+
+		void resetcounts(void) {
+			nother = ndec = 0;
+		}
+
+		double prob(void) const {
+			return (double) ndec / (double) (ndec  + nother);
+		}
+
+		bool operator<(const Opinfo &other) const {
+			return prob() < other.prob();
 		}
 	};
+
 	struct Opvec {
 		unsigned int n;
-		boost::array<Opinfo,4> mvs;
+		boost::array<Opinfo, 4> mvs;
 		Opinfo *dests[Ntiles];
+
+		void init(Pos b);
+
+		void initdests(void) {
+			for (unsigned int i = 0; i < n; i++)
+				dests[mvs[i].b] = &mvs[i];
+		}
+
+		void sort(void) {
+			std::sort(mvs.begin(), mvs.begin()+n);
+			initdests();
+		}
+
+		void resetcounts(void) {
+			for (unsigned int i = 0; i < 4; i++)
+				mvs[i].resetcounts();
+		}
 	};
 	std::vector< boost::array<Opvec, Ntiles> > ops;
 };
