@@ -5,10 +5,10 @@
 #include <algorithm>
 
 TilesMDLearn::TilesMDLearn(FILE *in) : TilesMdist(in) {
-	initops(100);
+	resize(100);
 }
 
-void TilesMDLearn::initops(unsigned int dmax) {
+void TilesMDLearn::resize(unsigned int dmax) {
 	unsigned int oldsz = ops.size();
 	if (dmax+1 > ops.capacity())
 		ops.reserve((dmax+1) * 2);

@@ -20,9 +20,13 @@ public:
 		return State(TilesMdist::initstate());
 	}
 
-	Oper nthop(State &s, unsigned int n) {
+	unsigned int nops(State &s) {
 		if (s.d >= ops.size())
-			initops(s.d);
+			resize(s.d);
+		return ops[s.d][s.b].n;
+	}
+
+	Oper nthop(State &s, unsigned int n) {
 		return ops[s.d][s.b].sorted[n].b();
 	}
 
@@ -49,7 +53,7 @@ public:
 	}
 
 private:
-	void initops(unsigned int);
+	void resize(unsigned int);
 
 	void sortops(void) {
 		for (unsigned int d = 0; d < ops.size(); d++) {
