@@ -23,7 +23,7 @@ public:
 	Oper nthop(State &s, unsigned int n) {
 		if (s.d >= ops.size())
 			initops(s.d);
-		return ops[s.d][s.b].mvs[n].b;
+		return ops[s.d][s.b].sorted[n].b();
 	}
 
 	void undo(State &s, Undo &u) {
@@ -77,27 +77,32 @@ private:
 		double prob(void) const {
 			return (double) ndec / (double) (ndec  + nother);
 		}
+	};
 
-		bool operator<(const Opinfo &other) const {
-			return prob() < other.prob();
+	// Wrap the pointer in a class so that it has operator<
+	// and can be sorted.
+	struct OpinfoPtr {
+		OpinfoPtr(void) : ptr(NULL) { }
+
+		bool operator<(const OpinfoPtr &other) const {
+			return ptr->prob() < other.ptr->prob();
 		}
+
+		Pos b(void) const { return ptr->b; }
+
+		Opinfo *ptr;
 	};
 
 	struct Opvec {
 		unsigned int n;
-		boost::array<Opinfo, 4> mvs;
+		Opinfo mvs[4];
 		Opinfo *dests[Ntiles];
+		boost::array<OpinfoPtr, 4> sorted;
 
 		void init(Pos b);
 
-		void initdests(void) {
-			for (unsigned int i = 0; i < n; i++)
-				dests[mvs[i].b] = &mvs[i];
-		}
-
 		void sort(void) {
-			std::sort(mvs.begin(), mvs.begin()+n);
-			initdests();
+			std::sort(sorted.begin(), sorted.begin()+n);
 		}
 
 		void resetcounts(void) {
@@ -105,5 +110,5 @@ private:
 				mvs[i].resetcounts();
 		}
 	};
-	std::vector< boost::array<Opvec, Ntiles> > ops;
+	std::vector<Opvec*> ops;
 };
