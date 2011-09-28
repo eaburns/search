@@ -103,9 +103,6 @@ public:
 		if (!wasgap && hasgap)
 			res->h++;
 
-		Cost gaps = ngaps(*res);
-		assert (res->h == gaps);
-
 		return *res;
 	}
 

@@ -25,22 +25,18 @@ void TilesMDLearn::Opvec::init(Pos i) {
 	n = 0;
 	if (i >= Width) {
 		mvs[n++].b = i - Width;
-		sorted[n-1].ptr = &mvs[n-1];
-		dests[mvs[n-1].b] = &mvs[n-1];
+		dests[mvs[n-1].b] = sorted[n-1].ptr = &mvs[n-1];
 	}
 	if (i % Width > 0) {
 		mvs[n++].b = i - 1;
-		sorted[n-1].ptr = &mvs[n-1];
-		dests[mvs[n-1].b] = &mvs[n-1];
+		dests[mvs[n-1].b] = sorted[n-1].ptr = &mvs[n-1];
 	}
 	if (i % Width < Width - 1) {
 		mvs[n++].b = i + 1;
-		sorted[n-1].ptr = &mvs[n-1];
-		dests[mvs[n-1].b] = &mvs[n-1];
+		dests[mvs[n-1].b] = sorted[n-1].ptr = &mvs[n-1];
 	}
 	if (i < Ntiles - Width) {
 		mvs[n++].b = i + Width;
-		sorted[n-1].ptr = &mvs[n-1];
-		dests[mvs[n-1].b] = &mvs[n-1];
+		dests[mvs[n-1].b] = sorted[n-1].ptr = &mvs[n-1];
 	}
 }

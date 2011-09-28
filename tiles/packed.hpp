@@ -2,6 +2,8 @@
 #include <boost/cstdint.hpp>
 #include <boost/integer/static_log2.hpp>
 
+void fatal(const char*, ...);
+
 class Tiles;
 
 template<int Ntiles> class PackedTiles {
@@ -12,15 +14,17 @@ template<int Ntiles> class PackedTiles {
 	unsigned char bytes[nbytes];
 public:
 	void pack(Tiles::Tile ts[]) {
-		assert("Unimplemented" == 0);
+		fatal("Tiles::pack is unimplemented");
 	}
 
 	Tiles::Pos unpack(Tiles::Tile ts[]) {
-		assert("Unimplemented" == 0);
+		fatal("Tiles::unpack is unimplemented");
+		return 0;
 	}
 
 	Tiles::Pos unpack_md(unsigned int md[][Ntiles], Tiles::Tile ts[], Tiles::Cost *h) {
-		assert("Unimplemented" == 0);
+		fatal("Tiles::unpack_md is unimplemented");
+		return 0;
 	}
 
 	unsigned long hash(void) {
