@@ -23,6 +23,8 @@ TMPLS=\
 	structs/htable.hpp\
 	\
 	utils/pool.hpp\
+	\
+	pancake/pancake.hpp
 
 HDRS=\
 	incl/utils.hpp\
@@ -37,6 +39,7 @@ all: everything
 include structs/Make.inc
 include utils/Make.inc
 include tiles/Make.inc
+include pancake/Make.inc
 
 everything: $(TMPLS:.hpp=.hpp.gch) $(BINS)
 
