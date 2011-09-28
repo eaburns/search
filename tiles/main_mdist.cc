@@ -4,32 +4,34 @@
 #include "../incl/utils.hpp"
 #include <cstdio>
 
-static void search(TilesMdist&, Search<TilesMdist>&, TilesMdist::State&);
-static Search<TilesMdist> *getsearch(int, char *[]);
+typedef TilesMdist Domain;
+
+static void search(Domain&, Search<Domain>&, Domain::State&);
+static Search<Domain> *getsearch(int, char *[]);
 
 int main(int argc, char *argv[]) {
-	TilesMdist d(stdin);
-	Search<TilesMdist> *srch = getsearch(argc, argv);
-	TilesMdist::State s0 = d.initstate();
+	Domain d(stdin);
+	Search<Domain> *srch = getsearch(argc, argv);
+	Domain::State s0 = d.initstate();
 	search(d, *srch, s0);
 	delete srch;
 	return 0;
 }
 
-static void search(TilesMdist &d, Search<TilesMdist> &srch, TilesMdist::State &s0) {
+static void search(Domain &d, Search<Domain> &srch, Domain::State &s0) {
 	dfpair(stdout, "initial heuristic", "%d", d.h(s0));
-	Result<TilesMdist> res = srch.search(d, s0);
+	srch.search(d, s0);
 	srch.output(stdout);
 	dfprocstatus(stdout);
 }
 
-static Search<TilesMdist> *getsearch(int argc, char *argv[]) {
-	Search<TilesMdist> *srch = NULL;
+static Search<Domain> *getsearch(int argc, char *argv[]) {
+	Search<Domain> *srch = NULL;
 
 	if (argc > 1 && strcmp(argv[1], "idastar") == 0)
-		srch = new Idastar<TilesMdist, true>(argc, argv);
+		srch = new Idastar<Domain, true>(argc, argv);
 	else
-		srch = new Astar<TilesMdist>(argc, argv);
+		srch = new Astar<Domain>(argc, argv);
 
 	return srch;
 }

@@ -38,7 +38,7 @@ template <class D> struct Node <D, char> {
 template <class D> class Astar : public Search<D> {
 public:
 
-	Result<D> search(D &d, typename D::State &s0) {
+	Result<D> &search(D &d, typename D::State &s0) {
 		Node<D, Cost> *n0 = init(d, s0);
 		closed.add(n0);
 		open.push(n0);
