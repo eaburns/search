@@ -131,7 +131,7 @@ public:
 private:
 
 	bool inplace(Oper op) {
-		return op < Ncakes / 2 && false;
+		return op < Ncakes / 2;
 	}
 
 	void flipinto(State &dst, const State &s, Oper op) {
