@@ -28,22 +28,24 @@ public:
 		bool eq(State &other) const {
 			for (unsigned int i = 0; i < Ncakes; i++) {
 				if (cakes[i] != other.cakes[i])
-					return true;
+					return false;
 			}
 			return true;
 		}
 	private:
 		friend class Pancake;
+		friend class Undo;
 		Cake cakes[Ncakes];
 		Cost h;
 	};
 
 	class Undo {
 	public:
-		Undo(State &s, Oper o) : op(o) { }
+		Undo(State &s, Oper o) : op(o), h(s.h) { }
 	private:
 		friend class Pancake;
 		Oper op;
+		Cost h;
 	};
 
 	typedef State PackedState;
@@ -78,24 +80,33 @@ public:
 
 	void undo(State &s, Undo &u) {
 		if (inplace(u.op)) {
-			if (!gap(s, u.op))
-				s.h++;
+			s.h = u.h;
 			flip(s, u.op);
 		}
 	}
 
 	State &apply(State &buf, State &s, Oper op) {
-		State &res = s;
+		State *res = &s;
+		bool wasgap = gap(s, op);
 
-		if (inplace(op))
+		if (inplace(op)) {
 			flip(s, op);
-		else
-			res = flipinto(buf, s, op);
+		} else {
+			flipinto(buf, s, op);
+			res = &buf;
+			res->h = s.h;
+		}
 
-		if (!gap(res, op-1))
-			res.h--;
+		bool hasgap = gap(*res, op);
+		if (wasgap && !hasgap)
+			res->h--;
+		if (!wasgap && hasgap)
+			res->h++;
 
-		return res;
+		Cost gaps = ngaps(*res);
+		assert (res->h == gaps);
+
+		return *res;
 	}
 
 	void pack(PackedState &dst, State &s) {
@@ -120,36 +131,35 @@ public:
 private:
 
 	bool inplace(Oper op) {
-		return op < Ncakes / 2;
+		return op < Ncakes / 2 && false;
 	}
 
-	State &flipinto(State &dst, State &s, Oper op) {
-		assert (op > 1);
-		assert (op <= Ncakes);
+	void flipinto(State &dst, const State &s, Oper op) {
+		assert (op > 0);
+		assert (op < Ncakes);
 
-		for (int m = 0, n = op - 1; n >= 0; n--, m++)
+		for (int m = 0, n = op; n >= 0; n--, m++)
 			dst.cakes[m] = s.cakes[n];
-		for (int n = op; n < Ncakes; n++)
-			dst.cakes[n] = s.cakes[n];
 
-		return dst;
+		for (int n = op+1; n < Ncakes; n++)
+			dst.cakes[n] = s.cakes[n];
 	}
 
 	void flip(State &s, Oper op) {
-		assert (op > 1);
-		assert (op <= Ncakes);
+		assert (op > 0);
+		assert (op < Ncakes);
 
-		for (int n = 0; n < op; n++) {
+		for (int n = 0; n <= op / 2; n++) {
 			Cake tmp = s.cakes[n];
-			s.cakes[n] = s.cakes[op - 1 - n];
-			s.cakes[op - 1 - n] = tmp;
+			s.cakes[n] = s.cakes[op - n];
+			s.cakes[op - n] = tmp;
 		}
 	}
 
-	unsigned int ngaps(State &s) {
-		unsigned int gaps = 0;
+	Cost ngaps(State &s) {
+		Cost gaps = 0;
 
-		for (unsigned int i = 0; i < Ncakes - 1; i++) {
+		for (unsigned int i = 0; i < Ncakes; i++) {
 			if (gap(s, i)) 
 				gaps++;
 		}
@@ -159,8 +169,10 @@ private:
 
 	// Is there a gap between cakes n and n+1?
 	bool gap(State &s, unsigned int n) {
-		assert(n != 0);
-		return abs(s.cakes[n] - s.cakes[n+1]) == 1;
+		assert(n < Ncakes);
+		if (n == Ncakes-1)
+			return s.cakes[Ncakes-1] != Ncakes-1;
+		return abs(s.cakes[n] - s.cakes[n+1]) != 1;
 	}
 
 	Cake init[Ncakes];
