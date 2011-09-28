@@ -23,8 +23,6 @@ TMPLS=\
 	structs/htable.hpp\
 	\
 	utils/pool.hpp\
-	\
-	pancake/pancake.hpp
 
 HDRS=\
 	incl/utils.hpp\
