@@ -1,1 +1,23 @@
-* Port PDB code from C
+* Port tiles PDB code from C
+
+* Bit-packed pancake states
+
+* More domains:
+
+	- Robot arm
+
+	- Dynamic robot path finding
+
+	- Grid pathfinding?
+
+	- Roadmap path finding
+
+	- Visibility navigation
+
+	- Hanoi
+
+	- Topspin
+
+	- Rubik's cube
+
+	- Multiple sequence alignment
