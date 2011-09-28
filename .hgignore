@@ -4,3 +4,4 @@ syntax: glob
 structs/test
 tiles/15*
 tiles/24*
+pancake/8*
