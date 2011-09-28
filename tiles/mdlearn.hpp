@@ -47,7 +47,7 @@ public:
 		return s;
 	}
 
-	void checkpoint(void) {
+	void iterdone(void) {
 		sortops();
 		resetprobs();
 	}

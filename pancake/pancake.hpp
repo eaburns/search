@@ -115,7 +115,7 @@ public:
 		fputc('\n', out);
 	}
 
-	void checkpoint(void) { }
+	void iterdone(void) { }
 
 private:
 

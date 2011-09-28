@@ -97,7 +97,7 @@ public:
 		Tiles::dumptiles(out, s.ts);
 	}
 
-	void checkpoint(void) { }
+	void iterdone(void) { }
 
 protected:
 
