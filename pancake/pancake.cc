@@ -17,7 +17,7 @@ Pancake::Pancake(FILE *in) {
 	}
 }
 
-Pancake::State Pancake::initstate(void) {
+Pancake::State Pancake::initialstate(void) {
 	State s;
 
 	for (unsigned int i = 0; i < Ncakes; i++)

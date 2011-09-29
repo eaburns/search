@@ -10,6 +10,7 @@ extern "C" unsigned long hashbytes(unsigned char[], unsigned int);
 
 class Pancake {
 public:
+	enum { UnitCost = true };
 	enum { Ncakes = NCAKES };
 
 	typedef int Cake;
@@ -64,7 +65,7 @@ public:
 
 	Pancake(FILE*);
 
-	State initstate(void);
+	State initialstate(void);
 
 	Cost h(State &s) {
 		return s.h;

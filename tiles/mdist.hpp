@@ -4,6 +4,8 @@
 
 class TilesMdist : public Tiles {
 public:
+	enum { UnitCost = true };
+
 	typedef PackedTiles<Ntiles> PackedState;
 
 	class State {
@@ -41,7 +43,7 @@ public:
 
 	TilesMdist(FILE*);
 
-	State initstate(void);
+	State initialstate(void);
 
 	Cost h(State &s) {
 		return s.h;

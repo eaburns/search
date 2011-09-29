@@ -63,5 +63,4 @@ protected:
 	Limit lim;
 };
 
-
 #endif	// _SEARCH_HPP_

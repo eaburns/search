@@ -4,7 +4,7 @@
 void dfrowhdr(FILE *, const char *name, int ncols, ...);
 void dfrow(FILE *, const char *name, const char *colfmt, ...);
 
-template <class D, bool unitcost=false> class Idastar : public Search<D> {
+template <class D> class Idastar : public Search<D> {
 
 public:
 
@@ -42,7 +42,7 @@ private:
 	bool dfs(D &d, State &s, Oper pop, Cost g) {
 		Cost f = g + d.h(s);
 
-		if ((unitcost || f <= bound) && d.isgoal(s)) {
+		if ((D::UnitCost || f <= bound) && d.isgoal(s)) {
 			Search<D>::res.cost = g;
 			Search<D>::res.path.push_back(s);
 			return true;

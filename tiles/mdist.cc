@@ -6,7 +6,7 @@ TilesMdist::TilesMdist(FILE *in) : Tiles(in) {
 	initincr();
 }
 
-TilesMdist::State TilesMdist::initstate(void) {
+TilesMdist::State TilesMdist::initialstate(void) {
 	State s;
 	s.h = 0;
 	for (int i = 0; i < Ntiles; i++) {

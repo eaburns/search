@@ -14,6 +14,7 @@ OBJS=\
 	search/search.o\
 
 TMPLS=\
+	search/main.hpp\
 	search/openlist.hpp\
 	search/idastar.hpp\
 	search/astar.hpp\
