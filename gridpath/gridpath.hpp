@@ -53,29 +53,27 @@ public:
 	unsigned int nops(State &s) {
 		if (s.nops < 0) {
 			s.nops = 0;
-			if (map.terrainok(s.loc, map.up(s.loc)))
+
+			bool up = map.terrainok(s.loc, map.up(s.loc));
+			bool down = map.terrainok(s.loc, map.down(s.loc));
+			bool left = map.terrainok(s.loc, map.left(s.loc));
+			bool right = map.terrainok(s.loc, map.right(s.loc));
+
+			if (up)
 				s.ops[s.nops++] = map.up(s.loc);
-			if (map.terrainok(s.loc, map.down(s.loc)))
+			if (down)
 				s.ops[s.nops++] = map.down(s.loc);
-			if (map.terrainok(s.loc, map.left(s.loc)))
+			if (left)
 				s.ops[s.nops++] = map.left(s.loc);
-			if (map.terrainok(s.loc, map.right(s.loc)))
+			if (right)
 				s.ops[s.nops++] = map.right(s.loc);
-			if (map.terrainok(s.loc, map.up(map.left(s.loc))) &&
-				(map.terrainok(s.loc, map.up(s.loc))
-					|| map.terrainok(s.loc, map.left(s.loc))))
+			if (map.terrainok(s.loc, map.up(map.left(s.loc))) && (up || left))
 				s.ops[s.nops++] = map.up(map.left(s.loc));
-			if (map.terrainok(s.loc, map.down(map.left(s.loc))) &&
-				(map.terrainok(s.loc, map.down(s.loc))
-					|| map.terrainok(s.loc, map.left(s.loc))))
+			if (map.terrainok(s.loc, map.down(map.left(s.loc))) && (down || left))
 				s.ops[s.nops++] = map.down(map.left(s.loc));
-			if (map.terrainok(s.loc, map.up(map.right(s.loc))) &&
-				(map.terrainok(s.loc, map.up(s.loc))
-					|| map.terrainok(s.loc, map.right(s.loc))))
+			if (map.terrainok(s.loc, map.up(map.right(s.loc))) && (up || right))
 				s.ops[s.nops++] = map.up(map.right(s.loc));
-			if (map.terrainok(s.loc, map.down(map.right(s.loc))) &&
-				(map.terrainok(s.loc, map.down(s.loc))
-					|| map.terrainok(s.loc, map.right(s.loc))))
+			if (map.terrainok(s.loc, map.down(map.right(s.loc))) && (down || right))
 				s.ops[s.nops++] = map.down(map.right(s.loc));
 		}
 		return s.nops;
