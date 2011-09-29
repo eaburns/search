@@ -24,8 +24,6 @@ public:
 			if (dfs(d, s0, D::Nop, 0))
 				break;
 
-			d.iterdone();
-
 			dfrow(stdout, "iter", "dguu", (long) i, (double) bound,
 				Search<D>::res.expd, Search<D>::res.gend); 
 

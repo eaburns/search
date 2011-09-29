@@ -126,8 +126,6 @@ public:
 		fputc('\n', out);
 	}
 
-	void iterdone(void) { }
-
 private:
 
 	static Cost ngaps(Cake cakes[]) {

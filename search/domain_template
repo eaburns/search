@@ -1,0 +1,73 @@
+Here is the class template for creating a new domain.
+
+
+#include <cstdio>
+
+class <DOMAIN> {
+public:
+
+	enum { UnitCost = <UNITCOST?> };
+
+	typedef <COST> Cost;
+	typedef <OPER> Oper;
+
+	<DOMAIN>(FILE*);
+
+	class State {	…	};
+
+	class PackedState {	…	};
+
+	class Undo {	…	};
+
+	State initialstate(void);
+
+	Cost h(State &s) {
+		failwith("Unimplemented");
+		return 0.0;
+	}
+
+	bool isgoal(State &s) {
+		failwith("Unimplemented");
+		return false;
+	}
+
+	unsigned int nops(State &s) {
+		failwith("Unimplemented");
+		return 0;
+	}
+
+	Oper nthop(State &s, unsigned int n) {
+		failwith("Unimplemented");
+		return 0;
+	}
+
+	Oper revop(State &s, Oper op) {
+		failwith("Unimplemented");
+		return 0;
+	}
+
+	Cost opcost(State &s, Oper op) {
+		failwith("Unimplemented");
+		return 0;
+	}
+
+	void undo(State &s, Undo &u) { }
+
+	State &apply(State &buf, State &s, Oper op) {
+		failwith("Unimplemented");
+		return s;
+	}
+
+	void pack(PackedState &dst, State &src) {
+		failwith("Unimplemented");
+	}
+
+	State &unpack(State &buf, PackedState &pkd) {
+		failwith("Unimplemented");
+		return buf;
+	}
+
+	void dumpstate(FILE *out, State &s) {
+		failwith("Unimplemented");
+	}
+};

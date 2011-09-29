@@ -99,8 +99,6 @@ public:
 		Tiles::dumptiles(out, s.ts);
 	}
 
-	void iterdone(void) { }
-
 protected:
 
 	unsigned int md[Ntiles][Ntiles];
