@@ -79,31 +79,21 @@ public:
 	}
 
 	void undo(State &s, Undo &u) {
-		if (inplace(u.op)) {
-			s.h = u.h;
-			flip(s, u.op);
-		}
+		s.h = u.h;
+		flip(s, u.op);
 	}
 
 	State &apply(State &buf, State &s, Oper op) {
-		State *res = &s;
 		bool wasgap = gap(s, op);
+		flip(s, op);
 
-		if (inplace(op)) {
-			flip(s, op);
-		} else {
-			flipinto(buf, s, op);
-			res = &buf;
-			res->h = s.h;
-		}
-
-		bool hasgap = gap(*res, op);
+		bool hasgap = gap(s, op);
 		if (wasgap && !hasgap)
-			res->h--;
+			s.h--;
 		if (!wasgap && hasgap)
-			res->h++;
+			s.h++;
 
-		return *res;
+		return s;
 	}
 
 	void pack(PackedState &dst, State &s) {
@@ -126,21 +116,6 @@ public:
 	void iterdone(void) { }
 
 private:
-
-	bool inplace(Oper op) {
-		return op < Ncakes / 2;
-	}
-
-	void flipinto(State &dst, const State &s, Oper op) {
-		assert (op > 0);
-		assert (op < Ncakes);
-
-		for (int m = 0, n = op; n >= 0; n--, m++)
-			dst.cakes[m] = s.cakes[n];
-
-		for (int n = op+1; n < Ncakes; n++)
-			dst.cakes[n] = s.cakes[n];
-	}
 
 	void flip(State &s, Oper op) {
 		assert (op > 0);
