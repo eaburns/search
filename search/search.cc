@@ -1,4 +1,4 @@
-#include "../incl/search.hpp"
+#include "../search/search.hpp"
 #include <cstdlib>
 #include <cstring>
 #include <cstdio>

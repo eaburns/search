@@ -1,4 +1,4 @@
-#include "../incl/search.hpp"
+#include "../search/search.hpp"
 #include "../structs/htable.hpp"
 #include "../search/openlist.hpp"
 #include "../utils/pool.hpp"

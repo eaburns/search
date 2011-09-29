@@ -6,7 +6,7 @@
 #include <sys/utsname.h>
 #include <unistd.h>
 #include <sys/stat.h>
-#include "../incl/utils.hpp"
+#include "../utils/utils.hpp"
 
 enum { Bufsz = 256 };
 

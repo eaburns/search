@@ -1,5 +1,5 @@
 #include "pancake.hpp"
-#include "../incl/utils.hpp"
+#include "../utils/utils.hpp"
 #include <cstdio>
 #include <cerrno>
 

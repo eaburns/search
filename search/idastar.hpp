@@ -1,5 +1,5 @@
 #include <cstdio>
-#include "../incl/search.hpp"
+#include "../search/search.hpp"
 
 void dfrowhdr(FILE *, const char *name, int ncols, ...);
 void dfrow(FILE *, const char *name, const char *colfmt, ...);

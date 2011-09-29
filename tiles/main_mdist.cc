@@ -1,7 +1,7 @@
 #include "mdist.hpp"
 #include "../search/idastar.hpp"
 #include "../search/astar.hpp"
-#include "../incl/utils.hpp"
+#include "../utils/utils.hpp"
 #include <cstdio>
 
 typedef TilesMdist Domain;

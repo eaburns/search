@@ -1,6 +1,6 @@
 #include "mdlearn.hpp"
 #include "../search/idastar.hpp"
-#include "../incl/utils.hpp"
+#include "../utils/utils.hpp"
 #include <cstdio>
 
 typedef TilesMDLearn TilesDomain;

@@ -25,8 +25,8 @@ TMPLS=\
 	utils/pool.hpp\
 
 HDRS=\
-	incl/utils.hpp\
-	incl/search.hpp\
+	utils/utils.hpp\
+	search/search.hpp\
 
 HDRS+=$(TMPLS)
 

@@ -2,7 +2,7 @@
 #include <ctime>
 #include <cerrno>
 
-#include "../incl/utils.hpp"
+#include "../utils/utils.hpp"
 
 double walltime(void) {
 	struct timeval tv;
