@@ -8,7 +8,7 @@ double walltime(void) {
 	struct timeval tv;
 
 	if (gettimeofday(&tv, NULL) == -1)
-		fatalx(errno, "gettimeofday failed\n");
+		fatalx(errno, "gettimeofday failed");
 
 	return (double) tv.tv_sec + (double) tv.tv_usec / 1000000.0;
 }

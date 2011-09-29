@@ -6,14 +6,14 @@
 Pancake::Pancake(FILE *in) {
 	unsigned int ncakes;
 	if (fscanf(in, "%u", &ncakes) != 1)
-		fatalx(errno, "Failed to read the number of pancakes\n");
+		fatalx(errno, "Failed to read the number of pancakes");
 
 	if (ncakes != Ncakes)
-		fatal("Number of pancakes instance/compiler option mismatch\n");
+		fatal("Number of pancakes instance/compiler option mismatch");
 
 	for (unsigned int i = 0; i < Ncakes; i++) {
 		if (fscanf(in, " %d", init + i) != 1)
-			fatalx(errno, "Failed to read pancake number %d\n", i);
+			fatalx(errno, "Failed to read pancake number %d", i);
 	}
 }
 

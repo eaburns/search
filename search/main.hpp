@@ -27,6 +27,6 @@ template<class D> Search<D> *getsearch(int argc, char *argv[]) {
 	else if (strcmp(argv[1], "astar") == 0)
 		return new Astar<D>(argc, argv);
 
-	fatal("Unknown algorithm: %s\n", argv[1]);
+	fatal("Unknown algorithm: %s", argv[1]);
 	return NULL;	// Unreachable
 }

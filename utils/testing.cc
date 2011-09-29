@@ -17,7 +17,7 @@ bool runtests(const Test tests[], int num, const char *regexp) {
 	regex_t re;
 	int err = regcomp(&re, regexp, 0);
 	if (err)
-		fatalx(err, "Failed to compile regexp [%s]\n", regexp);
+		fatalx(err, "Failed to compile regexp [%s]", regexp);
 
 	unsigned int nfailed = 0, ntotal = 0;
 	for (int i = 0; i < num; i++) {
@@ -39,7 +39,7 @@ void runbenches(const Benchmark benchs[], int num, const char *regexp) {
 	regex_t re;
 	int err = regcomp(&re, regexp, 0);
 	if (err)
-		fatalx(err, "Failed to compile regexp [%s]\n", regexp);
+		fatalx(err, "Failed to compile regexp [%s]", regexp);
 
 	for (int i = 0; i < num; i++) {
 		if (regexec(&re, benchs[i].name, 0, NULL, 0) == REG_NOMATCH)
