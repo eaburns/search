@@ -16,9 +16,6 @@ public:
 		char f0 = flags[l0];
 		char f1 = flags[l1];
 
-		printf("%u, %u = %#x, %u, %u = %#x\n", x(l0), y(l0), f0,
-			x(l1), y(l1), f1);
-
 		if (f1 & (OutOfBounds | Tree))
 			return false;
 

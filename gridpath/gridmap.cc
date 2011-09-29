@@ -20,8 +20,6 @@ GridMap::GridMap(FILE *in) : map(NULL)  {
 	flags = new unsigned char[w * h];
 	for (unsigned int i = 0; i < w * h; i++)
 		flags[i] = terrain.flags[(int) map[i]];
-
-	printf("%u X %u\n", w, h);
 }
 
 GridMap::~GridMap(void) {
