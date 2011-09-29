@@ -35,6 +35,18 @@ public:
 	private:
 		friend class Pancake;
 		friend class Undo;
+	
+		void flip(Oper op) {
+			assert (op > 0);
+			assert (op < Ncakes);
+	
+			for (int n = 0; n <= op / 2; n++) {
+				Cake tmp = cakes[n];
+				cakes[n] = cakes[op - n];
+				cakes[op - n] = tmp;
+			}
+		}
+
 		Cake cakes[Ncakes];
 		Cost h;
 	};
@@ -80,12 +92,12 @@ public:
 
 	void undo(State &s, Undo &u) {
 		s.h = u.h;
-		flip(s, u.op);
+		s.flip(u.op);
 	}
 
 	State &apply(State &buf, State &s, Oper op) {
 		bool wasgap = gap(s, op);
-		flip(s, op);
+		s.flip(op);
 
 		bool hasgap = gap(s, op);
 		if (wasgap && !hasgap)
@@ -116,17 +128,6 @@ public:
 	void iterdone(void) { }
 
 private:
-
-	void flip(State &s, Oper op) {
-		assert (op > 0);
-		assert (op < Ncakes);
-
-		for (int n = 0; n <= op / 2; n++) {
-			Cake tmp = s.cakes[n];
-			s.cakes[n] = s.cakes[op - n];
-			s.cakes[op - n] = tmp;
-		}
-	}
 
 	Cost ngaps(State &s) {
 		Cost gaps = 0;
