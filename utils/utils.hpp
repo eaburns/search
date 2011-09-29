@@ -11,7 +11,7 @@ double cputime(void);
 
 void dfpair(FILE *, const char *key, const char *fmt, ...);
 void dfrowhdr(FILE *, const char *name, int ncols, ...);
-// colfmt is a string of characters: g, f, d, u, s, c and b with the
+// colfmt is a string of characters: g, f, d, and u with the
 // following meaning:
 // g is a %g formatted double,
 // f is a %f formatted double
