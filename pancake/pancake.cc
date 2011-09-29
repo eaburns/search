@@ -22,7 +22,7 @@ Pancake::State Pancake::initstate(void) {
 
 	for (unsigned int i = 0; i < Ncakes; i++)
 		s.cakes[i] = init[i];
-	s.h = ngaps(s);
+	s.h = ngaps(s.cakes);
 
 	return s;
 }

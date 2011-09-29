@@ -96,10 +96,10 @@ public:
 	}
 
 	State &apply(State &buf, State &s, Oper op) {
-		bool wasgap = gap(s, op);
+		bool wasgap = gap(s.cakes, op);
 		s.flip(op);
 
-		bool hasgap = gap(s, op);
+		bool hasgap = gap(s.cakes, op);
 		if (wasgap && !hasgap)
 			s.h--;
 		if (!wasgap && hasgap)
@@ -129,11 +129,11 @@ public:
 
 private:
 
-	Cost ngaps(State &s) {
+	static Cost ngaps(Cake cakes[]) {
 		Cost gaps = 0;
 
 		for (unsigned int i = 0; i < Ncakes; i++) {
-			if (gap(s, i)) 
+			if (gap(cakes, i)) 
 				gaps++;
 		}
 
@@ -141,11 +141,11 @@ private:
 	}
 
 	// Is there a gap between cakes n and n+1?
-	bool gap(State &s, unsigned int n) {
+	static bool gap(Cake cakes[], unsigned int n) {
 		assert(n < Ncakes);
 		if (n == Ncakes-1)
-			return s.cakes[Ncakes-1] != Ncakes-1;
-		return abs(s.cakes[n] - s.cakes[n+1]) != 1;
+			return cakes[Ncakes-1] != Ncakes-1;
+		return abs(cakes[n] - cakes[n+1]) != 1;
 	}
 
 	Cake init[Ncakes];
