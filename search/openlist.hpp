@@ -1,6 +1,19 @@
 #include "../structs/intpq.hpp"
 #include "../structs/binheap.hpp"
 
+// An A* style open list sorted on minimum f value
+// and possibly tie-breaking on high g.
+//
+// If the Cost type is 'char' then a bucket-based
+// priority queue is used, otherwise it's a binary
+// heap.
+//
+// Assumes that your node has a field 'f' and
+// either pred(), setind(), getind() or openentry()
+// as static functions (the latter is for the bucket-
+// based queue, the former are for the binary
+// heap).
+
 template <class Ops, class Node, class Cost> class OpenList {
 public:
 	const char *kind(void) { return "binary heap"; }
