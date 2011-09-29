@@ -5,6 +5,9 @@
 #include <cstddef>
 #include <cstdio>
 
+// Functions for conveniently defining a new main
+// function for a domain.
+
 template<class D> Search<D> *getsearch(int argc, char *argv[]);
 
 template<class D> void search(D &d, int argc, char *argv[]) {
