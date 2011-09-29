@@ -8,6 +8,7 @@ void fatal(const char*, ...);
 
 class GridMap {
 public:
+	GridMap(const char *);
 	GridMap(FILE*);
 	~GridMap(void);
 
@@ -45,6 +46,8 @@ public:
 
 	void output(FILE*) const;
 private:
+
+	void load(FILE*);
 
 	enum Typ { Octile };
 

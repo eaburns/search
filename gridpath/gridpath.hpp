@@ -14,7 +14,8 @@ public:
 	typedef int Oper;	// Index into the ops arrays.
 	enum { Nop = -1 };
 
-	GridPath(FILE*);
+	GridPath(const char *file, unsigned int, unsigned int,
+		unsigned int, unsigned int);
 
 	class State {
 		friend class GridPath;
@@ -112,6 +113,10 @@ public:
 	void dumpstate(FILE *out, State &s) {
 		fprintf(out, "%u, %u\n", map.x(s.loc), map.y(s.loc));
 	}
+
+	unsigned int width(void) { return map.width(); }
+
+	unsigned int height(void) { return map.height(); }
 
 private:
 
