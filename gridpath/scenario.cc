@@ -7,10 +7,16 @@
 static const float Epsilon = 0.001;
 
 Scenario::Scenario(int ac, char *av[]) :
-		argc(ac), argv(av), maproot("./"), lastmap(NULL), runs(0) {
+		argc(ac), argv(av), maproot("./"), lastmap(NULL),
+		entry(-1), nentries(0) {
 	for (int i = 0; i < argc; i++) {
-		if (strcmp(argv[i], "-maproot") == 0 && i < argc - 1)
+		if (strcmp(argv[i], "-maproot") == 0 && i < argc - 1) {
 			maproot = argv[i+1];
+			i++;
+		} else if (strcmp(argv[i], "-entry") == 0 && i < argc - 1) {
+			entry = strtol(argv[i+1], NULL, 10);
+			i++;
+		}
 	}
 	if (maproot[maproot.size()-1] != '/')
 		maproot += '/';
@@ -27,16 +33,19 @@ void Scenario::run(std::istream &in) {
 
 	ScenarioEntry ent(*this);
 	while (in >> ent) {
+		nentries++;
+		if (entry >= 0 && nentries - 1 != entry)
+			continue;
+
 		Search<GridPath> *srch = getsearch<GridPath>(argc, argv);
 		Result<GridPath> r = ent.run(srch);
-		ent.outputrow(stdout, runs, r);
-		runs++;
+		ent.outputrow(stdout, nentries-1, r);
 		res.add(r);
 		delete srch;
 	}
 
 	res.output(stdout);
-	dfpair(stdout, "number of runs", "%u", runs);
+	dfpair(stdout, "number of entries", "%u", nentries);
 }
 
 void Scenario::checkver(std::istream &in) {
@@ -82,10 +91,11 @@ Result<GridPath> ScenarioEntry::run(Search<GridPath> *srch) {
 
 void ScenarioEntry::outputrow(FILE *out, unsigned int n, Result<GridPath> &r) {
 	dfrow(out, "run", "uuuuuuuuguugugg",
-		(unsigned long) n, bucket, w, h, (unsigned long) x0,
-		(unsigned long) y0, (unsigned long)  x1, (unsigned long) y1,
-		opt, r.expd, r.gend, r.cost, (unsigned long) r.path.size(),
-		r.wallend - r.wallstrt, r.cpuend - r.cpustrt);
+		(unsigned long) n, (unsigned long) bucket, (unsigned long) w,
+		(unsigned long) h, (unsigned long) x0, (unsigned long) y0,
+		(unsigned long)  x1, (unsigned long) y1, opt, r.expd, r.gend,
+		r.cost, (unsigned long) r.path.size(), r.wallend - r.wallstrt,
+		r.cpuend - r.cpustrt);
 } 
 
 std::istream &operator>>(std::istream &in, ScenarioEntry &s) {

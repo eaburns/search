@@ -44,5 +44,5 @@ private:
 	std::string maproot;
 	GridMap *lastmap;
 	Result<GridPath> res;
-	unsigned int runs;
+	int entry, nentries;
 };
