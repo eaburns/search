@@ -14,7 +14,7 @@ struct Scenario;
 struct ScenarioEntry {
 	ScenarioEntry(Scenario &);
 	Result<GridPath> run(Search<GridPath>*);
-	void outputrow(FILE*, Result<GridPath>&);
+	void outputrow(FILE*, unsigned int, Result<GridPath>&);
 private:
 	friend std::istream &operator>>(std::istream &, ScenarioEntry &);
 
@@ -43,4 +43,5 @@ private:
 	char **argv;
 	GridMap *lastmap;
 	Result<GridPath> res;
+	unsigned int runs;
 };

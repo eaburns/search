@@ -2,10 +2,11 @@
 #include "../utils/utils.hpp"
 #include "../search/main.hpp"
 #include <iostream>
+#include <cmath>
 
 static const float Epsilon = 0.0001;
 
-Scenario::Scenario(int ac, char *av[]) : argc(ac), argv(av), lastmap(NULL) { }
+Scenario::Scenario(int ac, char *av[]) : argc(ac), argv(av), lastmap(NULL), runs(0) { }
 
 Scenario::~Scenario(void) {
 	if (lastmap)
@@ -14,17 +15,20 @@ Scenario::~Scenario(void) {
 
 void Scenario::run(std::istream &in) {
 	checkver(in);
+	outputhdr(stdout);
 
 	ScenarioEntry ent(*this);
 	while (in >> ent) {
 		Search<GridPath> *srch = getsearch<GridPath>(argc, argv);
 		Result<GridPath> r = ent.run(srch);
-		ent.outputrow(stdout, r);
+		ent.outputrow(stdout, runs, r);
+		runs++;
 		res.add(r);
 		delete srch;
 	}
 
 	res.output(stdout);
+	dfpair(stdout, "number of runs", "%u", runs);
 }
 
 void Scenario::checkver(std::istream &in) {
@@ -38,11 +42,11 @@ void Scenario::checkver(std::istream &in) {
 }
 
 void Scenario::outputhdr(FILE *out) {
-	dfrowhdr(out, "run", 14,
-		"bucket", "width", "height", "start x", "start y",
-		"finish x", "finish y", "optimal sol",
-		"nodes expanded", "nodes generated",
-		"sol cost", "sol length", "wall time", "cpu time");
+	dfrowhdr(out, "run", 15,
+		"num", "bucket", "width", "height", "start x", "start y",
+		"finish x", "finish y", "optimal sol", "nodes expanded",
+		"nodes generated", "sol cost", "sol length",
+		"wall time", "cpu time");
 }
 
 GridMap *Scenario::getmap(std::string mapfile) {
@@ -59,15 +63,20 @@ ScenarioEntry::ScenarioEntry(Scenario &s) : scen(s) { }
 Result<GridPath> ScenarioEntry::run(Search<GridPath> *srch) {
 	GridPath d(scen.getmap(mapfile), x0, y0, x1, y1);
 	GridPath::State s0 = d.initialstate();
-	return srch->search(d, s0);
+
+	Result<GridPath> &r = srch->search(d, s0);
+	if (fabsf(r.cost - opt) > Epsilon)
+		fatal("Expected optimal cost of %g, got %g\n", opt, r.cost);
+
+	return r;
 }
 
-void ScenarioEntry::outputrow(FILE *out, Result<GridPath> &r) {
-	dfrow(out, "run", "uuuuuuuguugugg",
-		bucket, w, h, (unsigned long) x0, (unsigned long) y0,
-		(unsigned long)  x1, (unsigned long) y1, opt, r.expd, r.gend,
-		r.cost, (unsigned long) r.path.size(), r.wallend - r.wallstrt,
-		r.cpuend - r.cpustrt);
+void ScenarioEntry::outputrow(FILE *out, unsigned int n, Result<GridPath> &r) {
+	dfrow(out, "run", "uuuuuuuuguugugg",
+		(unsigned long) n, bucket, w, h, (unsigned long) x0,
+		(unsigned long) y0, (unsigned long)  x1, (unsigned long) y1,
+		opt, r.expd, r.gend, r.cost, (unsigned long) r.path.size(),
+		r.wallend - r.wallstrt, r.cpuend - r.cpustrt);
 } 
 
 std::istream &operator>>(std::istream &in, ScenarioEntry &s) {
