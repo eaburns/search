@@ -53,7 +53,7 @@ void GridMap::load(FILE *in) {
 			fatal("%s: Failed to read map line %u", y, file.c_str());
 		int c = fgetc(in);
 		if (c != '\n' && y < h - 1)
-			fatal("%s:%d Expected newline, got [%c]", file.c_str(), y+5, c);
+			fatal("%s: Expected newline, got [%c]", file.c_str(), c);
 	}
 
 	flags = new unsigned char[w * h];
