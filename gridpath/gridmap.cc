@@ -3,6 +3,7 @@
 #include <cstdio>
 #include <cstddef>
 #include <cerrno>
+#include <cstring>
 #include <string>
 
 GridMap::GridMap(std::string &fname) : map(NULL), flags(NULL), file(fname) {
@@ -21,7 +22,7 @@ GridMap::~GridMap(void) {
 }
 
 void GridMap::output(FILE *out) const {
-	fprintf(out, "type octile\n");
+	fprintf(out, "type %s\n", typ);
 	fprintf(out, "height %u\n", h);
 	fprintf(out, "width %u\n", w);
 	fprintf(out, "map\n");
@@ -33,8 +34,18 @@ void GridMap::output(FILE *out) const {
 }
 
 void GridMap::load(FILE *in) {
-	if (fscanf(in, "type octile\nheight %u\nwidth %u\nmap\n", &w, &h) != 2)
-		fatal("Failed to read the map header");
+	if (fscanf(in, "type ") != 0)
+		fatal("Failed to read the map type");
+
+	if (!fgets(typ, Bufsz, in))
+		fatal("Failed to read the map type");
+	if (typ[strlen(typ)-1] == '\n')
+		typ[strlen(typ)-1] = '\0';
+	if (strcmp(typ, "octile") != 0)
+		fatal("Unsupported map type [%s]", typ);
+
+	if (fscanf(in, "height %u\nwidth %u\nmap\n", &w, &h) != 2)
+		fatal("Failed to read the map header [%s]", file.c_str());
 
 	map = new unsigned char[w * h];
 	for (unsigned int y = 0; y < h; y++) {

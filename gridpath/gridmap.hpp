@@ -51,8 +51,6 @@ private:
 
 	void load(FILE*);
 
-	enum Typ { Octile };
-
 	enum {
 		Passable = 1 << 0,
 		OutOfBounds = 1 << 1,
@@ -74,7 +72,9 @@ private:
 		}
 	} terrain;
 
-	Typ typ;
+	enum { Bufsz = 128 };
+
+	char typ[Bufsz];
 	unsigned int w, h;
 	unsigned char *map;
 	unsigned char *flags;
