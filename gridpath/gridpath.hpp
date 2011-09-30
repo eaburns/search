@@ -55,27 +55,37 @@ public:
 		if (s.nops < 0) {
 			s.nops = 0;
 
-			bool up = map->terrainok(s.loc, map->up(s.loc));
-			bool down = map->terrainok(s.loc, map->down(s.loc));
-			bool left = map->terrainok(s.loc, map->left(s.loc));
-			bool right = map->terrainok(s.loc, map->right(s.loc));
-
-			if (up)
+			bool upok = map->terrainok(s.loc, map->up(s.loc));
+			if (upok)
 				s.ops[s.nops++] = map->up(s.loc);
-			if (down)
+
+			bool downok = map->terrainok(s.loc, map->down(s.loc));
+			if (downok)
 				s.ops[s.nops++] = map->down(s.loc);
-			if (left)
+
+			bool leftok = map->terrainok(s.loc, map->left(s.loc));
+			if (leftok)
 				s.ops[s.nops++] = map->left(s.loc);
-			if (right)
+
+			bool rightok= map->terrainok(s.loc, map->right(s.loc));
+			if (rightok)
 				s.ops[s.nops++] = map->right(s.loc);
-			if (up && left && map->terrainok(s.loc, map->up(map->left(s.loc))))
-				s.ops[s.nops++] = map->up(map->left(s.loc));
-			if (down && left && map->terrainok(s.loc, map->down(map->left(s.loc))))
-				s.ops[s.nops++] = map->down(map->left(s.loc));
-			if (up && right && map->terrainok(s.loc, map->up(map->right(s.loc))))
-				s.ops[s.nops++] = map->up(map->right(s.loc));
-			if (down && right && map->terrainok(s.loc, map->down(map->right(s.loc))))
-				s.ops[s.nops++] = map->down(map->right(s.loc));
+
+			const unsigned int upleft = map->up(map->left(s.loc));
+			if (upok && leftok && map->terrainok(s.loc, upleft))
+				s.ops[s.nops++] = upleft;
+ 
+			const unsigned int downleft = map->down(map->left(s.loc));
+			if (downok && leftok && map->terrainok(s.loc, downleft))
+				s.ops[s.nops++] = downleft;
+
+			const unsigned int upright = map->up(map->right(s.loc));
+			if (upok && rightok && map->terrainok(s.loc, upright))
+				s.ops[s.nops++] = upright;
+
+			const unsigned int downright = map->down(map->right(s.loc));
+			if (downok && rightok && map->terrainok(s.loc, downright))
+				s.ops[s.nops++] = downright;
 		}
 		return s.nops;
 	}
