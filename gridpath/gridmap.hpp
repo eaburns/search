@@ -36,6 +36,8 @@ public:
 
 	unsigned int height(void) const { return h; }
 
+	unsigned int size(void) const { return sz; }
+
 	unsigned int up(unsigned int l) const { return l - w; }
 
 	unsigned int down(unsigned int l) const { return l + w; }
@@ -75,7 +77,7 @@ private:
 	enum { Bufsz = 128 };
 
 	char typ[Bufsz];
-	unsigned int w, h;
+	unsigned int w, h, sz;
 	unsigned char *map;
 	unsigned char *flags;
 	std::string file;

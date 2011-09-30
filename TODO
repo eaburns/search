@@ -4,9 +4,6 @@
 
 * A*, just use boost::object_pool
 
-* Grids: actually test if you can move
-	up, down, left or right in grids.
-
 * More domains:
 
 	- Robot arm

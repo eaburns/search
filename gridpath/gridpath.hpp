@@ -55,19 +55,23 @@ public:
 		if (s.nops < 0) {
 			s.nops = 0;
 
-			bool upok = map->terrainok(s.loc, map->up(s.loc));
+			bool upok = map->y(s.loc) > 0
+				&& map->terrainok(s.loc, map->up(s.loc));
 			if (upok)
 				s.ops[s.nops++] = map->up(s.loc);
 
-			bool downok = map->terrainok(s.loc, map->down(s.loc));
+			bool downok = map->y(s.loc) < map->height() - 1
+				&& map->terrainok(s.loc, map->down(s.loc));
 			if (downok)
 				s.ops[s.nops++] = map->down(s.loc);
 
-			bool leftok = map->terrainok(s.loc, map->left(s.loc));
+			bool leftok = map->x(s.loc) > 0
+				&& map->terrainok(s.loc, map->left(s.loc));
 			if (leftok)
 				s.ops[s.nops++] = map->left(s.loc);
 
-			bool rightok= map->terrainok(s.loc, map->right(s.loc));
+			bool rightok= map->x(s.loc) < map->width() - 1
+				&& map->terrainok(s.loc, map->right(s.loc));
 			if (rightok)
 				s.ops[s.nops++] = map->right(s.loc);
 

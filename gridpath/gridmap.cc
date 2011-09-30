@@ -47,6 +47,8 @@ void GridMap::load(FILE *in) {
 	if (fscanf(in, "height %u\nwidth %u\nmap\n", &h, &w) != 2)
 		fatal("%s: Failed to read the map header [%s]", file.c_str(), file.c_str());
 
+	sz = w * h;
+
 	map = new unsigned char[w * h];
 	for (unsigned int y = 0; y < h; y++) {
 		if (fread((void*) (map + y * w), sizeof(*map), w, in) != w)
