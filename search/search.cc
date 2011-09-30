@@ -3,8 +3,9 @@
 #include <cstring>
 #include <cstdio>
 
-SearchStats::SearchStats(void) : expd(0), gend(0), reopnd(0), dups(0) {
-	start();
+SearchStats::SearchStats(void) : 
+	wallstrt(0), cpustrt(0), wallend(0), cpuend(0),
+	expd(0), gend(0), reopnd(0), dups(0) {
 }
 
 void SearchStats::start(void) {

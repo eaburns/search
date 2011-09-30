@@ -14,6 +14,7 @@ public:
 	typedef typename D::Oper Oper;
 
 	Result<D> &search(D &d, State &s0) {
+		Search<D>::res.start();
 		bound = d.h(s0);
 		dfrowhdr(stdout, "iter", 4, "iter no", "iter bound",
 			"iter expd", "iter gend");

@@ -38,7 +38,12 @@ template <class D> struct Node <D, char> {
 template <class D> class Astar : public Search<D> {
 public:
 
+	Astar(int argc, char *argv[]) :
+		Search<D>(argc, argv), closed(30000001), nodes(35000000) {}
+
 	Result<D> &search(D &d, typename D::State &s0) {
+		Search<D>::res.start();
+
 		Node<D, Cost> *n0 = init(d, s0);
 		closed.add(n0);
 		open.push(n0);
@@ -56,17 +61,15 @@ public:
 		}
 		Search<D>::res.finish();
 
-		closed.prstats(stdout, "closed ");
-		dfpair(stdout, "open list type", "%s", open.kind());
-		dfpair(stdout, "node size", "%u", sizeof(Node<D, Cost>));
-
 		return Search<D>::res;
 	}
 
-	Astar(int argc, char *argv[]) :
-		Search<D>(argc, argv),
-		closed(30000001),
-		nodes(35000000) {}
+	virtual void output(FILE *out) {
+		Search<D>::output(out);
+		closed.prstats(stdout, "closed ");
+		dfpair(stdout, "open list type", "%s", open.kind());
+		dfpair(stdout, "node size", "%u", sizeof(Node<D, Cost>));
+	}
 
 private:
 

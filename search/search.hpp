@@ -17,6 +17,23 @@ struct SearchStats {
 	void start(void);
 	void finish(void);
 	void output(FILE*);
+
+	// After adding, wallstrt and cpustrt are both 0 and the
+	// respective end times are such that the total time
+	// is equal to the sum of the search times of this and
+	// other.
+	void add(SearchStats &other) {
+		expd += other.expd;
+		gend += other.gend;
+		reopnd += other.reopnd;
+		dups += other.dups;
+
+		double wt = wallend - wallstrt;
+		double ct = cpuend - cpustrt;
+		wallstrt = cpustrt = 0;
+		wallend = wt + (other.wallend - other.wallstrt);
+		cpuend = ct + (other.cpuend - other.cpustrt);
+	}
 };
 
 template <class D> struct Result : public SearchStats {
@@ -31,6 +48,11 @@ template <class D> struct Result : public SearchStats {
 		dfpair(f, "final sol cost", "%g", (double) cost);
 		dfpair(f, "final sol length", "%lu", (unsigned long) path.size());
 		SearchStats::output(f);
+	}
+
+	void add(Result<D> &other) {
+		SearchStats::add(other);
+		cost += other.cost;
 	}
 };
 
@@ -49,10 +71,11 @@ struct Limit {
 
 template <class D> class Search {
 public:
+	virtual ~Search() { }
 	virtual Result<D> &search(D &, typename D::State &) = 0;
 	Search(int argc, char *argv[]) : lim(argc, argv) { }
 
-	void output(FILE *f) {
+	virtual void output(FILE *f) {
 		lim.output(f);
 		res.output(f);
 	}
