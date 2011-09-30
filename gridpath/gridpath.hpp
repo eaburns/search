@@ -68,13 +68,13 @@ public:
 				s.ops[s.nops++] = map->left(s.loc);
 			if (right)
 				s.ops[s.nops++] = map->right(s.loc);
-			if (map->terrainok(s.loc, map->up(map->left(s.loc))) && (up || left))
+			if (up && left && map->terrainok(s.loc, map->up(map->left(s.loc))))
 				s.ops[s.nops++] = map->up(map->left(s.loc));
-			if (map->terrainok(s.loc, map->down(map->left(s.loc))) && (down || left))
+			if (down && left && map->terrainok(s.loc, map->down(map->left(s.loc))))
 				s.ops[s.nops++] = map->down(map->left(s.loc));
-			if (map->terrainok(s.loc, map->up(map->right(s.loc))) && (up || right))
+			if (up && right && map->terrainok(s.loc, map->up(map->right(s.loc))))
 				s.ops[s.nops++] = map->up(map->right(s.loc));
-			if (map->terrainok(s.loc, map->down(map->right(s.loc))) && (down || right))
+			if (down && right && map->terrainok(s.loc, map->down(map->right(s.loc))))
 				s.ops[s.nops++] = map->down(map->right(s.loc));
 		}
 		return s.nops;
