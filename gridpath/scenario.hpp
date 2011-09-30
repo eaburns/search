@@ -41,6 +41,7 @@ private:
 
 	int argc;
 	char **argv;
+	std::string maproot;
 	GridMap *lastmap;
 	Result<GridPath> res;
 	unsigned int runs;

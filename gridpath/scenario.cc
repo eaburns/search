@@ -6,7 +6,15 @@
 
 static const float Epsilon = 0.0001;
 
-Scenario::Scenario(int ac, char *av[]) : argc(ac), argv(av), lastmap(NULL), runs(0) { }
+Scenario::Scenario(int ac, char *av[]) :
+		argc(ac), argv(av), maproot("./"), lastmap(NULL), runs(0) {
+	for (int i = 0; i < argc; i++) {
+		if (strcmp(argv[i], "-maproot") == 0 && i < argc - 1)
+			maproot = argv[i+1];
+	}
+	if (maproot[maproot.size()-1] != '/')
+		maproot += '/';
+}
 
 Scenario::~Scenario(void) {
 	if (lastmap)
@@ -50,10 +58,11 @@ void Scenario::outputhdr(FILE *out) {
 }
 
 GridMap *Scenario::getmap(std::string mapfile) {
-	if (!lastmap || lastmap->filename() != mapfile) {
+	std::string path = maproot + mapfile; 
+	if (!lastmap || lastmap->filename() != path) {
 		if (lastmap)
 			delete lastmap;
-		lastmap = new GridMap(mapfile);
+		lastmap = new GridMap(path);
 	}
 	return lastmap;
 }
