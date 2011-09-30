@@ -19,18 +19,25 @@ int main(int argc, char *argv[]) {
 		fatal("Version %g is unsupported.  Latest supported version is 1.0", ver);
 
 	unsigned int lineno = 1;
+	GridMap *map = NULL;
 	while (!feof(stdin) && !ferror(stdin)) {
-		std::string map;
+		std::string mapfile;
 		unsigned int bucket;
 		unsigned int w, h;
 		unsigned int x0, y0;
 		unsigned int x1, y1;
 		float opt;
 
-		std::cin >> bucket >> map >> w >> h >> x0 >> y0 >> x1 >> y1 >> opt;
+		std::cin >> bucket >> mapfile >> w >> h >> x0 >> y0 >> x1 >> y1 >> opt;
 		lineno++;
 
-		GridPath d(map.c_str(), x0, y0, x1, y1);
+		if (!map || map->filename() != mapfile) {
+			if (map)
+				delete map;
+			map = new GridMap(mapfile);
+		}
+
+		GridPath d(map, x0, y0, x1, y1);
 		if (d.width() != w || d.height() != h)
 			fatal("Map dimensions don't match the scenario dimensions");
 
@@ -49,6 +56,9 @@ int main(int argc, char *argv[]) {
 
 		putc('\n', stdout);
 	}
+
+	if (map)
+		delete map;
 
 	if (ferror(stdin))
 		fatal("Error reading scenario");

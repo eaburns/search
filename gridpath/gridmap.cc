@@ -3,17 +3,14 @@
 #include <cstdio>
 #include <cstddef>
 #include <cerrno>
+#include <string>
 
-GridMap::GridMap(const char *file) : map(NULL), flags(NULL) {
-	FILE *f = fopen(file, "r");
+GridMap::GridMap(std::string &fname) : map(NULL), flags(NULL), file(fname) {
+	FILE *f = fopen(file.c_str(), "r");
 	if (!f)
-		fatalx(errno, "Unable to open %s for reading\n", file);
+		fatalx(errno, "Unable to open %s for reading\n", file.c_str());
 	load(f);
 	fclose(f);
-}
-
-GridMap::GridMap(FILE *in) : map(NULL), flags(NULL)  {
-	load(in);
 }
 
 GridMap::~GridMap(void) {

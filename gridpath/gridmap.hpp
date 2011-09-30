@@ -3,13 +3,13 @@
 
 #include <climits>
 #include <cstdio>
+#include <string>
 
 void fatal(const char*, ...);
 
 class GridMap {
 public:
-	GridMap(const char *);
-	GridMap(FILE*);
+	GridMap(std::string &file);
 	~GridMap(void);
 
 	// Tests whether the terrain flags allow this move.
@@ -45,6 +45,8 @@ public:
 	unsigned int right(unsigned int l) const { return l + 1; }
 
 	void output(FILE*) const;
+
+	std::string &filename(void) { return file; }
 private:
 
 	void load(FILE*);
@@ -76,6 +78,7 @@ private:
 	unsigned int w, h;
 	unsigned char *map;
 	unsigned char *flags;
+	std::string file;
 };
 
 #endif	// _GRIDMAP_HPP_
