@@ -35,25 +35,25 @@ void GridMap::output(FILE *out) const {
 
 void GridMap::load(FILE *in) {
 	if (fscanf(in, "type ") != 0)
-		fatal("Failed to read the map type");
+		fatal("%s: Failed to read the map type", file.c_str());
 
 	if (!fgets(typ, Bufsz, in))
-		fatal("Failed to read the map type");
+		fatal("%s: Failed to read the map type", file.c_str());
 	if (typ[strlen(typ)-1] == '\n')
 		typ[strlen(typ)-1] = '\0';
 	if (strcmp(typ, "octile") != 0)
-		fatal("Unsupported map type [%s]", typ);
+		fatal("%s: Unsupported map type [%s]", file.c_str(), typ);
 
-	if (fscanf(in, "height %u\nwidth %u\nmap\n", &w, &h) != 2)
-		fatal("Failed to read the map header [%s]", file.c_str());
+	if (fscanf(in, "height %u\nwidth %u\nmap\n", &h, &w) != 2)
+		fatal("%s: Failed to read the map header [%s]", file.c_str(), file.c_str());
 
 	map = new unsigned char[w * h];
 	for (unsigned int y = 0; y < h; y++) {
 		if (fread((void*) (map + y * w), sizeof(*map), w, in) != w)
-			fatal("Failed to read map line %u", y);
+			fatal("%s: Failed to read map line %u", y, file.c_str());
 		int c = fgetc(in);
 		if (c != '\n' && y < h - 1)
-			fatal("Expected newline, got [%c]", c);
+			fatal("%s:%d Expected newline, got [%c]", file.c_str(), y+5, c);
 	}
 
 	flags = new unsigned char[w * h];
