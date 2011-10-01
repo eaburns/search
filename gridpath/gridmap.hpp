@@ -46,10 +46,47 @@ public:
 
 	unsigned int right(unsigned int l) const { return l + 1; }
 
+	unsigned int ops(unsigned int l, int ops[]) {
+		return octileops(l, ops);
+	}
+
 	void output(FILE*) const;
 
 	std::string &filename(void) { return file; }
+
 private:
+
+	unsigned int octileops(unsigned int l, int ops[]) {
+		unsigned int n = 0;
+
+		bool leftok = x(l) > 0 && terrainok(l, left(l));
+		if (leftok) ops[n++] = left(l);
+
+		bool rightok = x(l) < w - 1 && terrainok(l, right(l));
+		if (rightok) ops[n++] = right(l);
+
+		bool upok = y(l) > 0 && terrainok(l, up(l));
+		if (upok) {
+			ops[n++] = up(l);
+
+			if (leftok && terrainok(l, up(left(l))))
+				ops[n++] = up(left(l));
+			if (rightok && terrainok(l, up(right(l))))
+				ops[n++] = up(right(l));
+		}
+
+		bool downok = y(l) < h - 1 && terrainok(l, down(l));
+		if (downok) {
+			ops[n++] = down(l);
+
+			if (leftok && terrainok(l, down(left(l))))
+				ops[n++] = down(left(l));
+			if (rightok && terrainok(l, down(right(l))))
+				ops[n++] = down(right(l));
+		}
+
+		return n;
+	}
 
 	void load(FILE*);
 

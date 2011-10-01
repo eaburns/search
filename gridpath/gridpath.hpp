@@ -52,45 +52,8 @@ public:
 	}
 
 	unsigned int nops(State &s) {
-		if (s.nops < 0) {
-			s.nops = 0;
-
-			bool upok = map->y(s.loc) > 0
-				&& map->terrainok(s.loc, map->up(s.loc));
-			if (upok)
-				s.ops[s.nops++] = map->up(s.loc);
-
-			bool downok = map->y(s.loc) < map->height() - 1
-				&& map->terrainok(s.loc, map->down(s.loc));
-			if (downok)
-				s.ops[s.nops++] = map->down(s.loc);
-
-			bool leftok = map->x(s.loc) > 0
-				&& map->terrainok(s.loc, map->left(s.loc));
-			if (leftok)
-				s.ops[s.nops++] = map->left(s.loc);
-
-			bool rightok= map->x(s.loc) < map->width() - 1
-				&& map->terrainok(s.loc, map->right(s.loc));
-			if (rightok)
-				s.ops[s.nops++] = map->right(s.loc);
-
-			const unsigned int upleft = map->up(map->left(s.loc));
-			if (upok && leftok && map->terrainok(s.loc, upleft))
-				s.ops[s.nops++] = upleft;
- 
-			const unsigned int downleft = map->down(map->left(s.loc));
-			if (downok && leftok && map->terrainok(s.loc, downleft))
-				s.ops[s.nops++] = downleft;
-
-			const unsigned int upright = map->up(map->right(s.loc));
-			if (upok && rightok && map->terrainok(s.loc, upright))
-				s.ops[s.nops++] = upright;
-
-			const unsigned int downright = map->down(map->right(s.loc));
-			if (downok && rightok && map->terrainok(s.loc, downright))
-				s.ops[s.nops++] = downright;
-		}
+		if (s.nops < 0)
+			s.nops = map->ops(s.loc, s.ops);
 		return s.nops;
 	}
 
