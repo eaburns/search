@@ -4,6 +4,8 @@
 
 * A*, just use boost::object_pool
 
+* Searches: reset() function
+
 * More domains:
 
 	- Robot arm
