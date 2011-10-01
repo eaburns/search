@@ -22,8 +22,6 @@ TMPLS=\
 	structs/intpq.hpp\
 	structs/binheap.hpp\
 	structs/htable.hpp\
-	\
-	utils/pool.hpp\
 
 HDRS=\
 	utils/utils.hpp\
