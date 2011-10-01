@@ -35,6 +35,10 @@ public:
 		return heap.empty();
 	}
 
+	void clear(void) {
+		heap.clear();
+	}
+
 private:
 	friend bool binheap_push_test(void);
 	friend bool binheap_pop_test(void);

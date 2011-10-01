@@ -1,7 +1,7 @@
 #include "../search/search.hpp"
 #include "../structs/htable.hpp"
 #include "../search/openlist.hpp"
-#include "../utils/pool.hpp"
+#include <boost/pool/object_pool.hpp>
 
 template <class D, class Cost> struct Node {
 	typename D::PackedState packed;
@@ -39,7 +39,13 @@ template <class D> class Astar : public Search<D> {
 public:
 
 	Astar(int argc, char *argv[]) :
-		Search<D>(argc, argv), closed(30000001), nodes(35000000) {}
+		Search<D>(argc, argv), closed(30000001) {
+		nodes = new boost::object_pool< Node<D, Cost> >();
+	}
+
+	~Astar(void) {
+		delete nodes;
+	}
 
 	Result<D> &search(D &d, typename D::State &s0) {
 		Search<D>::res.start();
@@ -62,6 +68,14 @@ public:
 		Search<D>::res.finish();
 
 		return Search<D>::res;
+	}
+
+	virtual void reset(void) {
+		Search<D>::reset();
+		open.clear();
+		closed.clear();
+		delete nodes;
+		nodes = new boost::object_pool< Node<D, Cost> >();
 	}
 
 	virtual void output(FILE *out) {
@@ -99,7 +113,7 @@ private:
 		if (dup) {
 			Search<D>::res.dups++;
 			if (k->g >= dup->g) {
-				nodes.destruct(k);
+				nodes->destroy(k);
 				return;
 			}
 			Search<D>::res.reopnd++;
@@ -115,7 +129,7 @@ private:
 				open.push(dup);
 			else
 				open.post_update(dup);
-			nodes.destruct(k);
+			nodes->destroy(k);
 		} else {
 			closed.add(k, h);
 			open.push(k);
@@ -123,7 +137,7 @@ private:
 	}
 
 	Node<D, Cost> *kid(D &d, Node<D, Cost> *pnode, State &pstate, Oper op) {
-		Node<D, Cost> *kid = nodes.construct();
+		Node<D, Cost> *kid = nodes->construct();
 
 		kid->g = pnode->g + d.opcost(pstate, op);
 		kid->pop = d.revop(pstate, op);
@@ -139,7 +153,7 @@ private:
 	}
 
 	Node<D, Cost> *init(D &d, State &s0) {
-		Node<D, Cost> *n0 = nodes.construct();
+		Node<D, Cost> *n0 = nodes->construct();
 		d.pack(n0->packed, s0);
 		n0->g = 0;
 		n0->f = d.h(s0);
@@ -169,5 +183,5 @@ private:
 
 	OpenList< Node<D, Cost>, Node<D, Cost>, Cost > open;
  	Htable< Closedops, PackedState&, Node<D, Cost>, 0 > closed;
-	Pool< Node<D, Cost> > nodes;
+	boost::object_pool< Node<D, Cost> > *nodes;
 };

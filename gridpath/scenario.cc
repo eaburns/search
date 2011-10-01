@@ -31,17 +31,17 @@ void Scenario::run(std::istream &in) {
 	checkver(in);
 	outputhdr(stdout);
 
+	Search<GridPath> *srch = getsearch<GridPath>(argc, argv);
 	ScenarioEntry ent(*this);
 	while (in >> ent) {
 		nentries++;
 		if (entry >= 0 && nentries - 1 != entry)
 			continue;
 
-		Search<GridPath> *srch = getsearch<GridPath>(argc, argv);
 		Result<GridPath> r = ent.run(srch);
 		ent.outputrow(stdout, nentries-1, r);
 		res.add(r);
-		delete srch;
+		srch->reset();
 	}
 
 	res.output(stdout);

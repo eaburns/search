@@ -71,9 +71,14 @@ struct Limit {
 
 template <class D> class Search {
 public:
+	Search(int argc, char *argv[]) : lim(argc, argv) { }
 	virtual ~Search() { }
 	virtual Result<D> &search(D &, typename D::State &) = 0;
-	Search(int argc, char *argv[]) : lim(argc, argv) { }
+
+	virtual void reset(void) {
+		res = Result<D>();
+		
+	}
 
 	virtual void output(FILE *f) {
 		lim.output(f);

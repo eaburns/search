@@ -13,6 +13,8 @@ public:
 	typedef typename D::Cost Cost;
 	typedef typename D::Oper Oper;
 
+	Idastar(int argc, char *argv[]) : Search<D>(argc, argv) { }
+
 	Result<D> &search(D &d, State &s0) {
 		Search<D>::res.start();
 		bound = d.h(s0);
@@ -35,7 +37,9 @@ public:
 		return Search<D>::res;
 	}
 
-	Idastar(int argc, char *argv[]) : Search<D>(argc, argv) { }
+	virtual void reset(void) {
+		Search<D>::reset();
+	}
 
 private:
 	bool dfs(D &d, State &s, Oper pop, Cost g) {

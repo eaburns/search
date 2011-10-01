@@ -35,6 +35,8 @@ public:
 
 	bool mem(Node *n) { return Ops::getind(n) != -1; }
 
+	void clear(void) { heap.clear(); }
+
 private:
 	struct Heapops {
  		static bool pred(Node *a, Node *b) { return Ops::pred(a, b); }
@@ -59,6 +61,8 @@ public:
 	bool empty(void) { return pq.empty(); }
 
 	bool mem(Node *n) { return pq.mem(n); }
+
+	void clear(void) { pq.clear(); }
 
 private:
 	struct Intpqops {

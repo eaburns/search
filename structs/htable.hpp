@@ -65,6 +65,13 @@ public:
 		dfpair(f, key, "%lu", nresize);
 	}
 
+	void clear(void) {
+		fill = ncollide = 0;
+		nresize = 0;
+		for (unsigned int i = 0; i < nbins; i++)
+			bins[i] = NULL;
+	}
+
 private:
 
 	void add(Elm *b[], unsigned int n, Elm *e, unsigned long h) {

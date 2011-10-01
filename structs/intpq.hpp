@@ -82,11 +82,18 @@ public:
 		return Ops::entry(e).prev != NULL;
 	}
 
-	bool fst(Elm *e) {
-		return Ops::entry(e).prev == e;
+	void clear(void) {
+		fill = 0;
+		nresize = end = 0;
+		for (unsigned int i = 0; i < nbins; i++)
+			bins[i] = NULL;
 	}
 
 private:
+
+	bool fst(Elm *e) {
+		return Ops::entry(e).prev == e;
+	}
 
 	void resize(unsigned int sz) {
 		Elm **b = (Elm**) malloc(sz * sizeof(*b));
