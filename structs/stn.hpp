@@ -4,7 +4,7 @@
 
 class Stn {
 public:
-	typedef int Time;
+	typedef long Time;
 
 	Stn(unsigned int);
 
