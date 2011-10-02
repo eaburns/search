@@ -23,6 +23,34 @@ public:
 	struct Constraint {
 		unsigned int i, j;
 		Time a, b;
+
+		Constraint(unsigned int _i, unsigned int _j, Time _a, Time _b) :
+			i(_i), j(_j), a(_a), b(_b) { }
+	};
+
+	struct Before : Constraint {
+		Before(unsigned int i, unsigned int j, Time a) :
+			Constraint(i, j, a, Stn::inf()) { }
+	};
+
+	struct After : Constraint {
+		After(unsigned int i, unsigned int j, Time a) :
+			Constraint(i, j, a, Stn::inf()) { }
+	};
+
+	struct NoEarlier : Constraint {
+		NoEarlier(unsigned int i, Time t) :
+			Constraint(0, i, t, Stn::inf()) { }
+	};
+
+	struct NoLater : Constraint {
+		NoLater(unsigned int i, Time t) :
+			Constraint(i, 0, t, Stn::neginf()) { }
+	};
+
+	struct InWindow : Constraint {
+		InWindow(unsigned int i, Time s, Time e) :
+			Constraint(0, i, s, e) { }
 	};
 
 	bool add(const Constraint &);
