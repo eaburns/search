@@ -128,7 +128,7 @@ bool Stn::proplower(Undo &undo, bool toupdt[], bool seen[], Node &u) {
 	for (unsigned int i = 0; i < u.in.size(); i++) {
 		Arc &a = u.in[i];
 		Node &v = *a.first;
-		Time dist = sub_clamp(u.tozero, a.second);
+		Time dist = subclamp(u.tozero, a.second);
 
 		if (dist <= v.tozero)
 			continue;
@@ -156,7 +156,7 @@ bool Stn::propupper(Undo &undo, bool fromupdt[], bool seen[], Node &u) {
 	for (unsigned int i = 0; i < u.out.size(); i++) {
 		Arc &a = u.out[i];
 		Node &v = *a.first;
-		Time dist = add_clamp(u.fromzero, a.second);
+		Time dist = addclamp(u.fromzero, a.second);
 
 		if (dist >= v.fromzero)
 			continue;

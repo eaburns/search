@@ -66,28 +66,24 @@ private:
 		return std::numeric_limits<Time>::min();
 	}
 
-	static Time sub_clamp(Time a, Time b) {
+	static Time subclamp(Time a, Time b) {
 		if (b >= 0) {
-			Time t = Stn::neginf() + b;
-			if (a < t)
+			if (a < Stn::neginf() + b)
 				return Stn::neginf();
 			return a - b;
 		}
-		Time t = Stn::inf() + b;
-		if (a > t)
+		if (a > Stn::inf() + b)
 			return Stn::inf();
 		return a - b;	
 	}
 
-	static Time add_clamp(Time a, Time b) {
+	static Time addclamp(Time a, Time b) {
 		if (b >= 0) {
-			Time t = Stn::inf() - b;
-			if (a > t)
+			if (a > Stn::inf() - b)
 				return Stn::inf();
 			return a + b;
 		}
-		Time t = Stn::neginf() - b;
-		if (a < t)
+		if (a < Stn::neginf() - b)
 			return Stn::neginf();
 		return a + b;
 	}
