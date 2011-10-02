@@ -2,18 +2,16 @@
 #include <utility>
 #include <cassert>
 
-Stn::Stn(unsigned int num) : nodes(num+1) {
+Stn::Stn(unsigned int num) {
+	grow(num+1);
 	nodes[0].tozero = nodes[0].fromzero = 0;
-
-	for (unsigned int i = 0; i <= num; i++)
-		nodes[i].id = i;
 }
 
 Stn::Stn(const Stn &other) : nodes(other.nodes) { }
 
 void Stn::grow(unsigned int num) {
 	unsigned int oldsz = nodes.size();
-	nodes.resize(nodes.size() + num);
+	nodes.resize(oldsz + num);
 
 	for (unsigned int i = oldsz; i < nodes.size(); i++)
 		nodes[i].id = i;
