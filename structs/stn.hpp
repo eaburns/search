@@ -21,6 +21,8 @@ public:
 
 	bool add(const Constraint &);
 
+	void undo(void);
+
 	Time lower(unsigned int n) { return nodes[n].tozero; }
 
 	Time upper(unsigned int n) { return nodes[n].fromzero; }
@@ -77,16 +79,17 @@ private:
 		}		
 	};
 
-	void addarcs(const Constraint &);
-	bool proplower(bool[], Node&);
-	bool propupper(bool[], Node &);
-	bool propagate(const Constraint &);
+	struct Undo {
+		std::vector<Node*> popout;
+		std::vector< std::pair<Node*, Time> > prevto;
+		std::vector< std::pair<Node*, Time> > prevfrom;
+	};
 
-//	struct Undo {
-//		std::vector<Node&> arcs;	// Need an arc popped.
-//		std::vector< std::pair<Node*, Time> > prevto;
-//		std::vector< std::pair<Node*, Time> > prevfrom;
-//	};
+	bool propagate(Undo&, const Constraint&);
+	bool proplower(Undo&, bool[], bool[], Node&);
+	bool propupper(Undo&, bool[], bool[], Node&);
+	void addarcs(Undo&, const Constraint&);
 
 	std::vector<Node> nodes;
+	std::vector<Undo> undos;
 };
