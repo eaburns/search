@@ -14,11 +14,11 @@ public:
 
 	void undo(void);
 
-	Time lower(unsigned int n) { return nodes[n].tozero; }
+	Time lower(unsigned int n) const { return nodes[n].tozero; }
 
-	Time upper(unsigned int n) { return nodes[n].fromzero; }
+	Time upper(unsigned int n) const { return nodes[n].fromzero; }
 
-	unsigned int nnodes(void) { return nodes.size(); }
+	unsigned int nnodes(void) const { return nodes.size(); }
 
 	struct Constraint {
 		unsigned int i, j;
@@ -26,6 +26,8 @@ public:
 	};
 
 	bool add(const Constraint &);
+
+	bool eq(const Stn &) const;
 
 private:
 	static Time inf(void) {
@@ -76,7 +78,9 @@ private:
 		Node(void) {
 			tozero = Stn::neginf();
 			fromzero = Stn::inf();
-		}		
+		}
+
+		bool eq(const Node&) const;
 	};
 
 	struct Undo {

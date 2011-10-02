@@ -32,6 +32,45 @@ bool Stn::add(const Constraint &c) {
 	return true;
 }
 
+bool Stn::eq(const Stn &o) const {
+	if (nnodes() != o.nnodes())
+		return false;
+
+	for (unsigned int i = 0; i < nnodes(); i++)
+		if (nodes[i].eq(o.nodes[i]))
+			return false;
+
+	return true;
+}
+
+bool Stn::Node::eq(const Stn::Node &o) const {
+	if (id != o.id || tozero != o.tozero || fromzero != o.fromzero
+		|| out.size() != o.out.size() || in.size() != o.in.size())
+		return false;
+
+	bool found = false;
+	for (unsigned int i = 0; i < out.size() && !found; i++) {
+	for (unsigned int j = 0; j < out.size() && !found; j++) {
+		if (out[i].first->id == o.out[j].first->id
+			 && out[i].second == o.out[j].second)
+			found = true;
+	}
+	}
+	if (!found)
+		return false;
+
+	found = false;
+	for (unsigned int i = 0; i < in.size() && !found; i++) {
+	for (unsigned int j = 0; j < in.size() && !found; j++) {
+		if (in[i].first->id == o.in[j].first->id
+			 && in[i].second == o.in[j].second)
+			found = true;
+	}
+	}
+
+	return found;	
+}
+
 void Stn::undo() {
 	Undo &undo = undos.back();
 
