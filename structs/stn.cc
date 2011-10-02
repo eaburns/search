@@ -11,7 +11,7 @@ Stn::Stn(unsigned int num) : nodes(num+1) {
 
 Stn::Stn(const Stn &other) : nodes(other.nodes) { }
 
-void Stn::add(unsigned int num) {
+void Stn::grow(unsigned int num) {
 	unsigned int oldsz = nodes.size();
 	nodes.resize(nodes.size() + num);
 

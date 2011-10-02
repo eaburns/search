@@ -10,7 +10,13 @@ public:
 
 	Stn(const Stn &);
 
-	void add(unsigned int);
+	void grow(unsigned int);
+
+	void undo(void);
+
+	Time lower(unsigned int n) { return nodes[n].tozero; }
+
+	Time upper(unsigned int n) { return nodes[n].fromzero; }
 
 	unsigned int nnodes(void) { return nodes.size(); }
 
@@ -20,12 +26,6 @@ public:
 	};
 
 	bool add(const Constraint &);
-
-	void undo(void);
-
-	Time lower(unsigned int n) { return nodes[n].tozero; }
-
-	Time upper(unsigned int n) { return nodes[n].fromzero; }
 
 private:
 	static Time inf(void) {
