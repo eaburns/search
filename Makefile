@@ -11,6 +11,8 @@ OBJS=\
 	utils/hash.o\
 	utils/rand.o\
 	\
+	structs/stn.o\
+	\
 	search/search.o\
 
 TMPLS=\
@@ -22,6 +24,7 @@ TMPLS=\
 	structs/intpq.hpp\
 	structs/binheap.hpp\
 	structs/htable.hpp\
+	structs/stn.hpp\
 
 HDRS=\
 	utils/utils.hpp\
