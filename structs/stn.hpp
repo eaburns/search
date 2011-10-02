@@ -72,7 +72,7 @@ private:
 				return Stn::neginf();
 			return a - b;
 		}
-		if (a > Stn::inf() + b)
+		if (a > Stn::inf() + b)	// b is negative
 			return Stn::inf();
 		return a - b;	
 	}
@@ -83,7 +83,7 @@ private:
 				return Stn::inf();
 			return a + b;
 		}
-		if (a < Stn::neginf() - b)
+		if (a < Stn::neginf() - b)	// b is positive
 			return Stn::neginf();
 		return a + b;
 	}
