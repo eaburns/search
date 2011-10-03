@@ -120,3 +120,24 @@ void stn_add_bench(unsigned long n, double *strt, double *end) {
 
 	free(cs);
 }
+
+void stn_undo_bench(unsigned long n, double *strt, double *end) {
+	Stn stn(Nnodes);
+
+	for (unsigned long i = 0; i < n;) {
+		cs[i].i = rand() % Nnodes;
+		cs[i].j = rand() % Nnodes;
+		cs[i].a = rand() & 1 ? rand() : -rand();
+		cs[i].b = rand() & 1 ? rand() : -rand();
+		if (stn.add(cs[i]))
+			i++;
+	}
+
+
+	*strt = walltime();
+	for (unsigned long i = 0; i < n; i++)
+		stn.undo();
+	*end = walltime();
+
+	free(cs);
+}
