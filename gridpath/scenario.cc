@@ -83,7 +83,8 @@ Result<GridPath> ScenarioEntry::run(Search<GridPath> *srch) {
 	GridPath::State s0 = d.initialstate();
 
 	Result<GridPath> &r = srch->search(d, s0);
-	if (fabsf(r.cost - opt) > Epsilon)
+	// Scenario file has 0-cost for no-path.  We use -1.
+	if (fabsf(r.cost - opt) > Epsilon && !(opt == 0 && r.cost == -1))
 		fatal("Expected optimal cost of %g, got %g\n", opt, r.cost);
 
 	return r;
