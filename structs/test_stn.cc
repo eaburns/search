@@ -1,5 +1,6 @@
 #include "../utils/utils.hpp"
 #include "stn.hpp"
+#include <cstdlib>
 
 bool stn_copy_eq_test(void) {
 	Stn stn(1);
@@ -95,4 +96,27 @@ bool stn_undo_one_test(void) {
 	}
 
 	return true;
+}
+
+enum { Nnodes = 1024 };
+
+Stn::Constraint *cs;
+
+void stn_add_bench(unsigned long n, double *strt, double *end) {
+	cs = (Stn::Constraint*) malloc(n * sizeof(*cs));
+	for (unsigned long i = 0; i < n; i++) {
+		cs[i].i = rand() % Nnodes;
+		cs[i].j = rand() % Nnodes;
+		cs[i].a = rand() & 1 ? rand() : -rand();
+		cs[i].b = rand() & 1 ? rand() : -rand();
+	}
+
+	Stn stn(Nnodes);
+
+	*strt = walltime();
+	for (unsigned long i = 0; i < n; i++)
+		stn.add(cs[i]);
+	*end = walltime();
+
+	free(cs);
 }

@@ -1,4 +1,6 @@
 #include "../utils/utils.hpp"
+#include <cstdlib>
+#include <ctime>
 
 bool htable_add_test(void);
 bool htable_find_test(void);
@@ -32,6 +34,7 @@ void intpq_push_bench(unsigned long, double *, double *);
 void intpq_pop_bench(unsigned long, double *, double *);
 void binheap_push_bench(unsigned long, double*, double*);
 void binheap_pop_bench(unsigned long, double*, double*);
+void stn_add_bench(unsigned long, double*, double*);
 
 static const Benchmark benches[] = {
 	Benchmark("htable add benchmark", htable_add_bench),
@@ -40,6 +43,7 @@ static const Benchmark benches[] = {
 	Benchmark("intpq pop benchmark", intpq_pop_bench),
 	Benchmark("binheap push benchmark", binheap_push_bench),
 	Benchmark("binheap pop benchmark", binheap_pop_bench),
+	Benchmark("stn add benchmark", stn_add_bench),
 };
 
 enum { Nbenches = sizeof(benches) / sizeof(benches[0]) };
@@ -48,6 +52,8 @@ int main(int argc, const char *argv[]) {
 	const char *regexp = ".*";
 	if (argc == 2)
 		regexp = argv[1];
+
+	srand(time(NULL));
 
 	bool ok = runtests(tests, Ntests, regexp);
 	runbenches(benches, Nbenches, regexp);
