@@ -8,7 +8,46 @@ Stn::Stn(unsigned int num) {
 	nodes[0].tozero = nodes[0].fromzero = 0;
 }
 
-Stn::Stn(const Stn &other) : nodes(other.nodes) { }
+Stn::Stn(const Stn &o) : nodes(o.nodes.size()), undos(o.undos.size()) {
+	for (unsigned int i = 0; i < o.nodes.size(); i++) {
+		Node &n = nodes[i];
+		n.id = i;
+		n.tozero = o.nodes[i].tozero;
+		n.fromzero = o.nodes[i].fromzero;
+
+		n.out.resize(o.nodes[i].out.size());
+		for (unsigned int j = 0; j < n.out.size(); j++) {
+			n.out[j].first = &nodes[o.nodes[i].out[j].first->id];
+			n.out[j].second = o.nodes[i].out[j].second;
+		}
+
+		n.in.resize(o.nodes[i].in.size());
+		for (unsigned int j = 0; j < n.in.size(); j++) {
+			n.in[j].first = &nodes[o.nodes[i].in[j].first->id];
+			n.in[j].second = o.nodes[i].in[j].second;
+		}
+	}
+
+	for (unsigned int i = 0; i < o.undos.size(); i++) {
+		Undo &u = undos[i];
+
+		u.popout.resize(o.undos[i].popout.size());
+		for (unsigned int j = 0; j < u.popout.size(); j++)
+			u.popout[j] = &nodes[o.undos[i].popout[j]->id];
+
+		u.prevto.resize(o.undos[i].prevto.size());
+		for (unsigned int j = 0; j < u.prevto.size(); j++) {
+			u.prevto[j].first = &nodes[o.undos[i].prevto[j].first->id];
+			u.prevto[j].second = o.undos[i].prevto[j].second;
+		}
+
+		u.prevfrom.resize(o.undos[i].prevfrom.size());
+		for (unsigned int j = 0; j < u.prevfrom.size(); j++) {
+			u.prevfrom[j].first = &nodes[o.undos[i].prevfrom[j].first->id];
+			u.prevfrom[j].second = o.undos[i].prevfrom[j].second;
+		}
+	}
+}
 
 void Stn::grow(unsigned int num) {
 	unsigned int oldsz = nodes.size();
