@@ -1,6 +1,7 @@
 #include "stn.hpp"
 #include <utility>
 #include <cassert>
+#include <cstdio>
 
 Stn::Stn(unsigned int num) {
 	grow(num+1);
@@ -32,12 +33,31 @@ bool Stn::add(const Constraint &c) {
 	return true;
 }
 
+void Stn::output(FILE *out) const {
+	fprintf(out, "%u nodes\n", nnodes());
+
+	for (unsigned int i = 0; i < nnodes(); i++)
+		nodes[i].output(out);
+}
+
+void Stn::Node::output(FILE *o) const {
+	fprintf(o, "	node: %u, tozero=%ld, fromzero=%ld\n", id, tozero, fromzero);
+
+	fprintf(o, "	out:\n");
+	for (unsigned int i = 0; i < out.size(); i++)
+		fprintf(o, "		%u, %ld\n", out[i].first->id, out[i].second);
+
+	fprintf(o, "	in:\n");
+	for (unsigned int i = 0; i < in.size(); i++)
+		fprintf(o, "		%u, %ld\n", in[i].first->id, in[i].second);
+}
+
 bool Stn::eq(const Stn &o) const {
 	if (nnodes() != o.nnodes())
 		return false;
 
 	for (unsigned int i = 0; i < nnodes(); i++)
-		if (nodes[i].eq(o.nodes[i]))
+		if (!nodes[i].eq(o.nodes[i]))
 			return false;
 
 	return true;
@@ -48,7 +68,7 @@ bool Stn::Node::eq(const Stn::Node &o) const {
 		|| out.size() != o.out.size() || in.size() != o.in.size())
 		return false;
 
-	bool found = false;
+	bool found = out.size() == 0;
 	for (unsigned int i = 0; i < out.size() && !found; i++) {
 	for (unsigned int j = 0; j < out.size() && !found; j++) {
 		if (out[i].first->id == o.out[j].first->id
@@ -59,7 +79,7 @@ bool Stn::Node::eq(const Stn::Node &o) const {
 	if (!found)
 		return false;
 
-	found = false;
+	found = in.size() == 0;
 	for (unsigned int i = 0; i < in.size() && !found; i++) {
 	for (unsigned int j = 0; j < in.size() && !found; j++) {
 		if (in[i].first->id == o.in[j].first->id
@@ -109,18 +129,14 @@ bool Stn::propagate(Undo &u, const Constraint &c) {
 
 void Stn::addarcs(Undo &undo, const Stn::Constraint &c) {
 	if (c.b < inf()) {
-		Arc out(&nodes[c.j], c.b);
-		nodes[c.i].out.push_back(out);
+		nodes[c.i].out.push_back(Arc(&nodes[c.j], c.b));
 		undo.popout.push_back(&nodes[c.i]);
-		Arc in(&nodes[c.i], c.b);
-		nodes[c.j].in.push_back(in);
+		nodes[c.j].in.push_back(Arc(&nodes[c.i], c.b));
 	}
 	if (c.a > neginf()) {
-		Arc out(&nodes[c.i], -c.a);
-		nodes[c.j].out.push_back(out);
+		nodes[c.j].out.push_back(Arc(&nodes[c.i], -c.a));
 		undo.popout.push_back(&nodes[c.j]);
-		Arc in(&nodes[c.j], -c.a);
-		nodes[c.i].in.push_back(in);
+		nodes[c.i].in.push_back(Arc(&nodes[c.j], -c.a));
 	}
 }
 

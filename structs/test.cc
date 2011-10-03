@@ -7,6 +7,7 @@ bool intpq_push_test(void);
 bool intpq_pop_test(void);
 bool binheap_push_test(void);
 bool binheap_pop_test(void);
+bool stn_copy_eq_test(void);
 bool stn_add_one_ok_test(void);
 bool stn_undo_one_test(void);
 
@@ -18,8 +19,9 @@ static const Test tests[] = {
 	Test("intpq pop test", intpq_pop_test),
 	Test("binheap push test", binheap_push_test),
 	Test("binheap pop test", binheap_pop_test),
+	Test("stn copy/eq test", stn_copy_eq_test),
 	Test("stn add one ok test", stn_add_one_ok_test),
-	Test("stn undo test", stn_undo_one_test),
+	Test("stn undo one test", stn_undo_one_test),
 };
 
 enum { Ntests = sizeof(tests) / sizeof(tests[0]) };
@@ -30,7 +32,6 @@ void intpq_push_bench(unsigned long, double *, double *);
 void intpq_pop_bench(unsigned long, double *, double *);
 void binheap_push_bench(unsigned long, double*, double*);
 void binheap_pop_bench(unsigned long, double*, double*);
-void stn_add_bench(unsigned long, double*, double*);
 
 static const Benchmark benches[] = {
 	Benchmark("htable add benchmark", htable_add_bench),
@@ -39,7 +40,6 @@ static const Benchmark benches[] = {
 	Benchmark("intpq pop benchmark", intpq_pop_bench),
 	Benchmark("binheap push benchmark", binheap_push_bench),
 	Benchmark("binheap pop benchmark", binheap_pop_bench),
-	Benchmark("stn add benchmark", stn_add_bench),
 };
 
 enum { Nbenches = sizeof(benches) / sizeof(benches[0]) };

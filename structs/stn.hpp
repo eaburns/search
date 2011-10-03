@@ -1,6 +1,7 @@
 #include <vector>
 #include <limits>
 #include <utility>
+#include <cstdio>
 
 class Stn {
 public:
@@ -65,6 +66,8 @@ public:
 		return std::numeric_limits<Time>::min();
 	}
 
+	void output(FILE*) const;
+
 private:
 
 	static Time subclamp(Time a, Time b) {
@@ -106,6 +109,7 @@ private:
 		}
 
 		bool eq(const Node&) const;
+		void output(FILE*) const;
 	};
 
 	struct Undo {

@@ -1,6 +1,27 @@
 #include "../utils/utils.hpp"
 #include "stn.hpp"
 
+bool stn_copy_eq_test(void) {
+	Stn stn(1);
+	Stn copy(stn);
+	Stn stn2(2);
+
+	if (!stn.eq(copy)) {
+		stn.output(stderr);
+		fprintf(stderr, "\n\n");
+		copy.output(stderr);
+		testpr("Stn is not equal to its copy\n");
+		return false;
+	}
+
+	if (stn.eq(stn2)) {
+		testpr("Stn is equal to a different Stn\n");
+		return false;
+	}
+
+	return true;
+}
+
 bool stn_add_one_ok_test(void) {
 	Stn stn(1);
 
@@ -14,8 +35,7 @@ bool stn_add_one_ok_test(void) {
 		return false;
 	}
 
-	Stn::NoEarlier ne(1, 1);
-	if (!stn.add(ne)) {
+	if (!stn.add(Stn::NoEarlier(1, 1))) {
 		testpr("Failed to add the no earlier constraint\n");
 		return false;
 	}
@@ -30,8 +50,7 @@ bool stn_add_one_ok_test(void) {
 		return false;
 	}
 
-	Stn::NoLater nl(1, 5);
-	if (!stn.add(nl)) {
+	if (!stn.add(Stn::NoLater(1, 5))) {
 		testpr("Failed to add the no later constraint\n");
 		return false;
 	}
@@ -50,8 +69,30 @@ bool stn_add_one_ok_test(void) {
 }
 
 bool stn_undo_one_test(void) {
-	return false;
-}
+	Stn stn(1);
+	Stn copy(stn);
 
-void stn_add_bench(unsigned long n, double *strt, double *end) {
+	if (!stn.add(Stn::NoEarlier(1, 5))) {
+		testpr("Failed to add the no earlier constraint\n");
+		return false;
+	}
+
+	if (copy.lower(1) == 5) {
+		testpr("Copy was modified by changing the Stn\n");
+		return false;
+	}
+
+	if (stn.eq(copy)) {
+		testpr("Stn is equal to its copy after adding a constraint\n");
+		return false;
+	}
+
+	stn.undo();
+
+	if (!stn.eq(copy)) {
+		testpr("Stn is not equal to its copy after undo\n");
+		return false;
+	}
+
+	return true;
 }
