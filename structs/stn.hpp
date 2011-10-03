@@ -59,10 +59,14 @@ public:
 	bool eq(const Stn &) const;
 
 	static Time inf(void) {
+		if (std::numeric_limits<Time>::has_infinity)
+			return std::numeric_limits<Time>::infinity();
 		return std::numeric_limits<Time>::max();
 	}
 
 	static Time neginf(void) {
+		if (std::numeric_limits<Time>::has_infinity)
+			return -std::numeric_limits<Time>::infinity();
 		return std::numeric_limits<Time>::min();
 	}
 
