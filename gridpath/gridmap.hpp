@@ -12,20 +12,6 @@ public:
 	GridMap(std::string &file);
 	~GridMap(void);
 
-	// Tests whether the terrain flags allow this move.
-	bool terrainok(unsigned int l0, unsigned int l1) const {
-		char f0 = flags[l0];
-		char f1 = flags[l1];
-
-		if (f1 & (OutOfBounds | Tree))
-			return false;
-
-		if (f0 & Water)
-			return f1 & Water;
-
-		return f1 & (Passable | Swamp);
-	}
-
 	unsigned int x(unsigned int loc) const { return loc % w; }
 
 	unsigned int y(unsigned int loc) const { return loc / w; }
@@ -86,6 +72,20 @@ private:
 		}
 
 		return n;
+	}
+
+	// Tests whether the terrain flags allow this move.
+	bool terrainok(unsigned int l0, unsigned int l1) const {
+		char f0 = flags[l0];
+		char f1 = flags[l1];
+
+		if (f1 & (OutOfBounds | Tree))
+			return false;
+
+		if (f0 & Water)
+			return f1 & Water;
+
+		return f1 & (Passable | Swamp);
 	}
 
 	void load(FILE*);
