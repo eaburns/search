@@ -68,15 +68,17 @@ bool Stn::add(const Constraint &c) {
 		return false;
 	}
 
-	undos.push_back(u);
 	return true;
 }
 
-void Stn::output(FILE *out) const {
-	fprintf(out, "%u nodes\n", nnodes());
+void Stn::output(FILE *o) const {
+	fprintf(o, "%u nodes\n", nnodes());
 
 	for (unsigned int i = 0; i < nnodes(); i++)
-		nodes[i].output(out);
+		nodes[i].output(o);
+
+	for (unsigned int i = 0; i < undos.size(); i++)
+		undos[i].output(o);
 }
 
 void Stn::Node::output(FILE *o) const {
@@ -91,12 +93,31 @@ void Stn::Node::output(FILE *o) const {
 		fprintf(o, "		%u, %ld\n", in[i].first->id, in[i].second);
 }
 
+void Stn::Undo::output(FILE *o) const {
+	fprintf(o, "popout:");
+	for (unsigned int i = 0; i < popout.size(); i++)
+		fprintf(o, " %u", popout[i]->id);
+	fputc('\n', o);
+
+	fprintf(o, "prevto:\n");
+	for (unsigned int i = 0; i < prevto.size(); i++)
+		fprintf(o, "	%u	%ld\n", prevto[i].first->id, prevto[i].second);
+
+	fprintf(o, "prevfrom:\n");
+	for (unsigned int i = 0; i < prevfrom.size(); i++)
+		fprintf(o, "	%u	%ld\n", prevfrom[i].first->id, prevfrom[i].second);
+}
+
 bool Stn::eq(const Stn &o) const {
-	if (nnodes() != o.nnodes())
+	if (nnodes() != o.nnodes() || undos.size() != o.undos.size())
 		return false;
 
 	for (unsigned int i = 0; i < nnodes(); i++)
 		if (!nodes[i].eq(o.nodes[i]))
+			return false;
+
+	for (unsigned int i = 0; i < undos.size(); i++)
+		if (!undos[i].eq(o.undos[i]))
 			return false;
 
 	return true;
@@ -130,9 +151,33 @@ bool Stn::Node::eq(const Stn::Node &o) const {
 	return found;	
 }
 
-void Stn::undo() {
-	Undo &undo = undos.back();
+bool Stn::Undo::eq(const Undo &o) const {
+	if (popout.size() != o.popout.size()
+			|| prevto.size() != o.prevto.size()
+			|| prevfrom.size() != o.prevfrom.size())
+		return false;
 
+	for (unsigned int i = 0; i < popout.size(); i++)
+		if (popout[i]->id != o.popout[i]->id)
+			return false;
+
+	for (unsigned int i = 0; i < prevto.size(); i++) {
+		if (prevto[i].first->id != o.prevto[i].first->id
+				|| prevto[i].second != o.prevto[i].second)
+			return false;
+	}
+
+	for (unsigned int i = 0; i < prevfrom.size(); i++) {
+		if (prevfrom[i].first->id != o.prevfrom[i].first->id
+				|| prevfrom[i].second != o.prevfrom[i].second)
+			return false;
+	}
+
+	return true;
+}
+
+void Stn::undo(void) {
+	Undo &undo = undos.back();
 	for (unsigned int i = 0; i < undo.popout.size(); i++) {
 		Node &u = *undo.popout[i];
 		assert (u.out.size() > 0);

@@ -69,6 +69,39 @@ bool stn_add_one_ok_test(void) {
 	return true;
 }
 
+bool stn_add_one_incons_test(void) {
+	Stn stn(1);
+
+	if (!stn.add(Stn::NoEarlier(1, 5))) {
+		testpr("Failed to add the no earlier constraint\n");
+		return false;
+	}
+
+	if (stn.lower(1) != 5) {
+		testpr("Earliest time is not 5 after no earlier constraint");
+		return false;
+	}
+
+	if (stn.upper(1) != Stn::inf()) {
+		testpr("Latest time is not infinity after no earlier constraint");
+		return false;
+	}
+
+	Stn copy(stn);
+
+	if (stn.add(Stn::NoLater(1, 1))) {
+		testpr("Successfully added the inconsistent no later constraint\n");
+		return false;
+	}
+
+	if (!copy.eq(stn)) {
+		testpr("Stn was not properly restored after adding the inconsistent constraint\n");
+		return false;
+	}
+
+	return true;
+}
+
 bool stn_undo_one_test(void) {
 	Stn stn(1);
 	Stn copy(stn);
@@ -78,7 +111,7 @@ bool stn_undo_one_test(void) {
 		return false;
 	}
 
-	if (copy.lower(1) == 5) {
+	if (copy.lower(1) != Stn::neginf()) {
 		testpr("Copy was modified by changing the Stn\n");
 		return false;
 	}
@@ -91,6 +124,8 @@ bool stn_undo_one_test(void) {
 	stn.undo();
 
 	if (!stn.eq(copy)) {
+		stn.output(stderr);
+		copy.output(stderr);
 		testpr("Stn is not equal to its copy after undo\n");
 		return false;
 	}
@@ -125,11 +160,13 @@ void stn_undo_bench(unsigned long n, double *strt, double *end) {
 	Stn stn(Nnodes);
 
 	for (unsigned long i = 0; i < n;) {
-		cs[i].i = rand() % Nnodes;
-		cs[i].j = rand() % Nnodes;
-		cs[i].a = rand() & 1 ? rand() : -rand();
-		cs[i].b = rand() & 1 ? rand() : -rand();
-		if (stn.add(cs[i]))
+		Stn::Constraint c(
+			rand() % Nnodes,
+			rand() % Nnodes,
+			rand() & 1 ? rand() : -rand(),
+			rand() & 1 ? rand() : -rand()
+		);
+		if (stn.add(c))
 			i++;
 	}
 
@@ -138,6 +175,4 @@ void stn_undo_bench(unsigned long n, double *strt, double *end) {
 	for (unsigned long i = 0; i < n; i++)
 		stn.undo();
 	*end = walltime();
-
-	free(cs);
 }

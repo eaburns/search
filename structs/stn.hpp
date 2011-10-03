@@ -116,6 +116,9 @@ private:
 		std::vector<Node*> popout;
 		std::vector< std::pair<Node*, Time> > prevto;
 		std::vector< std::pair<Node*, Time> > prevfrom;
+
+		bool eq(const Undo&) const;
+		void output(FILE*) const;
 	};
 
 	bool propagate(Undo&, const Constraint&);
