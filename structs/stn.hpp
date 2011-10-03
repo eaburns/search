@@ -45,7 +45,7 @@ public:
 
 	struct NoLater : Constraint {
 		NoLater(unsigned int i, Time t) :
-			Constraint(i, 0, t, Stn::neginf()) { }
+			Constraint(0, i, Stn::neginf(), t) { }
 	};
 
 	struct InWindow : Constraint {
@@ -57,7 +57,6 @@ public:
 
 	bool eq(const Stn &) const;
 
-private:
 	static Time inf(void) {
 		return std::numeric_limits<Time>::max();
 	}
@@ -65,6 +64,8 @@ private:
 	static Time neginf(void) {
 		return std::numeric_limits<Time>::min();
 	}
+
+private:
 
 	static Time subclamp(Time a, Time b) {
 		if (b >= 0) {
