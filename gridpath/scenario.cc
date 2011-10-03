@@ -4,7 +4,7 @@
 #include <iostream>
 #include <cmath>
 
-static const float Epsilon = 0.001;
+static const float Epsilon = 0.01;
 
 Scenario::Scenario(int ac, char *av[]) :
 		argc(ac), argv(av), maproot("./"), lastmap(NULL),
