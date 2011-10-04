@@ -2,6 +2,10 @@
 
 * Bit-packed pancake states
 
+* Make sure that the size of grids
+	doesn't overflow the size
+	of a signed integer
+
 * More domains:
 
 	- Robot arm
