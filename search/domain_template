@@ -9,7 +9,9 @@ public:
 	enum { UnitCost = <UNITCOST?> };
 
 	typedef <COST> Cost;
+	static const <COST> InfCost = …;
 	typedef <OPER> Oper;
+	static const <OPER> Nop = …;
 
 	<DOMAIN>(FILE*);
 
