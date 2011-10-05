@@ -18,7 +18,7 @@ template<class D> Result<D> search(D &d, int argc, char *argv[]) {
 	Search<D> *srch = getsearch<D>(argc, argv);
 
 	typename D::State s0 = d.initialstate();
-	dfpair(stdout, "initial heuristic", "%d", d.h(s0));
+	dfpair(stdout, "initial heuristic", "%g", (double) d.h(s0));
 
 	Result<D> res = srch->search(d, s0);
 	srch->output(stdout);
