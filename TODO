@@ -1,3 +1,5 @@
+* $(LDFLAGS) after $(OBJ)
+
 * Ensure that argc > 2 when checking
 	argv[1] to get the alg name
 
