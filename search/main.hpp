@@ -30,6 +30,9 @@ template<class D> Result<D> search(D &d, int argc, char *argv[]) {
 }
 
 template<class D> Search<D> *getsearch(int argc, char *argv[]) {
+	if (argc < 2)
+		fatal("No algorithm specified");
+
 	if (strcmp(argv[1], "idastar") == 0)
 		return new Idastar<D>(argc, argv);
 	else if (strcmp(argv[1], "astar") == 0)
