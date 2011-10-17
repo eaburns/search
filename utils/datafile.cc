@@ -1,8 +1,10 @@
 #include <cstdarg>
 #include <cstdio>
 #include <ctime>
+#include <cstdlib>
 #include <cerrno>
 #include <cstring>
+#include <cassert>
 #include <sys/utsname.h>
 #include <unistd.h>
 #include <sys/stat.h>
@@ -13,31 +15,56 @@ enum { Bufsz = 256 };
 static const char *start4 = "#start data file format 4\n";
 static const char *end4 = "#end data file format 4\n";
 
+static void dfpair_sz(FILE*, unsigned int, const char*, const char*, va_list);
 static void machineid(FILE*);
 static void tryprocstatus(FILE*);
 
 void dfpair(FILE *f, const char *key, const char *fmt, ...) {
 	char buf[Bufsz];
-
 	int n = snprintf(buf, Bufsz, "#pair  \"%s\"\t\"", key);
+	if (n > Bufsz)
+		fatal("dfrowhdr: buffer is too small\n");
 
 	va_list ap;
 	va_start(ap, fmt);
-	n += vsnprintf(buf+n, Bufsz-n, fmt, ap);
+	unsigned int m = vsnprintf(buf+n, Bufsz-n, fmt, ap);
 	va_end(ap);
 
+	if (m > (unsigned int) Bufsz-n) {	// Err, overflow
+		va_start(ap, fmt);
+		dfpair_sz(f, m + n + 1, key, fmt, ap);
+		va_end(ap);
+		return;
+	}
+
 	fprintf(f, "%s\"\n", buf);
+}
+
+static void dfpair_sz(FILE *f, unsigned int sz, const char *key, const char *fmt, va_list ap) {
+	char *buf = (char*) malloc(sz * sizeof(*buf));
+
+	unsigned int n = snprintf(buf, sz, "#pair  \"%s\"\t\"", key);
+	assert (n <= sz);
+	vsnprintf(buf+n, sz-n, fmt, ap);
+
+	fprintf(f, "%s\"\n", buf);
+	free(buf);
 }
 
 void dfrowhdr(FILE *f, const char *name, int ncols, ...) {
 	char buf[Bufsz];
 	int n = snprintf(buf, Bufsz, "#altcols  \"%s\"", name);
+	if (n > Bufsz)
+		fatal("dfrowhdr: buffer is too small\n");
 
 	va_list ap;
 	va_start(ap, ncols);
 	for (int i = 0; i < ncols; i++) {
 		char *col = va_arg(ap, char*);
-		n += snprintf(buf+n, Bufsz-n, "\t\"%s\"", col);
+		unsigned int m = snprintf(buf+n, Bufsz-n, "\t\"%s\"", col);
+		if (m > (unsigned int) Bufsz - n)
+			fatal("dfrowhdr: buffer is too small\n");
+		n += m;
 	}
 	va_end(ap);
 
@@ -47,6 +74,8 @@ void dfrowhdr(FILE *f, const char *name, int ncols, ...) {
 void dfrow(FILE *f, const char *name, const char *colfmt, ...) {
 	char buf[Bufsz];
 	int n = snprintf(buf, Bufsz, "#altrow  \"%s\"", name);
+	if (n > Bufsz)
+		fatal("dfrowhdr: buffer is too small\n");
 
 	va_list ap;
 	va_start(ap, colfmt);
@@ -54,24 +83,28 @@ void dfrow(FILE *f, const char *name, const char *colfmt, ...) {
 		double g = 0;
 		long d = 0;
 		unsigned long u = 0;
+		unsigned int m = 0;
 		switch (colfmt[i]) {
 		case 'g':
 			g = va_arg(ap, double);
-			n += snprintf(buf+n, Bufsz-n, "\t%g", g);
+			m = snprintf(buf+n, Bufsz-n, "\t%g", g);
 			break;
 		case 'f':
 			g = va_arg(ap, double);
-			n += snprintf(buf+n, Bufsz-n, "\t%lf", g);
+			m = snprintf(buf+n, Bufsz-n, "\t%lf", g);
 			break;
 		case 'd':
 			d = va_arg(ap, long);
-			n += snprintf(buf+n, Bufsz-n, "\t%ld", d);
+			m = snprintf(buf+n, Bufsz-n, "\t%ld", d);
 			break;
 		case 'u':
 			u = va_arg(ap, unsigned long);
-			n += snprintf(buf+n, Bufsz-n, "\t%lu", u);
+			m = snprintf(buf+n, Bufsz-n, "\t%lu", u);
 			break;
 		}
+		if (m > (unsigned int) Bufsz-n)
+			fatal("dfrow: buffer is too small\n");
+		n += m;
 	}
 	va_end(ap);
 
