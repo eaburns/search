@@ -10,6 +10,8 @@ OBJS=\
 	utils/testing.o\
 	utils/hash.o\
 	utils/rand.o\
+	utils/encode.o\
+	utils/image.o\
 	\
 	structs/stn.o\
 	\

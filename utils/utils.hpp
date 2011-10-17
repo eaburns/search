@@ -1,5 +1,6 @@
 #include <cstdio>
 #include <stdint.h>
+#include <string>
 
 void warn(const char *, ...);
 void warnx(int, const char *, ...);
@@ -51,3 +52,7 @@ public:
 private:
 	uint64_t v;
 };
+
+void runlenenc(std::string &dst, const std::string &data);
+void runlendec(std::string &dst, const std::string &data);
+void ascii85enc(std::string &dst, const std::string &data);
