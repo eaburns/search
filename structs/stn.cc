@@ -82,15 +82,16 @@ void Stn::output(FILE *o) const {
 }
 
 void Stn::Node::output(FILE *o) const {
-	fprintf(o, "	node: %u, tozero=%ld, fromzero=%ld\n", id, tozero, fromzero);
+	fprintf(o, "	node: %u, tozero=%g, fromzero=%g\n", id,
+		(double) tozero, (double) fromzero);
 
 	fprintf(o, "	out:\n");
 	for (unsigned int i = 0; i < out.size(); i++)
-		fprintf(o, "		%u, %ld\n", out[i].first->id, out[i].second);
+		fprintf(o, "		%u, %g\n", out[i].first->id, (double) out[i].second);
 
 	fprintf(o, "	in:\n");
 	for (unsigned int i = 0; i < in.size(); i++)
-		fprintf(o, "		%u, %ld\n", in[i].first->id, in[i].second);
+		fprintf(o, "		%u, %g\n", in[i].first->id, (double) in[i].second);
 }
 
 void Stn::Undo::output(FILE *o) const {
@@ -101,11 +102,11 @@ void Stn::Undo::output(FILE *o) const {
 
 	fprintf(o, "prevto:\n");
 	for (unsigned int i = 0; i < prevto.size(); i++)
-		fprintf(o, "	%u	%ld\n", prevto[i].first->id, prevto[i].second);
+		fprintf(o, "	%u	%g\n", prevto[i].first->id, (double) prevto[i].second);
 
 	fprintf(o, "prevfrom:\n");
 	for (unsigned int i = 0; i < prevfrom.size(); i++)
-		fprintf(o, "	%u	%ld\n", prevfrom[i].first->id, prevfrom[i].second);
+		fprintf(o, "	%u	%g\n", prevfrom[i].first->id, (double) prevfrom[i].second);
 }
 
 bool Stn::eq(const Stn &o) const {
