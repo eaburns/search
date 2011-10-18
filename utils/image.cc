@@ -23,16 +23,19 @@ Image::~Image(void) {
 	delete data;
 }
 
-void Image::save(const char *path) const {
+void Image::save(const char *path, bool usletter) const {
 	FILE *f = fopen(path, "w");
 	if (!f)
 		fatalx(errno, "Failed to open %s for writing\n", path);
-	output(f);
+	output(f, usletter);
 	fclose(f);
 }
 
-void Image::output(FILE *out) const {
-	outputhdr(out);
+void Image::output(FILE *out, bool usletter) const {
+	if (usletter)
+		outputhdr_usletter(out);
+	else
+		outputhdr(out);
 	outputdata(out);
 	for (unsigned int i = 0; i < comps.size(); i++) {
 		fputc('\n', out);
@@ -41,13 +44,41 @@ void Image::output(FILE *out) const {
 	fprintf(out, "showpage\n");
 }
 
-void Image::outputhdr(FILE *out) const {
+enum {
+	Widthpt = 612,	/* pts == 8.5 in */
+	Heightpt = 792,	/* pts = 11 in */
+};
+
+void Image::outputhdr_usletter(FILE *out, unsigned int marginpt) const {
 	fprintf(out, "%%!PS-Adobe-3.0\n");
 	fprintf(out, "%%%%Creator: UNH-AI C++ Search Framework\n");
 	fprintf(out, "%%%%Title: %s\n", title.c_str());
-	fprintf(out, "%%%%BoundingBox: 0 0 %u %u\n", w, h);
+	fprintf(out, "%%%%BoundingBox: 0 0 %u %u\n", Widthpt, Heightpt);
 	fprintf(out, "%%%%EndComments\n");
+
+	double maxw = Widthpt - marginpt * 2, maxh = Heightpt - marginpt * 2;
+	double scalex = maxw / w, scaley = maxh / h;
+	double transx = marginpt, transy = (Heightpt - h * scalex) / 2;
+
+	double scale = scalex;
+	if (scaley < scalex) {
+		scale = scaley;
+		transx = (Widthpt - w * scaley) / 2;
+	}
+
+	fprintf(out, "%g %g translate\n", transx, transy);
+	fprintf(out, "%g %g scale\n", scale, scale);
 }
+
+void Image::outputhdr(FILE *out, unsigned int marginpt) const {
+	fprintf(out, "%%!PS-Adobe-3.0\n");
+	fprintf(out, "%%%%Creator: UNH-AI C++ Search Framework\n");
+	fprintf(out, "%%%%Title: %s\n", title.c_str());
+	fprintf(out, "%%%%BoundingBox: 0 0 %u %u\n", w + 2 * marginpt, h + 2 * marginpt);
+	fprintf(out, "%%%%EndComments\n");
+	fprintf(out, "%u %u translate\n", marginpt, marginpt);
+}
+
 
 void Image::outputdata(FILE *out) const {
 	fprintf(out, "\n%% Image data\n");

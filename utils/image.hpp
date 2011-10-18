@@ -40,8 +40,8 @@ struct Image {
 	~Image(void);
 
 	void set(unsigned int x, unsigned int y, Color c) { data[y * w + x] = c; }
-	void save(const char *) const;
-	void output(FILE*) const;
+	void save(const char *, bool usletter = false) const;
+	void output(FILE*, bool usletter = false) const;
 
 	struct Component {
 		virtual void write(FILE*) const = 0;
@@ -218,7 +218,9 @@ struct Image {
 
 private:
 
-	void outputhdr(FILE*) const;
+	/* 72/2 pt == ½ in */
+	void outputhdr_usletter(FILE*, unsigned int marginpt = 72/2) const;
+	void outputhdr(FILE*, unsigned int marginpt = 0) const;
 	void outputdata(FILE*) const;
 	void encodedata(std::string&) const;
 
