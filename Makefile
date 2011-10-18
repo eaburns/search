@@ -30,6 +30,8 @@ TMPLS=\
 
 HDRS=\
 	utils/utils.hpp\
+	utils/image.hpp\
+	\
 	search/search.hpp\
 
 HDRS+=$(TMPLS)
