@@ -1,3 +1,5 @@
+* blah/*.o: $(BLAHHDRS)
+
 * $(LDFLAGS) after $(OBJ)
 
 * Port tiles PDB code from C
