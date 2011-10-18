@@ -135,19 +135,23 @@ void Image::Path::Arc::write(FILE *out) const {
 	const char *fun = "arc";
 	if (dt < 0)
 		fun = "arcn";
-	double t1 = fmod(t + dt, 360);
-	fprintf(out, "%g %g %g %g %g %s\n", x, y, r, fmod(t, 360), t1, fun);
+	fprintf(out, "%g %g %g %g %g %s\n", x, y, r, t, t + dt, fun);
 }
 
 Image::Path::CurLoc Image::Path::Arc::move(CurLoc p) const {
-	double t1 = t + dt;
-	if (dt < 0)
-		t1 = t - dt;
-	return CurLoc(Point(x + r * cos(t1 * M_PI / 180), y + r * sin(t1* M_PI / 180)));
+	double x1 = x + r * cos(t + dt * M_PI / 180);
+	double y1 = y + r * sin(t + dt * M_PI / 180);
+	return CurLoc(Point(x1, y1));
+}
+
+
+static bool dbleq(double a, double b) {
+	static const double Epsilon = 0.01;
+	return fabs(a - b) < Epsilon;
 }
 
 void Image::Path::line(double x0, double y0, double x1, double y1) {
-	if (!endloc || endloc->x != x0 || endloc->y != y0)
+	if (!endloc || dbleq(endloc->x, x0) || dbleq(endloc->y, y0))
 		addseg(new MoveTo(x0, y0));
 	addseg(new LineTo(x1, y1));
 }
@@ -158,8 +162,9 @@ void Image::Path::curve(double xc, double yc, double r, double t, double dt) {
 	double x0 = xc + a->r * cos(a->t * M_PI / 180);
 	double y0 = yc + a->r * sin(a->t * M_PI / 180);
 
-	if (!endloc || endloc->x != x0 || endloc->y != y0)
+	if (!endloc || dbleq(endloc->x, x0) || dbleq(endloc->y, y0))
 		addseg(new MoveTo(x0, y0));
+
 	addseg(a);
 }
 
@@ -203,12 +208,15 @@ void Image::Triangle::write(FILE *out) const {
 	fprintf(out, "%% Triangle\n");
 	fprintf(out, "newpath\n");
 	fprintf(out, "%g %g %g setrgbcolor\n", c.getred(), c.getgreen(), c.getblue());
-	fprintf(out, "1 setlinewidth\n");
+	if (linewidth >= 0)
+		fprintf(out, "%g setlinewidth\n", linewidth);
+	else
+		fprintf(out, "0.1 setlinewidth\n");
 	fprintf(out, "%g %g moveto\n", x0r + x, y0r + y);
 	fprintf(out, "%g %g lineto\n", x1r + x, y1r + y);
 	fprintf(out, "%g %g lineto\n", x2r + x, y2r + y);
 	fprintf(out, "closepath\n");
-	if (fill)
+	if (linewidth < 0)
 		fprintf(out, "fill\n");
 	else
 		fprintf(out, "stroke\n");

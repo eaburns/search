@@ -94,7 +94,12 @@ struct Image {
 
 		struct Arc : Segment {
 			Arc(double _x, double _y, double _r, double _t, double _dt) :
-				x(_x), y(_y), r(_r), t(_t), dt(_dt) { }
+					x(_x), y(_y), r(_r), t(_t), dt(_dt) {
+				if(dt > 360)
+					dt = 360;
+				else if(dt < -360)
+					dt = - 360;
+			}
 			virtual void write(FILE*) const;
 			virtual CurLoc move(CurLoc) const;
 		protected:
@@ -174,15 +179,17 @@ struct Image {
 	struct Triangle : public Component {
 		// Centered at (x,y) with height ht and width w
 		// (an angle) rotated to point to at angle rot
+		//
+		// Negative line width means to fill in the triangle.
 		Triangle(double _x, double _y, double _ht, double _w = 45,
 				double _rot = 90, Color _c = Image::black,
-				bool _fill = true) : x(_x), y(_y), w(_w), ht(_ht),
-			rot(_rot), c(_c), fill(_fill) { }
+				double _linewidth = 1) : x(_x), y(_y), w(_w), ht(_ht),
+			rot(_rot), linewidth(_linewidth), c(_c) { }
 		virtual void write(FILE*) const;
 	private:
-		double x, y, w, ht, rot;	
+		double x, y, w, ht, rot;
+		double linewidth;
 		Color c;
-		bool fill;
 	};
 
 	struct Circle : public Component {
