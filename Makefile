@@ -38,6 +38,8 @@ BINS=
 
 all: everything
 
+*/*.o: $(HDRS)
+
 include structs/Make.inc
 include utils/Make.inc
 include tiles/Make.inc

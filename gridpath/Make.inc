@@ -11,6 +11,8 @@ GRIDHDR=\
 	gridpath/gridpath.hpp\
 	gridpath/scenario.hpp\
 
+gridpath/*.o: $(GRIDHDR)
+
 gridpath/gridpathmd_solver: $(OBJS) $(HDRS) $(GRIDHDR) $(GRIDSRC) gridpath/main.cc
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(OBJS) $(GRIDSRC)\
+	$(CXX) $(CXXFLAGS) $(OBJS) $(LDFLAGS) $(GRIDSRC)\
 		gridpath/main.cc -o gridpath/gridpathmd_solver
