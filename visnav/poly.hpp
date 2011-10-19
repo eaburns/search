@@ -1,22 +1,23 @@
 #include "../utils/image.hpp"
+#include <vector>
 
 struct Point {
+	Point(void) { }
+	Point(double _x, double _y) : x(_x), y(_y) { }
 	double x, y;
 };
 
 class Poly {
 public:
-	Poly(double xc, double yc, double radius, 
-		unsigned int nsides, double rot);
+	Poly(unsigned int nverts, ...);
+	Poly(unsigned int nverts, va_list);
+	Poly(std::vector<Point>&);
 
-	~Poly(void);
+	static Poly triangle(double x, double y, double radius);
+	static Poly square(double x, double y, double height);
 
 	// If the width is <0 then the polygon is filled.
 	void draw(Image&, Color, double width=1) const;
 private:
-	void computepoints(void);
-
-	double xc, yc, radius, innerangle, rotate;
-	unsigned int nsides;
-	Point *pts;
+	std::vector<Point> verts;
 };

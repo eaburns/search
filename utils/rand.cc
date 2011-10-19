@@ -28,3 +28,7 @@ long Rand::integer(long min, long max)
 	
 	return bits() % (max - min) + min;
 }
+
+double Rand::real(void) {
+	return bits() * Fl;
+}

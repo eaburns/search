@@ -48,7 +48,10 @@ class Rand {
 public:
 	Rand(unsigned long);
 	unsigned long bits(void);
+	// (not sure if it's inclusive or exclusive)
 	long integer(long min, long max);
+	// between 0 and 1 (not sure if it's inclusive or exclusive)
+	double real(void);
 private:
 	uint64_t v;
 };

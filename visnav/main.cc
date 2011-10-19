@@ -7,20 +7,11 @@ int main(int argc, char *argv[]) {
 	Image img(500, 500, "poly.eps");
 	addaxes(img);
 
-	Poly t0(50, 50, 10, 10, 0);
-	t0.draw(img, Image::black);
+	Poly t0 = Poly::triangle(250, 250, 10);
+	t0.draw(img, Image::black, 0.5);
 
-	Poly t1(50, 50, 10, 10, M_PI/4);
-	t1.draw(img, Image::green);
-
-	Poly square(75, 75, 20, 4, 0);
-	square.draw(img, Image::blue);
-
-	Poly oct0(300, 300, 50, 8, 0);
-	oct0.draw(img, Image::blue, 0.1);
-
-	Poly oct1(200, 200, 50, 8, M_PI / 8);
-	oct1.draw(img, Image::red, -1);
+	Poly sq = Poly::square(250, 250, 20);
+	sq.draw(img, Image::blue, 0.5);
 
 	img.save("polys.eps");
 
