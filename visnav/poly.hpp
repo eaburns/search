@@ -49,8 +49,6 @@ private:
 	void init(double x0, double y0, double x1, double y1);
 };
 
-struct Image;
-
 class Poly {
 public:
 	Poly(unsigned int nverts, ...);
@@ -70,7 +68,7 @@ public:
 
 	bool willhit(const Line&) const;
 
-	double minhit(const Line&, Image *img = NULL) const;
+	double minhit(const Line&) const;
 
 private:
 

@@ -141,9 +141,7 @@ bool Poly::willhit(const Line &l) const {
 	return l.theta >= min && l.theta <= max;
 }
 
-#include "../utils/image.hpp"
-
-double Poly::minhit(const Line &line, Image *img) const {
+double Poly::minhit(const Line &line) const {
 	if (!willhit(line))
 		return std::numeric_limits<double>::infinity();
  
@@ -154,9 +152,6 @@ double Poly::minhit(const Line &line, Image *img) const {
 
 		if (!side.contains(hitpt))
 			continue;
-
-		if (img)
-			img->add(new Image::Circle(hitpt.x, hitpt.y, 1, Image::blue));
 
 		double hitdist = Point::distance(line.p0, hitpt);
 		if (hitdist < min)
