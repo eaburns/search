@@ -33,17 +33,21 @@ private:
 class Poly {
 public:
 	Poly(unsigned int nverts, ...);
+
 	Poly(unsigned int nverts, va_list);
+
 	Poly(std::vector<Point> &_verts) : verts(_verts) { }
 
 	static Poly random(unsigned int n, double xc, double yc, double r);
+
 	static Poly triangle(double x, double y, double radius);
+
 	static Poly square(double x, double y, double height);
 
 	// If the width is <0 then the polygon is filled.
 	void draw(Image&, Color, double width=1, bool number = false) const;
+
 private:
-	static void xsortedpts(std::vector<Point>&, double, double, double);
 
 	std::vector<Point> verts;
 };

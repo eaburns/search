@@ -7,6 +7,7 @@
 #include <cassert>
 #include <cstdio>
 
+static void xsortedpts(std::vector<Point>&, double, double, double);
 static void swp(double*, double*);
 
 void Line::init(double x0, double y0, double x1, double y1) {
@@ -112,7 +113,7 @@ struct CmpX {
 	}
 } increasingX;
 
-void Poly::xsortedpts(std::vector<Point> &pts, double xc, double yc, double r) {
+static void xsortedpts(std::vector<Point> &pts, double xc, double yc, double r) {
 	static Rand rng(time(NULL));
 
 	for (unsigned int i = 0; i < pts.size(); i++) {
