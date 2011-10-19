@@ -92,7 +92,6 @@ private:
 	double interiorangle(unsigned int i) const;
 
 	std::vector<Point> verts;
-	// Reflex vertices are the ones which have interior
-	// angles < π.
+	// Reflex vertices are ones with  interior angles < π.
 	std::vector<Point> reflexes;
 };
