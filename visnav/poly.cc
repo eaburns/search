@@ -20,6 +20,16 @@ void Line::init(double x0, double y0, double x1, double y1) {
 	m = (y1 - y0) /  (x1 - x0); 
 	b = y0 - (m * x0);
 	theta = angle(p0, p1);
+
+	minx = p0.x;
+	maxx = p1.x;
+	if (minx > maxx)
+		swp(&minx, &maxx);
+
+	miny = p0.y;
+	maxy = p1.y;
+	if (miny > maxy)
+		swp(&miny, &maxy);
 }
 
 Point Line::intersection(const Line &a, const Line &b) {
@@ -131,17 +141,26 @@ bool Poly::willhit(const Line &l) const {
 	return l.theta >= min && l.theta <= max;
 }
 
-double Poly::minhit(const Line &line) const {
+#include "../utils/image.hpp"
+
+double Poly::minhit(const Line &line, Image *img) const {
 	if (!willhit(line))
 		return std::numeric_limits<double>::infinity();
  
 	double min = std::numeric_limits<double>::infinity();
 	for (unsigned int i = 0; i < verts.size(); i++) {
 		Line side(i == 0 ? verts[verts.size() - 1] : verts[i-1], verts[i]);
-		Point hit = Line::intersection(line, side);
-		double mag = Point::distance(line.p0, hit);
-		if (mag < min)
-			min = mag;
+		Point hitpt = Line::intersection(line, side);
+
+		if (!side.contains(hitpt))
+			continue;
+
+		if (img)
+			img->add(new Image::Circle(hitpt.x, hitpt.y, 1, Image::blue));
+
+		double hitdist = Point::distance(line.p0, hitpt);
+		if (hitdist < min)
+			min = hitdist;
 	}
 
 	return min;

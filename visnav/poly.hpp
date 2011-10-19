@@ -2,19 +2,22 @@
 #include <vector>
 
 struct Point {
-	Point(void) { }
-
-	Point(double _x, double _y) : x(_x), y(_y) { }
 
 	static double distance(const Point &p0, const Point &p1) {
 		double dx = p1.x - p0.x, dy = p1.y - p0.y;
 		return sqrt(dx * dx + dy * dy);
 	}
 
+	Point(void) { }
+
+	Point(double _x, double _y) : x(_x), y(_y) { }
+
 	double x, y;
 };
 
 struct Line {
+
+	static Point intersection(const Line&, const Line&);
 
 	Line(double x0, double y0, double x1, double y1) :
 			p0(x0, y0), p1(x1, y1) {
@@ -32,15 +35,21 @@ struct Line {
 
 	double length(void) const { return Point::distance(p0, p1); }
 
-	static Point intersection(const Line&, const Line&);
+	bool contains(const Point &pt) const {
+		return pt.x >= minx && pt.x <= maxx &&
+			pt.y >= miny && pt.y <= maxy;
+	};
 
 	Point p0, p1;
+	double minx, maxx, miny, maxy;
 	double m, b;
 	double theta;	// angle from p0 to p1
 private:
 
 	void init(double x0, double y0, double x1, double y1);
 };
+
+struct Image;
 
 class Poly {
 public:
@@ -59,9 +68,9 @@ public:
 	// If the width is <0 then the polygon is filled.
 	void draw(Image&, Color, double width=1, bool number = false) const;
 
-	bool willhit(const Line &l) const;
+	bool willhit(const Line&) const;
 
-	double minhit(const Line &l) const;
+	double minhit(const Line&, Image *img = NULL) const;
 
 private:
 
