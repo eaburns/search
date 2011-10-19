@@ -20,7 +20,7 @@ int main(int argc, char *argv[]) {
 	addaxes(img);
 
 	Poly rand = Poly::random(6, Width / 2, Height / 2, 50);
-	rand.draw(img, Image::green, 0.5);
+	rand.draw(img, Image::green, 0.5, true);
 
 	for (double x = 0; x <= Width; x += Step) {
 		Line line(0, 0, x, Height);

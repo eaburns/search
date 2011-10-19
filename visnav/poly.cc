@@ -48,6 +48,7 @@ Poly::Poly(unsigned int nverts, ...) {
 		verts.push_back(p);
 	}
 	va_end(ap);
+	computereflexes();
 }
 
 Poly::Poly(unsigned int nverts, va_list ap) {
@@ -57,6 +58,7 @@ Poly::Poly(unsigned int nverts, va_list ap) {
 		p.y = va_arg(ap, double);
 		verts.push_back(p);
 	}
+	computereflexes();
 }
 
 Poly Poly::random(unsigned int n, double xc, double yc, double r) {
@@ -116,6 +118,10 @@ void Poly::draw(Image &img, Color c, double width, bool number) const {
 		p->fill();
 	img.add(p);
 
+	for (unsigned int i = 0; i < reflexes.size(); i++)
+		img.add(new Image::Circle(reflexes[i].x, reflexes[i].y, 1,
+				Image::black, true));
+
 	if (!number)
 		return;
 
@@ -160,6 +166,29 @@ double Poly::minhit(const Line &line) const {
 
 	return min;
 }
+
+void Poly::computereflexes(void) {
+	for (unsigned int i = 0; i < verts.size(); i++) {
+		if (interiorangle(i) < M_PI)
+			reflexes.push_back(verts[i]);
+	}
+}
+
+double Poly::interiorangle(unsigned int i) const {
+	const Point &u = i == 0 ? verts[verts.size() - 1] : verts[i-1];
+	const Point &v = verts[i];
+	const Point &w = i == verts.size() - 1 ? verts[0] : verts[i+1];
+
+	// Get vectors for each side.
+	Point a = Point::subtract(v, u), b = Point::subtract(w, v);
+
+	// Some voodoo from the internet.
+	double angle = M_PI - fmod(atan2(b.x*a.y - a.x*b.y, b.x*a.x + b.y*a.y), 2 * M_PI);
+
+	return angle;
+}
+
+//angle = mod(atan2(x1*y2-x2*y1,x1*x2+y1*y2),2*pi);
 
 struct CmpX {
 	bool operator()(const Point &a, const Point &b) {

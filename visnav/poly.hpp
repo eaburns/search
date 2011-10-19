@@ -8,6 +8,18 @@ struct Point {
 		return sqrt(dx * dx + dy * dy);
 	}
 
+	static Point subtract(const Point &a, const Point &b) {
+		return (Point(b.x - a.x, b.y - a.y));
+	}
+
+	static Point scale(const Point &a, double sc) {
+		return Point(a.x * sc, a.y * sc);
+	}
+ 
+	static double dot(const Point &a, const Point &b) {
+		return a.x * b.x + a.y * b.y;
+	}
+
 	Point(void) { }
 
 	Point(double _x, double _y) : x(_x), y(_y) { }
@@ -55,7 +67,9 @@ public:
 
 	Poly(unsigned int nverts, va_list);
 
-	Poly(std::vector<Point> &_verts) : verts(_verts) { }
+	Poly(std::vector<Point> &_verts) : verts(_verts) {
+		computereflexes();
+	}
 
 	static Poly random(unsigned int n, double xc, double yc, double r);
 
@@ -72,5 +86,13 @@ public:
 
 private:
 
+	void computereflexes(void);
+
+	// Interior angle of the ith vertex
+	double interiorangle(unsigned int i) const;
+
 	std::vector<Point> verts;
+	// Reflex vertices are the ones which have interior
+	// angles < π.
+	std::vector<Point> reflexes;
 };
