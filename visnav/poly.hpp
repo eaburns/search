@@ -41,9 +41,9 @@ struct Line {
 	};
 
 	Point p0, p1;
-	double minx, maxx, miny, maxy;
 	double m, b;
 	double theta;	// angle from p0 to p1
+	double minx, maxx, miny, maxy;
 private:
 
 	void init(double x0, double y0, double x1, double y1);
