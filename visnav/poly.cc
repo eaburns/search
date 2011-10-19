@@ -183,9 +183,7 @@ double Poly::interiorangle(unsigned int i) const {
 	Point a = Point::subtract(v, u), b = Point::subtract(w, v);
 
 	// Some voodoo from the internet.
-	double angle = M_PI - fmod(atan2(b.x*a.y - a.x*b.y, b.x*a.x + b.y*a.y), 2 * M_PI);
-
-	return angle;
+	return M_PI - fmod(atan2(b.x*a.y - a.x*b.y, b.x*a.x + b.y*a.y), 2 * M_PI);
 }
 
 //angle = mod(atan2(x1*y2-x2*y1,x1*x2+y1*y2),2*pi);
