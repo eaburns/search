@@ -6,27 +6,39 @@ struct Point {
 
 	Point(double _x, double _y) : x(_x), y(_y) { }
 
+	static double distance(const Point &p0, const Point &p1) {
+		double dx = p1.x - p0.x, dy = p1.y - p0.y;
+		return sqrt(dx * dx + dy * dy);
+	}
+
 	double x, y;
 };
 
 struct Line {
-	Line(double _m, double _b) : m(_m), b(_b) { }
 
-	Line(double x0, double y0, double x1, double y1) {
+	Line(double x0, double y0, double x1, double y1) :
+			p0(x0, y0), p1(x1, y1) {
 		init(x0, y0, x1, y1);
 	}
 
-	Line(Point a, Point b) { init(a.x, a.y, b.x, b.y); }
+	Line(const Point &a, const Point &b) : p0(a), p1(b) { init(a.x, a.y, b.x, b.y); }
 
-	bool above(Point &p) const { return above(p.x, p.y); }
+	bool above(const Point &p) const { return above(p.x, p.y); }
 
 	bool above(double x, double y) const {
 		double liney = m * x + b;
 		return liney < y;
 	}
 
+	double length(void) const { return Point::distance(p0, p1); }
+
+	static Point intersection(const Line&, const Line&);
+
+	Point p0, p1;
 	double m, b;
+	double theta;	// angle from p0 to p1
 private:
+
 	void init(double x0, double y0, double x1, double y1);
 };
 
@@ -46,6 +58,10 @@ public:
 
 	// If the width is <0 then the polygon is filled.
 	void draw(Image&, Color, double width=1, bool number = false) const;
+
+	bool willhit(const Line &l) const;
+
+	double minhit(const Line &l) const;
 
 private:
 

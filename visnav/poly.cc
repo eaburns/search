@@ -2,6 +2,7 @@
 #include "../utils/image.hpp"
 #include "../utils/utils.hpp"
 #include <algorithm>
+#include <limits>
 #include <cmath>
 #include <cstdarg>
 #include <cassert>
@@ -9,6 +10,7 @@
 
 static void xsortedpts(std::vector<Point>&, double, double, double);
 static void swp(double*, double*);
+static double angle(const Point&, const Point&);
 
 void Line::init(double x0, double y0, double x1, double y1) {
 	if (x0 > x1) {
@@ -17,6 +19,13 @@ void Line::init(double x0, double y0, double x1, double y1) {
 	}
 	m = (y1 - y0) /  (x1 - x0); 
 	b = y0 - (m * x0);
+	theta = angle(p0, p1);
+}
+
+Point Line::intersection(const Line &a, const Line &b) {
+	double x = (b.b - a.b) / (a.m - b.m);
+	double y = a.m * x + a.b;
+	return Point(x, y);
 }
 
 Poly::Poly(unsigned int nverts, ...) {
@@ -107,6 +116,37 @@ void Poly::draw(Image &img, Color c, double width, bool number) const {
 	}
 }
 
+bool Poly::willhit(const Line &l) const {
+	double min = std::numeric_limits<double>::infinity();
+	double max = -std::numeric_limits<double>::infinity();
+
+	for (unsigned int i = 0; i < verts.size(); i++) {
+		double theta = angle(l.p0, verts[i]);
+		if (theta < min)
+			min = theta;
+		if (theta > max)
+			max = theta;
+	}
+
+	return l.theta >= min && l.theta <= max;
+}
+
+double Poly::minhit(const Line &line) const {
+	if (!willhit(line))
+		return std::numeric_limits<double>::infinity();
+ 
+	double min = std::numeric_limits<double>::infinity();
+	for (unsigned int i = 0; i < verts.size(); i++) {
+		Line side(i == 0 ? verts[verts.size() - 1] : verts[i-1], verts[i]);
+		Point hit = Line::intersection(line, side);
+		double mag = Point::distance(line.p0, hit);
+		if (mag < min)
+			min = mag;
+	}
+
+	return min;
+}
+
 struct CmpX {
 	bool operator()(const Point &a, const Point &b) {
 		return a.x < b.x;
@@ -114,7 +154,13 @@ struct CmpX {
 } increasingX;
 
 static void xsortedpts(std::vector<Point> &pts, double xc, double yc, double r) {
-	static Rand rng(time(NULL));
+	static unsigned long seed = time(NULL);
+	static Rand rng(seed);
+ 	static bool printed = false;
+	if (!printed) {
+		printf("seed=%lu\n", seed);
+		printed = true;
+	}
 
 	for (unsigned int i = 0; i < pts.size(); i++) {
 		double x = (2 * r * rng.real()) - r;
@@ -130,4 +176,10 @@ static void swp(double *a, double *b) {
 	*a = *b;
 	*b = t;
 }
- 
+
+static double angle(const Point &a, const Point &b) {
+	double dx = b.x - a.x;
+	double dy = b.y - a.y;
+	double hyp = sqrt(dx * dx + dy * dy);
+	return asin(dy / hyp);
+}
