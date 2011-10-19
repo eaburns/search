@@ -10,7 +10,7 @@ const Color Image::blue(0, 0, 1);
 const Color Image::black(0, 0, 0);
 const Color Image::white(1, 1, 1);
 
-Image::Image(const char *t, unsigned int width, unsigned int height) :
+Image::Image(unsigned int width, unsigned int height, const char *t) :
 		w(width), h(height), title(t) {
 	data = new Color[w * h];
 }
@@ -126,7 +126,12 @@ void Image::Path::write(FILE *out) const {
 	fprintf(out, "newpath\n");
 	for (unsigned int i = 0; i < segs.size(); i++)
 		segs[i]->write(out);
-	fprintf(out, "stroke\n");
+	if (_closepath)
+		fprintf(out, "closepath\n");
+	if (!_fill)
+		fprintf(out, "stroke\n");
+	else
+		fprintf(out, "fill\n");
 }
 
 void Image::Path::MoveTo::write(FILE *out) const {

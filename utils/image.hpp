@@ -35,13 +35,16 @@ private:
 struct Image {
 	static const Color red, green, blue, white, black;
 
-	Image(const char *title, unsigned int, unsigned int);
+	Image(unsigned int, unsigned int, const char *title = "<untitled>");
 
 	~Image(void);
 
 	void set(unsigned int x, unsigned int y, Color c) { data[y * w + x] = c; }
 	void save(const char *, bool usletter = false) const;
 	void output(FILE*, bool usletter = false) const;
+
+	unsigned int width() const { return w; }
+	unsigned int height() const { return h; }
 
 	struct Component {
 		virtual void write(FILE*) const = 0;
@@ -121,9 +124,16 @@ struct Image {
 
 		CurLoc endloc;
 		std::vector<Segment*> segs;
+		bool _closepath, _fill;
 
 	public:
+		Path(void) : _closepath(false), _fill(false) { }
+
 		~Path(void);
+
+		void closepath(void) { _closepath = true; }
+
+		void fill(void) { _fill = true; }
 
 		void moveto(double x, double y) { addseg(new MoveTo(x, y)); }
 

@@ -47,6 +47,7 @@ include utils/Make.inc
 include tiles/Make.inc
 include pancake/Make.inc
 include gridpath/Make.inc
+include visnav/Make.inc
 
 everything: $(TMPLS:.hpp=.hpp.gch) $(BINS)
 
