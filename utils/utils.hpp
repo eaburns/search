@@ -52,9 +52,15 @@ public:
 	long integer(long min, long max);
 	// between 0 and 1 (not sure if it's inclusive or exclusive)
 	double real(void);
+
+	unsigned long seed(void) const { return theseed; }
 private:
+	unsigned long theseed;
 	uint64_t v;
 };
+
+// A global, pre-seeded random number generator.
+extern Rand randgen;
 
 void runlenenc(std::string &dst, const std::string &data);
 void runlendec(std::string &dst, const std::string &data);

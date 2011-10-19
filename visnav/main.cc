@@ -1,4 +1,5 @@
 #include "poly.hpp"
+#include "../utils/utils.hpp"
 #include "../utils/image.hpp"
 
 void addaxes(Image&);
@@ -6,6 +7,8 @@ void addaxes(Image&);
 int main(int argc, char *argv[]) {
 	Image img(500, 500, "poly.eps");
 	addaxes(img);
+
+	printf("seed=%lu\n", randgen.seed());
 
 	Poly rand = Poly::random(6, 250, 250, 50);
 	rand.draw(img, Image::green, 0.5);

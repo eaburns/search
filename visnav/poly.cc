@@ -154,17 +154,9 @@ struct CmpX {
 } increasingX;
 
 static void xsortedpts(std::vector<Point> &pts, double xc, double yc, double r) {
-	static unsigned long seed = time(NULL);
-	static Rand rng(seed);
- 	static bool printed = false;
-	if (!printed) {
-		printf("seed=%lu\n", seed);
-		printed = true;
-	}
-
 	for (unsigned int i = 0; i < pts.size(); i++) {
-		double x = (2 * r * rng.real()) - r;
-		double y = (2 * r * rng.real()) - r;
+		double x = (2 * r * randgen.real()) - r;
+		double y = (2 * r * randgen.real()) - r;
 		pts[i] = Point(x + xc, y + yc);
 	}
 
