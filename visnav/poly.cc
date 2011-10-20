@@ -12,12 +12,6 @@ static void xsortedpts(std::vector<Point>&, double, double, double);
 static void swp(double*, double*);
 
 double Point::angle(const Point &a, const Point &b) {
-//	double dx = b.x - a.x;
-//	double dy = b.y - a.y;
-//	double hyp = sqrt(dx * dx + dy * dy);
-//	double t = asin(fabs(dy) / hyp);
-//	return dy < 0 ? M_PI + t : t;
-
 	return Point::angle(Point(b.x - a.x, b.y - a.y));
 }
 
