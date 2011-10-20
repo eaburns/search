@@ -90,7 +90,8 @@ struct Poly {
 
 	Poly(unsigned int nverts, va_list);
 
-	Poly(std::vector<Point> &_verts) : verts(_verts) { }
+	Poly(std::vector<Point> &_verts) :
+		verts(_verts), cntroid(FP_NAN, FP_NAN) { }
 
 	static Poly random(unsigned int n, double xc, double yc, double r);
 
@@ -112,9 +113,17 @@ struct Poly {
 		return interiorangle(i) < M_PI;
 	}
 
-	std::vector<Point> verts;
+	const Point &centroid(void) {
+		if (isnan(cntroid.x))
+			computecentroid();
+		return cntroid;
+	}
 
+	std::vector<Point> verts;
+	Point cntroid;
 private:
+
+	void computecentroid(void);
 
 	// Interior angle of the ith vertex
 	double interiorangle(unsigned int i) const;

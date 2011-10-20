@@ -52,7 +52,7 @@ Point Line::intersection(const Line &a, const Line &b) {
 	return Point(x, y);
 }
 
-Poly::Poly(unsigned int nverts, ...) {
+Poly::Poly(unsigned int nverts, ...) : cntroid(FP_NAN, FP_NAN) {
 	va_list ap;
 	va_start(ap, nverts);
 	for (unsigned int i = 0; i < nverts; i++) {
@@ -64,7 +64,7 @@ Poly::Poly(unsigned int nverts, ...) {
 	va_end(ap);
 }
 
-Poly::Poly(unsigned int nverts, va_list ap) {
+Poly::Poly(unsigned int nverts, va_list ap) : cntroid(FP_NAN, FP_NAN) {
 	for (unsigned int i = 0; i < nverts; i++) {
 		Point p;
 		p.x = va_arg(ap, double);
@@ -197,6 +197,16 @@ double Poly::interiorangle(unsigned int i) const {
 
 	// Some voodoo from the internet.
 	return M_PI - fmod(atan2(b.x*a.y - a.x*b.y, b.x*a.x + b.y*a.y), 2 * M_PI);
+}
+
+void Poly::computecentroid(void) {
+	cntroid.x =  cntroid.y = 0;
+	for (unsigned int i = 0; i < verts.size(); i++) {
+		cntroid.x += verts[i].x;
+		cntroid.y += verts[i].y;
+	}
+	cntroid.x /= verts.size();
+	cntroid.y /= verts.size();
 }
 
 struct CmpX {
