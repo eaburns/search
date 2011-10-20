@@ -70,7 +70,7 @@ void VisGraph::linkvert(unsigned int i) {
 		bool vis = true;
 		for (unsigned int p = 0; p < polys.size(); p++) {
 			double hit = polys[p].minhit(line, p == verts[i].polyno ? Epsilon : 0.0);
-			if (hit > Epsilon && hit < len - Epsilon) {
+			if (hit < len - Epsilon) {
 				vis = false;
 				break;
 			}
