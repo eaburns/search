@@ -10,6 +10,19 @@ const Color Image::blue(0, 0, 1);
 const Color Image::black(0, 0, 0);
 const Color Image::white(1, 1, 1);
 
+const Color somecolors[] = {
+	Color(0.0, 0.6, 0.0),	// Dark green
+	Color(0.0, 0.0, 0.6),	// Dark blue
+	Color(0.5, 0.0, 0.5),	// Purple
+	Color(1.0, 0.54, 0.0),	// Dark orange
+	Color(0.28, 0.24, 0.55),	// Slate blue
+	Color(0.42, 0.56, 0.14),	// Olive drab
+	Color(0.25, 0.80, 0.80),	// "Skyish"
+	Color(0.80, 0.80, 0.20),	// Mustard
+};
+
+const unsigned int Nsomecolors = sizeof(somecolors) / sizeof(somecolors[0]);
+
 Image::Image(unsigned int width, unsigned int height, const char *t) :
 		w(width), h(height), title(t) {
 	data = new Color[w * h];

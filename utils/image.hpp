@@ -32,6 +32,12 @@ private:
 	double r, g, b;
 };
 
+// An array of colors that can be used for
+// conveniently cycling through some
+// OK colors.
+extern const Color somecolors[];
+extern const unsigned int Nsomecolors;
+
 struct Image {
 	static const Color red, green, blue, white, black;
 
@@ -50,7 +56,40 @@ struct Image {
 		virtual void write(FILE*) const = 0;
 	};
 
-	class Path : public Component {
+	struct Path : public Component {
+
+		Path(void) : _closepath(false), _fill(false) { }
+
+		~Path(void);
+
+		void closepath(void) { _closepath = true; }
+
+		void fill(void) { _fill = true; }
+
+		void moveto(double x, double y) { addseg(new MoveTo(x, y)); }
+
+		void lineto(double x, double y) { addseg(new LineTo(x, y)); }
+
+		void setlinewidth(double x) { addseg(new SetLineWidth(x)); }
+
+		void setcolor(Color c) { addseg(new SetColor(c)); }
+
+		// Swings in the counter-clock-wise direction
+		// from t degrees for dt degrees.m
+		void arc(double x, double y, double r, double t, double dt) {
+			addseg(new Arc(x, y, r, t, dt));
+		}
+
+		void nauticalarc(double x, double y, double r, double t, double dt) {
+			addseg(new NauticalArc(x, y, r, t, dt));
+		}
+
+		void line(double x0, double y0, double x1, double y1);
+		void curve(double xc, double yc, double r, double t, double dt);
+
+		virtual void write(FILE*) const;
+
+private:
 		struct Point {
 			Point(double _x, double _y) : x(_x), y(_y) { }
 			double x, y;
@@ -127,36 +166,16 @@ struct Image {
 		bool _closepath, _fill;
 
 	public:
-		Path(void) : _closepath(false), _fill(false) { }
+	};
 
-		~Path(void);
-
-		void closepath(void) { _closepath = true; }
-
-		void fill(void) { _fill = true; }
-
-		void moveto(double x, double y) { addseg(new MoveTo(x, y)); }
-
-		void lineto(double x, double y) { addseg(new LineTo(x, y)); }
-
-		void setlinewidth(double x) { addseg(new SetLineWidth(x)); }
-
-		void setcolor(Color c) { addseg(new SetColor(c)); }
-
-		// Swings in the counter-clock-wise direction
-		// from t degrees for dt degrees.m
-		void arc(double x, double y, double r, double t, double dt) {
-			addseg(new Arc(x, y, r, t, dt));
+	struct Line : public Path {
+		Line(double x0, double y0, double x1, double y1,
+				double width = 1, Color c = black) {
+			setlinewidth(1);
+			setcolor(c);
+			moveto(x0, y0);
+			lineto(x1, y1);
 		}
-
-		void nauticalarc(double x, double y, double r, double t, double dt) {
-			addseg(new NauticalArc(x, y, r, t, dt));
-		}
-
-		void line(double x0, double y0, double x1, double y1);
-		void curve(double xc, double yc, double r, double t, double dt);
-
-		virtual void write(FILE*) const;
 	};
 
 	struct Text : public Component {
@@ -204,7 +223,7 @@ struct Image {
 
 	struct Circle : public Component {
 		Circle(double _x, double _y, double _r, Color _c = Image::black,
-			bool _fill = false) : x(_x), y(_y), r(_r), c(_c), fill(_fill) { }
+			bool _fill = true) : x(_x), y(_y), r(_r), c(_c), fill(_fill) { }
 		virtual void write(FILE*) const;
 	private:
 		double x, y, r;
