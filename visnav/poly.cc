@@ -10,7 +10,23 @@
 
 static void xsortedpts(std::vector<Point>&, double, double, double);
 static void swp(double*, double*);
-static double angle(const Point&, const Point&);
+
+double Point::angle(const Point &a, const Point &b) {
+//	double dx = b.x - a.x;
+//	double dy = b.y - a.y;
+//	double hyp = sqrt(dx * dx + dy * dy);
+//	double t = asin(fabs(dy) / hyp);
+//	return dy < 0 ? M_PI + t : t;
+
+	return Point::angle(Point(b.x - a.x, b.y - a.y));
+}
+
+double Point::angle(const Point &pt) {
+	double angle = atan2(pt.x, pt.y);
+	if (angle < 0)
+		return 2 * M_PI + angle;
+	return angle;
+}
 
 void Line::init(double x0, double y0, double x1, double y1) {
 	if (x0 > x1) {
@@ -19,7 +35,7 @@ void Line::init(double x0, double y0, double x1, double y1) {
 	}
 	m = (y1 - y0) /  (x1 - x0); 
 	b = y0 - (m * x0);
-	theta = angle(p0, p1);
+	theta = Point::angle(p0, p1);
 
 	minx = p0.x;
 	maxx = p1.x;
@@ -33,6 +49,10 @@ void Line::init(double x0, double y0, double x1, double y1) {
 }
 
 Point Line::intersection(const Line &a, const Line &b) {
+	if (a.m == b.m) {
+		return Point(std::numeric_limits<double>::infinity(),
+			std::numeric_limits<double>::infinity());
+	}
 	double x = (b.b - a.b) / (a.m - b.m);
 	double y = a.m * x + a.b;
 	return Point(x, y);
@@ -48,7 +68,6 @@ Poly::Poly(unsigned int nverts, ...) {
 		verts.push_back(p);
 	}
 	va_end(ap);
-	computereflexes();
 }
 
 Poly::Poly(unsigned int nverts, va_list ap) {
@@ -58,7 +77,6 @@ Poly::Poly(unsigned int nverts, va_list ap) {
 		p.y = va_arg(ap, double);
 		verts.push_back(p);
 	}
-	computereflexes();
 }
 
 Poly Poly::random(unsigned int n, double xc, double yc, double r) {
@@ -118,18 +136,28 @@ void Poly::draw(Image &img, Color c, double width, bool number) const {
 		p->fill();
 	img.add(p);
 
-	for (unsigned int i = 0; i < reflexes.size(); i++)
-		img.add(new Image::Circle(reflexes[i].x, reflexes[i].y, 1,
-				Image::black, true));
-
 	if (!number)
 		return;
 
-	char buf[Bufsz];
 	for (unsigned int i = 0; i < verts.size(); i++) {
+		char buf[Bufsz];
 		snprintf(buf, Bufsz, "%u", i);
-		img.add(new Image::Text(buf, verts[i].x, verts[i].y, 6));
+		img.add(new Image::Text(buf, verts[i].x, verts[i].y + 2, 10));
 	}
+}
+
+bool Poly::contains(const Point &p) const {
+	unsigned int n = 0;
+	Line ray(p, Point(p.x + 1, p.y));
+
+	for (unsigned int i = 0; i < verts.size(); i++) {
+		Line side(i == 0 ? verts[verts.size() - 1] : verts[i-1], verts[i]);
+		Point hitpt = Line::intersection(ray, side);
+		if (hitpt.x > p.x && side.contains(hitpt))
+			n++;
+	}
+
+	return n % 2 != 0;	
 }
 
 bool Poly::willhit(const Line &l) const {
@@ -137,41 +165,32 @@ bool Poly::willhit(const Line &l) const {
 	double max = -std::numeric_limits<double>::infinity();
 
 	for (unsigned int i = 0; i < verts.size(); i++) {
-		double theta = angle(l.p0, verts[i]);
+		double theta = Point::angle(l.p0, verts[i]);
 		if (theta < min)
 			min = theta;
 		if (theta > max)
 			max = theta;
 	}
 
-	return l.theta >= min && l.theta <= max;
+	return l.theta > min && l.theta < max;
 }
 
-double Poly::minhit(const Line &line) const {
-	if (!willhit(line))
-		return std::numeric_limits<double>::infinity();
- 
+double Poly::minhit(const Line &line, double epsilon) const {
 	double min = std::numeric_limits<double>::infinity();
+
 	for (unsigned int i = 0; i < verts.size(); i++) {
 		Line side(i == 0 ? verts[verts.size() - 1] : verts[i-1], verts[i]);
 		Point hitpt = Line::intersection(line, side);
 
-		if (!side.contains(hitpt))
+		if (!side.contains(hitpt) || !line.contains(hitpt))
 			continue;
 
 		double hitdist = Point::distance(line.p0, hitpt);
-		if (hitdist < min)
+		if (hitdist > epsilon && hitdist < min)
 			min = hitdist;
 	}
 
 	return min;
-}
-
-void Poly::computereflexes(void) {
-	for (unsigned int i = 0; i < verts.size(); i++) {
-		if (interiorangle(i) < M_PI)
-			reflexes.push_back(verts[i]);
-	}
 }
 
 double Poly::interiorangle(unsigned int i) const {
@@ -185,8 +204,6 @@ double Poly::interiorangle(unsigned int i) const {
 	// Some voodoo from the internet.
 	return M_PI - fmod(atan2(b.x*a.y - a.x*b.y, b.x*a.x + b.y*a.y), 2 * M_PI);
 }
-
-//angle = mod(atan2(x1*y2-x2*y1,x1*x2+y1*y2),2*pi);
 
 struct CmpX {
 	bool operator()(const Point &a, const Point &b) {
@@ -208,11 +225,4 @@ static void swp(double *a, double *b) {
 	double t = *a;
 	*a = *b;
 	*b = t;
-}
-
-static double angle(const Point &a, const Point &b) {
-	double dx = b.x - a.x;
-	double dy = b.y - a.y;
-	double hyp = sqrt(dx * dx + dy * dy);
-	return asin(dy / hyp);
 }

@@ -1,3 +1,6 @@
+#ifndef _POLY_HPP_
+#define _POLY_HPP_
+
 #include "../utils/image.hpp"
 #include <vector>
 
@@ -20,9 +23,26 @@ struct Point {
 		return a.x * b.x + a.y * b.y;
 	}
 
+	static Point normal(const Point &a) {
+		double len = sqrt(a.x*a.x + a.y*a.y);
+		return Point(a.x/len, a.y/len);
+	}
+
+	// between 0 and 2π.
+	static double angle(const Point&, const Point&);
+
+	// Angle from the positive x-axis.
+	static double angle(const Point&);
+
 	Point(void) { }
 
 	Point(double _x, double _y) : x(_x), y(_y) { }
+
+	void normalize(void) {
+		double len = sqrt(x*x + y*y);
+		x /= len;
+		y /= len;
+	}
 
 	double x, y;
 };
@@ -45,6 +65,10 @@ struct Line {
 		return liney < y;
 	}
 
+	Point midpoint(void) const {
+		return Point((p0.x + p1.x) / 2, (p0.y + p1.y) / 2);
+	}
+
 	double length(void) const { return Point::distance(p0, p1); }
 
 	bool contains(const Point &pt) const {
@@ -61,15 +85,12 @@ private:
 	void init(double x0, double y0, double x1, double y1);
 };
 
-class Poly {
-public:
+struct Poly {
 	Poly(unsigned int nverts, ...);
 
 	Poly(unsigned int nverts, va_list);
 
-	Poly(std::vector<Point> &_verts) : verts(_verts) {
-		computereflexes();
-	}
+	Poly(std::vector<Point> &_verts) : verts(_verts) { }
 
 	static Poly random(unsigned int n, double xc, double yc, double r);
 
@@ -80,18 +101,23 @@ public:
 	// If the width is <0 then the polygon is filled.
 	void draw(Image&, Color, double width=1, bool number = false) const;
 
+	bool contains(const Point &p) const;
+
 	bool willhit(const Line&) const;
 
-	double minhit(const Line&) const;
+	// Ignore hits of distance < epsilon
+	double minhit(const Line&, double epsilon = 0.0) const;
+
+	bool isreflex(unsigned int i) const {
+		return interiorangle(i) < M_PI;
+	}
+
+	std::vector<Point> verts;
 
 private:
 
-	void computereflexes(void);
-
 	// Interior angle of the ith vertex
 	double interiorangle(unsigned int i) const;
-
-	std::vector<Point> verts;
-	// Reflex vertices are ones with  interior angles < π.
-	std::vector<Point> reflexes;
 };
+
+#endif	// _POLY_HPP_

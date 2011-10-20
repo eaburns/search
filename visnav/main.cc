@@ -1,4 +1,4 @@
-#include "poly.hpp"
+#include "visgraph.hpp"
 #include "../utils/utils.hpp"
 #include "../utils/image.hpp"
 
@@ -16,44 +16,42 @@ void addaxes(Image&);
 int main(int argc, char *argv[]) {
 	printf("seed=%lu\n", randgen.seed());
 
+	Poly p1 = Poly::random(6, Width / 4, Height / 4, 50);
+
+	std::vector<Poly> polys;
+	for (unsigned int i = 0; i < 100; i++) {
+redo:
+		unsigned long nverts = randgen.integer(3, 8);
+		double x = randgen.real() * Width;
+		double y = randgen.real() * Height;
+		double r = randgen.real() * 50 + 50;
+		Poly p = Poly::random(nverts, x, y, r);
+		for (unsigned int j = 0; j < p.verts.size(); j++) {
+			unsigned int nxt = j == p.verts.size() - 1 ? 0 : j + 1;
+			if (p.verts[j].x > Width || p.verts[j].x < 0)
+				goto redo;
+			if (p.verts[j].y > Height || p.verts[j].y < 0)
+				goto redo;
+
+			for (unsigned int k = 0; k < polys.size(); k++) {
+				if (polys[k].contains(p.verts[j]))
+					goto redo;
+
+				Line side(p.verts[j], p.verts[nxt]);
+				if (!isinf(polys[k].minhit(side)))
+					goto redo;
+			}
+		}
+		polys.push_back(p);
+	}
+
+	VisGraph graph(polys);
+
 	Image img(Width, Height, "poly.eps");
-	addaxes(img);
-
-	Poly rand = Poly::random(6, Width / 2, Height / 2, 50);
-	rand.draw(img, Image::green, 0.5, true);
-
-	for (double x = 0; x <= Width; x += Step) {
-		Line line(0, 0, x, Height);
-		double hitdist = rand.minhit(line);
- 		if (isinf(hitdist)) {
-			addline(img, line);
-			continue;
-		}
-		Point hitpt = pointalong(line, hitdist);
-		Line clamped(Point(0, 0), hitpt);
-		addline(img, clamped, Image::green);
-	}
-
-	for (double y = 0; y <= Height; y += Step) {
-		Line line(0, 0, Width, y);
-		double hitdist = rand.minhit(line);
- 		if (isinf(hitdist)) {
-			addline(img, line);
-			continue;
-		}
-		Point hitpt = pointalong(line, hitdist);
-		Line clamped(Point(0, 0), hitpt);
-		addline(img, clamped, Image::green);
-	}
-
-	img.save("polys.eps");
+	graph.draw(img);
+	img.save("polys.eps", true);
 
 	return 0;
-}
-
-Point pointalong(Line &line, double dist) {
-	return Point(line.p0.x + dist * cos(line.theta),
-			line.p0.y + dist * sin(line.theta));
 }
 
 void addline(Image &img, Line &line, Color c) {
@@ -62,21 +60,4 @@ void addline(Image &img, Line &line, Color c) {
 	p->setcolor(c);
 	p->line(line.p0.x, line.p0.y, line.p1.x, line.p1.y);
 	img.add(p);
-}
-
-void addaxes(Image &img) {
-	Color gray(0.5, 0.5, 0.5);
-	Image::Path *xaxis = new Image::Path();
-	xaxis->setcolor(gray);
-	xaxis->setlinewidth(0.5);
-	xaxis->moveto(0, img.height() / 2);
-	xaxis->lineto(img.width(), img.height() / 2);
-	img.add(xaxis);
-
-	Image::Path *yaxis = new Image::Path();
-	yaxis->setcolor(gray);
-	yaxis->setlinewidth(0.5);
-	yaxis->moveto(img.width() / 2, 0);
-	yaxis->lineto(img.width() / 2, img.height());
-	img.add(yaxis);
 }
