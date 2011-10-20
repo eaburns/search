@@ -171,7 +171,7 @@ private:
 	struct Line : public Path {
 		Line(double x0, double y0, double x1, double y1,
 				double width = 1, Color c = black) {
-			setlinewidth(1);
+			setlinewidth(width);
 			setcolor(c);
 			moveto(x0, y0);
 			lineto(x1, y1);
