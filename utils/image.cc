@@ -36,19 +36,21 @@ Image::~Image(void) {
 	delete[] data;
 }
 
-void Image::save(const char *path, bool usletter) const {
+void Image::save(const char *path, bool usletter, int marginpt) const {
 	FILE *f = fopen(path, "w");
 	if (!f)
 		fatalx(errno, "Failed to open %s for writing\n", path);
-	output(f, usletter);
+	output(f, usletter, marginpt);
 	fclose(f);
 }
 
-void Image::output(FILE *out, bool usletter) const {
+void Image::output(FILE *out, bool usletter, int marginpt) const {
+	if (marginpt < 0)
+		marginpt = usletter ? 72/2 : 0;	/* 72/2 pt == ½ in */
 	if (usletter)
-		outputhdr_usletter(out);
+		outputhdr_usletter(out, marginpt);
 	else
-		outputhdr(out);
+		outputhdr(out, marginpt);
 	outputdata(out);
 	for (unsigned int i = 0; i < comps.size(); i++) {
 		fputc('\n', out);
