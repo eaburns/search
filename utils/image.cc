@@ -33,7 +33,7 @@ Image::~Image(void) {
 		delete comps.back();
 		comps.pop_back();
 	}
-	delete data;
+	delete[] data;
 }
 
 void Image::save(const char *path, bool usletter) const {
