@@ -221,14 +221,15 @@ private:
 		Color c;
 	};
 
+	// Non-positive lwidth will fill
 	struct Circle : public Component {
 		Circle(double _x, double _y, double _r, Color _c = Image::black,
-			bool _fill = true) : x(_x), y(_y), r(_r), c(_c), fill(_fill) { }
+			double _lwidth = -1) :x(_x), y(_y), r(_r), c(_c), lwidth(_lwidth) { }
 		virtual void write(FILE*) const;
 	private:
 		double x, y, r;
 		Color c;
-		bool fill;
+		double lwidth;
 	};
 
 	void add(const Component *comp) {

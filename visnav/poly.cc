@@ -186,7 +186,6 @@ double Poly::minhit(const Line &line, double epsilon) const {
 
 	return min;
 }
-
 double Poly::interiorangle(unsigned int i) const {
 	const Point &u = i == 0 ? verts[verts.size() - 1] : verts[i-1];
 	const Point &v = verts[i];

@@ -274,8 +274,12 @@ void Image::Triangle::write(FILE *out) const {
 void Image::Circle::write(FILE *out) const {
 	fprintf(out, "%% Circle\n");
 	const char *finish = "stroke";
-	if (fill)
+	if (lwidth <= 0) {
 		finish = "fill";
+		fprintf(out, "0.1 setlinewidth\n");
+	} else {
+		fprintf(out, "%g setlinewidth\n", lwidth);
+	}
 	fprintf(out, "%g %g %g setrgbcolor\n", c.getred(), c.getgreen(), c.getblue());
 	fprintf(out, "newpath %g %g %g 0 360 arc %s\n", x, y, r, finish);
 }
