@@ -108,24 +108,28 @@ Polygon Polygon::random(unsigned int n, double xc, double yc, double r) {
 	if (n < 3)
 		fatal("A polygon needs at least 3 points\n");
 
-	std::vector<Point> pts(n);
-	xsortedpts(pts, xc, yc, r);
+	std::vector<Point> sorted(n);
+	xsortedpts(sorted, xc, yc, r);
 
-	Line l(pts[0], pts[pts.size()-1]);
+	Line l(sorted[0], sorted[sorted.size()-1]);
 	std::vector<Point> verts, rev;
 
-	verts.push_back(pts[0]);
-	for (unsigned int i = 1; i < pts.size() - 1; i++) {
-		if (l.isabove(pts[i]))
-			verts.push_back(pts[i]);
+	verts.push_back(sorted[0]);
+	for (unsigned int i = 1; i < sorted.size() - 1; i++) {
+		assert (sorted[i].x > sorted[i-1].x);
+		if (l.isabove(sorted[i]))
+			verts.push_back(sorted[i]);
 		else
-			rev.push_back(pts[i]);
+			rev.push_back(sorted[i]);
 	}
 
-	verts.push_back(pts[pts.size()-1]);
+	verts.push_back(sorted[sorted.size() - 1]);
 
-	for (unsigned int i = 0; i < rev.size(); i++)
-		verts.push_back(rev[i]);
+	while (rev.size() > 0) {
+		assert (rev.back().x < verts[verts.size()-1].x);
+		verts.push_back(rev.back());
+		rev.pop_back();
+	}
 
 	return Polygon(verts);
 }
