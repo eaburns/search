@@ -360,22 +360,18 @@ bool test_lineseg_isect(void) {
 		ok = false;
 	}
 
-	a = LineSeg(Point(1, 0), Point(0, 0));
-	b = LineSeg(Point(0.5, 0.5), Point(1.5, 0.5));
-	is = a.isect(b);
-	if (!std::isinf(is.x) || !std::isinf(is.y)) {
-		testpr("Expected isect of 1,0 → 0,0 with ½,½ → 1½,1½ to be ∞,∞, got %g,%g\n",
-			is.x, is.y);
-		ok = false;
-	}
-
 	return ok;
 }
 
 bool test_poly_contains(void) {
 	bool ok = true;
 
-	Polygon sq(4, 0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0);
+	Polygon sq(4,
+		0.0, 0.0,
+		1.0, 0.0,
+		1.0, 1.0,
+		0.0, 1.0);
+
 	Point p(0.5, 0.5);
 	if (!sq.contains(p)) {
 		testpr("Expected ½,½ to be contained\n");
@@ -385,6 +381,19 @@ bool test_poly_contains(void) {
 	p = Point(2, 2);
 	if (sq.contains(p)) {
 		testpr("Expected 2,2 not to be contained\n");
+		ok = false;
+	}
+
+	Polygon poly(7, 0.0, 45.0318,
+				52.0712, 56.7999, 
+				59.1066, 109.825,
+				61.2547, 87.3769,
+				75.451, 112.008,
+				85.8799, 15.2566,
+				22.9319, 0.0);
+	p = LineSeg(Point(0, 45.0318), Point(85.8799, 15.2566)).midpt();
+	if (!poly.contains(p)) {
+		testpr("Expected %g,%g to be contained\n", p.x, p.y);
 		ok = false;
 	}
 

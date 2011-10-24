@@ -31,23 +31,23 @@ Polygon::Polygon(unsigned int n, ...) {
 	initsides(verts);
 }
 
+static bool isisect(const Point &p) {
+	return !std::isinf(p.x) && !std::isnan(p.x) && !std::isinf(p.y) && !std::isnan(p.y);
+}
+
 bool Polygon::contains(const Point &p) const {
 	bool even = true, isect = false;
-	LineSeg ray(p, Point(p.x + 1, p.y));
+	Line ray(p, Point(p.x + 1, p.y));
 
 	for (unsigned int i = 0; i < sides.size(); i++) {
 		Point hit = ray.isect(sides[i]);
-		if (hit.x > p.x && sides[i].contains(hit)) {
+		if (isisect(hit) && hit.x > p.x && sides[i].contains(hit)) {
 			isect = true;
 			even = !even;
 		}
 	}
 
 	return isect && !even;
-}
-
-static bool isisect(const Point &p) {
-	return !std::isinf(p.x) && !std::isnan(p.x) && !std::isinf(p.y) && !std::isnan(p.y);
 }
 
 void Polygon::isects(const LineSeg &l, std::vector<Point> &is) const {

@@ -77,20 +77,46 @@ struct Line {
 	Line(Point p0, Point p1) {
 		double dx = p1.x - p0.x;
 		double dy = p1.y - p0.y;
-		m = dy / dx;
-		b = p0.y - m * p0.x;
+		if (dx == 0.0) {
+			m = std::numeric_limits<double>::infinity();
+			b = p1.x;
+ 		} else {
+			m = dy / dx;
+			b = p0.y - m * p0.x;
+		}
 	}
 
 	// If they are parallel then (∞,∞), if they are
 	// the same line then (FP_NAN, FP_NAN)
 	Point isect(const Line &l) const {
+		if (std::isinf(m) || std::isinf(l.m))
+			return vertisect(*this, l);
+
 		double x = (l.b - b) / (m - l.m);
 		return Point(x, m * x + b);
 	}
 
 	bool isabove(const Point &p) const { return (m * p.x + b) < p.y; }
 
+	// In case of a vertical line: m == ∞ and b = x
 	double m, b;
+private:
+	static Point vertisect(const Line &a, const Line &b) {
+		if (std::isinf(a.m) && std::isinf(b.m)) {
+			if (a.b == b.b)
+				return Point(FP_NAN, FP_NAN);
+			else
+				return Point::inf();
+		}
+
+		const Line *v = &a, *l = &b;
+		if (std::isinf(b.m)) {
+			v = &b;
+			l = &a;
+		}
+
+		return Point(v->b, l->m * v->b + l->b);
+	}
 };
 
 struct LineSeg : public Line {
