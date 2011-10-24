@@ -12,6 +12,7 @@ OBJS=\
 	utils/rand.o\
 	utils/encode.o\
 	utils/image.o\
+	utils/geom.o\
 	\
 	structs/stn.o\
 	\
@@ -31,6 +32,7 @@ TMPLS=\
 HDRS=\
 	utils/utils.hpp\
 	utils/image.hpp\
+	utils/geom.hpp\
 	\
 	search/search.hpp\
 

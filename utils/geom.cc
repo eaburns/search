@@ -1,0 +1,139 @@
+#include "geom.hpp"
+#include "utils.hpp"
+#include <algorithm>
+
+static void xsortedpts(std::vector<Point>&, double, double, double);
+static bool cmpx(const Point&, const Point&);
+
+void Bbox::draw(Image &img, Color c, double lwidth) const {
+	Image::Path *p = new Image::Path();
+	p->setlinewidth(lwidth < 0 ? 0.1 : lwidth);
+	p->setcolor(c);
+	p->moveto(min.x, min.y);
+	p->lineto(min.x, max.y);
+	p->lineto(max.x, max.y);
+	p->lineto(max.x, min.y);
+	p->closepath();
+	img.add(p);
+}
+
+bool Polygon::contains(const Point &p) const {
+	bool even = true;
+	Line ray(p, Point(p.x + 1, p.y));
+
+	for (unsigned int i = 0; i < sides.size(); i++) {
+		Point hit = ray.isect(sides[i]);
+		if (hit.x > p.x && sides[i].contains(hit))
+			even = !even;
+	}
+
+	return even;
+}
+
+void Polygon::isects(const LineSeg &l, std::vector<Point> &is) const {
+	is.clear();
+	for (unsigned int i = 0; i < sides.size(); i++) {
+		Point p = l.isect(sides[i]);
+		if (std::isnormal(p.x) && std::isnormal(p.y))
+			is.push_back(p);
+	}
+}
+
+Point Polygon::minisect(const LineSeg &l) const {
+	Point min = Point::inf();
+	double mindist = std::numeric_limits<double>::infinity();
+
+	for (unsigned int i = 0; i < sides.size(); i++) {
+		Point p = l.isect(sides[i]);
+		double d = Point::distance(p, l.p0);
+		if (std::isnormal(p.x) && std::isnormal(p.y) && d < mindist) {
+			mindist = d;
+			min = p;
+		}
+	}
+
+	return min;
+}
+
+bool Polygon::hits(const LineSeg &l) const {
+	for (unsigned int i = 0; i < sides.size(); i++) {
+		Point p = l.isect(sides[i]);
+		if (std::isnormal(p.x) && std::isnormal(p.y))
+			return true;
+	}
+	return false;
+}
+
+void Polygon::draw(Image &img, Color c, double lwidth) const {
+	Image::Path *p = new Image::Path();
+	p->setlinewidth(lwidth < 0 ? 0.1 : lwidth);
+	p->setcolor(c);
+	p->moveto(verts[0].x, verts[0].y);
+	for (unsigned int i = 1; i < verts.size(); i++)
+		p->lineto(verts[i].x, verts[i].y);
+	p->closepath();
+	if (lwidth < 0)
+		p->fill();
+	img.add(p);
+}
+
+void Polygon::initsides(std::vector<Point> &pts) {
+	for (unsigned int i = 1; i < pts.size(); i++)
+		sides.push_back(LineSeg(pts[i-1], pts[i]));
+	sides.push_back(LineSeg(pts[pts.size() - 1], pts[0]));
+}
+
+Polygon Polygon::random(unsigned int n, double xc, double yc, double r) {
+	if (n < 3)
+		fatal("A polygon needs at least 3 points\n");
+
+	std::vector<Point> pts(n);
+	xsortedpts(pts, xc, yc, r);
+
+	Line l(pts[0], pts[pts.size()-1]);
+	std::vector<Point> verts, rev;
+
+	verts.push_back(pts[0]);
+	for (unsigned int i = 1; i < pts.size() - 1; i++) {
+		if (l.isabove(pts[i]))
+			verts.push_back(pts[i]);
+		else
+			rev.push_back(pts[i]);
+	}
+
+	for (unsigned int i = 0; i < rev.size(); i++)
+		verts.push_back(rev[i]);
+
+	return Polygon(verts);
+}
+
+void Polygon::reflexes(std::vector<Point> &rs) const {
+	rs.clear();
+
+	for (unsigned int i = 0; i < verts.size(); i++) {
+		const Point &u = i == 0 ? verts[verts.size() - 1] : verts[i-1];
+		const Point &v = verts[i];
+		const Point &w = i == verts.size() - 1 ? verts[0] : verts[i+1];
+		Point a = v.minus(u), b = w.minus(v);
+
+		// interior angle via some voodoo from the internet.
+		double t = M_PI - fmod(atan2(b.x*a.y - a.x*b.y, b.x*a.x + b.y*a.y), 2 * M_PI);
+
+		if (t < 180)
+			rs.push_back(v);
+	}
+}
+
+static void xsortedpts(std::vector<Point> &pts, double xc, double yc, double r) {
+	for (unsigned int i = 0; i < pts.size(); i++) {
+		double x = (2 * r * randgen.real()) - r;
+		double y = (2 * r * randgen.real()) - r;
+		pts[i] = Point(x + xc, y + yc);
+	}
+
+	std::sort(pts.begin(), pts.end(), cmpx);
+}
+
+static bool cmpx(const Point &a, const Point &b) {
+	return a.x < b.x;
+}
