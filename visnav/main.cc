@@ -4,9 +4,9 @@
 #include <limits>
 
 enum {
-	Width = 800,
-	Height = 800,
-	Npolys = 500,
+	Width = 500,
+	Height = 500,
+	Npolys = 100,
 	Maxverts = 8,
 };
 
