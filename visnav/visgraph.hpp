@@ -1,10 +1,10 @@
-#include "poly.hpp"
+#include "../utils/geom.hpp"
 #include <vector>
 
 class Image;
 
 struct VisGraph {
-	VisGraph(std::vector<Poly> &ps) : polys(ps) {
+	VisGraph(std::vector<Polygon> &ps) : polys(ps) {
 		computegraph();
 	}
 
@@ -38,6 +38,6 @@ private:
 		std::vector<Edeg> succs;
 	};
 
-	std::vector<Poly> polys;
+	std::vector<Polygon> polys;
 	std::vector<Vert> verts;
 };

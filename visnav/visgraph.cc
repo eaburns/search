@@ -4,23 +4,31 @@
 enum { Bufsz = 10 };
 
 void VisGraph::draw(Image &img) const {
+	static const unsigned int Vradius = 2;
 	unsigned int nextcolor = 0;
 	for (unsigned int i = 0; i < polys.size(); i++) {
 		const Color &c = somecolors[nextcolor];
 		nextcolor = (nextcolor+1) % Nsomecolors;
-		polys[i].draw(img, c, 3);
+		polys[i].draw(img, c, 2);
+
+//		for (unsigned int j = 0; j < polys[i].verts.size(); j++) {
+//			char buf[Bufsz];
+//			snprintf(buf, Bufsz, "%u", j);
+//			img.add(new Image::Text(buf, polys[i].verts[j].x,
+//				polys[i].verts[j].y + Vradius + 1, 12));
+//		}
 	}
 
 	for (unsigned int i = 0; i < verts.size(); i++) {
 		for (unsigned int j = 0; j < verts[i].succs.size(); j++) {
 			unsigned int dst = verts[i].succs[j].dest->vid;
 			img.add(new Image::Line(verts[i].pt.x, verts[i].pt.y,
-				verts[dst].pt.x, verts[dst].pt.y, 0.5, Color(0.75, 0.75, 0.75)));
+				verts[dst].pt.x, verts[dst].pt.y, 0.2, Color(0.75, 0.75, 0.75)));
 		}
 	}
 
 	for (unsigned int i = 0; i < verts.size(); i++)
-		img.add(new Image::Circle(verts[i].pt.x, verts[i].pt.y, 3));
+		verts[i].pt.draw(img, Image::black, Vradius);
 }
 
 void VisGraph::computegraph(void) {
@@ -29,12 +37,15 @@ void VisGraph::computegraph(void) {
 }
 
 void VisGraph::computeverts(void) {
-	for (unsigned int i = 0; i < polys.size(); i++) {
-	for (unsigned int j = 0; j < polys[i].verts.size(); j++) {
-		if (!polys[i].isreflex(j))
-			continue;
-		verts.push_back(Vert(verts.size(), polys[i].verts[j], i, j));
-	}
+	for (unsigned int polyno = 0; polyno < polys.size(); polyno++) {
+		std::vector<unsigned int> rs;
+		Polygon &p = polys[polyno];
+		p.reflexes(rs);
+		for (unsigned int i = 0; i < rs.size(); i++) {
+			unsigned int vertno = rs[i];
+			unsigned int vid = verts.size();
+			verts.push_back(Vert(vid, p.verts[vertno], polyno, vertno));
+  		}
 	}
 }
 
@@ -58,10 +69,11 @@ void VisGraph::linkvert(unsigned int i) {
 			continue;
 		}
 
-		Line line(verts[i].pt, verts[j].pt);
+		LineSeg line(verts[i].pt, verts[j].pt);
+		line = LineSeg(line.along(Epsilon), line.p1);
 
 		if (verts[i].polyno == verts[j].polyno) {
-			Point mid = line.midpoint();
+			Point mid = line.midpt();
 			if (polys[verts[i].polyno].contains(mid))
 				continue;
 		}
@@ -69,8 +81,9 @@ void VisGraph::linkvert(unsigned int i) {
 		double len = line.length();
 		bool vis = true;
 		for (unsigned int p = 0; p < polys.size(); p++) {
-			double hit = polys[p].minhit(line, p == verts[i].polyno ? Epsilon : 0.0);
-			if (hit < len - Epsilon) {
+			Point hit = polys[p].minisect(line);
+			double dist = Point::distance(verts[i].pt, hit);
+			if (dist < len - Epsilon) {
 				vis = false;
 				break;
 			}

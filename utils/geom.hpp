@@ -223,12 +223,11 @@ struct Bbox {
 	void draw(Image&, Color c = Image::black, double lwidth = 1) const;
 
 	bool contains(const Point &p) const {
-		return p.x > min.x && p.y > min.y && p.x < max.x && p.y < max.y;
+		return inrange(min.x, max.x, p.x) && inrange(min.y, max.y, p.y);
 	}
 
 	bool isect(const Bbox &b) const {
-		return (inrange(min.x, max.x, b.min.x) || inrange(min.x, max.x, b.max.x))
-			&& (inrange(min.y, max.y, b.min.y) || inrange(min.y, max.y, b.max.y));
+		return !(min.x > b.max.x || b.min.x > max.x || min.y > b.max.y || b.min.y > max.y);
 	}
 
 	void move(double dx, double dy) {

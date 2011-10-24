@@ -2,11 +2,9 @@ BINS+=\
 	visnav/visnav_solver\
 
 VISNAVSRC=\
-	visnav/poly.cc\
 	visnav/visgraph.cc\
 
 VISNAVHDR=\
-	visnav/poly.hpp\
 	visnav/visgraph.hpp\
 
 visnav/*.o: $(VISNAVHDR)
