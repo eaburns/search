@@ -47,11 +47,16 @@ void Image::save(const char *path, bool usletter, int marginpt) const {
 void Image::output(FILE *out, bool usletter, int marginpt) const {
 	if (marginpt < 0)
 		marginpt = usletter ? 72/2 : 0;	/* 72/2 pt == ½ in */
+
 	if (usletter)
 		outputhdr_usletter(out, marginpt);
 	else
 		outputhdr(out, marginpt);
+
 	outputdata(out);
+
+	fprintf(out, "1 setlinejoin\n");	// Round join
+
 	for (unsigned int i = 0; i < comps.size(); i++) {
 		fputc('\n', out);
 		comps[i]->write(out);
