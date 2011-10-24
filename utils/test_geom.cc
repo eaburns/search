@@ -1,9 +1,10 @@
 #include "utils.hpp"
 #include "geom.hpp"
+#include <cstdarg>
 
-bool eq(double x, double y) {
-	return fabs(x - y) < 1e-5;
-}
+static bool eq(double, double);
+static void drawisects(const Polygon&, const LineSeg&);
+static bool samepts(std::vector<Point>&, unsigned int n, ...);
 
 bool test_point_angle(void) {
 	bool ok = true;
@@ -311,7 +312,7 @@ bool test_lineseg_isect(void) {
 	a = LineSeg(Point(-1, -1), Point(1, 1));
 	b = LineSeg(Point(-1, 1), Point(1, -1));
 	is = a.isect(b);
-	if (!eq(is.x, 0) || !eq(is.x, 0)) {
+	if (!eq(is.x, 0) || !eq(is.y, 0)) {
 		testpr("Expected isection 0,0, got %g,%g\n", is.x, is.y);
 		ok = false;
 	}
@@ -319,10 +320,230 @@ bool test_lineseg_isect(void) {
 	a = LineSeg(Point(0, 0), Point(2, 2));
 	b = LineSeg(Point(0, 2), Point(2, 0));
 	is = a.isect(b);
-	if (!eq(is.x, 1) || !eq(is.x, 1)) {
+	if (!eq(is.x, 1) || !eq(is.y, 1)) {
 		testpr("Expected isection 1,1, got %g,%g\n", is.x, is.y);
 		ok = false;
 	}
 
+	a = LineSeg(Point(0, 0), Point(0, 1));
+	b = LineSeg(Point(0.5, 0.5), Point(1.5, 0.5));
+	is = a.isect(b);
+	if (!std::isinf(is.x) || !std::isinf(is.y)) {
+		testpr("Expected isect of 0,0 -> 0,1 with ½,½ -> 1½,1½ to be ∞,∞, got %g,%g\n",
+			is.x, is.y);
+		ok = false;
+	}
+
+	a = LineSeg(Point(0, 1), Point(1, 1));
+	b = LineSeg(Point(0.5, 0.5), Point(1.5, 0.5));
+	is = a.isect(b);
+	if (!std::isinf(is.x) || !std::isinf(is.y)) {
+		testpr("Expected isect of 0,1 -> 1,1 with ½,½ -> 1½,1½ to be ∞,∞, got %g,%g\n",
+			is.x, is.y);
+		ok = false;
+	}
+
+	a = LineSeg(Point(1, 1), Point(1, 0));
+	b = LineSeg(Point(0.5, 0.5), Point(1.5, 0.5));
+	is = a.isect(b);
+	if (!eq(is.x, 1) || !eq(is.y, 0.5)) {
+		testpr("Expected isect of 1,1 -> 1,0 with ½,½ -> 1½,1½ to be 1,½, got %g,%g\n",
+			is.x, is.y);
+		ok = false;
+	}
+
+	a = LineSeg(Point(1, 0), Point(0, 0));
+	b = LineSeg(Point(0.5, 0.5), Point(1.5, 0.5));
+	is = a.isect(b);
+	if (!std::isinf(is.x) || !std::isinf(is.y)) {
+		testpr("Expected isect of 1,0 -> 0,0 with ½,½ -> 1½,1½ to be ∞,∞, got %g,%g\n",
+			is.x, is.y);
+		ok = false;
+	}
+
 	return ok;
+}
+
+bool test_poly_contains(void) {
+	bool ok = true;
+
+	Polygon sq(4, 0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0);
+	Point p(0.5, 0.5);
+	if (!sq.contains(p)) {
+		testpr("Expected ½,½ to be contained\n");
+		ok = false;
+	}
+
+	p = Point(2, 2);
+	if (sq.contains(p)) {
+		testpr("Expected 2,2 not to be contained\n");
+		ok = false;
+	}
+
+	return ok;
+}
+
+bool test_poly_isects(void) {
+	bool ok = true;
+
+	std::vector<Point> is;
+	Polygon sq(4, 0.0, 0.0, 100.0, 0.0, 100.0, 100.0, 0.0, 100.0);
+
+	LineSeg l(Point(50, 50), Point(150, 50));
+	sq.isects(l, is);
+	if (!samepts(is, 1, 100.0, 50.0)) {
+		testpr("Unexpected collisions for 50,50 -> 150,50: ");
+		drawisects(sq, l);
+		ok = false;
+	}
+
+	l = LineSeg(Point(-50, 50), Point(150, 50));
+	sq.isects(l, is);
+	if (!samepts(is, 2, 0.0, 50.0, 100.0, 50.0)) {
+		testpr("Unexpected collisions for -50,50 -> 150,50: ");
+		drawisects(sq, l);
+		ok = false;
+	}
+
+	l = LineSeg(Point(150, 50), Point(250, 50));
+	sq.isects(l, is);
+	if (!samepts(is, 0)) {
+		testpr("Unexpected collisions for 150,50 -> 250,50: ");
+		drawisects(sq, l);
+		ok = false;
+	}
+
+	return ok;
+}
+
+bool test_poly_minisect(void) {
+	bool ok = true;
+
+	Polygon sq(4, 0.0, 0.0, 100.0, 0.0, 100.0, 100.0, 0.0, 100.0);
+
+	LineSeg l(Point(50, 50), Point(150, 50));
+	Point m = sq.minisect(l);
+	if (!eq(m.x, 100) || !eq(m.y, 50)) {
+		testpr("Unexpected min intersection for 50,50 -> 150,50: ");
+		drawisects(sq, l);
+		ok = false;
+	}
+
+	l = LineSeg(Point(-50, 50), Point(150, 50));
+	m = sq.minisect(l);
+	if (!eq(m.x, 0) || !eq(m.y, 50)) {
+		testpr("Unexpected min intersection for -50,50 -> 150,50: ");
+		drawisects(sq, l);
+		ok = false;
+	}
+
+	l = LineSeg(Point(150, 50), Point(-50, 50));
+	m = sq.minisect(l);
+	if (!eq(m.x, 100) || !eq(m.y, 50)) {
+		testpr("Unexpected min intersection for 150,50 -> -50,50: ");
+		drawisects(sq, l);
+		ok = false;
+	}
+
+	l = LineSeg(Point(150, 50), Point(250, 50));
+	m = sq.minisect(l);
+	if (!std::isinf(m.x) || !std::isinf(m.y)) {
+		testpr("Unexpected min intersection for 150,50 -> 250,50: ");
+		drawisects(sq, l);
+		ok = false;
+	}
+
+	return ok;
+}
+
+bool test_poly_hits(void) {
+	bool ok = true;
+
+	Polygon sq(4, 0.0, 0.0, 100.0, 0.0, 100.0, 100.0, 0.0, 100.0);
+
+	LineSeg l(Point(50, 50), Point(150, 50));
+	if (!sq.hits(l)) {
+		testpr("Unexpected miss with 50,50 -> 150,50: ");
+		drawisects(sq, l);
+		ok = false;
+	}
+
+	l = LineSeg(Point(-50, 50), Point(150, 50));
+	if (!sq.hits(l)) {
+		testpr("Unexpected miss with -50,50 -> 150,50: ");
+		drawisects(sq, l);
+		ok = false;
+	}
+
+	l = LineSeg(Point(150, 50), Point(-50, 50));
+	if (!sq.hits(l)) {
+		testpr("Unexpected miss with 150,50 -> -50,50: ");
+		drawisects(sq, l);
+		ok = false;
+	}
+
+	l = LineSeg(Point(150, 50), Point(250, 50));
+	if (sq.hits(l)) {
+		testpr("Unexpected hit with 150,50 -> 250,50: ");
+		drawisects(sq, l);
+		ok = false;
+	}
+
+	return ok;
+}
+
+static bool eq(double x, double y) {
+	return fabs(x - y) < 1e-5;
+}
+
+enum { Bufsz = 128 };
+
+static void drawisects(const Polygon &poly, const LineSeg &line) {
+	static unsigned int n = 0;
+	double w = poly.bbox.max.x - poly.bbox.min.x;
+	double h = poly.bbox.max.y - poly.bbox.min.y;
+
+	Image img(w, h, "failure.eps");
+
+	poly.draw(img, Image::green);
+	line.draw(img, Image::red);
+
+	std::vector<Point> is;
+	poly.isects(line, is);
+	for (unsigned int i = 0; i < is.size(); i++)
+		is[i].draw(img, Image::black, 4);
+
+	poly.minisect(line).draw(img, Image::red, 2);
+
+	char buf[Bufsz];
+	snprintf(buf, Bufsz, "failure%u.eps", n++);
+	testpr("saved in %s\n", buf);
+	img.save(buf, true);
+}
+
+static bool samepts(std::vector<Point> &pts, unsigned int n, ...) {
+	va_list ap;
+
+	if (pts.size() != n)
+		return false;
+
+	va_start(ap, n);
+	for (unsigned int i = 0; i < n; i++) {
+		double x = va_arg(ap, double);
+		double y = va_arg(ap, double);
+
+		bool found = false;
+		for (unsigned int j = 0; j < pts.size(); j++) {
+			if (eq(pts[j].x, x) && eq(pts[j].y, y)) {
+				found = true;
+				break;
+			}
+		}
+
+		if (!found)
+			return false;
+	}
+	va_end(ap);
+
+	return true;
 }

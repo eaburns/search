@@ -49,7 +49,7 @@ struct Point {
 	Point(double _x, double _y, double _z) : x(_x), y(_y), z(_z) { }
 
 	void draw(Image &img, Color c = Image::black, double r = 1) const {
-		img.add(new Image::Circle(x, y, r,  c, 0.1));
+		img.add(new Image::Circle(x, y, r,  c, -1));
 	}
 
 	Point cross(const Point &b) const {
@@ -218,6 +218,8 @@ struct Polygon {
 		initsides(verts);
 	}
 
+	Polygon(unsigned int, ...);
+
 	// If the lwidth is <0 then the polygon is filled.
 	void draw(Image&, Color c = Image::black, double lwidth = 1) const;
 
@@ -229,7 +231,8 @@ struct Polygon {
 
 	bool hits(const LineSeg &) const;
 
-	void reflexes(std::vector<Point>&) const;
+	// Indices of reflex vertices.
+	void reflexes(std::vector<int>&) const;
 
 	std::vector<Point> verts;
 	std::vector<LineSeg> sides;

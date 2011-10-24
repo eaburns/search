@@ -8,6 +8,10 @@ bool test_lineseg_along(void);
 bool test_lineseg_length(void);
 bool test_lineseg_contains(void);
 bool test_lineseg_isect(void);
+bool test_poly_contains(void);
+bool test_poly_isects(void);
+bool test_poly_minisect(void);
+bool test_poly_hits(void);
 
 static const Test tests[] = {
 	Test("point angle", test_point_angle),
@@ -18,6 +22,10 @@ static const Test tests[] = {
 	Test("lineseg length", test_lineseg_length),
 	Test("lineseg contains", test_lineseg_contains),
 	Test("lineseg isect", test_lineseg_isect),
+	Test("poly contains", test_poly_contains),
+	Test("poly isects", test_poly_isects),
+	Test("poly minisect", test_poly_minisect),
+	Test("poly hits", test_poly_hits),
 };
 
 enum { Ntests = sizeof(tests) / sizeof(tests[0]) };

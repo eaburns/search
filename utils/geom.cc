@@ -1,6 +1,7 @@
 #include "geom.hpp"
 #include "utils.hpp"
 #include <algorithm>
+#include <cstdarg>
 
 static void xsortedpts(std::vector<Point>&, double, double, double);
 static bool cmpx(const Point&, const Point&);
@@ -17,24 +18,43 @@ void Bbox::draw(Image &img, Color c, double lwidth) const {
 	img.add(p);
 }
 
+Polygon::Polygon(unsigned int n, ...) {
+	va_list ap;
+	va_start(ap, n);
+	for (unsigned int i = 0; i < n; i++) {
+		double x = va_arg(ap, double);
+		double y = va_arg(ap, double);
+		verts.push_back(Point(x, y));
+	}
+	va_end(ap);
+	bbox = Bbox(verts);
+	initsides(verts);
+}
+
 bool Polygon::contains(const Point &p) const {
-	bool even = true;
-	Line ray(p, Point(p.x + 1, p.y));
+	bool even = true, isect = false;
+	LineSeg ray(p, Point(p.x + 1, p.y));
 
 	for (unsigned int i = 0; i < sides.size(); i++) {
 		Point hit = ray.isect(sides[i]);
-		if (hit.x > p.x && sides[i].contains(hit))
+		if (hit.x > p.x && sides[i].contains(hit)) {
+			isect = true;
 			even = !even;
+		}
 	}
 
-	return even;
+	return isect && !even;
+}
+
+static bool isisect(const Point &p) {
+	return !std::isinf(p.x) && !std::isnan(p.x) && !std::isinf(p.y) && !std::isnan(p.y);
 }
 
 void Polygon::isects(const LineSeg &l, std::vector<Point> &is) const {
 	is.clear();
 	for (unsigned int i = 0; i < sides.size(); i++) {
 		Point p = l.isect(sides[i]);
-		if (std::isnormal(p.x) && std::isnormal(p.y))
+		if (isisect(p))
 			is.push_back(p);
 	}
 }
@@ -46,7 +66,7 @@ Point Polygon::minisect(const LineSeg &l) const {
 	for (unsigned int i = 0; i < sides.size(); i++) {
 		Point p = l.isect(sides[i]);
 		double d = Point::distance(p, l.p0);
-		if (std::isnormal(p.x) && std::isnormal(p.y) && d < mindist) {
+		if (isisect(p) && d < mindist) {
 			mindist = d;
 			min = p;
 		}
@@ -58,7 +78,7 @@ Point Polygon::minisect(const LineSeg &l) const {
 bool Polygon::hits(const LineSeg &l) const {
 	for (unsigned int i = 0; i < sides.size(); i++) {
 		Point p = l.isect(sides[i]);
-		if (std::isnormal(p.x) && std::isnormal(p.y))
+		if (isisect(p))
 			return true;
 	}
 	return false;
@@ -107,7 +127,7 @@ Polygon Polygon::random(unsigned int n, double xc, double yc, double r) {
 	return Polygon(verts);
 }
 
-void Polygon::reflexes(std::vector<Point> &rs) const {
+void Polygon::reflexes(std::vector<int> &rs) const {
 	rs.clear();
 
 	for (unsigned int i = 0; i < verts.size(); i++) {
@@ -120,7 +140,7 @@ void Polygon::reflexes(std::vector<Point> &rs) const {
 		double t = M_PI - fmod(atan2(b.x*a.y - a.x*b.y, b.x*a.x + b.y*a.y), 2 * M_PI);
 
 		if (t < 180)
-			rs.push_back(v);
+			rs.push_back(i);
 	}
 }
 
