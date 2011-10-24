@@ -142,7 +142,7 @@ void Polygon::reflexes(std::vector<unsigned int> &rs) const {
 		// interior angle via some voodoo from the internet.
 		double t = M_PI - fmod(atan2(b.x*a.y - a.x*b.y, b.x*a.x + b.y*a.y), 2 * M_PI);
 
-		if (t < 180)
+		if (t < M_PI)
 			rs.push_back(i);
 	}
 }
