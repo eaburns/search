@@ -98,6 +98,7 @@ void Polygon::draw(Image &img, Color c, double lwidth) const {
 }
 
 void Polygon::initsides(std::vector<Point> &pts) {
+	sides.clear();
 	for (unsigned int i = 1; i < pts.size(); i++)
 		sides.push_back(LineSeg(pts[i-1], pts[i]));
 	sides.push_back(LineSeg(pts[pts.size() - 1], pts[0]));
@@ -121,13 +122,15 @@ Polygon Polygon::random(unsigned int n, double xc, double yc, double r) {
 			rev.push_back(pts[i]);
 	}
 
+	verts.push_back(pts[pts.size()-1]);
+
 	for (unsigned int i = 0; i < rev.size(); i++)
 		verts.push_back(rev[i]);
 
 	return Polygon(verts);
 }
 
-void Polygon::reflexes(std::vector<int> &rs) const {
+void Polygon::reflexes(std::vector<unsigned int> &rs) const {
 	rs.clear();
 
 	for (unsigned int i = 0; i < verts.size(); i++) {
@@ -142,6 +145,12 @@ void Polygon::reflexes(std::vector<int> &rs) const {
 		if (t < 180)
 			rs.push_back(i);
 	}
+}
+
+void Polygon::output(FILE *out) const {
+	fprintf(out, "%lu vertices\n", (unsigned long) verts.size());
+	for (unsigned int i = 0; i < verts.size(); i++)
+		fprintf(out, "	%g	%g\n", verts[i].x, verts[i].y);
 }
 
 static void xsortedpts(std::vector<Point> &pts, double xc, double yc, double r) {

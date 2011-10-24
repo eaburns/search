@@ -120,6 +120,14 @@ bool test_line_isabove(void) {
 		ok = false;
 	}
 
+	l = Line(Point(75.451, 112.008), Point(0.0, 45.0318));
+	p = Point(52.0712, 56.7999);
+	if (l.isabove(p)) {
+		testpr("Expected %g,%g below %g,%g ↔ %g,%g\n",
+			p.x, p.y, 75.451, 112.008, 0.0, 45.0318);
+		ok = false;
+	}
+
 	return ok;
 }
 
@@ -253,13 +261,13 @@ bool test_lineseg_contains(void) {
 
 	LineSeg l(Point(-1, 0), Point(1, 0));
 	if (!l.contains(Point(0, 0))) {
-		testpr("Expected 0,0 to be contained in -1,0 -> 1.0\n");
+		testpr("Expected 0,0 to be contained in -1,0 → 1.0\n");
 		ok = false;
 	}
 
 	l = LineSeg(Point(0, -1), Point(0, 1));
 	if (!l.contains(Point(0, 0))) {
-		testpr("Expected 0,0 to be contained in 0,-1 -> 0,1\n");
+		testpr("Expected 0,0 to be contained in 0,-1 → 0,1\n");
 		ok = false;
 	}
 
@@ -329,7 +337,7 @@ bool test_lineseg_isect(void) {
 	b = LineSeg(Point(0.5, 0.5), Point(1.5, 0.5));
 	is = a.isect(b);
 	if (!std::isinf(is.x) || !std::isinf(is.y)) {
-		testpr("Expected isect of 0,0 -> 0,1 with ½,½ -> 1½,1½ to be ∞,∞, got %g,%g\n",
+		testpr("Expected isect of 0,0 → 0,1 with ½,½ → 1½,1½ to be ∞,∞, got %g,%g\n",
 			is.x, is.y);
 		ok = false;
 	}
@@ -338,7 +346,7 @@ bool test_lineseg_isect(void) {
 	b = LineSeg(Point(0.5, 0.5), Point(1.5, 0.5));
 	is = a.isect(b);
 	if (!std::isinf(is.x) || !std::isinf(is.y)) {
-		testpr("Expected isect of 0,1 -> 1,1 with ½,½ -> 1½,1½ to be ∞,∞, got %g,%g\n",
+		testpr("Expected isect of 0,1 → 1,1 with ½,½ → 1½,1½ to be ∞,∞, got %g,%g\n",
 			is.x, is.y);
 		ok = false;
 	}
@@ -347,7 +355,7 @@ bool test_lineseg_isect(void) {
 	b = LineSeg(Point(0.5, 0.5), Point(1.5, 0.5));
 	is = a.isect(b);
 	if (!eq(is.x, 1) || !eq(is.y, 0.5)) {
-		testpr("Expected isect of 1,1 -> 1,0 with ½,½ -> 1½,1½ to be 1,½, got %g,%g\n",
+		testpr("Expected isect of 1,1 → 1,0 with ½,½ → 1½,1½ to be 1,½, got %g,%g\n",
 			is.x, is.y);
 		ok = false;
 	}
@@ -356,7 +364,7 @@ bool test_lineseg_isect(void) {
 	b = LineSeg(Point(0.5, 0.5), Point(1.5, 0.5));
 	is = a.isect(b);
 	if (!std::isinf(is.x) || !std::isinf(is.y)) {
-		testpr("Expected isect of 1,0 -> 0,0 with ½,½ -> 1½,1½ to be ∞,∞, got %g,%g\n",
+		testpr("Expected isect of 1,0 → 0,0 with ½,½ → 1½,1½ to be ∞,∞, got %g,%g\n",
 			is.x, is.y);
 		ok = false;
 	}
@@ -392,7 +400,7 @@ bool test_poly_isects(void) {
 	LineSeg l(Point(50, 50), Point(150, 50));
 	sq.isects(l, is);
 	if (!samepts(is, 1, 100.0, 50.0)) {
-		testpr("Unexpected collisions for 50,50 -> 150,50: ");
+		testpr("Unexpected collisions for 50,50 → 150,50: ");
 		drawisects(sq, l);
 		ok = false;
 	}
@@ -400,7 +408,7 @@ bool test_poly_isects(void) {
 	l = LineSeg(Point(-50, 50), Point(150, 50));
 	sq.isects(l, is);
 	if (!samepts(is, 2, 0.0, 50.0, 100.0, 50.0)) {
-		testpr("Unexpected collisions for -50,50 -> 150,50: ");
+		testpr("Unexpected collisions for -50,50 → 150,50: ");
 		drawisects(sq, l);
 		ok = false;
 	}
@@ -408,7 +416,7 @@ bool test_poly_isects(void) {
 	l = LineSeg(Point(150, 50), Point(250, 50));
 	sq.isects(l, is);
 	if (!samepts(is, 0)) {
-		testpr("Unexpected collisions for 150,50 -> 250,50: ");
+		testpr("Unexpected collisions for 150,50 → 250,50: ");
 		drawisects(sq, l);
 		ok = false;
 	}
@@ -424,7 +432,7 @@ bool test_poly_minisect(void) {
 	LineSeg l(Point(50, 50), Point(150, 50));
 	Point m = sq.minisect(l);
 	if (!eq(m.x, 100) || !eq(m.y, 50)) {
-		testpr("Unexpected min intersection for 50,50 -> 150,50: ");
+		testpr("Unexpected min intersection for 50,50 → 150,50: ");
 		drawisects(sq, l);
 		ok = false;
 	}
@@ -432,7 +440,7 @@ bool test_poly_minisect(void) {
 	l = LineSeg(Point(-50, 50), Point(150, 50));
 	m = sq.minisect(l);
 	if (!eq(m.x, 0) || !eq(m.y, 50)) {
-		testpr("Unexpected min intersection for -50,50 -> 150,50: ");
+		testpr("Unexpected min intersection for -50,50 → 150,50: ");
 		drawisects(sq, l);
 		ok = false;
 	}
@@ -440,7 +448,7 @@ bool test_poly_minisect(void) {
 	l = LineSeg(Point(150, 50), Point(-50, 50));
 	m = sq.minisect(l);
 	if (!eq(m.x, 100) || !eq(m.y, 50)) {
-		testpr("Unexpected min intersection for 150,50 -> -50,50: ");
+		testpr("Unexpected min intersection for 150,50 → -50,50: ");
 		drawisects(sq, l);
 		ok = false;
 	}
@@ -448,7 +456,7 @@ bool test_poly_minisect(void) {
 	l = LineSeg(Point(150, 50), Point(250, 50));
 	m = sq.minisect(l);
 	if (!std::isinf(m.x) || !std::isinf(m.y)) {
-		testpr("Unexpected min intersection for 150,50 -> 250,50: ");
+		testpr("Unexpected min intersection for 150,50 → 250,50: ");
 		drawisects(sq, l);
 		ok = false;
 	}
@@ -463,28 +471,28 @@ bool test_poly_hits(void) {
 
 	LineSeg l(Point(50, 50), Point(150, 50));
 	if (!sq.hits(l)) {
-		testpr("Unexpected miss with 50,50 -> 150,50: ");
+		testpr("Unexpected miss with 50,50 → 150,50: ");
 		drawisects(sq, l);
 		ok = false;
 	}
 
 	l = LineSeg(Point(-50, 50), Point(150, 50));
 	if (!sq.hits(l)) {
-		testpr("Unexpected miss with -50,50 -> 150,50: ");
+		testpr("Unexpected miss with -50,50 → 150,50: ");
 		drawisects(sq, l);
 		ok = false;
 	}
 
 	l = LineSeg(Point(150, 50), Point(-50, 50));
 	if (!sq.hits(l)) {
-		testpr("Unexpected miss with 150,50 -> -50,50: ");
+		testpr("Unexpected miss with 150,50 → -50,50: ");
 		drawisects(sq, l);
 		ok = false;
 	}
 
 	l = LineSeg(Point(150, 50), Point(250, 50));
 	if (sq.hits(l)) {
-		testpr("Unexpected hit with 150,50 -> 250,50: ");
+		testpr("Unexpected hit with 150,50 → 250,50: ");
 		drawisects(sq, l);
 		ok = false;
 	}

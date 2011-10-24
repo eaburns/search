@@ -3,6 +3,7 @@
 #include <vector>
 #include <limits>
 #include <cmath>
+#include <cstdio>
 
 void fatal(const char*, ...);
 
@@ -204,6 +205,13 @@ struct Bbox {
 			&& (inrange(min.y, max.y, b.min.y) || inrange(min.y, max.y, b.max.y));
 	}
 
+	void move(double dx, double dy) {
+		min.x += dx;
+		max.x += dx;
+		min.y += dy;
+		max.y += dy;
+	}
+
 	Point min, max;
 };
 
@@ -232,7 +240,18 @@ struct Polygon {
 	bool hits(const LineSeg &) const;
 
 	// Indices of reflex vertices.
-	void reflexes(std::vector<int>&) const;
+	void reflexes(std::vector<unsigned int>&) const;
+
+	void move(double dx, double dy) {
+		bbox.move(dx, dy);
+		for (unsigned int i = 0; i < verts.size(); i++) {
+			verts[i].x += dx;
+			verts[i].y += dy;
+		}
+		initsides(verts);
+	}
+
+	void output(FILE*) const;
 
 	std::vector<Point> verts;
 	std::vector<LineSeg> sides;
