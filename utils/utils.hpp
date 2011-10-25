@@ -1,6 +1,8 @@
 #include <cstdio>
 #include <stdint.h>
 #include <string>
+#include <vector>
+#include <map>
 
 void warn(const char *, ...);
 void warnx(int, const char *, ...);
@@ -22,6 +24,8 @@ void dfrow(FILE *, const char *name, const char *colfmt, ...);
 void dfheader(FILE *);
 void dffooter(FILE *);
 void dfprocstatus(FILE*);
+
+typedef std::map<std::string, std::string> RdbAttrs ;
 
 struct Test {
 	const char *name;

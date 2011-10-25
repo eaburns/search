@@ -7,6 +7,7 @@ OBJS=\
 	utils/fatal.o\
 	utils/time.o\
 	utils/datafile.o\
+	utils/rdb.o\
 	utils/testing.o\
 	utils/hash.o\
 	utils/rand.o\
