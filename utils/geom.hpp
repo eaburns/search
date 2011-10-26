@@ -253,6 +253,8 @@ struct Polygon {
 
 	Polygon(unsigned int, ...);
 
+	void output(FILE*) const;
+
 	// If the lwidth is <0 then the polygon is filled.
 	void draw(Image&, Color c = Image::black, double lwidth = 1) const;
 
@@ -275,8 +277,6 @@ struct Polygon {
 		}
 		initsides(verts);
 	}
-
-	void output(FILE*) const;
 
 	std::vector<Point> verts;
 	std::vector<LineSeg> sides;

@@ -31,6 +31,13 @@ Polygon::Polygon(unsigned int n, ...) {
 	initsides(verts);
 }
 
+void Polygon::output(FILE *out) const {
+	fprintf(out, "%lu", (unsigned long) verts.size());
+	for (unsigned int i = 0; i < verts.size(); i++)
+		fprintf(out, " %g %g", verts[i].x, verts[i].y);
+	fputc('\n', out);
+}
+
 static bool isisect(const Point &p) {
 	return !std::isinf(p.x) && !std::isnan(p.x) && !std::isinf(p.y) && !std::isnan(p.y);
 }
@@ -149,12 +156,6 @@ void Polygon::reflexes(std::vector<unsigned int> &rs) const {
 		if (t < M_PI)
 			rs.push_back(i);
 	}
-}
-
-void Polygon::output(FILE *out) const {
-	fprintf(out, "%lu vertices\n", (unsigned long) verts.size());
-	for (unsigned int i = 0; i < verts.size(); i++)
-		fprintf(out, "	%g	%g\n", verts[i].x, verts[i].y);
 }
 
 static void xsortedpts(std::vector<Point> &pts, double xc, double yc, double r) {

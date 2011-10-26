@@ -1,5 +1,6 @@
 #include "../utils/geom.hpp"
 #include <vector>
+#include <cstdio>
 
 class Image;
 
@@ -9,6 +10,7 @@ struct VisGraph {
 	}
 
 	void draw(Image&) const;
+	void output(FILE*) const;
 
 private:
 
@@ -31,6 +33,8 @@ private:
 		Vert(unsigned int _vid, const Point &_pt, unsigned int _polyno,
 				unsigned int _vertno) :
 			pt(_pt), vid(_vid), polyno(_polyno), vertno(_vertno) { }
+
+		void output(FILE *out) const;
 
 		Point pt;
 		unsigned int vid;

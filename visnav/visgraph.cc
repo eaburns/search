@@ -31,6 +31,23 @@ void VisGraph::draw(Image &img) const {
 		verts[i].pt.draw(img, Image::black, Vradius);
 }
 
+void VisGraph::output(FILE *out) const {
+	fprintf(out, "%lu polygons\n", (unsigned long) polys.size());
+	for (unsigned int i = 0;  i < polys.size(); i++)
+		polys[i].output(out);
+
+	fprintf(out, "%lu vertices\n", (unsigned long) verts.size());
+	for (unsigned int i = 0; i < verts.size(); i++)
+		verts[i].output(out);
+}
+
+void VisGraph::Vert::output(FILE *out) const {
+	fprintf(out, "%u %u %lu", polyno, vertno, (unsigned long) succs.size());
+	for (unsigned int i = 0; i < succs.size(); i++)
+		fprintf(out, " %u %g", succs[i].dest->vid, succs[i].dist);
+	fputc('\n', out);
+}
+
 void VisGraph::computegraph(void) {
 	computeverts();
 	linkverts();
