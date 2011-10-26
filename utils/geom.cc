@@ -2,6 +2,7 @@
 #include "utils.hpp"
 #include <algorithm>
 #include <cstdarg>
+#include <cerrno>
 
 static void xsortedpts(std::vector<Point>&, double, double, double);
 static bool cmpx(const Point&, const Point&);
@@ -27,6 +28,21 @@ Polygon::Polygon(unsigned int n, ...) {
 		verts.push_back(Point(x, y));
 	}
 	va_end(ap);
+	bbox = Bbox(verts);
+	initsides(verts);
+}
+
+Polygon::Polygon(FILE *in) {
+	unsigned long nverts;
+	if (fscanf(in, " %lu", &nverts) != 1)
+		fatalx(errno, "Failed to read the number of vertices");
+
+	for (unsigned long i = 0; i < nverts; i++) {
+		double x, y;
+		if (fscanf(in, " %lg %lg", &x, &y) != 2)
+			fatalx(errno, "Failed to read a vertex");
+		verts.push_back(Point(x, y));
+	}
 	bbox = Bbox(verts);
 	initsides(verts);
 }

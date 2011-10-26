@@ -1,34 +1,54 @@
 #include "visgraph.hpp"
 #include "../utils/image.hpp"
+#include "../utils/utils.hpp"
+#include <cerrno>
 
 enum { Bufsz = 10 };
 
-void VisGraph::draw(Image &img) const {
+VisGraph::VisGraph(FILE *in) {
+	unsigned long npoly;
+	if (fscanf(in, " %lu polygons\n", &npoly) != 1)
+		fatalx(errno, "Failed to read number of polygons");
+
+	for (unsigned long i = 0; i < npoly; i++)
+		polys.push_back(Polygon(in));
+
+	unsigned long nverts;
+	if (fscanf(in, " %lu vertices\n", &nverts) != 1)
+		fatalx(errno, "Failed to read the number of vertices");
+
+	verts.resize(nverts);
+	for (unsigned long i = 0; i < nverts; i++)
+		verts[i].input(verts, i, in);
+}
+
+void VisGraph::draw(Image &img, double scale) const {
 	static const unsigned int Vradius = 2;
 	unsigned int nextcolor = 0;
 	for (unsigned int i = 0; i < polys.size(); i++) {
 		const Color &c = somecolors[nextcolor];
 		nextcolor = (nextcolor+1) % Nsomecolors;
-		polys[i].draw(img, c, 2);
-
-//		for (unsigned int j = 0; j < polys[i].verts.size(); j++) {
-//			char buf[Bufsz];
-//			snprintf(buf, Bufsz, "%u", j);
-//			img.add(new Image::Text(buf, polys[i].verts[j].x,
-//				polys[i].verts[j].y + Vradius + 1, 12));
-//		}
+		Polygon p = polys[i];
+		p.scale(scale);
+		p.draw(img, c, 2);
 	}
 
 	for (unsigned int i = 0; i < verts.size(); i++) {
 		for (unsigned int j = 0; j < verts[i].succs.size(); j++) {
 			unsigned int dst = verts[i].succs[j].dest->vid;
-			img.add(new Image::Line(verts[i].pt.x, verts[i].pt.y,
-				verts[dst].pt.x, verts[dst].pt.y, 0.2, Color(0.75, 0.75, 0.75)));
+			img.add(new Image::Line(
+				scale * verts[i].pt.x, scale * verts[i].pt.y,
+				scale * verts[dst].pt.x, scale * verts[dst].pt.y,
+				0.2, Color(0.75, 0.75, 0.75)));
 		}
 	}
 
-	for (unsigned int i = 0; i < verts.size(); i++)
-		verts[i].pt.draw(img, Image::black, Vradius);
+	for (unsigned int i = 0; i < verts.size(); i++) {
+		Point p = verts[i].pt;
+		p.x *= scale;
+		p.y *= scale;
+		p.draw(img, Image::black, Vradius);
+	}
 }
 
 void VisGraph::output(FILE *out) const {
@@ -42,10 +62,28 @@ void VisGraph::output(FILE *out) const {
 }
 
 void VisGraph::Vert::output(FILE *out) const {
-	fprintf(out, "%u %u %lu", polyno, vertno, (unsigned long) succs.size());
+	fprintf(out, "%g %g %u %u %lu", pt.x, pt.y, polyno, vertno,
+		(unsigned long) succs.size());
+
 	for (unsigned int i = 0; i < succs.size(); i++)
 		fprintf(out, " %u %g", succs[i].dest->vid, succs[i].dist);
 	fputc('\n', out);
+}
+
+void VisGraph::Vert::input(std::vector<Vert> &verts, unsigned int _vid, FILE *in) {
+	vid = _vid;
+
+	unsigned long nsuccs;
+	if (fscanf(in, " %lg %lg %u %u %lu", &pt.x, &pt.y, &polyno, &vertno, &nsuccs) != 5)
+		fatalx(errno, "Failed to read a visgraph vertex");
+
+	for (unsigned long i = 0; i < nsuccs; i++) {
+		unsigned int dest;
+		double dist;
+		if (fscanf(in, " %u %lg", &dest, &dist) != 2)
+			fatalx(errno, "Failed to read a vertex out-edge");
+		succs.push_back(VisGraph::Edge(&verts[dest], dist));
+	}
 }
 
 void VisGraph::computegraph(void) {
@@ -120,6 +158,6 @@ bool VisGraph::consecutive(unsigned int i, unsigned int j) {
 }
 
 void VisGraph::addedge(unsigned int i, unsigned int j, double len) {
-	verts[i].succs.push_back(Edeg(&verts[j], len));
-	verts[j].succs.push_back(Edeg(&verts[i], len));
+	verts[i].succs.push_back(Edge(&verts[j], len));
+	verts[j].succs.push_back(Edge(&verts[i], len));
 }

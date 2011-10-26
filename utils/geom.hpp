@@ -253,7 +253,18 @@ struct Polygon {
 
 	Polygon(unsigned int, ...);
 
+	Polygon(FILE*);
+
 	void output(FILE*) const;
+
+	void scale(double f) {
+		for (unsigned long i = 0; i < verts.size(); i++) {
+			verts[i].x *= f;
+			verts[i].y *= f;
+		}
+		bbox = Bbox(verts);
+		initsides(verts);
+	}
 
 	// If the lwidth is <0 then the polygon is filled.
 	void draw(Image&, Color c = Image::black, double lwidth = 1) const;

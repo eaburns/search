@@ -1,7 +1,5 @@
 #include "visgraph.hpp"
 #include "../utils/utils.hpp"
-#include "../utils/image.hpp"
-#include <limits>
 
 enum {
 	Npolys = 500,
@@ -24,12 +22,15 @@ int main(int argc, char *argv[]) {
 void randpolys(std::vector<Polygon> &polys) {
 	for (unsigned int i = 0; i < Npolys; i++) {
 redo:
-		Polygon p = Polygon::random(
-				randgen.integer(3, Maxverts),
-				randgen.real(),
-				randgen.real(),
-				randgen.real() * (Maxrad - Minrad) + Minrad);
+		double x = randgen.real(), y = randgen.real();
+		double r = randgen.real() * (Maxrad - Minrad) + Minrad;
 
+		assert (x >= 0.0);
+		assert (y >= 0.0);
+		assert (r >= 0.0);
+
+		Polygon p = Polygon::random(randgen.integer(3, Maxverts), x, y, r);
+			
 		for (unsigned int i = 0; i < polys.size(); i++) {
 			if (polys[i].bbox.isect(p.bbox))
 				goto redo;
