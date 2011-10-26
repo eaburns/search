@@ -25,6 +25,11 @@ void dfheader(FILE *);
 void dffooter(FILE *);
 void dfprocstatus(FILE*);
 
+// Read pairs from the data file and pass each to
+// // the given function.
+typedef void(*Pairhandler)(const char*, const char*, void*);
+void dfreadpairs(FILE*, Pairhandler, void *priv = NULL, bool echo = false);
+
 typedef std::map<std::string, std::string> RdbAttrs ;
 
 struct Test {
