@@ -6,9 +6,9 @@ namespace bf = boost::filesystem;
 
 static std::string makepath(bf::path, RdbAttrs);
 // Get the key for the given path.
-static bool getkey(bf::path, std::string&);
+static bool getkey(const bf::path&, std::string&);
 static bf::path keyfile(const std::string&);
-static void touch(bf::path);
+static void touch(const bf::path&);
 
 std::string pathfor(const char *root, RdbAttrs keys) {
 	bool used[keys.size()];
@@ -48,7 +48,7 @@ static std::string makepath(bf::path root, RdbAttrs keys) {
 	return root.string();
 }
 
-static bool getkey(bf::path p, std::string &key) {
+static bool getkey(const bf::path &p, std::string &key) {
 	for (bf::directory_iterator it(p); it != bf::directory_iterator(); it++) {
 		const char *fname = it->string().c_str();
 		if (strstr(fname, "KEY=") == fname) {
@@ -63,7 +63,7 @@ static bf::path keyfile(const std::string &key) {
 	return bf::path(std::string("KEY=") + key);
 }
 
-static void touch(bf::path p) {
+static void touch(const bf::path &p) {
 	FILE *touch = fopen(p.string().c_str(), "w");
 	if (!touch)
 		fatalx(errno, "Failed to touch keyfile %s\n", p.string().c_str());
