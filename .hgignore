@@ -2,4 +2,6 @@ syntax: glob
 *.o
 *.gch
 structs/test
+utils/test
+utils/pathfor
 */*_solver
