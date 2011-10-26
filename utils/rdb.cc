@@ -11,19 +11,22 @@ static bf::path keyfile(const std::string&);
 static void touch(const bf::path&);
 
 std::string pathfor(const char *root, RdbAttrs keys) {
-	bool used[keys.size()];
-	memset(used, 0, sizeof(*used) * keys.size());
-
 	bf::path path(root);
 	std::string curkey;
+
 	while (keys.size() > 0) {
 		if (bf::exists(path)) {
-			if (!bf::is_directory(path))
+			if (!bf::is_directory(path) && keys.size() > 0)
 				fatal("%s is not a directory\n", path.string().c_str());
 			if (!getkey(path, curkey))
 				return makepath(path.string().c_str(), keys);
-			path /= keys[curkey];
-			keys.erase(curkey);
+			RdbAttrs::iterator it = keys.find(curkey);
+			if (it == keys.end()) {
+				path /= "UNSPECIFIED";
+			} else {
+				path /= it->second;
+				keys.erase(it);
+			}
 		} else {
 			return makepath(path.string().c_str(), keys);
 		}
