@@ -10,7 +10,7 @@ static bool getkey(const bf::path&, std::string&);
 static bf::path keyfile(const std::string&);
 static void touch(const bf::path&);
 
-std::string pathfor(const char *root, RdbAttrs keys) {
+std::string rdbpathfor(const char *root, RdbAttrs keys) {
 	bf::path path(root);
 	std::string curkey;
 
@@ -36,18 +36,18 @@ std::string pathfor(const char *root, RdbAttrs keys) {
 }
 
 static std::string makepath(bf::path root, RdbAttrs keys) {
-	if (!bf::exists(root) && keys.size() > 1)
-		bf::create_directory(root);
-
 	while (keys.size() > 0) {
+		if (!bf::exists(root)) {
+			if (!bf::create_directory(root))
+				fatal("failed to create %s\n", root.string().c_str());
+		}
+
 		const std::string &key = keys.begin()->first;
 		const std::string &vl = keys.begin()->second;
-		touch(root / keyfile(key));
+		if (!bf::exists(root / keyfile(key)))
+			touch(root / keyfile(key));
 		keys.erase(key);
-
 		root /= vl;
-		if (keys.size() > 0)
-			bf::create_directory(vl);
 	}
 
 	return root.string();
@@ -56,10 +56,11 @@ static std::string makepath(bf::path root, RdbAttrs keys) {
 static bool getkey(const bf::path &p, std::string &key) {
 	for (bf::directory_iterator it(p); it != bf::directory_iterator(); it++) {
 		const char *fname = it->string().c_str();
-		if (strstr(fname, "KEY=") == fname) {
-			key = fname + strlen("KEY=");
-			return true;
-		}
+		const char *keyfile = strstr(fname, "KEY=");
+		if (!keyfile)
+			continue;
+		key = keyfile + strlen("KEY=");
+		return true;
 	}
 	return false;
 }
@@ -71,6 +72,6 @@ static bf::path keyfile(const std::string &key) {
 static void touch(const bf::path &p) {
 	FILE *touch = fopen(p.string().c_str(), "w");
 	if (!touch)
-		fatalx(errno, "Failed to touch keyfile %s\n", p.string().c_str());
+		fatalx(errno, "Failed to touch keyfile %s", p.string().c_str());
 	fclose(touch);
 }

@@ -12,6 +12,10 @@ bool test_poly_contains(void);
 bool test_poly_isects(void);
 bool test_poly_minisect(void);
 bool test_poly_hits(void);
+bool test_rdbpathfor_newpath(void);
+bool test_rdbpathfor_samepath(void);
+bool test_rdbpathfor_shareprefix(void);
+bool test_rdbpathfor_existing(void);
 
 static const Test tests[] = {
 	Test("point angle", test_point_angle),
@@ -26,6 +30,10 @@ static const Test tests[] = {
 	Test("poly isects", test_poly_isects),
 	Test("poly minisect", test_poly_minisect),
 	Test("poly hits", test_poly_hits),
+//	Test("rdbpathfor newpath", test_rdbpathfor_newpath),
+//	Test("rdbpathfor samepath", test_rdbpathfor_samepath),
+//	Test("rdbpathfor shareprefix", test_rdbpathfor_shareprefix),
+	Test("rdbpathfor existing", test_rdbpathfor_existing),
 };
 
 enum { Ntests = sizeof(tests) / sizeof(tests[0]) };

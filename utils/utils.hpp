@@ -30,7 +30,8 @@ void dfprocstatus(FILE*);
 typedef void(*Pairhandler)(const char*, const char*, void*);
 void dfreadpairs(FILE*, Pairhandler, void *priv = NULL, bool echo = false);
 
-typedef std::map<std::string, std::string> RdbAttrs ;
+typedef std::map<std::string, std::string> RdbAttrs;
+std::string rdbpathfor(const char *, RdbAttrs);
 
 struct Test {
 	const char *name;

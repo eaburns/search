@@ -7,7 +7,9 @@ LDFLAGS+=-lboost_filesystem
 BINS+=\
 	utils/test\
 
-utils/test: $(OBJS) $(HDRS) utils/test_geom.cc utils/test.cc
+utils/test: $(OBJS) $(HDRS) utils/test_geom.cc utils/test_rdb.cc utils/test.cc
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(OBJS) -o utils/test\
-		utils/test_geom.cc utils/test.cc\
+		utils/test_geom.cc\
+		utils/test_rdb.cc\
+		utils/test.cc\
 		
