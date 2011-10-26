@@ -33,16 +33,18 @@ std::string pathfor(const char *root, RdbAttrs keys) {
 }
 
 static std::string makepath(bf::path root, RdbAttrs keys) {
-	while (keys.size() > 0) {
-		if (!bf::exists(root) && keys.size() > 1)
-			bf::create_directory(root);
+	if (!bf::exists(root) && keys.size() > 1)
+		bf::create_directory(root);
 
+	while (keys.size() > 0) {
 		const std::string &key = keys.begin()->first;
 		const std::string &vl = keys.begin()->second;
 		touch(root / keyfile(key));
+		keys.erase(key);
 
-		bf::create_directory(vl);
 		root /= vl;
+		if (keys.size() > 0)
+			bf::create_directory(vl);
 	}
 
 	return root.string();
