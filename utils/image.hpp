@@ -1,10 +1,11 @@
 #ifndef _IMAGE_HPP_
 #define _IMAGE_HPP_
 
-#include <vector>
-#include <string>
 #include <cmath>
 #include <cstdio>
+#include <utility>
+#include <vector>
+#include <string>
 #include <boost/optional.hpp>
 
 struct Color {
@@ -85,27 +86,26 @@ struct Image {
 		}
 
 		void line(double x0, double y0, double x1, double y1);
+
 		void curve(double xc, double yc, double r, double t, double dt);
+
+		typedef boost::optional< std::pair<double,double> > Loc;
+ 
+		Loc curloc(void) const { return cur; }
 
 		virtual void write(FILE*) const;
 
-	private:
-		struct Point {
-			Point(double _x, double _y) : x(_x), y(_y) { }
-			double x, y;
-		};
-
-		typedef boost::optional<Point> CurLoc;
+private:
 
 		struct Segment {
 			virtual void write(FILE*) const = 0;
-			virtual CurLoc move(CurLoc) const = 0;
+			virtual Loc move(Loc) const = 0;
 		};
 
 		struct MoveTo : Segment {
 			MoveTo(double _x, double _y) : x(_x), y(_y) { }
 			virtual void write(FILE*) const;
-			virtual CurLoc move(CurLoc) const;
+			virtual Loc move(Loc) const;
 		private:
 			double x, y;
 		};
@@ -113,7 +113,7 @@ struct Image {
 		struct LineTo : Segment {
 			LineTo(double _x, double _y) : x(_x), y(_y) { }
 			virtual void write(FILE*) const;
-			virtual CurLoc move(CurLoc) const;
+			virtual Loc move(Loc) const;
 		private:
 			double x, y;
 		};
@@ -121,7 +121,7 @@ struct Image {
 		struct SetLineWidth : Segment {
 			SetLineWidth(double _w) : w(_w) { }
 			virtual void write(FILE*) const;
-			virtual CurLoc move(CurLoc) const;
+			virtual Loc move(Loc) const;
 		private:
 			double w;
 		};
@@ -129,7 +129,7 @@ struct Image {
 		struct SetColor : Segment {
 			SetColor(Color _c) : c(_c) { }
 			virtual void write(FILE*) const;
-			virtual CurLoc move(CurLoc) const;
+			virtual Loc move(Loc) const;
 		private:
 			Color c;
 		};
@@ -143,7 +143,7 @@ struct Image {
 					dt = - 360;
 			}
 			virtual void write(FILE*) const;
-			virtual CurLoc move(CurLoc) const;
+			virtual Loc move(Loc) const;
 		protected:
 			double x, y, r, t, dt;
 		};
@@ -157,11 +157,11 @@ struct Image {
 		};
 
 		void addseg(Segment *s) {
-			endloc = s->move(endloc);
+			cur = s->move(cur);
 			segs.push_back(s);
 		}
 
-		CurLoc endloc;
+		Loc cur;
 		std::vector<Segment*> segs;
 		bool _closepath, _fill;
 
@@ -186,7 +186,7 @@ struct Image {
 				x(_x), y(_y), sz(_sz), c(_c), pos(_pos), font(_font), text(_text) { }
 
 		void setsize(double size) { sz = size; }
-
+ 
 		void setcolor(Color color) { c = color; }
 
 		void setfont(std::string f) { font = f; }

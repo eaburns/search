@@ -158,23 +158,23 @@ void Image::Path::MoveTo::write(FILE *out) const {
 	fprintf(out, "%g %g moveto\n", x, y);
 }
 
-Image::Path::CurLoc Image::Path::MoveTo::move(CurLoc p) const {
-	return CurLoc(Point(x, y));
+Image::Path::Loc Image::Path::MoveTo::move(Loc p) const {
+	return Loc(std::pair<double,double>(x, y));
 }
 
 void Image::Path::LineTo::write(FILE *out) const {
 	fprintf(out, "%g %g lineto\n", x, y);
 }
 
-Image::Path::CurLoc Image::Path::LineTo::move(CurLoc p) const {
-	return CurLoc(Point(x, y));
+Image::Path::Loc Image::Path::LineTo::move(Loc p) const {
+	return Loc(std::pair<double,double>(x, y));
 }
 
 void Image::Path::SetLineWidth::write(FILE *out) const {
 	fprintf(out, "%g setlinewidth\n", w);
 }
 
-Image::Path::CurLoc Image::Path::SetLineWidth::move(CurLoc p) const {
+Image::Path::Loc Image::Path::SetLineWidth::move(Loc p) const {
 	return p;
 }
 
@@ -183,7 +183,7 @@ void Image::Path::SetColor::write(FILE *out) const {
 		c.getgreen(), c.getblue());
 }
 
-Image::Path::CurLoc Image::Path::SetColor::move(CurLoc p) const {
+Image::Path::Loc Image::Path::SetColor::move(Loc p) const {
 	return p;
 }
 
@@ -194,12 +194,11 @@ void Image::Path::Arc::write(FILE *out) const {
 	fprintf(out, "%g %g %g %g %g %s\n", x, y, r, t, t + dt, fun);
 }
 
-Image::Path::CurLoc Image::Path::Arc::move(CurLoc p) const {
-	double x1 = x + r * cos(t + dt * M_PI / 180);
-	double y1 = y + r * sin(t + dt * M_PI / 180);
-	return CurLoc(Point(x1, y1));
+Image::Path::Loc Image::Path::Arc::move(Loc p) const {
+	double x1 = x + r * cos((t + dt) * M_PI / 180);
+	double y1 = y + r * sin((t + dt) * M_PI / 180);
+	return Loc(std::pair<double,double>(x1, y1));
 }
-
 
 static bool dbleq(double a, double b) {
 	static const double Epsilon = 0.01;
@@ -207,7 +206,7 @@ static bool dbleq(double a, double b) {
 }
 
 void Image::Path::line(double x0, double y0, double x1, double y1) {
-	if (!endloc || dbleq(endloc->x, x0) || dbleq(endloc->y, y0))
+	if (!cur || !dbleq(cur->first, x0) || !dbleq(cur->second, y0))
 		addseg(new MoveTo(x0, y0));
 	addseg(new LineTo(x1, y1));
 }
@@ -218,9 +217,8 @@ void Image::Path::curve(double xc, double yc, double r, double t, double dt) {
 	double x0 = xc + a->r * cos(a->t * M_PI / 180);
 	double y0 = yc + a->r * sin(a->t * M_PI / 180);
 
-	if (!endloc || dbleq(endloc->x, x0) || dbleq(endloc->y, y0))
+	if (!cur || !dbleq(cur->first, x0) || !dbleq(cur->second, y0))
 		addseg(new MoveTo(x0, y0));
-
 	addseg(a);
 }
 
