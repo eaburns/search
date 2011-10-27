@@ -13,27 +13,40 @@ static unsigned int Maxverts = 8;
 static double Minrad = 0.05;
 static double Maxrad = 0.075;
 static const char *outfile;
+static bool stats;
 
 int main(int argc, char *argv[]) {
 	for (int i = 1; i < argc; i++) {
 		if (strcmp(argv[i], "-h") == 0)
 			usage();
-		else if (i < argc - 1 && strcmp(argv[i], "-n") == 0)
-			Npolys = strtoll(argv[++i], NULL, 10);
-		else if (i < argc - 1 && strcmp(argv[i], "-v") == 0)
-			Maxverts = strtoll(argv[++i], NULL, 10);
 		else if (i < argc - 1 && strcmp(argv[i], "-o") == 0)
 			outfile = argv[++i];
-		else if (i < argc - 1 && strcmp(argv[i], "-m") == 0)
+		else if (i < argc - 1 && strcmp(argv[i], "-npolys") == 0)
+			Npolys = strtoll(argv[++i], NULL, 10);
+		else if (i < argc - 1 && strcmp(argv[i], "-nverts") == 0)
+			Maxverts = strtoll(argv[++i], NULL, 10);
+		else if (i < argc - 1 && strcmp(argv[i], "-minrad") == 0)
 			Minrad = strtod(argv[++i], NULL);
-		else if (i < argc - 1 && strcmp(argv[i], "-x") == 0)
+		else if (i < argc - 1 && strcmp(argv[i], "-maxrad") == 0)
 			Maxrad = strtod(argv[++i], NULL);
+		else if (strcmp(argv[i], "-stats") == 0)
+			stats = true;
 	}
 
-	std::vector<Polygon> polys;
-	randpolys(polys);
+	if (stats)
+		fprintf(stderr, "seed: %lu\n", randgen.seed());
 
+	std::vector<Polygon> polys;
+	double start = walltime();
+	randpolys(polys);
+	if (stats)
+		fprintf(stderr, "created %u polys in %gs\n", Npolys, walltime() - start);
+
+	start = walltime();
 	VisGraph graph(polys);
+	if (stats)
+		fprintf(stderr, "visability graph generated in %gs\n", walltime() - start);
+
 	if (outfile) {
 		FILE *f = fopen(outfile, "w");
 		if (!f)
@@ -80,10 +93,11 @@ static void usage(void) {
 	puts("visibility graph and prints the instance to standard output");
 	puts("\nOptions:");
 	puts("	-h	prints this help message");
-	puts("	-n <num>	specify the number of polygons (default: 500)");
-	puts("	-v <num>	specify the max number of vertices (default: 8)");
 	puts("	-o <file>	output to the specified file instead of standard output");
-	puts("	-m <num>	minimum polygon radius (default: 0.05)");
-	puts("	-x <num>	maximum polygon radius (default: 0.075)");
+	puts("	-npolys <num>	specify the number of polygons (default: 500)");
+	puts("	-nverts <num>	specify the max number of vertices (default: 8)");
+	puts("	-minrad <num>	minimum polygon radius (default: 0.05)");
+	puts("	-maxrad <num>	maximum polygon radius (default: 0.075)");
+	puts("	-stats	print some stastics to standard error");
 	exit(0);
 }
