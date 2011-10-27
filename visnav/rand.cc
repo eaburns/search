@@ -10,6 +10,7 @@ static const double Minrad = 0.05;
 static const double Maxrad = 0.075;
 
 void randpolys(std::vector<Polygon>&);
+static double rnddbl(double, double);
 
 int main(int argc, char *argv[]) {
 	std::vector<Polygon> polys;
@@ -22,8 +23,9 @@ int main(int argc, char *argv[]) {
 void randpolys(std::vector<Polygon> &polys) {
 	for (unsigned int i = 0; i < Npolys; i++) {
 redo:
-		double x = randgen.real(), y = randgen.real();
-		double r = randgen.real() * (Maxrad - Minrad) + Minrad;
+		double r = rnddbl(Minrad, Maxrad);
+		double x = rnddbl(r, 1 - r);
+		double y = rnddbl(r, 1 - r);
 
 		assert (x >= 0.0);
 		assert (y >= 0.0);
@@ -38,4 +40,9 @@ redo:
 
 		polys.push_back(p);
 	}
+}
+
+static double rnddbl(double min, double max) {
+	assert (max > min);
+	return randgen.real() * (max - min) + min;
 }
