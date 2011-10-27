@@ -25,8 +25,6 @@ int main(int argc, char *argv[]) {
 
 	if (!outfile)
 		usage(1);
-	if (echo)
-		fatal("-e is not yet implemented");
 
 	FILE *in = stdin;
 	if (infile) {
@@ -36,6 +34,9 @@ int main(int argc, char *argv[]) {
 	}
 
 	VisGraph graph(in);
+	if (echo)
+		graph.output(stdout);
+
 	Image img(400, 400);
 	graph.draw(img, 400);
 	img.save(outfile, true, 72.0/2.0);
@@ -47,10 +48,10 @@ int main(int argc, char *argv[]) {
 }
 
 static void usage(int ret) {
-	printf("Usage: disp -o <outfile> [options]\n");
-	printf("Options:\n");
-	printf("	-h	print this help message\n");
-	printf("	-i <infile>	read input from file\n");
-	printf("	-e	echo input to standard output\n");
+	puts("Usage: disp -o <outfile> [options]");
+	puts("Options:");
+	puts("	-h	print this help message");
+	puts("	-i <infile>	read input from file");
+	puts("	-e	echo input to standard output");
 	exit(ret);
 }
