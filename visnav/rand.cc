@@ -4,15 +4,15 @@
 #include <cstdio>
 #include <cerrno>
 
+static void randpolys(std::vector<Polygon>&);
+static double rnddbl(double, double);
+static void usage(void);
+
 static unsigned int Npolys = 500;
 static unsigned int Maxverts = 8;
 static double Minrad = 0.05;
 static double Maxrad = 0.075;
 static const char *outfile;
-
-static void randpolys(std::vector<Polygon>&);
-static double rnddbl(double, double);
-static void usage(void);
 
 int main(int argc, char *argv[]) {
 	for (int i = 1; i < argc; i++) {
