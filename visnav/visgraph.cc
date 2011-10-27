@@ -3,8 +3,6 @@
 #include "../utils/utils.hpp"
 #include <cerrno>
 
-enum { Bufsz = 10 };
-
 VisGraph::VisGraph(FILE *in) {
 	unsigned long npoly;
 	if (fscanf(in, " %lu polygons\n", &npoly) != 1)
@@ -23,7 +21,7 @@ VisGraph::VisGraph(FILE *in) {
 }
 
 void VisGraph::draw(Image &img, double scale) const {
-	static const unsigned int Vradius = 2;
+	static const unsigned int Vradius = 1;
 	unsigned int nextcolor = 0;
 	for (unsigned int i = 0; i < polys.size(); i++) {
 		const Color &c = somecolors[nextcolor];
