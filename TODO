@@ -1,10 +1,14 @@
-* Port tiles PDB code from C
-
-* Bit-packed pancake states
+* Path finding for visnav
 
 * Make sure that the size of grids
 	doesn't overflow the size
 	of a signed integer
+
+* Handle Wheeler's 8-way grids?
+
+* Port tiles PDB code from C
+
+* Bit-packed pancake states
 
 * More domains:
 
@@ -15,8 +19,6 @@
 	- Grid pathfinding?
 
 	- Roadmap path finding
-
-	- Visibility navigation
 
 	- Hanoi
 

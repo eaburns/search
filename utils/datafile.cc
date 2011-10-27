@@ -1,14 +1,14 @@
+#include "../utils/utils.hpp"
+#include <cstdlib>
 #include <cstdarg>
 #include <cstdio>
 #include <ctime>
-#include <cstdlib>
 #include <cerrno>
 #include <cstring>
 #include <cassert>
 #include <sys/utsname.h>
 #include <unistd.h>
 #include <sys/stat.h>
-#include "../utils/utils.hpp"
 
 enum { Bufsz = 256 };
 
@@ -18,6 +18,8 @@ static const char *end4 = "#end data file format 4\n";
 static void dfpair_sz(FILE*, unsigned int, const char*, const char*, va_list);
 static void machineid(FILE*);
 static void tryprocstatus(FILE*);
+static char *getquoted(unsigned int, char*);
+static bool nextline(std::string&, FILE*, bool);
 
 void dfpair(FILE *f, const char *key, const char *fmt, ...) {
 	char buf[Bufsz];
@@ -38,6 +40,7 @@ void dfpair(FILE *f, const char *key, const char *fmt, ...) {
 	}
 
 	fprintf(f, "%s\"\n", buf);
+	fflush(f);
 }
 
 static void dfpair_sz(FILE *f, unsigned int sz, const char *key, const char *fmt, va_list ap) {
@@ -109,6 +112,7 @@ void dfrow(FILE *f, const char *name, const char *colfmt, ...) {
 	va_end(ap);
 
 	fprintf(f, "%s\n", buf);
+	fflush(f);
 }
 
 void dfheader(FILE *f) {
@@ -187,4 +191,72 @@ static void tryprocstatus(FILE *out)
 	}
 
 	fclose(in);
+}
+
+void dfreadpairs(FILE *in, Pairhandler seepair, void *priv, bool echo) {
+	std::string linebuf;
+	unsigned int lineno = 1;
+	unsigned int sz = 0;
+	char *line = NULL;
+
+	while (nextline(linebuf, in, echo)) {
+		if (sz < linebuf.size() + 1) {
+			if (line)
+				free(line);
+			line = strdup(linebuf.c_str());
+			sz = linebuf.size() + 1;		
+		} else {
+			strcpy(line, linebuf.c_str());
+		}
+		if (strstr(line, "#pair") == line) {
+			char *key = getquoted(lineno, line + strlen("#pair"));
+			char *vl = getquoted(lineno, key + strlen(key) + 1);
+			seepair(key, vl, priv);
+		}
+		lineno++;
+	}
+
+	free(line);
+}
+
+// Modifies the given string
+static char *getquoted(unsigned int lineno, char *str) {
+	unsigned int i;
+	for (i = 0; i < strlen(str) && isspace(str[i]); i++)
+		;
+	if ( i >= strlen(str))
+		fatal("line %u: Expceted a quote, got end of line\n", lineno);
+	if (str[i] != '"')
+		fatal("line %u: Expected a quote, got [%s]\n", lineno, str + i);
+
+	char *strt = str + i + 1;
+	for (i = 0; i < strlen(strt) && strt[i] != '"'; i++)
+		;
+
+	if (i == strlen(strt) || strt[i] != '"')
+		fatal("line %u: No closing quote\n", lineno);
+	strt[i] = '\0';
+
+	return strt;	
+}
+
+static bool nextline(std::string &line, FILE *in, bool echo) {
+	line.clear();
+
+	int c = fgetc(in);
+	while (c != '\n' && c != EOF) {
+		line.push_back(c);
+		c = fgetc(in);
+	}
+
+	if (line.size() == 0 && feof(in))
+		return false;
+
+	if (line[line.size()] == '\n')
+		line[line.size()] = '\0';
+
+	if (echo)
+		puts(line.c_str());
+
+	return true;
 }

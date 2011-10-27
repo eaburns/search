@@ -46,8 +46,8 @@ struct Image {
 	~Image(void);
 
 	void set(unsigned int x, unsigned int y, Color c) { data[y * w + x] = c; }
-	void save(const char *, bool usletter = false) const;
-	void output(FILE*, bool usletter = false) const;
+	void save(const char *, bool usletter = false, int marginpt = -1) const;
+	void output(FILE*, bool usletter = false, int marginpt = -1) const;
 
 	unsigned int width() const { return w; }
 	unsigned int height() const { return h; }
@@ -89,7 +89,7 @@ struct Image {
 
 		virtual void write(FILE*) const;
 
-private:
+	private:
 		struct Point {
 			Point(double _x, double _y) : x(_x), y(_y) { }
 			double x, y;
@@ -165,7 +165,6 @@ private:
 		std::vector<Segment*> segs;
 		bool _closepath, _fill;
 
-	public:
 	};
 
 	struct Line : public Path {
@@ -187,7 +186,7 @@ private:
 				x(_x), y(_y), sz(_sz), c(_c), pos(_pos), font(_font), text(_text) { }
 
 		void setsize(double size) { sz = size; }
- 
+
 		void setcolor(Color color) { c = color; }
 
 		void setfont(std::string f) { font = f; }
@@ -221,14 +220,15 @@ private:
 		Color c;
 	};
 
+	// Non-positive lwidth will fill
 	struct Circle : public Component {
 		Circle(double _x, double _y, double _r, Color _c = Image::black,
-			bool _fill = true) : x(_x), y(_y), r(_r), c(_c), fill(_fill) { }
+			double _lwidth = -1) :x(_x), y(_y), r(_r), c(_c), lwidth(_lwidth) { }
 		virtual void write(FILE*) const;
 	private:
 		double x, y, r;
 		Color c;
-		bool fill;
+		double lwidth;
 	};
 
 	void add(const Component *comp) {

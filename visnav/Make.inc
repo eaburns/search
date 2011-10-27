@@ -1,16 +1,19 @@
 BINS+=\
-	visnav/visnav_solver\
+	visnav/rand\
+	visnav/disp/
 
 VISNAVSRC=\
-	visnav/poly.cc\
 	visnav/visgraph.cc\
 
 VISNAVHDR=\
-	visnav/poly.hpp\
 	visnav/visgraph.hpp\
 
 visnav/*.o: $(VISNAVHDR)
 
-visnav/visnav_solver: $(OBJS) $(HDRS) $(VISNAVHDR) $(VISNAVSRC) visnav/main.cc
+visnav/rand: $(OBJS) $(HDRS) $(VISNAVHDR) $(VISNAVSRC) visnav/rand.cc
 	$(CXX) $(CXXFLAGS) $(OBJS) $(LDFLAGS) $(VISNAVSRC)\
-		visnav/main.cc -o visnav/visnav_solver
+		visnav/rand.cc -o visnav/rand
+
+visnav/disp: $(OBJS) $(HDRS) $(VISNAVHDR) $(VISNAVSRC) visnav/disp.cc
+	$(CXX) $(CXXFLAGS) $(OBJS) $(LDFLAGS) $(VISNAVSRC)\
+		visnav/disp.cc -o visnav/disp

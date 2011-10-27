@@ -1,6 +1,8 @@
 #include <cstdio>
 #include <stdint.h>
 #include <string>
+#include <vector>
+#include <map>
 
 void warn(const char *, ...);
 void warnx(int, const char *, ...);
@@ -22,6 +24,14 @@ void dfrow(FILE *, const char *name, const char *colfmt, ...);
 void dfheader(FILE *);
 void dffooter(FILE *);
 void dfprocstatus(FILE*);
+
+// Read pairs from the data file and pass each to
+// // the given function.
+typedef void(*Pairhandler)(const char*, const char*, void*);
+void dfreadpairs(FILE*, Pairhandler, void *priv = NULL, bool echo = false);
+
+typedef std::map<std::string, std::string> RdbAttrs;
+std::string rdbpathfor(const char *, RdbAttrs);
 
 struct Test {
 	const char *name;

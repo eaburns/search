@@ -33,23 +33,30 @@ Image::~Image(void) {
 		delete comps.back();
 		comps.pop_back();
 	}
-	delete data;
+	delete[] data;
 }
 
-void Image::save(const char *path, bool usletter) const {
+void Image::save(const char *path, bool usletter, int marginpt) const {
 	FILE *f = fopen(path, "w");
 	if (!f)
 		fatalx(errno, "Failed to open %s for writing\n", path);
-	output(f, usletter);
+	output(f, usletter, marginpt);
 	fclose(f);
 }
 
-void Image::output(FILE *out, bool usletter) const {
+void Image::output(FILE *out, bool usletter, int marginpt) const {
+	if (marginpt < 0)
+		marginpt = usletter ? 72/2 : 0;	/* 72/2 pt == ½ in */
+
 	if (usletter)
-		outputhdr_usletter(out);
+		outputhdr_usletter(out, marginpt);
 	else
-		outputhdr(out);
+		outputhdr(out, marginpt);
+
 	outputdata(out);
+
+	fprintf(out, "1 setlinejoin\n");	// Round join
+
 	for (unsigned int i = 0; i < comps.size(); i++) {
 		fputc('\n', out);
 		comps[i]->write(out);
@@ -274,8 +281,12 @@ void Image::Triangle::write(FILE *out) const {
 void Image::Circle::write(FILE *out) const {
 	fprintf(out, "%% Circle\n");
 	const char *finish = "stroke";
-	if (fill)
+	if (lwidth <= 0) {
 		finish = "fill";
+		fprintf(out, "0.1 setlinewidth\n");
+	} else {
+		fprintf(out, "%g setlinewidth\n", lwidth);
+	}
 	fprintf(out, "%g %g %g setrgbcolor\n", c.getred(), c.getgreen(), c.getblue());
 	fprintf(out, "newpath %g %g %g 0 360 arc %s\n", x, y, r, finish);
 }
