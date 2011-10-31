@@ -51,8 +51,10 @@ struct VisNav {
 
 	State initialstate(void);
 
-	Cost h(State &s) {
-		return 0.0;
+	Cost h(State &s) {//
+		double dx = x1 - g.vertex(s.vert).pt.x;
+		double dy = y1 - g.vertex(s.vert).pt.y;
+		return sqrt(dx * dx + dy * dy);
 	}
 
 	bool isgoal(State &s) {
