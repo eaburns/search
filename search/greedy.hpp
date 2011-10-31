@@ -21,7 +21,7 @@ template <class D, class Cost> struct GreedyNode {
 	static int getind(GreedyNode*) { return -1; }
 };
 
-template <class D> struct GreedyNode <D, char> {
+template <class D> struct GreedyNode <D, IntOpenCost> {
 	typename D::PackedState packed;
 	typename D::Oper pop;
 	typename D::Cost g, h;

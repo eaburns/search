@@ -24,7 +24,7 @@ template <class D, class Cost> struct AstarNode {
 	static int getind(AstarNode *n) { return n->openind; }
 };
 
-template <class D> struct AstarNode <D, char> {
+template <class D> struct AstarNode <D, IntOpenCost> {
 	typename D::PackedState packed;
 	typename D::Oper pop;
 	typename D::Cost g, f;

@@ -23,7 +23,7 @@ template <class D, class Cost> struct SpeedyNode {
 	static int getind(SpeedyNode*) { return -1; }
 };
 
-template <class D> struct SpeedyNode <D, char> {
+template <class D> struct SpeedyNode <D, IntOpenCost> {
 	typename D::PackedState packed;
 	typename D::Oper pop;
 	typename D::Cost g, d;

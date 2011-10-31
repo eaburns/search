@@ -49,11 +49,13 @@ private:
 	Binheap<Heapops, Node*> heap;
 };
 
+typedef int IntOpenCost;
+
 template<class Node> struct OpenEntry {
 	unsigned int i;
 };
 
-template <class Ops, class Node> class OpenList <Ops, Node, char> {
+template <class Ops, class Node> class OpenList <Ops, Node, IntOpenCost> {
 public:
 	OpenList(void) : fill(0), min(0) { }
 

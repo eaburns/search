@@ -16,7 +16,7 @@ public:
 	typedef int Cake;
 	typedef int Oper;
 	enum { Nop = -1 };
-	typedef char Cost;
+	typedef int Cost;
 	enum { InfCost = -1 };
 
 	class State {
