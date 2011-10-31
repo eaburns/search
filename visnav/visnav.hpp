@@ -45,7 +45,7 @@ struct VisNav {
 	typedef State PackedState;
 
 	struct Undo {
-		Undo(State &s, Oper op) { vert = (int) op.edge->src->vid; }
+		Undo(State &s, Oper op) { vert = (int) op.edge->src; }
 		int vert;
 	};
 
@@ -81,7 +81,7 @@ struct VisNav {
 	}
 
 	State &apply(State &buf, State &s, Oper op) {
-		s.vert = op.edge->dst->vid;
+		s.vert = op.edge->dst;
 		return s;
 	}
 

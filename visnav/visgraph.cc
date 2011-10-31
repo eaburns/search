@@ -33,7 +33,7 @@ void VisGraph::draw(Image &img, double scale) const {
 
 	for (unsigned int i = 0; i < verts.size(); i++) {
 		for (unsigned int j = 0; j < verts[i].succs.size(); j++) {
-			unsigned int dst = verts[i].succs[j].dst->vid;
+			unsigned int dst = verts[i].succs[j].dst;
 			img.add(new Image::Line(
 				scale * verts[i].pt.x, scale * verts[i].pt.y,
 				scale * verts[dst].pt.x, scale * verts[dst].pt.y,
@@ -64,7 +64,7 @@ void VisGraph::Vert::output(FILE *out) const {
 		(unsigned long) succs.size());
 
 	for (unsigned int i = 0; i < succs.size(); i++)
-		fprintf(out, " %u %g", succs[i].dst->vid, succs[i].dist);
+		fprintf(out, " %u %g", succs[i].dst, succs[i].dist);
 	fputc('\n', out);
 }
 
@@ -80,7 +80,7 @@ void VisGraph::Vert::input(std::vector<Vert> &verts, unsigned int _vid, FILE *in
 		double dist;
 		if (fscanf(in, " %u %lg", &dest, &dist) != 2)
 			fatalx(errno, "Failed to read a vertex out-edge");
-		succs.push_back(VisGraph::Edge(&verts[vid], &verts[dest], dist));
+		succs.push_back(VisGraph::Edge(vid, dest, dist));
 	}
 }
 
@@ -174,6 +174,6 @@ bool VisGraph::consecutive(unsigned int i, unsigned int j) {
 }
 
 void VisGraph::addedge(unsigned int i, unsigned int j, double len) {
-	verts[i].succs.push_back(Edge(&verts[i], &verts[j], len));
-	verts[j].succs.push_back(Edge(&verts[j], &verts[i], len));
+	verts[i].succs.push_back(Edge(i, j, len));
+	verts[j].succs.push_back(Edge(j, i, len));
 }

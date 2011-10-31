@@ -23,8 +23,9 @@ struct VisGraph {
 	struct Vert;
 
 	struct Edge {
-		Edge(Vert *_src, Vert *_dst, double _dist) : src(_src), dst(_dst), dist(_dist) { }
-		Vert *src, *dst;
+		Edge(unsigned int _src, unsigned int _dst, double _dist) :
+			src(_src), dst(_dst), dist(_dist) { }
+		unsigned int src, dst;
 		double dist;
 	};
 
