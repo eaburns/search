@@ -66,7 +66,6 @@ static std::string makepath(bf::path root, RdbAttrs attrs) {
 
 		const std::string &key = attrs.front();
 		const std::string &vl = attrs.lookup(key);
-		printf("key=[%s], value=[%s]\n", key.c_str(), vl.c_str());
 		if (!bf::exists(root / keyfile(key)))
 			touch(root / keyfile(key));
 		attrs.pop_front();

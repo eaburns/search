@@ -85,7 +85,10 @@ void VisGraph::Vert::input(std::vector<Vert> &verts, unsigned int _vid, FILE *in
 }
 
 unsigned int VisGraph::add(double x, double y) {
-	return 0;
+	unsigned int vid = verts.size();
+	unsigned int polyno = polys.size() + vid;
+	verts.push_back(vid, Point(x, y), polyno, vid);
+	return vid;
 }
 
 void VisGraph::computegraph(void) {
