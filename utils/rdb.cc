@@ -13,18 +13,22 @@ static void touch(const bf::path&);
 bool RdbAttrs::push_back(const std::string &key, const std::string &value) {
 	if (pairs.find(key) != pairs.end())
 		return false;
-	Value &v = pairs[key];
-	v.value = value;
-	v.ind = keys.size();
-	keys.push_back(value);
+	pairs[key] = value;
+	keys.push_back(key);
 	return true;
 }
 
 bool RdbAttrs::rm(const std::string &key) {
 	if (pairs.find(key) == pairs.end())
 		return false;
-	Value v = pairs[key];
-	keys.erase(keys.begin() + v.ind);
+
+	for (std::deque<std::string>::iterator it = keys.begin(); it != keys.end(); it++) {
+		if (*it == key) {
+			keys.erase(it);
+			break;
+		}
+	}
+
 	pairs.erase(pairs.find(key));
 	return true;	
 }
@@ -60,12 +64,12 @@ static std::string makepath(bf::path root, RdbAttrs attrs) {
 				fatal("failed to create %s\n", root.string().c_str());
 		}
 
-		
 		const std::string &key = attrs.front();
 		const std::string &vl = attrs.lookup(key);
+		printf("key=[%s], value=[%s]\n", key.c_str(), vl.c_str());
 		if (!bf::exists(root / keyfile(key)))
 			touch(root / keyfile(key));
-		attrs.rm(key);
+		attrs.pop_front();
 		root /= vl;
 	}
 

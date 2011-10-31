@@ -34,28 +34,26 @@ void dfreadpairs(FILE*, Pairhandler, void *priv = NULL, bool echo = false);
 struct RdbAttrs {
 	bool push_back(const std::string &key, const std::string &val);	// false if duplicate
 
+	void pop_front(void) {
+		const std::string &k = keys.front();
+		pairs.erase(pairs.find(k));
+		keys.pop_front();
+	}
+
+	const std::string &front(void) { return keys.front(); }
+
+	unsigned int size(void) const { return keys.size(); }
+
 	bool rm(const std::string &key);
 
-	const std::string &lookup(const std::string &key) {
-		return pairs[key].value;
-	}
+	const std::string &lookup(const std::string &key) { return pairs[key]; }
 
 	bool mem(const std::string &key) const {
 		return pairs.find(key) != pairs.end();
 	}
 
-	unsigned int size(void) const { return keys.size(); }
-
-	const std::string &front(void) { return keys.front(); }
-
 private:
-	struct Value {
-		Value(void) { }
-		Value(const std::string &v, unsigned int i) : value(v), ind(i) { }
-		std::string value;
-		unsigned int ind;
-	};
-	std::map<std::string, Value> pairs;
+	std::map<std::string, std::string> pairs;
 	std::deque<std::string> keys;
 };
 
