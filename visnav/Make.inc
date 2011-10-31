@@ -4,9 +4,11 @@ BINS+=\
 
 VISNAVSRC=\
 	visnav/visgraph.cc\
+	visnav/visnav.cc\
 
 VISNAVHDR=\
 	visnav/visgraph.hpp\
+	visnav/visnav.hpp\
 
 visnav/*.o: $(VISNAVHDR)
 
