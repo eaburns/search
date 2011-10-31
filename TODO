@@ -1,4 +1,8 @@
-* Path finding for visnav
+* 2d int-based open list (for tie-breaking on g)
+
+* Special grid pathfinding closed list
+
+* Special visnav closed list
 
 * Make sure that the size of grids
 	doesn't overflow the size
