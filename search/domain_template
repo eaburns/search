@@ -33,6 +33,11 @@ struct <DOMAIN> {
 		return 0.0;
 	}
 
+	Cost d(State &s) {
+		fatal("Unimplemented");
+		return 0.0;
+	}
+
 	bool isgoal(State &s) {
 		fatal("Unimplemented");
 		return false;
