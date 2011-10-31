@@ -17,23 +17,15 @@ struct VisGraph {
 	// Add a vertex to the graph.
 	unsigned int add(double, double);
 
-private:
-
-	void computegraph(void);
-	void computeverts(void);
-	void linkverts(void);
-	void linkvert(unsigned int vid);
-	void addedge(unsigned int, unsigned int, double);
-	bool consecutive(unsigned int, unsigned int);	// On same poly-side?
+	// Is the given point outside all polygons?
+	bool isoutside(double, double);
 
 	struct Vert;
 
 	struct Edge {
-		Edge(Vert *_dest, double _dist) : dest(_dest), dist(_dist) { }
-		Vert *dest;
+		Edge(Vert *_src, Vert *_dst, double _dist) : src(_src), dst(_dst), dist(_dist) { }
+		Vert *src, *dst;
 		double dist;
-
-		friend class Vert;
 	};
 
 	struct Vert {
@@ -51,6 +43,16 @@ private:
 		unsigned int polyno, vertno;
 		std::vector<Edge> succs;
 	};
+
+	const Vert &vertex(unsigned int i) const { return verts[i]; }
+
+private:
+	void computegraph(void);
+	void computeverts(void);
+	void linkverts(void);
+	void linkvert(unsigned int vid);
+	void addedge(unsigned int, unsigned int, double);
+	bool consecutive(unsigned int, unsigned int);	// On same poly-side?
 
 	std::vector<Polygon> polys;
 	std::vector<Vert> verts;

@@ -2,87 +2,105 @@
 #include "../utils/utils.hpp"
 #include <cstdio>
 
-struct Visnav {
+struct VisNav {
 	enum { UnitCost = false };
 
 	typedef double Cost;
 	static const double InfCost = -1;
-	typedef int Oper;
-	static const int Nop = -1;
 
-	Visnav(FILE*);
+	struct Oper {
+		Oper(void) : edge(NULL) { }
+		Oper(const VisGraph::Edge *e) : edge(e) { }
+		bool operator==(const Oper &other) const {
+			if (!edge)
+				return !other.edge;
+			if (!other.edge)
+				return false;
+			return other.edge->src == edge->src || other.edge->dst == edge->dst;
+		}
+		const VisGraph::Edge *edge;
+	};
+
+	static const Oper Nop;
+
+	VisNav(const VisGraph&, double x0, double y0, double x1, double y1);
 
 	struct Undo;
 
 	struct State {
+		State(void) { }
+
 		State(int v) : vert(v) { }
 
 		unsigned long hash(void) { return vert; }
 
-		bool eq(State &other) const { return vert == other.vert; }
-		
+		bool eq(const State &o) { return vert == o.vert; }
+
 	private: 
 		friend class Undo;
-		friend class Visnav;
+		friend class VisNav;
 		int vert;
 	};
 
 	typedef State PackedState;
 
 	struct Undo {
-		Undo(State &s, Oper op) { s.vert = op; }
+		Undo(State &s, Oper op) { vert = (int) op.edge->src->vid; }
+		int vert;
 	};
 
 	State initialstate(void);
 
 	Cost h(State &s) {
-		fatal("Unimplemented");
 		return 0.0;
 	}
 
 	bool isgoal(State &s) {
-		fatal("Unimplemented");
-		return false;
+		assert (s.vert >= 0);
+		return (unsigned int) s.vert == finish;
 	}
 
 	unsigned int nops(State &s) {
-		fatal("Unimplemented");
-		return 0;
+		return g.vertex(s.vert).succs.size();
 	}
 
 	Oper nthop(State &s, unsigned int n) {
-		fatal("Unimplemented");
-		return 0;
+		return Oper(&g.vertex(s.vert).succs[n]);
 	}
 
 	Oper revop(State &s, Oper op) {
-		fatal("Unimplemented");
-		return 0;
+		return op;
 	}
 
 	Cost opcost(State &s, Oper op) {
-		fatal("Unimplemented");
-		return 0;
+		return op.edge->dist;
 	}
 
-	void undo(State &s, Undo &u) { }
+	void undo(State &s, Undo &u) {
+		s.vert = u.vert;
+	}
 
 	State &apply(State &buf, State &s, Oper op) {
-		fatal("Unimplemented");
+		s.vert = op.edge->dst->vid;
 		return s;
 	}
 
 	void pack(PackedState &dst, State &src) {
-		fatal("Unimplemented");
+		dst = src;
 	}
 
 	State &unpack(State &buf, PackedState &pkd) {
-		fatal("Unimplemented");
-		return buf;
+		return pkd;
 	}
 
 	void dumpstate(FILE *out, State &s) {
-		fatal("Unimplemented");
+		fprintf(out, "%d\n", s.vert);
 	}
+
+	void save(const char*, std::vector<State> path = std::vector<State>()) const;
+
 private:
+	double x0, y0, x1, y1;
+	unsigned int start, finish;
+	VisGraph g;
 };
