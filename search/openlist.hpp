@@ -1,3 +1,6 @@
+#ifndef _OPENLIST_HPP_
+#define _OPENLIST_HPP_
+
 #include "../structs/intpq.hpp"
 #include "../structs/binheap.hpp"
 
@@ -54,7 +57,7 @@ public:
 
 	Node *pop(void) { return pq.pop(); }
 
-	void pre_update(Node*n) { pq.rm(n, n->f); }
+	void pre_update(Node*n) { pq.rm(n, Ops::prio(n)); }
 
 	void post_update(Node *n) { push(n); }
 
@@ -70,3 +73,5 @@ private:
 	};
 	Intpq< Intpqops, Node > pq;
 };
+
+#endif	// _OPENLIST_HPP_

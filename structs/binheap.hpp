@@ -1,3 +1,6 @@
+#ifndef _BINHEAP_HPP_
+#define _BINHEAP_HPP_
+
 #include <vector>
 #include <boost/optional.hpp>
 
@@ -93,3 +96,5 @@ private:
 
 	std::vector<Elm> heap;
 };
+
+#endif	// _BINHEAP_HPP_

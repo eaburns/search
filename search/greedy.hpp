@@ -3,55 +3,55 @@
 #include "../search/openlist.hpp"
 #include <boost/pool/object_pool.hpp>
 
-template <class D, class Cost> struct AstarNode {
+template <class D, class Cost> struct GreedyNode {
 	typename D::PackedState packed;
 	typename D::Oper pop;
-	Cost g, f;
-	HtableEntry<AstarNode> closedent;
-	AstarNode *parent;
+	Cost g, h;
+	HtableEntry<GreedyNode> closedent;
+	GreedyNode *parent;
 	int openind;
 
-	AstarNode(void) : openind(-1) {}
+	GreedyNode(void) : openind(-1) {}
 
-	static bool pred(AstarNode *a, AstarNode *b) {
-		if (a->f == b->f)
+	static bool pred(GreedyNode *a, GreedyNode *b) {
+		if (a->h == b->h)
 			return a->g > b->g;
-		return a->f < b->f;
+		return a->h < b->h;
 	}
 
-	static void setind(AstarNode *n, int i) { n->openind = i; }
+	static void setind(GreedyNode *n, int i) { n->openind = i; }
 
-	static int getind(AstarNode *n) { return n->openind; }
+	static int getind(GreedyNode *n) { return n->openind; }
 };
 
-template <class D> struct AstarNode <D, char> {
+template <class D> struct GreedyNode <D, char> {
 	typename D::PackedState packed;
 	typename D::Oper pop;
-	typename D::Cost g, f;
-	HtableEntry<AstarNode> closedent;
-	IntpqEntry<AstarNode> openent;
-	AstarNode *parent;
+	typename D::Cost g, h;
+	HtableEntry<GreedyNode> closedent;
+	IntpqEntry<GreedyNode> openent;
+	GreedyNode *parent;
 
-	static typename D::Cost prio(AstarNode *n) { return n->f; }
+	static typename D::Cost prio(GreedyNode *n) { return n->h; }
 
-	static IntpqEntry<AstarNode> &openentry(AstarNode *n) { return n->openent; }
+	static IntpqEntry<GreedyNode> &openentry(GreedyNode *n) { return n->openent; }
 };
 
-template <class D> struct Astar : public Search<D> {
+template <class D> struct Greedy : public Search<D> {
 
 	typedef typename D::State State;
 	typedef typename D::PackedState PackedState;
 	typedef typename D::Undo Undo;
 	typedef typename D::Cost Cost;
 	typedef typename D::Oper Oper;
-	typedef AstarNode<D, Cost> Node;
+	typedef GreedyNode<D, Cost> Node;
 
-	Astar(int argc, char *argv[]) :
+	Greedy(int argc, char *argv[]) :
 		Search<D>(argc, argv), closed(30000001) {
 		nodes = new boost::object_pool<Node>();
 	}
 
-	~Astar(void) {
+	~Greedy(void) {
 		delete nodes;
 	}
 
@@ -122,7 +122,6 @@ private:
 			if (open.mem(dup))
 				open.pre_update(dup);
 
-			dup->f = dup->f - dup->g + k->g;
 			dup->g = k->g;
 			dup->pop = k->pop;
 			dup->parent = k->parent;
@@ -147,7 +146,7 @@ private:
 
 		Undo u(pstate, op);
 		State buf, &kidst = d.apply(buf, pstate, op);
-		kid->f = kid->g + d.h(kidst);
+		kid->h = d.h(kidst);
 		d.pack(kid->packed, kidst);
 		d.undo(pstate, u);
 
@@ -158,7 +157,7 @@ private:
 		Node *n0 = nodes->construct();
 		d.pack(n0->packed, s0);
 		n0->g = 0;
-		n0->f = d.h(s0);
+		n0->h = d.h(s0);
 		n0->pop = D::Nop;
 		n0->parent = NULL;
 		return n0;

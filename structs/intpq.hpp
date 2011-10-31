@@ -1,6 +1,8 @@
+#ifndef _INTPQ_HPP_
+#define _INTPQ_HPP_
+
 #include <cassert>
 #include <cstdlib>
-
 
 template<class Elm> struct IntpqEntry {
 	Elm *nxt, *prev;
@@ -119,3 +121,5 @@ private:
 	unsigned int nresize, end, nbins;
 	Elm **bins;
 };
+
+#endif	// _INTPQ_HPP_
