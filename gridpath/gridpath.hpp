@@ -47,6 +47,10 @@ public:
 		return octiledist(s.loc, finish);
 	}
 
+	Cost d(State &s) {
+		return octilecells(s.loc, finish);
+	}
+
 	bool isgoal(State &s) {
 		return s.loc == finish;
 	}
@@ -103,6 +107,12 @@ private:
 		unsigned int diag = dx < dy ? dx : dy;
 		unsigned int straight = dx < dy ? dy : dx;
 		return (straight - diag) + sqrtf(2.0) * diag;
+	}
+
+	unsigned int octilecells(unsigned int l0, unsigned int l1) {
+		unsigned int dx = abs(map->x(l0) - map->x(l1));
+		unsigned int dy = abs(map->y(l0) - map->y(l1));
+		return dx < dy ? dy : dx;
 	}
 
 	unsigned int start, finish;

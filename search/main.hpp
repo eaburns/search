@@ -1,6 +1,7 @@
 #include "search.hpp"
 #include "astar.hpp"
 #include "greedy.hpp"
+#include "wastar.hpp"
 #include "idastar.hpp"
 #include <cstddef>
 #include <cstdio>
@@ -40,6 +41,8 @@ template<class D> Search<D> *getsearch(int argc, char *argv[]) {
 		return new Astar<D>(argc, argv);
 	else if (strcmp(argv[1], "greedy") == 0)
 		return new Greedy<D>(argc, argv);
+	else if (strcmp(argv[1], "wastar") == 0)
+		return new Wastar<D>(argc, argv);
 
 	fatal("Unknown algorithm: %s", argv[1]);
 	return NULL;	// Unreachable
