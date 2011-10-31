@@ -24,8 +24,9 @@ TMPLS=\
 	search/openlist.hpp\
 	search/idastar.hpp\
 	search/astar.hpp\
-	search/greedy.hpp\
 	search/wastar.hpp\
+	search/greedy.hpp\
+	search/speedy.hpp\
 	\
 	structs/intpq.hpp\
 	structs/binheap.hpp\

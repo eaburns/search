@@ -3,52 +3,54 @@
 #include "../search/openlist.hpp"
 #include <boost/pool/object_pool.hpp>
 
-template <class D, class Cost> struct GreedyNode {
+template <class D, class Cost> struct SpeedyNode {
 	typename D::PackedState packed;
 	typename D::Oper pop;
-	Cost g, h;
-	HtableEntry<GreedyNode> closedent;
-	GreedyNode *parent;
+	Cost g, d;
+	HtableEntry<SpeedyNode> closedent;
+	SpeedyNode *parent;
 
-	GreedyNode(void) { }
+	SpeedyNode(void) {}
 
-	static bool pred(GreedyNode *a, GreedyNode *b) {
-		return a->h < b->h;
+	static bool pred(SpeedyNode *a, SpeedyNode *b) {
+		if (a->d == b->d)
+			return a->g > b->g;
+		return a->d < b->d;
 	}
 
-	static void setind(GreedyNode*, int) { }
+	static void setind(SpeedyNode*, int) { }
 
-	static int getind(GreedyNode*) { return -1; }
+	static int getind(SpeedyNode*) { return -1; }
 };
 
-template <class D> struct GreedyNode <D, char> {
+template <class D> struct SpeedyNode <D, char> {
 	typename D::PackedState packed;
 	typename D::Oper pop;
-	typename D::Cost g, h;
-	HtableEntry<GreedyNode> closedent;
-	IntpqEntry<GreedyNode> openent;
-	GreedyNode *parent;
+	typename D::Cost g, d;
+	HtableEntry<SpeedyNode> closedent;
+	IntpqEntry<SpeedyNode> openent;
+	SpeedyNode *parent;
 
-	static typename D::Cost prio(GreedyNode *n) { return n->h; }
+	static typename D::Cost prio(SpeedyNode *n) { return n->d; }
 
-	static IntpqEntry<GreedyNode> &openentry(GreedyNode *n) { return n->openent; }
+	static IntpqEntry<SpeedyNode> &openentry(SpeedyNode *n) { return n->openent; }
 };
 
-template <class D> struct Greedy : public Search<D> {
+template <class D> struct Speedy : public Search<D> {
 
 	typedef typename D::State State;
 	typedef typename D::PackedState PackedState;
 	typedef typename D::Undo Undo;
 	typedef typename D::Cost Cost;
 	typedef typename D::Oper Oper;
-	typedef GreedyNode<D, Cost> Node;
+	typedef SpeedyNode<D, Cost> Node;
 
-	Greedy(int argc, char *argv[]) :
+	Speedy(int argc, char *argv[]) :
 		Search<D>(argc, argv), closed(30000001) {
 		nodes = new boost::object_pool<Node>();
 	}
 
-	~Greedy(void) {
+	~Speedy(void) {
 		delete nodes;
 	}
 
@@ -125,7 +127,7 @@ private:
 		kid->parent = pnode;
 		Undo u(pstate, op);
 		State buf, &kidst = d.apply(buf, pstate, op);
-		kid->h = d.h(kidst);
+		kid->d = d.d(kidst);
 		d.pack(kid->packed, kidst);
 		d.undo(pstate, u);
 
@@ -136,7 +138,7 @@ private:
 		Node *n0 = nodes->construct();
 		d.pack(n0->packed, s0);
 		n0->g = 0;
-		n0->h = d.h(s0);
+		n0->d = d.d(s0);
 		n0->pop = D::Nop;
 		n0->parent = NULL;
 		return n0;
