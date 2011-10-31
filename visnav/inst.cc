@@ -1,3 +1,8 @@
+// Read an graph on stdin, place two points
+// in the unit square that are not within a
+// polygon and output the graph along
+// with the two points.
+
 #include "visgraph.hpp"
 #include "../utils/utils.hpp"
 #include <cstdio>
