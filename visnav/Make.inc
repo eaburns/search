@@ -1,7 +1,7 @@
 BINS+=\
 	visnav/rand\
 	visnav/disp\
-	visnav/prob\
+	visnav/inst\
 	visnav/visnav_solver\
 
 VISNAVSRC=\
@@ -22,9 +22,9 @@ visnav/disp: $(OBJS) $(HDRS) $(VISNAVHDR) $(VISNAVSRC) visnav/disp.cc
 	$(CXX) $(CXXFLAGS) $(OBJS) $(LDFLAGS) $(VISNAVSRC)\
 		visnav/disp.cc -o visnav/disp
 
-visnav/prob: $(OBJS) $(HDRS) $(VISNAVHDR) $(VISNAVSRC) visnav/prob.cc
+visnav/inst: $(OBJS) $(HDRS) $(VISNAVHDR) $(VISNAVSRC) visnav/inst.cc
 	$(CXX) $(CXXFLAGS) $(OBJS) $(LDFLAGS) $(VISNAVSRC)\
-		visnav/prob.cc -o visnav/prob
+		visnav/inst.cc -o visnav/inst
 
 visnav/visnav_solver: $(OBJS) $(HDRS) $(VISNAVHDR) $(VISNAVSRC) visnav/main.cc
 	$(CXX) $(CXXFLAGS) $(OBJS) $(LDFLAGS) $(VISNAVSRC)\
