@@ -28,12 +28,14 @@ template <class D> struct SpeedyNode <D, char> {
 	typename D::Oper pop;
 	typename D::Cost g, d;
 	HtableEntry<SpeedyNode> closedent;
-	IntpqEntry<SpeedyNode> openent;
+	OpenEntry<SpeedyNode> openent;
 	SpeedyNode *parent;
 
 	static typename D::Cost prio(SpeedyNode *n) { return n->d; }
 
-	static IntpqEntry<SpeedyNode> &openentry(SpeedyNode *n) { return n->openent; }
+	static OpenEntry<SpeedyNode> &openentry(SpeedyNode *n) {
+		return n->openent;
+	}
 };
 
 template <class D> struct Speedy : public Search<D> {

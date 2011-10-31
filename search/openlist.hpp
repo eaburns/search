@@ -46,7 +46,11 @@ private:
 		static void setind(Node *n, int i) { Ops::setind(n, i); }
 		static int getind(Node *n) { return Ops::getind(n); }
 	};
-	Binheap< Heapops, Node* > heap;
+	Binheap<Heapops, Node*> heap;
+};
+
+template<class Node> struct OpenEntry {
+	IntpqEntry<Node> node;
 };
 
 template <class Ops, class Node> class OpenList <Ops, Node, char> {
@@ -67,11 +71,15 @@ public:
 
 	void clear(void) { pq.clear(); }
 
+	typedef IntpqEntry<Node> OpenEntry;
+
 private:
 	struct Intpqops {
-		static IntpqEntry<Node> &entry(Node *n) { return Ops::openentry(n); }
+		static IntpqEntry<Node> &entry(Node *n) {
+			return Ops::openentry(n).node;
+		}
 	};
-	Intpq< Intpqops, Node > pq;
+	Intpq<Intpqops, Node> pq;
 };
 
 #endif	// _OPENLIST_HPP_

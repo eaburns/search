@@ -29,12 +29,14 @@ template <class D> struct AstarNode <D, char> {
 	typename D::Oper pop;
 	typename D::Cost g, f;
 	HtableEntry<AstarNode> closedent;
-	IntpqEntry<AstarNode> openent;
+	OpenEntry<AstarNode> openent;
 	AstarNode *parent;
 
 	static typename D::Cost prio(AstarNode *n) { return n->f; }
 
-	static IntpqEntry<AstarNode> &openentry(AstarNode *n) { return n->openent; }
+	static OpenEntry<AstarNode> &openentry(AstarNode *n) {
+		return n->openent;
+	}
 };
 
 template <class D> struct Astar : public Search<D> {
