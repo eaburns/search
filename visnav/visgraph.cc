@@ -84,8 +84,8 @@ void VisGraph::Vert::input(std::vector<Vert> &verts, unsigned int _vid, FILE *in
 	}
 }
 
-void VisGraph::add(double x, double y) {
-	
+unsigned int VisGraph::add(double x, double y) {
+	return 0;
 }
 
 void VisGraph::computegraph(void) {
