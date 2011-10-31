@@ -1,5 +1,3 @@
-* 2d int-based open list (for tie-breaking on g)
-
 * Special grid pathfinding closed list
 
 * Special visnav closed list
