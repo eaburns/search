@@ -4,14 +4,17 @@
 #include <cerrno>
 
 int main(int argc, char *argv[]) {
-	if (argc < 2)
-		fatal("Usage: prob <graph file>");
+	FILE *f = stdin;
+	if (argc >= 2) {
+		f = fopen(argv[1], "r");
+		if (!f)
+			fatalx(errno, "Failed to open %s for reading", argv[1]);
+	}
 
-	FILE *f = fopen(argv[1], "r");
-	if (!f)
-		fatalx(errno, "Failed to open %s for reading", argv[1]);
 	VisGraph g(f);
-	fclose(f);
+
+	if (argc >= 2)
+		fclose(f);
 
 	double x0, y0;
 	do {
@@ -25,5 +28,6 @@ int main(int argc, char *argv[]) {
 		y1 = randgen.real();
 	} while (!g.isoutside(x1, y1));
 
-	printf("%s %g %g %g %g\n", argv[1], x0, y0, x1, y1);
+	g.output(stdout);
+	printf("%g %g %g %g\n", x0, y0, x1, y1);
 }

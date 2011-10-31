@@ -2,19 +2,12 @@
 #include "../search/main.hpp"
 #include <cstdio>
 #include <cerrno>
-#include <iostream>
-#include <string>
 
 int main(int argc, char *argv[]) {
-	std::string file;
+	VisGraph g(stdin);
 	double x0, y0, x1, y1;
-	std::cin >> file >> x0 >> y0 >> x1 >> y1;
-
-	FILE *f = fopen(file.c_str(), "r");
-	if (!f)
-		fatalx(errno, "Failed to open %s for reading", file.c_str());
-	VisGraph g(f);
-	fclose(f);
+	if (fscanf(stdin, " %lg %lg %lg %lg", &x0, &y0, &x1, &y1) != 4)
+		fatal("Failed to read start and finish locations");
 
 	dfpair(stdout, "x0", "%g", x0);
 	dfpair(stdout, "y0", "%g", y0);
