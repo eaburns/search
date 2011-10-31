@@ -1,10 +1,9 @@
 Here is the class template for creating a new domain.
 
-
+#include "../utils/utils.hpp"
 #include <cstdio>
 
-class <DOMAIN> {
-public:
+struct <DOMAIN> {
 
 	enum { UnitCost = <UNITCOST?> };
 
@@ -15,63 +14,67 @@ public:
 
 	<DOMAIN>(FILE*);
 
-	class State {	…	};
+	struct State {	…	};
 
-	class PackedState {	…	};
+	struct PackedState {
+		…
+		unsigned long hash(void) { return -1; }
+		bool eq(PackedState &) const { return false; }
+	};
 
-	class Undo {
-		Undo(State&, Oper) {	…	}
+	struct Undo {
+		Undo(State&, Oper) {		…	}
 	};
 
 	State initialstate(void);
 
 	Cost h(State &s) {
-		failwith("Unimplemented");
+		fatal("Unimplemented");
 		return 0.0;
 	}
 
 	bool isgoal(State &s) {
-		failwith("Unimplemented");
+		fatal("Unimplemented");
 		return false;
 	}
 
 	unsigned int nops(State &s) {
-		failwith("Unimplemented");
+		fatal("Unimplemented");
 		return 0;
 	}
 
 	Oper nthop(State &s, unsigned int n) {
-		failwith("Unimplemented");
+		fatal("Unimplemented");
 		return 0;
 	}
 
 	Oper revop(State &s, Oper op) {
-		failwith("Unimplemented");
+		fatal("Unimplemented");
 		return 0;
 	}
 
 	Cost opcost(State &s, Oper op) {
-		failwith("Unimplemented");
+		fatal("Unimplemented");
 		return 0;
 	}
 
 	void undo(State &s, Undo &u) { }
 
 	State &apply(State &buf, State &s, Oper op) {
-		failwith("Unimplemented");
+		fatal("Unimplemented");
 		return s;
 	}
 
 	void pack(PackedState &dst, State &src) {
-		failwith("Unimplemented");
+		fatal("Unimplemented");
 	}
 
 	State &unpack(State &buf, PackedState &pkd) {
-		failwith("Unimplemented");
+		fatal("Unimplemented");
 		return buf;
 	}
 
 	void dumpstate(FILE *out, State &s) {
-		failwith("Unimplemented");
+		fatal("Unimplemented");
 	}
 };
