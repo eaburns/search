@@ -84,6 +84,10 @@ void VisGraph::Vert::input(std::vector<Vert> &verts, unsigned int _vid, FILE *in
 	}
 }
 
+void VisGraph::add(double x, double y) {
+	
+}
+
 void VisGraph::computegraph(void) {
 	computeverts();
 	linkverts();

@@ -14,6 +14,9 @@ struct VisGraph {
 	void draw(Image&, double scale=1) const;
 	void output(FILE*) const;
 
+	// Add a vertex to the graph.
+	unsigned int add(double, double);
+
 private:
 
 	void computegraph(void);

@@ -17,7 +17,7 @@ int main(int argc, char *argv[]) {
 			usage();
 		vl[0] = '\0';
 		vl++;
-		attrs[key] = vl;
+		attrs.push_back(key, vl);
 	}
 
 	printf("%s\n", rdbpathfor(root, attrs).c_str());

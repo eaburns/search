@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <string>
 #include <vector>
+#include <deque>
 #include <map>
 
 void warn(const char *, ...);
@@ -30,7 +31,34 @@ void dfprocstatus(FILE*);
 typedef void(*Pairhandler)(const char*, const char*, void*);
 void dfreadpairs(FILE*, Pairhandler, void *priv = NULL, bool echo = false);
 
-typedef std::map<std::string, std::string> RdbAttrs;
+struct RdbAttrs {
+	bool push_back(const std::string &key, const std::string &val);	// false if duplicate
+
+	bool rm(const std::string &key);
+
+	const std::string &lookup(const std::string &key) {
+		return pairs[key].value;
+	}
+
+	bool mem(const std::string &key) const {
+		return pairs.find(key) != pairs.end();
+	}
+
+	unsigned int size(void) const { return keys.size(); }
+
+	const std::string &front(void) { return keys.front(); }
+
+private:
+	struct Value {
+		Value(void) { }
+		Value(const std::string &v, unsigned int i) : value(v), ind(i) { }
+		std::string value;
+		unsigned int ind;
+	};
+	std::map<std::string, Value> pairs;
+	std::deque<std::string> keys;
+};
+
 std::string rdbpathfor(const char *, RdbAttrs);
 
 struct Test {

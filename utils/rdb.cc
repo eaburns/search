@@ -10,43 +10,62 @@ static bool getkey(const bf::path&, std::string&);
 static bf::path keyfile(const std::string&);
 static void touch(const bf::path&);
 
-std::string rdbpathfor(const char *root, RdbAttrs keys) {
+bool RdbAttrs::push_back(const std::string &key, const std::string &value) {
+	if (pairs.find(key) != pairs.end())
+		return false;
+	Value &v = pairs[key];
+	v.value = value;
+	v.ind = keys.size();
+	keys.push_back(value);
+	return true;
+}
+
+bool RdbAttrs::rm(const std::string &key) {
+	if (pairs.find(key) == pairs.end())
+		return false;
+	Value v = pairs[key];
+	keys.erase(keys.begin() + v.ind);
+	pairs.erase(pairs.find(key));
+	return true;	
+}
+
+std::string rdbpathfor(const char *root, RdbAttrs attrs) {
 	bf::path path(root);
 	std::string curkey;
 
-	while (keys.size() > 0) {
+	while (attrs.size() > 0) {
 		if (bf::exists(path)) {
-			if (!bf::is_directory(path) && keys.size() > 0)
+			if (!bf::is_directory(path) && attrs.size() > 0)
 				fatal("%s is not a directory\n", path.string().c_str());
 			if (!getkey(path, curkey))
-				return makepath(path.string().c_str(), keys);
-			RdbAttrs::iterator it = keys.find(curkey);
-			if (it == keys.end()) {
+				return makepath(path.string().c_str(), attrs);
+			if (!attrs.mem(curkey)) {
 				path /= "UNSPECIFIED";
 			} else {
-				path /= it->second;
-				keys.erase(it);
+				path /= attrs.lookup(curkey);
+				attrs.rm(curkey);
 			}
 		} else {
-			return makepath(path.string().c_str(), keys);
+			return makepath(path.string().c_str(), attrs);
 		}
 	}
 
 	return path.string();
 }
 
-static std::string makepath(bf::path root, RdbAttrs keys) {
-	while (keys.size() > 0) {
+static std::string makepath(bf::path root, RdbAttrs attrs) {
+	while (attrs.size() > 0) {
 		if (!bf::exists(root)) {
 			if (!bf::create_directory(root))
 				fatal("failed to create %s\n", root.string().c_str());
 		}
 
-		const std::string &key = keys.begin()->first;
-		const std::string &vl = keys.begin()->second;
+		
+		const std::string &key = attrs.front();
+		const std::string &vl = attrs.lookup(key);
 		if (!bf::exists(root / keyfile(key)))
 			touch(root / keyfile(key));
-		keys.erase(key);
+		attrs.rm(key);
 		root /= vl;
 	}
 
