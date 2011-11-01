@@ -29,7 +29,7 @@ public:
 		return boost::optional<Elm>(res);
 	}
 
-	void update(int i) {
+	void update(long i) {
 		i = pullup(i);
 		pushdown(i);
 	}
@@ -42,26 +42,47 @@ public:
 		heap.clear();
 	}
 
+	unsigned long size(void) {
+		return heap.size();
+	}
+
+	Elm at(unsigned long i) {
+		assert (i < heap.size());
+		return heap[i];
+	}
+
+	// Reinitialize the heap property
+	void reinit(void) {
+		if (heap.size() <= 0)
+			return;
+
+		for (unsigned long i = heap.size() / 2; i >= 0; i--) {
+			pushdown(i);
+			if (i == 0)
+				break;
+		}
+	}
+
 private:
 	friend bool binheap_push_test(void);
 	friend bool binheap_pop_test(void);
 
-	int parent(int i) {
+	unsigned long parent(unsigned long i) {
 		return (i - 1) / 2;
 	}
 
-	int left(int i) {
+	unsigned long left(unsigned long i) {
 		return 2 * i + 1;
 	}
 
-	int right(int i) {
+	unsigned long right(unsigned long i) {
 		return 2 * i + 2;
 	}
 
-	int pullup(int i) {
+	unsigned long pullup(unsigned long i) {
 		if (i == 0)
 			return i;
-		int p = parent(i);
+		long p = parent(i);
 		if (Ops::pred(heap[i], heap[p])) {
 			swap(i, p);
 			return pullup(p);
@@ -69,10 +90,10 @@ private:
 		return i;
 	}
 
-	int pushdown(unsigned int i) {
-		unsigned int l = left(i), r = right(i);
+	long pushdown(unsigned long i) {
+		unsigned long l = left(i), r = right(i);
 
-		unsigned int sml = i;
+		unsigned long sml = i;
 		if (l < heap.size() && Ops::pred(heap[l], heap[i]))
 			sml = l;
 		if (r < heap.size() && Ops::pred(heap[r], heap[sml]))
@@ -86,7 +107,7 @@ private:
 		return i;
 	}
 
-	void swap(int i, int j) {
+	void swap(unsigned long i, unsigned long j) {
 		Ops::setind(heap[i], j);
 		Ops::setind(heap[j], i);
 		Elm tmp = heap[i];

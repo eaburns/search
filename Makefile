@@ -27,6 +27,7 @@ TMPLS=\
 	search/wastar.hpp\
 	search/greedy.hpp\
 	search/speedy.hpp\
+	search/bugsy.hpp\
 	\
 	structs/intpq.hpp\
 	structs/binheap.hpp\

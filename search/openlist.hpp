@@ -24,7 +24,7 @@ public:
 	void push(Node *n) { heap.push(n); }
 
 	Node *pop(void) {
-		boost::optional< Node* > p = heap.pop();
+		boost::optional<Node*> p = heap.pop();
 		if (!p)
 			return NULL;
 		return *p;

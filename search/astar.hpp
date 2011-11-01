@@ -9,7 +9,7 @@ template <class D, class Cost> struct AstarNode {
 	Cost g, f;
 	HtableEntry<AstarNode> closedent;
 	AstarNode *parent;
-	int openind;
+	long openind;
 
 	AstarNode(void) : openind(-1) {}
 

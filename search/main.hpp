@@ -3,6 +3,7 @@
 #include "wastar.hpp"
 #include "greedy.hpp"
 #include "speedy.hpp"
+#include "bugsy.hpp"
 #include "idastar.hpp"
 #include <cstddef>
 #include <cstdio>
@@ -46,6 +47,8 @@ template<class D> Search<D> *getsearch(int argc, char *argv[]) {
 		return new Greedy<D>(argc, argv);
 	else if (strcmp(argv[1], "speedy") == 0)
 		return new Speedy<D>(argc, argv);
+	else if (strcmp(argv[1], "bugsy") == 0)
+		return new Bugsy<D>(argc, argv);
 
 	fatal("Unknown algorithm: %s", argv[1]);
 	return NULL;	// Unreachable
