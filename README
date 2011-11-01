@@ -1,0 +1,4 @@
+Ubuntu package dependencies:
+
+libboost-dev
+libboost-filesystem1.40-dev
