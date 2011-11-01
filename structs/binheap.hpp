@@ -4,7 +4,7 @@
 #include <vector>
 #include <boost/optional.hpp>
 
-template <class Ops, class Elm> class Binheap {
+template <class Ops, class Elm> class BinHeap {
 public:
 
 	void push(Elm e) {

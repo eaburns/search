@@ -11,7 +11,7 @@ enum { N = 1000 };
 
 bool binheap_push_test(void) {
 	bool res = true;
-	Binheap<UIntOps, unsigned int> pq;
+	BinHeap<UIntOps, unsigned int> pq;
 	unsigned int ints[N];
 
 	for (unsigned int i = 0; i < N; i++) {
@@ -28,7 +28,7 @@ bool binheap_push_test(void) {
 
 bool binheap_pop_test(void) {
 	bool res = true;
-	Binheap<UIntOps, unsigned int> pq;
+	BinHeap<UIntOps, unsigned int> pq;
 	unsigned int ints[N];
 
 	for (int i = 0; i < N; i++) {
@@ -68,7 +68,7 @@ bool binheap_pop_test(void) {
 unsigned int *ints;
 
 void binheap_push_bench(unsigned long n, double *strt, double *end) {
-	Binheap<UIntOps, unsigned int> pq;
+	BinHeap<UIntOps, unsigned int> pq;
 	ints = new unsigned int[n];
 
 	for (unsigned long i = 0; i < n; i++)
@@ -85,7 +85,7 @@ void binheap_push_bench(unsigned long n, double *strt, double *end) {
 }
 
 void binheap_pop_bench(unsigned long n, double *strt, double *end) {
-	Binheap<UIntOps, unsigned int> pq;
+	BinHeap<UIntOps, unsigned int> pq;
 	ints = new unsigned int[n];
 
 	for (unsigned long i = 0; i < n; i++) {

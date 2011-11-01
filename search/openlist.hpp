@@ -46,7 +46,7 @@ private:
 		static void setind(Node *n, int i) { Ops::setind(n, i); }
 		static int getind(Node *n) { return Ops::getind(n); }
 	};
-	Binheap<Heapops, Node*> heap;
+	BinHeap<Heapops, Node*> heap;
 };
 
 typedef int IntOpenCost;
