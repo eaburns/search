@@ -1,18 +1,23 @@
-* Special grid pathfinding closed list
+• Special grid pathfinding closed list
 
-* Special visnav closed list
+• Special visnav closed list
 
-* Make sure that the size of grids
+• Make sure that the size of grids
 	doesn't overflow the size
 	of a signed integer
 
-* Handle Wheeler's 8-way grids?
+• Handle Wheeler's 8-way grids?
 
-* Port tiles PDB code from C
+• Port tiles PDB code from C
 
-* Bit-packed pancake states
+• Bit-packed pancake states
 
-* More domains:
+• visnav: O(n lg n) alg for visnav
+
+• gridpath: 2poly to convert a grid
+	map to polygons
+
+• More domains:
 
 	- Robot arm
 
