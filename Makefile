@@ -1,7 +1,12 @@
 CXX=g++
+
 FLAGS=-Wall -Werror -O3
+
 CXXFLAGS=$(FLAGS)
+
 CFLAGS=$(FLAGS)
+
+LDFLAGS=
 
 OBJS=\
 	utils/fatal.o\

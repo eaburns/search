@@ -7,7 +7,7 @@ structs/test: $(OBJS) $(HDRS)\
 	structs/test_binheap.cc\
 	structs/test_stn.cc\
 	structs/test.cc
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(OBJS)\
+	$(CXX) $(CXXFLAGS) $(OBJS) $(LDFLAGS)\
 		structs/test.cc\
 		structs/test_htable.cc\
 		structs/test_intpq.cc\

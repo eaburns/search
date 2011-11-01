@@ -2,7 +2,11 @@ utils/%.o: incl/utils.hpp
 
 utils/image.o: utils/image.hpp
 
-LDFLAGS+=-lboost_filesystem
+LDFLAGS+=\
+	/usr/lib/libboost_filesystem.a\
+	/usr/lib/libboost_filesystem-mt.a\
+	/usr/lib/libboost_system.a\
+	/usr/lib/libboost_system-mt.a\
 
 BINS+=\
 	utils/test\
