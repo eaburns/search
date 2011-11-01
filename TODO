@@ -19,9 +19,9 @@
 
 • More domains:
 
-	- Robot arm
-
 	- Dynamic robot path finding
+
+	- Robot arm
 
 	- Grid pathfinding?
 
@@ -34,3 +34,15 @@
 	- Rubik's cube
 
 	- Multiple sequence alignment
+
+• More algorithms:
+
+	- ARA*
+
+	- ARA* monitoring
+
+	- DTA*
+
+	- RTA*
+
+	- LSS-LRTA*
