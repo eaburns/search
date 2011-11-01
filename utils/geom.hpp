@@ -13,7 +13,7 @@ static inline bool inrange(double min, double max, double x) {
 
 struct Point {
 
-	static Point cross(const Point &a, const Point &b) { return a.cross(b); }
+//	static Point cross(const Point &a, const Point &b) { return a.cross(b); }
 
 	static double dot(const Point &a, const Point &b) { return a.dot(b); }
 
@@ -43,32 +43,37 @@ struct Point {
 		return angle;
 	}
 
+	// Get the clock-wise swing between uv and vw
+	static double cwangle(const Point &u, const Point &v, const Point &w) {
+		Point a = v.minus(u), b = w.minus(v);
+		return -atan2(a.x*b.y - a.y*b.x, a.x*b.x+a.y*b.y);
+	}
+
 	Point(void) { }
 
-	Point(double _x, double _y) : x(_x), y(_y), z(0.0) { }
+	Point(double _x, double _y) : x(_x), y(_y) { }
 
-	Point(double _x, double _y, double _z) : x(_x), y(_y), z(_z) { }
+	Point(double _x, double _y, double _z) : x(_x), y(_y) { }
+
+	bool operator==(const Point &p) const {
+		return x == p.x && y == p.y;
+	}
+
+	bool operator!=(const Point &p) const { return !(*this == p); }
 
 	void draw(Image &img, Color c = Image::black, double r = 1) const {
 		img.add(new Image::Circle(x, y, r,  c, -1));
 	}
 
-	Point cross(const Point &b) const {
-		return Point(
-			y * b.z - z * b.y,
-			z * b.x - x * b.z,
-			x * b.y - y * b.x);
-	}
-
 	double dot(const Point &b) const {
-		return x * b.x + y * b.y + z * b.z;
+		return x * b.x + y * b.y;
 	}
 
 	Point minus(const Point &b) const {
-		return Point(x - b.x, y - b.y, z - b.z);
+		return Point(x - b.x, y - b.y);
 	}
 
-	double x, y, z;
+	double x, y;
 };
 
 struct Line {
@@ -242,7 +247,14 @@ struct Bbox {
 
 struct Polygon {
 
+	// Generates a random polygon for which no
+	// side crosses the line between the vertices
+	// the minimum and maximum x value.
 	static Polygon random(unsigned int n, double xc, double yc, double r);
+
+	// Return the polygon that is the outter-hull
+	// of the given set of points.
+	static Polygon giftwrap(const std::vector<Point>&);
 
 	// vertices are given clock-wise around the polygon.
 	Polygon(std::vector<Point> &pts) : verts(pts), bbox(pts) {
