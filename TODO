@@ -17,6 +17,10 @@
 • gridpath: 2poly to convert a grid
 	map to polygons
 
+	- need to detect non-polygons
+		like the boarder around
+		the maps
+
 • More domains:
 
 	- Dynamic robot path finding
