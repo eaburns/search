@@ -33,6 +33,7 @@ TMPLS=\
 	search/greedy.hpp\
 	search/speedy.hpp\
 	search/bugsy.hpp\
+	search/arastar.hpp\
 	\
 	structs/intpq.hpp\
 	structs/binheap.hpp\

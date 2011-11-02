@@ -29,6 +29,12 @@ public:
 		return boost::optional<Elm>(res);
 	}
 
+	boost::optional<Elm> front(void) {
+		if (heap.size() == 0)
+			return boost::optional<Elm>();
+		return boost::optional<Elm>(heap[0]);
+	}
+
 	void update(long i) {
 		i = pullup(i);
 		pushdown(i);
