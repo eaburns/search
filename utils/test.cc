@@ -30,9 +30,9 @@ static const Test tests[] = {
 	Test("poly isects", test_poly_isects),
 	Test("poly minisect", test_poly_minisect),
 	Test("poly hits", test_poly_hits),
-//	Test("rdbpathfor newpath", test_rdbpathfor_newpath),
-//	Test("rdbpathfor samepath", test_rdbpathfor_samepath),
-//	Test("rdbpathfor shareprefix", test_rdbpathfor_shareprefix),
+	Test("rdbpathfor newpath", test_rdbpathfor_newpath),
+	Test("rdbpathfor samepath", test_rdbpathfor_samepath),
+	Test("rdbpathfor shareprefix", test_rdbpathfor_shareprefix),
 	Test("rdbpathfor existing", test_rdbpathfor_existing),
 };
 

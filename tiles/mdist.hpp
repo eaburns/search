@@ -49,6 +49,10 @@ public:
 		return s.h;
 	}
 
+	Cost d(State &s) {
+		return s.h;
+	}
+
 	bool isgoal(State &s) {
 		return s.h == 0;
 	}

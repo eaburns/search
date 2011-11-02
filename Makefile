@@ -1,7 +1,12 @@
 CXX=g++
+
 FLAGS=-Wall -Werror -O3
+
 CXXFLAGS=$(FLAGS)
+
 CFLAGS=$(FLAGS)
+
+LDFLAGS=
 
 OBJS=\
 	utils/fatal.o\
@@ -24,6 +29,10 @@ TMPLS=\
 	search/openlist.hpp\
 	search/idastar.hpp\
 	search/astar.hpp\
+	search/wastar.hpp\
+	search/greedy.hpp\
+	search/speedy.hpp\
+	search/bugsy.hpp\
 	\
 	structs/intpq.hpp\
 	structs/binheap.hpp\

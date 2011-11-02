@@ -16,7 +16,7 @@ public:
 	typedef int Cake;
 	typedef int Oper;
 	enum { Nop = -1 };
-	typedef char Cost;
+	typedef int Cost;
 	enum { InfCost = -1 };
 
 	class State {
@@ -68,6 +68,10 @@ public:
 	State initialstate(void);
 
 	Cost h(State &s) {
+		return s.h;
+	}
+
+	Cost d(State &s) {
 		return s.h;
 	}
 

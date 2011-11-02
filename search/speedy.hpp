@@ -3,57 +3,56 @@
 #include "../search/openlist.hpp"
 #include <boost/pool/object_pool.hpp>
 
-template <class D, class Cost> struct AstarNode {
+template <class D, class Cost> struct SpeedyNode {
 	typename D::PackedState packed;
 	typename D::Oper pop;
-	Cost g, f;
-	HtableEntry<AstarNode> closedent;
-	AstarNode *parent;
-	long openind;
+	Cost g, d;
+	HtableEntry<SpeedyNode> closedent;
+	SpeedyNode *parent;
 
-	AstarNode(void) : openind(-1) {}
+	SpeedyNode(void) {}
 
-	static bool pred(AstarNode *a, AstarNode *b) {
-		if (a->f == b->f)
+	static bool pred(SpeedyNode *a, SpeedyNode *b) {
+		if (a->d == b->d)
 			return a->g > b->g;
-		return a->f < b->f;
+		return a->d < b->d;
 	}
 
-	static void setind(AstarNode *n, int i) { n->openind = i; }
+	static void setind(SpeedyNode*, int) { }
 
-	static int getind(AstarNode *n) { return n->openind; }
+	static int getind(SpeedyNode*) { return -1; }
 };
 
-template <class D> struct AstarNode <D, IntOpenCost> {
+template <class D> struct SpeedyNode <D, IntOpenCost> {
 	typename D::PackedState packed;
 	typename D::Oper pop;
-	typename D::Cost g, f;
-	HtableEntry<AstarNode> closedent;
-	OpenEntry<AstarNode> openent;
-	AstarNode *parent;
+	typename D::Cost g, d;
+	HtableEntry<SpeedyNode> closedent;
+	OpenEntry<SpeedyNode> openent;
+	SpeedyNode *parent;
 
-	static typename D::Cost prio(AstarNode *n) { return n->f; }
+	static typename D::Cost prio(SpeedyNode *n) { return n->d; }
 
-	static OpenEntry<AstarNode> &openentry(AstarNode *n) {
+	static OpenEntry<SpeedyNode> &openentry(SpeedyNode *n) {
 		return n->openent;
 	}
 };
 
-template <class D> struct Astar : public Search<D> {
+template <class D> struct Speedy : public Search<D> {
 
 	typedef typename D::State State;
 	typedef typename D::PackedState PackedState;
 	typedef typename D::Undo Undo;
 	typedef typename D::Cost Cost;
 	typedef typename D::Oper Oper;
-	typedef AstarNode<D, Cost> Node;
+	typedef SpeedyNode<D, Cost> Node;
 
-	Astar(int argc, char *argv[]) :
+	Speedy(int argc, char *argv[]) :
 		Search<D>(argc, argv), closed(30000001) {
 		nodes = new boost::object_pool<Node>();
 	}
 
-	~Astar(void) {
+	~Speedy(void) {
 		delete nodes;
 	}
 
@@ -116,23 +115,6 @@ private:
 		Node *dup = closed.find(k->packed, h);
 		if (dup) {
 			Search<D>::res.dups++;
-			if (k->g >= dup->g) {
-				nodes->destroy(k);
-				return;
-			}
-			Search<D>::res.reopnd++;
-			if (open.mem(dup))
-				open.pre_update(dup);
-
-			dup->f = dup->f - dup->g + k->g;
-			dup->g = k->g;
-			dup->pop = k->pop;
-			dup->parent = k->parent;
-
-			if (!open.mem(dup))
-				open.push(dup);
-			else
-				open.post_update(dup);
 			nodes->destroy(k);
 		} else {
 			closed.add(k, h);
@@ -142,14 +124,12 @@ private:
 
 	Node *kid(D &d, Node *pnode, State &pstate, Oper op) {
 		Node *kid = nodes->construct();
-
 		kid->g = pnode->g + d.opcost(pstate, op);
 		kid->pop = d.revop(pstate, op);
 		kid->parent = pnode;
-
 		Undo u(pstate, op);
 		State buf, &kidst = d.apply(buf, pstate, op);
-		kid->f = kid->g + d.h(kidst);
+		kid->d = d.d(kidst);
 		d.pack(kid->packed, kidst);
 		d.undo(pstate, u);
 
@@ -160,7 +140,7 @@ private:
 		Node *n0 = nodes->construct();
 		d.pack(n0->packed, s0);
 		n0->g = 0;
-		n0->f = d.h(s0);
+		n0->d = d.d(s0);
 		n0->pop = D::Nop;
 		n0->parent = NULL;
 		return n0;

@@ -13,8 +13,8 @@ bool test_rdbpathfor_newpath(void) {
 	const char *root = mkdtemp(dir);
 
 	RdbAttrs attrs;
-	attrs["test0"] = "0";
-	attrs["test1"] = "1";
+	attrs.push_back("test0", "0");
+	attrs.push_back("test1", "1");
 
 	std::string path = rdbpathfor(root, attrs);
 	bool ok = hassuffix(path, "0/1");
@@ -31,8 +31,8 @@ bool test_rdbpathfor_samepath(void) {
 	const char *root = mkdtemp(dir);
 
 	RdbAttrs attrs;
-	attrs["test0"] = "0";
-	attrs["test1"] = "1";
+	attrs.push_back("test0", "0");
+	attrs.push_back("test1", "1");
 
 	std::string path0 = rdbpathfor(root, attrs);
 	std::string path1 = rdbpathfor(root, attrs);
@@ -51,17 +51,17 @@ bool test_rdbpathfor_shareprefix(void) {
 	const char *root = mkdtemp(dir);
 
 	RdbAttrs attrs0;
-	attrs0["test0"] = "0";
-	attrs0["test1"] = "1";
-	attrs0["test2"] = "1";
+	attrs0.push_back("test0", "0");
+	attrs0.push_back("test1", "1");
+	attrs0.push_back("test2", "1");
 	RdbAttrs attrs1;
-	attrs1["test0"] = "0";
-	attrs1["test1"] = "2";
-	attrs1["test2"] = "1";
+	attrs1.push_back("test0", "0");
+	attrs1.push_back("test1", "2");
+	attrs1.push_back("test2", "1");
 	RdbAttrs attrs2;
-	attrs2["test0"] = "0";
-	attrs2["test1"] = "1";
-	attrs2["test2"] = "2";
+	attrs2.push_back("test0", "0");
+	attrs2.push_back("test1", "1");
+	attrs2.push_back("test2", "2");
 
 	std::string path0 = rdbpathfor(root, attrs0);
 	if (path0 != std::string(root) + "/0/1/1") {
@@ -100,9 +100,9 @@ bool test_rdbpathfor_existing(void) {
 	touch((p / "KEY=two").string());
 
 	RdbAttrs attrs;
-	attrs["two"] = "2";
-	attrs["zero"] = "0";
-	attrs["one"] = "1";
+	attrs.push_back("two", "2");
+	attrs.push_back("zero", "0");
+	attrs.push_back("one", "1");
 
 	std::string path = rdbpathfor(root, attrs);
 	if (path != std::string(root) + "/0/1/2") {

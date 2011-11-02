@@ -3,57 +3,54 @@
 #include "../search/openlist.hpp"
 #include <boost/pool/object_pool.hpp>
 
-template <class D, class Cost> struct AstarNode {
+void fatal(const char*, ...);	// utils.hpp
+
+template <class D> struct WastarNode {
 	typename D::PackedState packed;
 	typename D::Oper pop;
-	Cost g, f;
-	HtableEntry<AstarNode> closedent;
-	AstarNode *parent;
-	long openind;
+	double g, f, fprime;
+	HtableEntry<WastarNode> closedent;
+	WastarNode *parent;
+	int openind;
 
-	AstarNode(void) : openind(-1) {}
+	WastarNode(void) : openind(-1) {}
 
-	static bool pred(AstarNode *a, AstarNode *b) {
-		if (a->f == b->f)
-			return a->g > b->g;
-		return a->f < b->f;
+	static bool pred(WastarNode *a, WastarNode *b) {
+		if (a->fprime == b->fprime) {
+			if (a->f == b->f)
+				return a->g > b->g;
+			return a->f < b->f;
+		}
+		return a->fprime < b->fprime;
 	}
 
-	static void setind(AstarNode *n, int i) { n->openind = i; }
+	static void setind(WastarNode *n, int i) { n->openind = i; }
 
-	static int getind(AstarNode *n) { return n->openind; }
+	static int getind(WastarNode *n) { return n->openind; }
 };
 
-template <class D> struct AstarNode <D, IntOpenCost> {
-	typename D::PackedState packed;
-	typename D::Oper pop;
-	typename D::Cost g, f;
-	HtableEntry<AstarNode> closedent;
-	OpenEntry<AstarNode> openent;
-	AstarNode *parent;
-
-	static typename D::Cost prio(AstarNode *n) { return n->f; }
-
-	static OpenEntry<AstarNode> &openentry(AstarNode *n) {
-		return n->openent;
-	}
-};
-
-template <class D> struct Astar : public Search<D> {
+template <class D> struct Wastar : public Search<D> {
 
 	typedef typename D::State State;
 	typedef typename D::PackedState PackedState;
 	typedef typename D::Undo Undo;
-	typedef typename D::Cost Cost;
 	typedef typename D::Oper Oper;
-	typedef AstarNode<D, Cost> Node;
+	typedef WastarNode<D> Node;
 
-	Astar(int argc, char *argv[]) :
-		Search<D>(argc, argv), closed(30000001) {
+	Wastar(int argc, char *argv[]) :
+			Search<D>(argc, argv), wt(-1.0), closed(30000001) {
+		for (int i = 0; i < argc; i++) {
+			if (i < argc - 1 && strcmp(argv[i], "-wt") == 0)
+				wt = strtod(argv[++i], NULL);
+		}
+
+		if (wt < 1)
+			fatal("Must specify a weight ≥1 weight using -wt");
+
 		nodes = new boost::object_pool<Node>();
 	}
 
-	~Astar(void) {
+	~Wastar(void) {
 		delete nodes;
 	}
 
@@ -93,6 +90,7 @@ template <class D> struct Astar : public Search<D> {
 		closed.prstats(stdout, "closed ");
 		dfpair(stdout, "open list type", "%s", open.kind());
 		dfpair(stdout, "node size", "%u", sizeof(Node));
+		dfpair(stdout, "weight", "%g", wt);
 	}
 
 private:
@@ -124,6 +122,7 @@ private:
 			if (open.mem(dup))
 				open.pre_update(dup);
 
+			dup->fprime = dup->fprime - dup->g + k->g;
 			dup->f = dup->f - dup->g + k->g;
 			dup->g = k->g;
 			dup->pop = k->pop;
@@ -149,7 +148,9 @@ private:
 
 		Undo u(pstate, op);
 		State buf, &kidst = d.apply(buf, pstate, op);
-		kid->f = kid->g + d.h(kidst);
+		double h = d.h(kidst);
+		kid->f = kid->g + h;
+		kid->fprime = kid->g + wt * h;
 		d.pack(kid->packed, kidst);
 		d.undo(pstate, u);
 
@@ -160,7 +161,9 @@ private:
 		Node *n0 = nodes->construct();
 		d.pack(n0->packed, s0);
 		n0->g = 0;
-		n0->f = d.h(s0);
+		double h = d.h(s0);
+		n0->f = h;
+		n0->fprime = wt * h;
 		n0->pop = D::Nop;
 		n0->parent = NULL;
 		return n0;
@@ -185,7 +188,8 @@ private:
 		}
 	};
 
-	OpenList<Node, Node, Cost> open;
+	double wt;
+	OpenList<Node, Node, double> open;
  	Htable<Closedops, PackedState&, Node, 0> closed;
 	boost::object_pool<Node> *nodes;
 };

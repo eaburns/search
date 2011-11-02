@@ -1,7 +1,10 @@
 syntax: glob
 *.o
 *.gch
+*/*_solver
 structs/test
 utils/test
 utils/pathfor
-*/*_solver
+visnav/disp
+visnav/rand
+visnav/inst

@@ -14,7 +14,7 @@ public:
 	typedef unsigned int Tile;
 	typedef unsigned int Pos;
 
-	typedef char Cost;
+	typedef int Cost;
 	enum { InfCost = -1 };
 
 	typedef int Oper;

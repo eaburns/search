@@ -2,11 +2,15 @@ utils/%.o: incl/utils.hpp
 
 utils/image.o: utils/image.hpp
 
-LDFLAGS+=-lboost_filesystem
+LDFLAGS+=\
+	/usr/lib/libboost_filesystem.a\
+	/usr/lib/libboost_filesystem-mt.a\
+	/usr/lib/libboost_system.a\
+	/usr/lib/libboost_system-mt.a\
 
 BINS+=\
 	utils/test\
-	utils/pathfor/
+	utils/pathfor\
 
 utils/test: $(OBJS) $(HDRS) utils/test_geom.cc utils/test_rdb.cc utils/test.cc
 	$(CXX) $(CXXFLAGS) $(OBJS) $(LDFLAGS) -o utils/test\

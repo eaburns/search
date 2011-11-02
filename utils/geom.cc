@@ -4,6 +4,8 @@
 #include <cstdarg>
 #include <cerrno>
 
+static Point mincwangle(const std::vector<Point>&, Point, Point);
+static Point minx(const std::vector<Point>&);
 static void xsortedpts(std::vector<Point>&, double, double, double);
 static bool cmpx(const Point&, const Point&);
 
@@ -172,6 +174,47 @@ void Polygon::reflexes(std::vector<unsigned int> &rs) const {
 		if (t < M_PI)
 			rs.push_back(i);
 	}
+}
+
+Polygon Polygon::giftwrap(const std::vector<Point> &pts) {
+	std::vector<Point> hull;
+	Point min = minx(pts);
+
+	Point cur = min, prev(min.x, min.y - 0.1);
+	do {
+		Point next = mincwangle(pts, prev, cur);
+		hull.push_back(next);
+		prev = cur;
+		cur = next;
+	} while (cur != min);
+
+	return Polygon(hull);
+}
+
+static Point mincwangle(const std::vector<Point> &pts, Point prev, Point cur) {
+	double mint = std::numeric_limits<double>::infinity();
+	unsigned int mini = 0;
+
+	for (unsigned int i = 0; i < pts.size(); i++) {
+		if (pts[i] == prev || pts[i] == cur)
+			continue;
+
+		double t = Point::cwangle(prev, cur, pts[i]);
+		if (t < mint) {
+			mint = t;
+			mini = i;
+		}
+	}
+	return pts[mini];
+}
+
+static Point minx(const std::vector<Point> &pts) {
+	Point min = Point::inf();
+	for (unsigned int i = 0; i < pts.size(); i++) {
+		if (pts[i].x < min.x)
+			min = pts[i];
+	}
+	return min;
 }
 
 static void xsortedpts(std::vector<Point> &pts, double xc, double yc, double r) {

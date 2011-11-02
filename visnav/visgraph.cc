@@ -3,8 +3,6 @@
 #include "../utils/utils.hpp"
 #include <cerrno>
 
-enum { Bufsz = 10 };
-
 VisGraph::VisGraph(FILE *in) {
 	unsigned long npoly;
 	if (fscanf(in, " %lu polygons\n", &npoly) != 1)
@@ -23,7 +21,7 @@ VisGraph::VisGraph(FILE *in) {
 }
 
 void VisGraph::draw(Image &img, double scale) const {
-	static const unsigned int Vradius = 2;
+	static const unsigned int Vradius = 1;
 	unsigned int nextcolor = 0;
 	for (unsigned int i = 0; i < polys.size(); i++) {
 		const Color &c = somecolors[nextcolor];
@@ -35,7 +33,7 @@ void VisGraph::draw(Image &img, double scale) const {
 
 	for (unsigned int i = 0; i < verts.size(); i++) {
 		for (unsigned int j = 0; j < verts[i].succs.size(); j++) {
-			unsigned int dst = verts[i].succs[j].dest->vid;
+			unsigned int dst = verts[i].succs[j].dst;
 			img.add(new Image::Line(
 				scale * verts[i].pt.x, scale * verts[i].pt.y,
 				scale * verts[dst].pt.x, scale * verts[dst].pt.y,
@@ -66,7 +64,7 @@ void VisGraph::Vert::output(FILE *out) const {
 		(unsigned long) succs.size());
 
 	for (unsigned int i = 0; i < succs.size(); i++)
-		fprintf(out, " %u %g", succs[i].dest->vid, succs[i].dist);
+		fprintf(out, " %u %g", succs[i].dst, succs[i].dist);
 	fputc('\n', out);
 }
 
@@ -82,8 +80,26 @@ void VisGraph::Vert::input(std::vector<Vert> &verts, unsigned int _vid, FILE *in
 		double dist;
 		if (fscanf(in, " %u %lg", &dest, &dist) != 2)
 			fatalx(errno, "Failed to read a vertex out-edge");
-		succs.push_back(VisGraph::Edge(&verts[dest], dist));
+		succs.push_back(VisGraph::Edge(vid, dest, dist));
 	}
+}
+
+unsigned int VisGraph::add(double x, double y) {
+	unsigned int vid = verts.size();
+	unsigned int polyno = polys.size() + vid;
+	// Some brandnew polygon that doesn't exist
+	verts.push_back(Vert(vid, Point(x, y), polyno, vid));
+	linkvert(vid);
+	return vid;
+}
+
+bool VisGraph::isoutside(double x, double y) {
+	Point p(x, y);
+	for (unsigned int i = 0; i < polys.size(); i++) {
+		if (polys[i].contains(p))
+			return false;
+	}
+	return true;
 }
 
 void VisGraph::computegraph(void) {
@@ -109,16 +125,16 @@ void VisGraph::linkverts(void) {
 	// undirected so it will be linked by all of the
 	// other verts.
 
-	for (unsigned int i = 0; i < verts.size() - 1; i++)
+	for (unsigned int i = 1; i < verts.size(); i++)
 		linkvert(i);
 }
 
-// Links the vertex vid with all vertices with greater
+// Links the vertex vid with all vertices with lesser
 // ID values.
 void VisGraph::linkvert(unsigned int i) {
 	static const double Epsilon = 1e-5;
 
-	for (unsigned int j = i+1; j < verts.size(); j++) {
+	for (int j = (int) i-1; j >= 0; j--) {
 		if (consecutive(i, j)) {
 			addedge(i, j, Point::distance(verts[i].pt, verts[j].pt));
 			continue;
@@ -158,6 +174,6 @@ bool VisGraph::consecutive(unsigned int i, unsigned int j) {
 }
 
 void VisGraph::addedge(unsigned int i, unsigned int j, double len) {
-	verts[i].succs.push_back(Edge(&verts[j], len));
-	verts[j].succs.push_back(Edge(&verts[i], len));
+	verts[i].succs.push_back(Edge(i, j, len));
+	verts[j].succs.push_back(Edge(j, i, len));
 }
