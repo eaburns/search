@@ -7,6 +7,7 @@
 
 void dfrowhdr(FILE *, const char *name, int ncols, ...);
 void dfrow(FILE *, const char *name, const char *colfmt, ...);
+void fatal(const char*, ...);
 
 template <class D> struct ArastarNode {
 	typedef ArastarNode Node;
@@ -72,9 +73,21 @@ template <class D> struct Arastar : public Search<D> {
 	typedef ArastarNode<D> Node;
 
 	Arastar(int argc, char *argv[]) :
-			Search<D>(argc, argv),
-			wt0(5.0), dwt(1.0),
-			closed(30000001) {
+			Search<D>(argc, argv), closed(30000001) {
+
+		wt0 = dwt = -1;
+		for (int i = 0; i < argc; i++) {
+			if (i < argc - 1 && strcmp(argv[i], "-wt0") == 0)
+				wt0 = strtod(argv[++i], NULL);
+			else if (i < argc - 1 && strcmp(argv[i], "-dwt") == 0)
+				dwt = strtod(argv[++i], NULL);
+		}
+
+		if (wt0 < 1)
+			fatal("Must specify initial weight ≥ 1 using -wt0");
+		if (dwt <= 0)
+			fatal("Must specify weight decrement > 0 using -dwt");
+
 		wt = wt0;
 		nodes = new boost::object_pool<Node>();
 	}
