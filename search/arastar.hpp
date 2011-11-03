@@ -4,48 +4,52 @@
 #include <boost/pool/object_pool.hpp>
 #include <vector>
 
-template <class D, class Cost> struct AraStarNode {
-	typedef AraStarNode Node;
+void dfrowhdr(FILE *, const char *name, int ncols, ...);
+void dfrow(FILE *, const char *name, const char *colfmt, ...);
+
+template <class D> struct ArastarNode {
+	typedef ArastarNode Node;
+	typedef typename D::Cost Cost;
 	typedef typename D::Oper Oper;
-	typedef typename D::PackedState State;
+	typedef typename D::PackedState PackedState;
 
 	HtableEntry<Node> closedent;
-	State packed;
+	PackedState packed;
 	Oper pop;
 	Cost g, h;
 	double fprime;
 	Node *parent;
 	long openind;
 
-	AraStarNode(void) : openind(-1) {}
+	ArastarNode(void) : openind(-1) {}
 
 	static bool pred(Node *a, Node *b) {
-		if (a->f == b->f)
+		if (a->fprime == b->fprime)
 			return a->g > b->g;
-		return a->f < b->f;
+		return a->fprime < b->fprime;
 	}
 
 	static void setind(Node *n, int i) { n->openind = i; }
 
-	static State &key(Node *n) { return n->packed; }
+	static PackedState &key(Node *n) { return n->packed; }
 
-	static unsigned long hash(State &s) { return s.hash(); }
+	static unsigned long hash(PackedState &s) { return s.hash(); }
 
-	static bool eq(State &a, State &b) { return a.eq(b); }
+	static bool eq(PackedState &a, PackedState &b) { return a.eq(b); }
 
 	static HtableEntry<Node> &entry(Node *n) { return n->closedent; }
 };
 
 template <class Ops, class Key, class Node> struct Incons {
 
-	void add(Node n) {
-		if (mem.mem(n))
+	void add(Node *n) {
+		if (mem.find(n->packed) != NULL)
 			return;
 		mem.add(n);
 		incons.push_back(n);
 	}
 
-	const std::vector<Node> &nodes(void) { return incons; }
+	const std::vector<Node*> &nodes(void) { return incons; }
 
 	void clear(void) {
 		mem.clear();
@@ -54,19 +58,19 @@ template <class Ops, class Key, class Node> struct Incons {
 
 private:
 	Htable<Ops, Key, Node, 0> mem;
-	std::vector<Node> incons;
+	std::vector<Node*> incons;
 };
 
-template <class D> struct AraStar : public Search<D> {
+template <class D> struct Arastar : public Search<D> {
 
 	typedef typename D::State State;
 	typedef typename D::PackedState PackedState;
 	typedef typename D::Undo Undo;
 	typedef typename D::Cost Cost;
 	typedef typename D::Oper Oper;
-	typedef AraStarNode<D, Cost> Node;
+	typedef ArastarNode<D> Node;
 
-	AraStar(int argc, char *argv[]) :
+	Arastar(int argc, char *argv[]) :
 			Search<D>(argc, argv),
 			wt0(5.0), dwt(1.0),
 			closed(30000001) {
@@ -74,32 +78,39 @@ template <class D> struct AraStar : public Search<D> {
 		nodes = new boost::object_pool<Node>();
 	}
 
-	~AraStar(void) {
+	~Arastar(void) {
 		delete nodes;
 	}
 
 	Result<D> &search(D &d, typename D::State &s0) {
 		Search<D>::res.start();
 		Node *n0 = init(d, s0);
+		unsigned long n = 0;
+
+		dfrowhdr(stdout, "sol", 6, "num", "nodes expanded",
+			"nodes generated", "solution bound", "solution cost",
+			"wall time");
+
 		closed.add(n0);
 		open.push(n0);
 
 		do {
-			improve();
-			// ε' = min( whatever )
-			// publish ε'
+			improve(d);
+
+			if (Search<D>::res.cost == D::InfCost)	// no solution
+				break;
+
+			n++;
+			findbound();
+
+			dfrow(stdout, "sol", "uuuggg", n, Search<D>::res.expd,
+				Search<D>::res.gend, wt, (double) Search<D>::res.cost,
+				walltime() - Search<D>::res.wallstrt);
+
 			wt -= dwt;
-
-			for (unsigned int i = 0; i < incons.nodes().size(); i++)
-				open.add(incons.nodes()[i]);
-			incons.clear();
-
-			for (unsigned int i = 0; i < open.elms().size(); i++) {
-				Node *n = open.at(i);
-				n->fprime = n->g + wt * n->h;
-			}
-			open.reinit();
+			updateopen();
 			closed.clear();
+
 		} while(!Search<D>::limit() && !open.empty() && wt > 1.0);
 
 		Search<D>::res.finish();
@@ -119,13 +130,13 @@ template <class D> struct AraStar : public Search<D> {
 	virtual void output(FILE *out) {
 		Search<D>::output(out);
 		closed.prstats(stdout, "closed ");
-		dfpair(stdout, "open list type", "%s", open.kind());
+		dfpair(stdout, "open list type", "%s", "binary heap");
 		dfpair(stdout, "node size", "%u", sizeof(Node));
 	}
 
 private:
 
-	Result<D> &improve(D &d, typename D::State &s0) {
+	void improve(D &d) {
 		while (!Search<D>::limit() && goodnodes()) {
 			Node *n = *open.pop();
 			State buf, &state = d.unpack(buf, n->packed);
@@ -141,6 +152,38 @@ private:
 		return !open.empty() &&
 			(Search<D>::res.cost == D::InfCost ||
 			Search<D>::res.cost > (*open.front())->fprime);
+	}
+
+	// Find the tightest bound for the current incumbent
+	// its value is put in wt.
+	void findbound(void) {
+		for (unsigned int i = 0; i < incons.nodes().size(); i++) {
+			Node *n = incons.nodes()[i];
+			double bound = Search<D>::res.cost / (n->g + n->h);
+			if (bound < wt)
+				wt = bound;
+		}
+		for (unsigned int i = 0; i < open.size(); i++) {
+			Node *n = open.at(i);
+			double bound = Search<D>::res.cost / (n->g + n->h);
+			if (bound < wt)
+				wt = bound;
+		}
+	}
+
+	// Update the open list: update f' values and add INCONS
+	// and re-heapify.
+	void updateopen(void) {
+		for (unsigned int i = 0; i < incons.nodes().size(); i++) {
+			Node *n = incons.nodes()[i];
+			n->fprime = n->g + wt * n->h;
+		}
+		for (unsigned int i = 0; i < open.size(); i++) {
+			Node *n = open.at(i);
+			n->fprime = n->g + wt * n->h;
+		}
+		open.append(incons.nodes());	// reinits heap property
+		incons.clear();
 	}
 
 	void expand(D &d, Node *n, State &state) {
@@ -173,7 +216,7 @@ private:
 			dup->pop = k->pop;
 			dup->parent = k->parent;
 
-			if (!open.mem(dup))
+			if (dup->openind < 0)
 				incons.add(dup);
 			else
 				open.update(dup->openind);
@@ -223,6 +266,6 @@ private:
 
 	BinHeap<Node, Node*> open;
  	Htable<Node, PackedState&, Node, 0> closed;
-	Incons<Node, PackedState&, Node*> incons;
+	Incons<Node, PackedState&, Node> incons;
 	boost::object_pool<Node> *nodes;
 };

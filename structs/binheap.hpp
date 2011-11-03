@@ -69,6 +69,11 @@ public:
 		}
 	}
 
+	void append(const std::vector<Elm> &elms) {
+		heap.insert(heap.end(), elms.begin(), elms.end());
+		reinit();
+	}
+
 private:
 	friend bool binheap_push_test(void);
 	friend bool binheap_pop_test(void);
