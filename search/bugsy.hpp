@@ -4,18 +4,18 @@
 //Artificial Intelligence (IJCAI-07), 2007
 
 #include "../search/search.hpp"
-#include "../structs/htable.hpp"
+#include "../search/closedlist.hpp"
 #include "../structs/binheap.hpp"
 #include <boost/pool/object_pool.hpp>
 
 void fatal(const char*, ...);	// utils.hpp
 
 template <class D> struct BugsyNode {
+	ClosedEntry<BugsyNode, D> closedent;
 	typename D::PackedState packed;
 	typename D::Oper pop;
 	typename D::Cost f, g, h, d;
 	double u, t;
-	HtableEntry<BugsyNode> closedent;
 	BugsyNode *parent;
 	int openind;
 
@@ -70,12 +70,12 @@ template <class D> struct Bugsy : public Search<D> {
 
 	Result<D> &search(D &d, typename D::State &s0) {
 		Search<D>::res.start();
+		closed.init(d);
 		Node *n0 = init(d, s0);
 		closed.add(n0);
 		open.push(n0);
 
 		lasttick = walltime();
-
 		while (!open.empty() && !Search<D>::limit()) {
 			updatetime();
 
@@ -248,15 +248,13 @@ private:
 		open.reinit();
 	}
 
-	struct Closedops {
+	struct ClosedOps {
 		static PackedState &key(Node *n) { return n->packed; }
-
 		static unsigned long hash(PackedState &s) { return s.hash(); }
-
 		static bool eq(PackedState &a, PackedState &b) { return a.eq(b); }
-
-		static HtableEntry<Node> &entry(Node *n) { return n->closedent; }
+		static ClosedEntry<Node, D> &entry(Node *n) { return n->closedent; }
 	};
+
 
 	double wf, wt;
 
@@ -267,6 +265,6 @@ private:
 	int state;
 
 	BinHeap<Node, Node*> open;
- 	Htable<Closedops, PackedState&, Node, 0> closed;
+ 	ClosedList<ClosedOps, Node, D> closed;
 	boost::object_pool<Node> *nodes;
 };
