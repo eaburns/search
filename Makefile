@@ -31,7 +31,6 @@ TMPLS=\
 	search/astar.hpp\
 	search/wastar.hpp\
 	search/greedy.hpp\
-	search/speedy.hpp\
 	search/bugsy.hpp\
 	search/arastar.hpp\
 	\

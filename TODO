@@ -1,7 +1,3 @@
-• Special grid pathfinding closed list
-
-• Special visnav closed list
-
 • Make sure that the size of grids
 	doesn't overflow the size
 	of a signed integer

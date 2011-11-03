@@ -3,7 +3,6 @@
 #include "astar.hpp"
 #include "wastar.hpp"
 #include "greedy.hpp"
-#include "speedy.hpp"
 #include "bugsy.hpp"
 #include "arastar.hpp"
 #include <cstddef>
@@ -47,7 +46,7 @@ template<class D> Search<D> *getsearch(int argc, char *argv[]) {
 	else if (strcmp(argv[1], "greedy") == 0)
 		return new Greedy<D>(argc, argv);
 	else if (strcmp(argv[1], "speedy") == 0)
-		return new Speedy<D>(argc, argv);
+		return new Greedy<D, true>(argc, argv);
 	else if (strcmp(argv[1], "bugsy") == 0)
 		return new Bugsy<D>(argc, argv);
 	else if (strcmp(argv[1], "arastar") == 0)

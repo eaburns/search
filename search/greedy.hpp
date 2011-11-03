@@ -36,7 +36,7 @@ template <class D> struct GreedyNode <D, IntOpenCost> {
 	}
 };
 
-template <class D> struct Greedy : public Search<D> {
+template <class D, bool speedy = false> struct Greedy : public Search<D> {
 
 	typedef typename D::State State;
 	typedef typename D::PackedState PackedState;
@@ -127,7 +127,7 @@ private:
 		kid->parent = pnode;
 		Undo u(pstate, op);
 		State buf, &kidst = d.apply(buf, pstate, op);
-		kid->h = d.h(kidst);
+		kid->h = speedy ? d.d(kidst) : d.h(kidst);
 		d.pack(kid->packed, kidst);
 		d.undo(pstate, u);
 
@@ -138,7 +138,7 @@ private:
 		Node *n0 = nodes->construct();
 		d.pack(n0->packed, s0);
 		n0->g = 0;
-		n0->h = d.h(s0);
+		n0->h = speedy ? d.d(s0) : d.h(s0);
 		n0->pop = D::Nop;
 		n0->parent = NULL;
 		return n0;
