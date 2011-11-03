@@ -29,10 +29,8 @@ public:
 		State(void) : nops(-1) { }
 	};
 
-	class PackedState {
-		friend class GridPath;
+	struct PackedState {
 		unsigned int loc;
-	public:
 		unsigned long hash(void) { return loc; }
 
 		bool eq(const PackedState &other) const {

@@ -32,14 +32,14 @@ template<class Ops, class Node> struct ClosedList<Ops, Node, GridPath> {
 			nodes[i] = NULL;
 	}
 
-	void add(Node *n) { add(n, Ops::hash(Ops::key(n))); }
+	void add(Node *n) { add(n, Ops::key(n).loc); }
 
 	void add(Node *n, unsigned long h) {
 		assert(h < len);
 		nodes[h] = n;
 	}
 
-	Node *find(PackedState &k) { find(k, Ops::hash(k)); }
+	Node *find(PackedState &k) { find(k, k.loc); }
 
 	Node *find(PackedState &k, unsigned long h) {
 		assert(h < len);
@@ -51,13 +51,6 @@ template<class Ops, class Node> struct ClosedList<Ops, Node, GridPath> {
 	}
 
 private:
-
-	struct HtableOps {
-		static PackedState &key(Node *n) { return Ops::key(n); }
-		static unsigned long hash(PackedState &s) { return Ops::hash(s); }
-		static bool eq(PackedState &a, PackedState &b) { return Ops::eq(a, b); }
-		static HtableEntry<Node> &entry(Node *n) { return Ops::entry(n).ent; }
-	};
 
 	unsigned long len, cap;
 	Node **nodes;
