@@ -10,6 +10,9 @@ void fatal(const char*, ...);
 class GridMap {
 public:
 	GridMap(std::string &file);
+
+	GridMap(FILE *f) { load(f); }
+
 	~GridMap(void);
 
 	unsigned int x(unsigned int loc) const { return loc % w; }
@@ -33,12 +36,26 @@ public:
 	unsigned int right(unsigned int l) const { return l + 1; }
 
 	unsigned int ops(unsigned int l, int ops[]) {
-		return octileops(l, ops);
+		switch (mtype) {
+		case Octile: return octileops(l, ops);
+		case EightWay: return eightwayops(l, ops);
+		case FourWay: return fourwayops(l, ops);
+		}
+		fatal("Invalid movement type: %d", mtype);
+		return 0;	// Unreachable
 	}
 
 	void output(FILE*) const;
 
 	std::string &filename(void) { return file; }
+
+	enum {
+		Octile,
+		EightWay,
+		FourWay,
+	};
+
+	int movetype(void) { return mtype; }
 
 private:
 
@@ -54,23 +71,47 @@ private:
 		bool upok = y(l) > 0 && terrainok(l, up(l));
 		if (upok) {
 			ops[n++] = up(l);
-
-			if (leftok && terrainok(l, up(left(l))))
-				ops[n++] = up(left(l));
-			if (rightok && terrainok(l, up(right(l))))
-				ops[n++] = up(right(l));
+			if (leftok && terrainok(l, up(left(l)))) ops[n++] = up(left(l));
+			if (rightok && terrainok(l, up(right(l)))) ops[n++] = up(right(l));
 		}
 
 		bool downok = y(l) < h - 1 && terrainok(l, down(l));
 		if (downok) {
 			ops[n++] = down(l);
-
-			if (leftok && terrainok(l, down(left(l))))
-				ops[n++] = down(left(l));
-			if (rightok && terrainok(l, down(right(l))))
-				ops[n++] = down(right(l));
+			if (leftok && terrainok(l, down(left(l)))) ops[n++] = down(left(l));
+			if (rightok && terrainok(l, down(right(l)))) ops[n++] = down(right(l));
 		}
 
+		return n;
+	}
+
+	unsigned int eightwayops(unsigned int l, int ops[]) {
+		unsigned int n = 0;
+
+		if (x(l) > 0 && terrainok(l, left(l))) ops[n++] = left(l);
+		if (x(l) < w - 1 && terrainok(l, right(l))) ops[n++] = right(l);
+
+		if (y(l) > 0) {
+			if (terrainok(l, up(l))) ops[n++] = up(l);
+			if (x(l) > 0 && terrainok(l, up(left(l)))) ops[n++] = up(left(l));
+			if (x(l) < w - 1 && terrainok(l, up(right(l)))) ops[n++] = up(right(l));
+		}
+
+		if (y(l) < h - 1) {
+			if (terrainok(l, down(l))) ops[n++] = down(l);
+			if (x(l) > 0 && terrainok(l, down(left(l)))) ops[n++] = down(left(l));
+			if (x(l) < w - 1 && terrainok(l, down(right(l)))) ops[n++] = down(right(l));
+		}
+
+		return n;
+	}
+
+	unsigned int fourwayops(unsigned int l, int ops[]) {
+		unsigned int n = 0;
+		if (x(l) > 0 && terrainok(l, left(l))) ops[n++] = left(l);
+		if (x(l) < w - 1 && terrainok(l, right(l))) ops[n++] = right(l);
+		if (y(l) > 0 && terrainok(l, up(l))) ops[n++] = up(l);
+		if (y(l) < h - 1 && terrainok(l, down(l))) ops[n++] = down(l);
 		return n;
 	}
 
@@ -88,7 +129,13 @@ private:
 		return f1 & (Passable | Swamp);
 	}
 
+	void readfail(const char*, ...);
+
 	void load(FILE*);
+
+	void load_ruml(FILE*);
+
+	void load_sturtevant(FILE*);
 
 	enum {
 		Passable = 1 << 0,
@@ -98,22 +145,7 @@ private:
 		Water = 1 << 4,
 	};
 
-	const struct Terrain{
-		char flags[CHAR_MAX];
-		Terrain() {
-			flags['.'] = Passable;
-			flags['G'] = Passable;
-			flags['@'] = OutOfBounds;
-			flags['O'] = OutOfBounds;
-	 		flags['T'] = Tree;
-			flags['S'] = Swamp;
-			flags['W'] = Water;
-		}
-	} terrain;
-
-	enum { Bufsz = 128 };
-
-	char typ[Bufsz];
+	int mtype;
 	unsigned int w, h, sz;
 	unsigned char *map;
 	unsigned char *flags;

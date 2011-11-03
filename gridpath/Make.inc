@@ -1,5 +1,6 @@
 BINS+=\
-	gridpath/gridpathmd_solver\
+	gridpath/scenario_solver\
+	gridpath/gridpath_solver\
 
 GRIDSRC=\
 	gridpath/gridmap.cc\
@@ -13,6 +14,10 @@ GRIDHDR=\
 
 gridpath/*.o: $(GRIDHDR)
 
-gridpath/gridpathmd_solver: $(OBJS) $(HDRS) $(GRIDHDR) $(GRIDSRC) gridpath/main.cc
+gridpath/scenario_solver: $(OBJS) $(HDRS) $(GRIDHDR) $(GRIDSRC) gridpath/scenario_main.cc
 	$(CXX) $(CXXFLAGS) $(OBJS) $(LDFLAGS) $(GRIDSRC)\
-		gridpath/main.cc -o gridpath/gridpathmd_solver
+		gridpath/scenario_main.cc -o gridpath/scenario_solver
+
+gridpath/gridpath_solver: $(OBJS) $(HDRS) $(GRIDHDR) $(GRIDSRC) gridpath/gridpath_main.cc
+	$(CXX) $(CXXFLAGS) $(OBJS) $(LDFLAGS) $(GRIDSRC)\
+		gridpath/gridpath_main.cc -o gridpath/gridpath_solver

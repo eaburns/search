@@ -6,8 +6,6 @@
 	doesn't overflow the size
 	of a signed integer
 
-• Handle Wheeler's 8-way grids?
-
 • Port tiles PDB code from C
 
 • Bit-packed pancake states
