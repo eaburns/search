@@ -1,3 +1,4 @@
+#include "closedlist.hpp"
 #include "gridpath.hpp"
 #include "../search/main.hpp"
 #include <cstdio>

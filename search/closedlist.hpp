@@ -4,6 +4,8 @@
 #include "../structs/htable.hpp"
 #include <cstdio>
 
+void dfpair(FILE *, const char *key, const char *fmt, ...);	// utils.hpp
+
 enum { FillFact = 0 };
 
 template<class Node, class D> struct ClosedEntry {
@@ -27,7 +29,10 @@ template<class Ops, class Node, class D> struct ClosedList {
 
 	Node *find(PackedState &k, unsigned long h) { return tbl.find(k, h); }
 
-	void prstats(FILE *out, const char *prefix) { tbl.prstats(out, prefix); }
+	void prstats(FILE *out, const char *prefix) {
+		dfpair(out, "closed list type", "%s", "hash table");
+		tbl.prstats(out, prefix);
+	}
 
 private:
 

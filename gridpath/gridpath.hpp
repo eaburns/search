@@ -1,3 +1,6 @@
+#ifndef _GRIDPATH_HPP_
+#define _GRIDPATH_HPP_
+
 #include "gridmap.hpp"
 #include <cstdio>
 #include <cmath>
@@ -118,3 +121,5 @@ private:
 	unsigned int start, finish;
 	GridMap *map;
 };
+
+#endif	// _GRIDPATH_HPP_

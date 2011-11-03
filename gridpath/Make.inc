@@ -9,6 +9,7 @@ GRIDSRC=\
 GRIDHDR=\
 	gridpath/gridmap.hpp\
 	gridpath/gridpath.hpp\
+	gridpath/closedlist.hpp\
 
 gridpath/*.o: $(GRIDHDR)
 
