@@ -2,6 +2,7 @@
 #include "../structs/htable.hpp"
 #include "../structs/binheap.hpp"
 #include <boost/pool/object_pool.hpp>
+#include <limits>
 #include <vector>
 
 void dfrowhdr(FILE *, const char *name, int ncols, ...);
@@ -96,22 +97,25 @@ template <class D> struct Arastar : public Search<D> {
 
 		do {
 			improve(d);
-
 			if (Search<D>::res.cost == D::InfCost)	// no solution
 				break;
 
 			n++;
-			findbound();
+			wt = findbound();
 
 			dfrow(stdout, "sol", "uuuggg", n, Search<D>::res.expd,
 				Search<D>::res.gend, wt, (double) Search<D>::res.cost,
 				walltime() - Search<D>::res.wallstrt);
 
-			wt -= dwt;
+			if (wt <= 1.0)
+				break;
+
+			wt = wt - dwt > 1.0 ? wt - dwt : 1.0;
+
 			updateopen();
 			closed.clear();
 
-		} while(!Search<D>::limit() && !open.empty() && wt > 1.0);
+		} while(!Search<D>::limit() && !open.empty());
 
 		Search<D>::res.finish();
 		return Search<D>::res;
@@ -132,6 +136,8 @@ template <class D> struct Arastar : public Search<D> {
 		closed.prstats(stdout, "closed ");
 		dfpair(stdout, "open list type", "%s", "binary heap");
 		dfpair(stdout, "node size", "%u", sizeof(Node));
+		dfpair(stdout, "initial weight", "%g", wt0);
+		dfpair(stdout, "weight decrement", "%g", dwt);
 	}
 
 private:
@@ -154,21 +160,24 @@ private:
 			Search<D>::res.cost > (*open.front())->fprime);
 	}
 
-	// Find the tightest bound for the current incumbent
-	// its value is put in wt.
-	void findbound(void) {
+	// Find the tightest bound for the current incumbent.
+	double findbound(void) {
+		assert (Search<D>::res.cost != D::InfCost);
+		double min = std::numeric_limits<double>::infinity();
+
 		for (unsigned int i = 0; i < incons.nodes().size(); i++) {
 			Node *n = incons.nodes()[i];
-			double bound = Search<D>::res.cost / (n->g + n->h);
-			if (bound < wt)
-				wt = bound;
+			double f = n->g + n->h;
+			if (f < min)
+				min = f;
 		}
 		for (unsigned int i = 0; i < open.size(); i++) {
 			Node *n = open.at(i);
-			double bound = Search<D>::res.cost / (n->g + n->h);
-			if (bound < wt)
-				wt = bound;
+			double f = n->g + n->h;
+			if (f < min)
+				min = f;
 		}
+		return (double) Search<D>::res.cost / min;
 	}
 
 	// Update the open list: update f' values and add INCONS
