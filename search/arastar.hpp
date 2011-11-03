@@ -114,7 +114,9 @@ template <class D> struct Arastar : public Search<D> {
 				break;
 
 			n++;
-			wt = findbound();
+			double epsprime = findbound();
+			if (epsprime < wt)
+				wt = epsprime;
 
 			dfrow(stdout, "sol", "uuuggg", n, Search<D>::res.expd,
 				Search<D>::res.gend, wt, (double) Search<D>::res.cost,
