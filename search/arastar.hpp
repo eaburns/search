@@ -1,5 +1,5 @@
 #include "../search/search.hpp"
-#include "../structs/htable.hpp"
+#include "../search/closedlist.hpp"
 #include "../structs/binheap.hpp"
 #include <boost/pool/object_pool.hpp>
 #include <limits>
@@ -10,12 +10,12 @@ void dfrow(FILE *, const char *name, const char *colfmt, ...);
 void fatal(const char*, ...);
 
 template <class D> struct ArastarNode {
+	ClosedEntry<ArastarNode, D> closedent;
 	typedef ArastarNode Node;
 	typedef typename D::Cost Cost;
 	typedef typename D::Oper Oper;
 	typedef typename D::PackedState PackedState;
 
-	HtableEntry<Node> closedent;
 	PackedState packed;
 	Oper pop;
 	Cost g, h;
@@ -39,13 +39,17 @@ template <class D> struct ArastarNode {
 
 	static bool eq(PackedState &a, PackedState &b) { return a.eq(b); }
 
-	static HtableEntry<Node> &entry(Node *n) { return n->closedent; }
+	static ClosedEntry<Node, D> &entry(Node *n) { return n->closedent; }
 };
 
-template <class Ops, class Key, class Node> struct Incons {
+template <class Ops, class Key, class Node, class D> struct Incons {
 
-	void add(Node *n) {
-		if (mem.find(n->packed) != NULL)
+	Incons(unsigned long szhint) : mem(szhint) { }
+
+	void init(D &d) { mem.init(d); }
+
+	void add(Node *n, unsigned long h) {
+		if (mem.find(n->packed, h) != NULL)
 			return;
 		mem.add(n);
 		incons.push_back(n);
@@ -59,7 +63,7 @@ template <class Ops, class Key, class Node> struct Incons {
 	}
 
 private:
-	Htable<Ops, Key, Node, 0> mem;
+ 	ClosedList<Node, Node, D> mem;
 	std::vector<Node*> incons;
 };
 
@@ -73,7 +77,8 @@ template <class D> struct Arastar : public Search<D> {
 	typedef ArastarNode<D> Node;
 
 	Arastar(int argc, char *argv[]) :
-			Search<D>(argc, argv), closed(30000001) {
+			Search<D>(argc, argv), closed(30000001),
+			incons(30000001) {
 
 		wt0 = dwt = -1;
 		for (int i = 0; i < argc; i++) {
@@ -98,16 +103,19 @@ template <class D> struct Arastar : public Search<D> {
 
 	Result<D> &search(D &d, typename D::State &s0) {
 		Search<D>::res.start();
-		Node *n0 = init(d, s0);
-		unsigned long n = 0;
+		closed.init(d);
+		incons.init(d);
 
 		dfrowhdr(stdout, "sol", 6, "num", "nodes expanded",
 			"nodes generated", "solution bound", "solution cost",
 			"wall time");
 
+
+		Node *n0 = init(d, s0);
 		closed.add(n0);
 		open.push(n0);
 
+		unsigned long n = 0;
 		do {
 			improve(d);
 			if (Search<D>::res.cost == D::InfCost)	// no solution
@@ -241,7 +249,7 @@ private:
 			dup->parent = k->parent;
 
 			if (dup->openind < 0)
-				incons.add(dup);
+				incons.add(dup, h);
 			else
 				open.update(dup->openind);
 			nodes->destroy(k);
@@ -289,7 +297,7 @@ private:
 	double wt0, dwt, wt;
 
 	BinHeap<Node, Node*> open;
- 	Htable<Node, PackedState&, Node, 0> closed;
-	Incons<Node, PackedState&, Node> incons;
+ 	ClosedList<Node, Node, D> closed;
+	Incons<Node, PackedState&, Node, D> incons;
 	boost::object_pool<Node> *nodes;
 };

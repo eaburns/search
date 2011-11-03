@@ -1,13 +1,13 @@
 #include "../search/search.hpp"
-#include "../structs/htable.hpp"
+#include "../search/closedlist.hpp"
 #include "../search/openlist.hpp"
 #include <boost/pool/object_pool.hpp>
 
 template <class D, class Cost> struct AstarNode {
+	ClosedEntry<AstarNode, D> closedent;
 	typename D::PackedState packed;
 	typename D::Oper pop;
 	Cost g, f;
-	HtableEntry<AstarNode> closedent;
 	AstarNode *parent;
 	long openind;
 
@@ -25,11 +25,11 @@ template <class D, class Cost> struct AstarNode {
 };
 
 template <class D> struct AstarNode <D, IntOpenCost> {
+	ClosedEntry<AstarNode, D> closedent;
+	OpenEntry<AstarNode> openent;
 	typename D::PackedState packed;
 	typename D::Oper pop;
 	typename D::Cost g, f;
-	HtableEntry<AstarNode> closedent;
-	OpenEntry<AstarNode> openent;
 	AstarNode *parent;
 
 	static typename D::Cost prio(AstarNode *n) { return n->f; }
@@ -59,6 +59,7 @@ template <class D> struct Astar : public Search<D> {
 
 	Result<D> &search(D &d, typename D::State &s0) {
 		Search<D>::res.start();
+		closed.init(d);
 
 		Node *n0 = init(d, s0);
 		closed.add(n0);
@@ -176,16 +177,14 @@ private:
 		}
 	}
 
-	struct Closedops {
+	struct ClosedOps {
 		static PackedState &key(Node *n) { return n->packed; }
 		static unsigned long hash(PackedState &s) { return s.hash(); }
 		static bool eq(PackedState &a, PackedState &b) { return a.eq(b); }
-		static HtableEntry<Node> &entry(Node *n) {
-			return n->closedent;
-		}
+		static ClosedEntry<Node, D> &entry(Node *n) { return n->closedent; }
 	};
 
 	OpenList<Node, Node, Cost> open;
- 	Htable<Closedops, PackedState&, Node, 0> closed;
+ 	ClosedList<ClosedOps, Node, D> closed;
 	boost::object_pool<Node> *nodes;
 };

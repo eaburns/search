@@ -1,15 +1,15 @@
 #include "../search/search.hpp"
-#include "../structs/htable.hpp"
+#include "../search/closedlist.hpp"
 #include "../search/openlist.hpp"
 #include <boost/pool/object_pool.hpp>
 
 void fatal(const char*, ...);	// utils.hpp
 
 template <class D> struct WastarNode {
+	ClosedEntry<WastarNode, D> closedent;
 	typename D::PackedState packed;
 	typename D::Oper pop;
 	double g, f, fprime;
-	HtableEntry<WastarNode> closedent;
 	WastarNode *parent;
 	int openind;
 
@@ -56,6 +56,7 @@ template <class D> struct Wastar : public Search<D> {
 
 	Result<D> &search(D &d, typename D::State &s0) {
 		Search<D>::res.start();
+		closed.init(d);
 
 		Node *n0 = init(d, s0);
 		closed.add(n0);
@@ -179,17 +180,15 @@ private:
 		}
 	}
 
-	struct Closedops {
+	struct ClosedOps {
 		static PackedState &key(Node *n) { return n->packed; }
 		static unsigned long hash(PackedState &s) { return s.hash(); }
 		static bool eq(PackedState &a, PackedState &b) { return a.eq(b); }
-		static HtableEntry<Node> &entry(Node *n) {
-			return n->closedent;
-		}
+		static ClosedEntry<Node, D> &entry(Node *n) { return n->closedent; }
 	};
 
 	double wt;
 	OpenList<Node, Node, double> open;
- 	Htable<Closedops, PackedState&, Node, 0> closed;
+ 	ClosedList<ClosedOps, Node, D> closed;
 	boost::object_pool<Node> *nodes;
 };

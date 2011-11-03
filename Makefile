@@ -27,6 +27,7 @@ OBJS=\
 TMPLS=\
 	search/main.hpp\
 	search/openlist.hpp\
+	search/closedlist.hpp\
 	search/idastar.hpp\
 	search/astar.hpp\
 	search/wastar.hpp\
