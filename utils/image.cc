@@ -55,8 +55,6 @@ void Image::output(FILE *out, bool usletter, int marginpt) const {
 
 	outputdata(out);
 
-	fprintf(out, "1 setlinejoin\n");	// Round join
-
 	for (unsigned int i = 0; i < comps.size(); i++) {
 		fputc('\n', out);
 		comps[i]->write(out);
@@ -154,6 +152,10 @@ void Image::Path::write(FILE *out) const {
 		fprintf(out, "fill\n");
 }
 
+void Image::Path::LineJoin::write(FILE *out) const {
+	fprintf(out, "%d setlinejoin\n", type);
+}
+
 void Image::Path::MoveTo::write(FILE *out) const {
 	fprintf(out, "%g %g moveto\n", x, y);
 }
@@ -174,17 +176,9 @@ void Image::Path::SetLineWidth::write(FILE *out) const {
 	fprintf(out, "%g setlinewidth\n", w);
 }
 
-Image::Path::Loc Image::Path::SetLineWidth::move(Loc p) const {
-	return p;
-}
-
 void Image::Path::SetColor::write(FILE *out) const {
 	fprintf(out, "%g %g %g setrgbcolor\n", c.getred(),
 		c.getgreen(), c.getblue());
-}
-
-Image::Path::Loc Image::Path::SetColor::move(Loc p) const {
-	return p;
 }
 
 void Image::Path::Arc::write(FILE *out) const {

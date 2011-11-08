@@ -71,6 +71,14 @@ struct Image {
 
 		void lineto(double x, double y) { addseg(new LineTo(x, y)); }
 
+		enum JoinStyle {
+			Miter = 0,
+			Round = 1,
+			Bevel = 2,
+		};
+
+		void setlinejoin(JoinStyle s) { addseg(new LineJoin(s)); }
+
 		void setlinewidth(double x) { addseg(new SetLineWidth(x)); }
 
 		void setcolor(Color c) { addseg(new SetColor(c)); }
@@ -96,11 +104,18 @@ struct Image {
 		virtual void write(FILE*) const;
 
 private:
-
 		struct Segment {
 			virtual void write(FILE*) const = 0;
-			virtual Loc move(Loc) const = 0;
+			virtual Loc move(Loc l) const {	return l; }
 		};
+
+		struct LineJoin :Segment {
+			LineJoin(JoinStyle _type) :  type(_type) { }
+			virtual void write(FILE*) const;
+		private:
+			JoinStyle type;
+		};
+
 
 		struct MoveTo : Segment {
 			MoveTo(double _x, double _y) : x(_x), y(_y) { }
@@ -121,7 +136,6 @@ private:
 		struct SetLineWidth : Segment {
 			SetLineWidth(double _w) : w(_w) { }
 			virtual void write(FILE*) const;
-			virtual Loc move(Loc) const;
 		private:
 			double w;
 		};
@@ -129,7 +143,6 @@ private:
 		struct SetColor : Segment {
 			SetColor(Color _c) : c(_c) { }
 			virtual void write(FILE*) const;
-			virtual Loc move(Loc) const;
 		private:
 			Color c;
 		};
