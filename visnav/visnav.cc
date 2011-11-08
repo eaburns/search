@@ -20,6 +20,7 @@ void VisNav::save(const char *file, std::vector<State> path) const {
 	g.draw(img, scale);
 
 	Image::Path *p = new Image::Path();
+	p->setlinejoin(Image::Path::Round);
 	p->setlinewidth(3);
 	p->setcolor(Image::red);
 	p->moveto(g.vertex(path[0].vert).pt.x * scale,

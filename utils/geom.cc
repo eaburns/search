@@ -11,6 +11,7 @@ static bool cmpx(const Point&, const Point&);
 
 void Bbox::draw(Image &img, Color c, double lwidth) const {
 	Image::Path *p = new Image::Path();
+	p->setlinejoin(Image::Path::Miter);
 	p->setlinewidth(lwidth < 0 ? 0.1 : lwidth);
 	p->setcolor(c);
 	p->moveto(min.x, min.y);
@@ -111,6 +112,7 @@ bool Polygon::hits(const LineSeg &l) const {
 
 void Polygon::draw(Image &img, Color c, double lwidth) const {
 	Image::Path *p = new Image::Path();
+	p->setlinejoin(Image::Path::Round);
 	p->setlinewidth(lwidth < 0 ? 0.1 : lwidth);
 	p->setcolor(c);
 	p->moveto(verts[0].x, verts[0].y);
