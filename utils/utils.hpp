@@ -4,6 +4,7 @@
 #include <vector>
 #include <deque>
 #include <map>
+#include <boost/cstdint.hpp>
 
 void warn(const char *, ...);
 void warnx(int, const char *, ...);
@@ -101,3 +102,34 @@ extern Rand randgen;
 void runlenenc(std::string &dst, const std::string &data);
 void runlendec(std::string &dst, const std::string &data);
 void ascii85enc(std::string &dst, const std::string &data);
+
+struct Ranker {
+	// Rank the permutation 0..n-1
+	Ranker(unsigned int n);
+
+	// Permrank for a subset of the permutation
+	// 0..(n-1) that contains sz elements.
+	// Cannot be unranked!
+	Ranker(unsigned int sz, unsigned int n);
+
+	~Ranker(void);
+
+	// The array must have ≤ sz elements.
+	unsigned long rank(unsigned int []);
+
+private:
+	unsigned int sz;	// permutation size
+	unsigned int bits;	// ilog2(sz)
+
+	// Number of perm elements in ranked arrays.
+	// This may be ≤sz.  If it is equal to sz then the
+	// ranker ranks full permutations of sz.  If it is
+	// less than sz then the ranker ranks vectors of
+	// n elements of sz.  They cannot be unranked.
+	unsigned int n;
+
+	unsigned int *tree;
+	unsigned int treesz;
+};
+
+unsigned int ilog2(boost::uint32_t);

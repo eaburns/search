@@ -19,6 +19,8 @@ OBJS=\
 	utils/encode.o\
 	utils/image.o\
 	utils/geom.o\
+	utils/rank.o\
+	utils/math.o\
 	\
 	structs/stn.o\
 	\
