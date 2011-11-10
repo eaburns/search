@@ -1,14 +1,26 @@
-Here is the class template for creating a new domain.
+// Here is the class template for creating a new domain.
+// Search algorithms are templatized on domains that
+// must look like this.
 
 #include "../utils/utils.hpp"
 #include <cstdio>
 
 struct <DOMAIN> {
 
+	// Is this a unit cost domain?
 	enum { UnitCost = <UNITCOST?> };
 
+	// Probably float or int.  Some searches will
+	// use a special (faster) closed list if the
+	// costs are ints.
 	typedef <COST> Cost;
 	static const <COST> InfCost = …;
+
+	// The type of an operator which can be
+	// applied to a state.  This is usually just an
+	// integer but it may be some more complex
+	// class.  Searches assume that operator==
+	// is defined on the Oper class.
 	typedef <OPER> Oper;
 	static const <OPER> Nop = …;
 
@@ -16,69 +28,124 @@ struct <DOMAIN> {
 
 	struct State {	…	};
 
+	// Memory-intensive algs such as A* which store
+	// PackedStates instead of States.  Each time operations	
+	// are needed, the state is unpacked and operated
+	// upon.
+	//
+	// If your state is as packed as it will get then you
+	// can simply 'typedef State PackedState'
 	struct PackedState {
 		…
+
+		// Functions for putting a packed state
+		// into a hash table.
 		unsigned long hash(void) { return -1; }
 		bool eq(PackedState &) const { return false; }
 	};
 
+	// An undo record will retain any information that
+	// is needed to revert the application of the given
+	// operator in the given state.  If the domain is
+	// not performing in-place modification of a single
+	// state then this can be pretty much nothing, but
+	// it must have the constructor.
 	struct Undo {
 		Undo(State&, Oper) {		…	}
 	};
 
+	// Get the initial state.
 	State initialstate(void);
 
+	// Get the heuristic.
 	Cost h(State &s) {
 		fatal("Unimplemented");
 		return 0.0;
 	}
 
+	// Get a distance estimate.
 	Cost d(State &s) {
 		fatal("Unimplemented");
 		return 0.0;
 	}
 
+	// Is the given state a goal state?
 	bool isgoal(State &s) {
 		fatal("Unimplemented");
 		return false;
 	}
 
+	// Get the number of operators that are
+	// applicable in the state.
+	//
+	// Some domains may need to compute the
+	// operators for a state.  A nice trick seems
+	// to be to compute the operators in nops
+	// and cache the result in the state.
+	//
+	// Because of the above trick, a search algorithm
+	// should compute nops() after each time a
+	// new state is unpacked.
 	unsigned int nops(State &s) {
 		fatal("Unimplemented");
 		return 0;
 	}
 
+	// Get the nth operator.  This should always be
+	// called after a call to nops on the given state.
 	Oper nthop(State &s, unsigned int n) {
 		fatal("Unimplemented");
 		return 0;
 	}
 
+	// Get the reverse of the given operator (for parent
+	// operator pruning).
 	Oper revop(State &s, Oper op) {
 		fatal("Unimplemented");
 		return 0;
 	}
 
+	// Get the cost of the operator application.
 	Cost opcost(State &s, Oper op) {
 		fatal("Unimplemented");
 		return 0;
 	}
 
+	// Revert changes to the state using information
+	// stored in the undo record.  If the domain doesn't
+	// use in-place modification then this can be a noop.
 	void undo(State &s, Undo &u) { }
 
+	// Apply the operator to 's' and return a reference
+	// to the new state.  If the domain uses in-place
+	// modification then 's' may be changed and returned.
+	// If the domain does not do in-place modification
+	// then the new state should be placed into 'buf'
+	// which is provided by the caller and is guaranteed
+	// to be live at least until undo is called.
 	State &apply(State &buf, State &s, Oper op) {
 		fatal("Unimplemented");
 		return s;
 	}
 
+	// Pack the state into the destination packed state.
+	// If PackedState is the same type as State then this
+	// should at least copy.
 	void pack(PackedState &dst, State &src) {
 		fatal("Unimplemented");
 	}
 
+	// Unpack the state and return a reference to the
+	// resulting unpacked state.  If PackedState and
+	// State are the same type then the packed state
+	// can just be immediately returned and used
+	// so that there is no need to copy.
 	State &unpack(State &buf, PackedState &pkd) {
 		fatal("Unimplemented");
 		return buf;
 	}
 
+	// Print the state.
 	void dumpstate(FILE *out, State &s) {
 		fatal("Unimplemented");
 	}
