@@ -4,11 +4,13 @@ BINS+=\
 TILESSRC=\
 	tiles/tiles.cc\
 	tiles/mdist.cc\
+	tiles/pdb.cc\
 
 TILESHDR=\
 	tiles/tiles.hpp\
 	tiles/packed.hpp\
 	tiles/mdist.hpp\
+	tiles/pdb.hpp\
 
 tiles/*.o: $(TILESHDR)
 

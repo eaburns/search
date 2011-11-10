@@ -1,3 +1,6 @@
+#ifndef _TILES_HPP_
+#define _TILES_HPP_
+
 #include <cstdio>
 #include <cassert>
 
@@ -57,3 +60,5 @@ private:
 	static bool hashvecinit;
 	static unsigned long hashvec[Ntiles][Ntiles];
 };
+
+#endif	// _TILES_HPP_
