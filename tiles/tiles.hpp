@@ -1,8 +1,6 @@
 #include <cstdio>
 #include <cassert>
 
-extern "C" unsigned long hashbytes(unsigned char[], unsigned int);
-
 class Tiles {
 public:
 	enum {
