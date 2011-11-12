@@ -17,21 +17,26 @@
 		like the boarder around
 		the maps
 
+• image: don't emit the background
+	if none of the pixels were set
+
 • More domains:
 
 	- Dynamic robot path finding
 
 	- Robot arm
 
+	- Multiple sequence alignment
+
 	- Roadmap path finding
+
+	- 2d scroller path finding
 
 	- Hanoi
 
 	- Topspin
 
 	- Rubik's cube
-
-	- Multiple sequence alignment
 
 • More algorithms:
 
