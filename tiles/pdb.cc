@@ -1,29 +1,25 @@
 #include "pdb.hpp"
-#include <cmath>
 #include <cstring>	// memset
 
-Pdb::Pdb(unsigned int psz, const Tiles::Tile p[]) : patsz(psz), nents(0) {
+// 'x to the n falling'
+static unsigned long fallfact(unsigned int x, unsigned int n) {
+	unsigned long f = x;
+	for (unsigned int i = 1; i < n; i++)
+		f *= x - i;
+	return f;
+}
+
+Pdb::Pdb(unsigned long csz, unsigned int psz, const Tiles::Tile p[]) :
+		patsz(psz), costssz(csz), costs(NULL),
+		nents(fallfact(Tiles::Ntiles, patsz)) {
 	memcpy(pat, p, psz * sizeof(*p));
-	for (unsigned int i = 0; i < psz; i++)
-		nents *= Tiles::Ntiles - i;
+	costs = new unsigned char[costssz];
+	memset(costs, 0, costssz * sizeof(*costs));
 }
 
-SparsePdb::SparsePdb(unsigned int psz, const Tiles::Tile p[]) : Pdb(psz, p) {
-	sz = pow(Tiles::Ntiles, patsz);
-	costs = new unsigned char[sz];
-	memset(costs, 0, sz * sizeof(*costs));
-}
-
-SparsePdb::~SparsePdb(void) {
-	delete[] costs;
-}
+SparsePdb::SparsePdb(unsigned int psz, const Tiles::Tile p[]) :
+	Pdb(pow(Tiles::Ntiles, patsz), psz, p) { }
 
 CompactPdb::CompactPdb(unsigned int psz, const Tiles::Tile p[]) :
-		Pdb(psz, p), ranker(Tiles::Ntiles, psz) {
-	costs = new unsigned char[nents];
-	memset(costs, 0, nents * sizeof(*costs));
-}
-
-CompactPdb::~CompactPdb(void) {
-	delete[] costs;
-}
+	Pdb(fallfact(Tiles::Ntiles, psz), psz, p),
+	ranker(Tiles::Ntiles, psz) { }

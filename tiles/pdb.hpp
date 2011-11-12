@@ -1,55 +1,50 @@
 #include "../utils/utils.hpp"
 #include "tiles.hpp"
+#include <cmath>
 
 struct Pdb {
-	Pdb(unsigned int, const Tiles::Tile[]);
+	Pdb(unsigned long, unsigned int, const Tiles::Tile[]);
 
-	virtual ~Pdb(void) { }
-
-	virtual unsigned char* cost(const Tiles::Pos[]) = 0;
+	virtual ~Pdb(void) { delete[] costs; }
 
 	unsigned long numentries(void) const { return nents; }
 
 protected:
+
+	virtual unsigned long index(const Tiles::Pos ps[]) = 0;
+
 	unsigned int patsz;
 	Tiles::Tile pat[Tiles::Ntiles];
+
+	unsigned long costssz;
+	unsigned char *costs;
+
 	unsigned long nents;
 };
 
 struct SparsePdb : public Pdb {
 	SparsePdb(unsigned int, const Tiles::Tile[]);
 
-	~SparsePdb(void);
-
-	virtual unsigned char* cost(const Tiles::Pos ps[]) {
-		unsigned long ind = 0;
-		unsigned int mul = 1;
+	virtual unsigned long index(const Tiles::Pos ps[]) {
+		unsigned long ind = ps[0];
+		unsigned int mul = Tiles::Ntiles;
 	
-		for (unsigned int i = 0; i < patsz; i++) {
+		for (unsigned int i = 1; i < patsz; i++) {
 			ind += ps[i] * mul;
 			mul *= Tiles::Ntiles;
 		}
-	
-		assert (ind < sz);
-		return costs + ind;
+
+		return ind;
 	}
-	
-private:
-	unsigned long sz;
-	unsigned char *costs;
 };
 
 struct CompactPdb : public Pdb {
 	CompactPdb(unsigned int, const Tiles::Tile[]);
 
-	~CompactPdb(void);
-
-	virtual unsigned char* cost(const Tiles::Pos[]) {
-		fatal("Unimplemented");
-		return NULL;
+	virtual unsigned long index(const Tiles::Pos ps[]) {
+		return ranker.rank(ps);
 	}
 	
 private:
 	Ranker ranker;
-	unsigned char *costs;
 };

@@ -115,7 +115,7 @@ struct Ranker {
 	~Ranker(void);
 
 	// The array must have ≤ sz elements.
-	unsigned long rank(unsigned int []);
+	unsigned long rank(const unsigned int []);
 
 private:
 	unsigned int sz;	// permutation size

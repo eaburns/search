@@ -22,7 +22,7 @@ Ranker::~Ranker(void) {
 	delete tree;
 }
 
-unsigned long Ranker::rank(unsigned int p[])
+unsigned long Ranker::rank(const unsigned int p[])
 {
 	unsigned long rank = 0;
 	memset(tree, 0, treesz * sizeof(tree[0]));
