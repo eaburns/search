@@ -205,7 +205,7 @@ void Image::Path::line(double x0, double y0, double x1, double y1) {
 	addseg(new LineTo(x1, y1));
 }
 
-void Image::Path::curve(double xc, double yc, double r, double t, double dt) {
+void Image::Path::nauticalcurve(double xc, double yc, double r, double t, double dt) {
 	NauticalArc *a = new NauticalArc(xc, yc, r, t, dt);
 
 	double x0 = xc + a->r * cos(a->t * M_PI / 180);
@@ -213,6 +213,18 @@ void Image::Path::curve(double xc, double yc, double r, double t, double dt) {
 
 	if (!cur || !dbleq(cur->first, x0) || !dbleq(cur->second, y0))
 		addseg(new MoveTo(x0, y0));
+	addseg(a);
+}
+
+void Image::Path::curve(double xc, double yc, double r, double t, double dt) {
+	Arc *a = new Arc(xc, yc, r, t, dt);
+
+	double x0 = xc + a->r * cos(a->t * M_PI / 180);
+	double y0 = yc + a->r * sin(a->t * M_PI / 180);
+
+	if (!cur || !dbleq(cur->first, x0) || !dbleq(cur->second, y0))
+		addseg(new MoveTo(x0, y0));
+
 	addseg(a);
 }
 

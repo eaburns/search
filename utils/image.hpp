@@ -95,6 +95,8 @@ struct Image {
 
 		void line(double x0, double y0, double x1, double y1);
 
+		void nauticalcurve(double xc, double yc, double r, double t, double dt);
+
 		void curve(double xc, double yc, double r, double t, double dt);
 
 		typedef boost::optional< std::pair<double,double> > Loc;
@@ -157,6 +159,7 @@ private:
 			}
 			virtual void write(FILE*) const;
 			virtual Loc move(Loc) const;
+			friend class Image::Path;
 		protected:
 			double x, y, r, t, dt;
 		};
