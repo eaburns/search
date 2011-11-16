@@ -4,6 +4,7 @@
 #include <cstdio>
 #include <cassert>
 #include "geom.hpp"
+#include "../utils/image.hpp"
 
 struct Tile {
 	enum {
@@ -27,6 +28,8 @@ struct Tile {
 		return Rect(x * Width, y * Height,
 			(x + 1) * Width, (y + 1) * Height);
 	}
+
+	static void draw(Image&, unsigned int, unsigned int, Color);
 
 	Tile(void) : ok(false) { }
 

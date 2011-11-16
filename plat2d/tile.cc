@@ -1,6 +1,25 @@
 #include "tile.hpp"
 #include "../utils/utils.hpp"
 
+void Tile::draw(Image &img, unsigned int x, unsigned int y, Color c) {
+	for (unsigned int j = y; j < y + Tile::Height; j++) {
+	for (unsigned int i = x; i < x + Tile::Width; i++)
+		img.set(i, j, c);
+	}
+}
+
+int Tile::read(FILE *f)
+{
+	int c = fgetc(f);
+	if (c == EOF)
+		fatal("Unexpected EOF");
+
+	if (!tiles.istile(c))
+		fatal("Invalid tile: %c", c);
+
+	return c;
+}
+
 Tiles::Tiles(void) {
 	tiles[' '] = Tile(0);
 	tiles['#'] = Tile(Tile::Collide | Tile::Opaque);
@@ -16,15 +35,3 @@ Tiles::Tiles(void) {
 }
 
 const Tiles tiles;
-
-int Tile::read(FILE *f)
-{
-	int c = fgetc(f);
-	if (c == EOF)
-		fatal("Unexpected EOF");
-
-	if (!tiles.istile(c))
-		fatal("Invalid tile: %c", c);
-
-	return c;
-}

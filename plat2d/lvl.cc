@@ -113,18 +113,13 @@ void Lvl::draw(Image &img) const {
 	for (unsigned int x = 0; x < w; x++) {
 		unsigned int t = blks[ind(x, y, z)].tile;
 
-		double xpos = x * Tile::Width + 1;
-		double ypos = ht - (z * h + y + 1) * Tile::Height + 1;
-		double width = Tile::Width + 2;
-		double height = Tile::Height + 2;
+		double xpos = x * Tile::Width;
+		double ypos = ht - (z * h + y + 1) * Tile::Height;
 
-		if (tiles[t].flags & Tile::Water) {
-			img.add(new Image::Rect(xpos, ypos, width,
-				height, Image::blue));
-		} else if (tiles[t].flags & Tile::Collide) {
-			img.add(new Image::Rect(xpos, ypos, width,
-				height, Image::black));
-		}
+		if (tiles[t].flags & Tile::Water)
+			Tile::draw(img, xpos, ypos, Image::blue);
+		else if (tiles[t].flags & Tile::Collide)
+			Tile::draw(img, xpos, ypos, Image::black);
 
 		if (tiles[t].flags & (Tile::Bdoor | Tile::Fdoor | Tile::Up | Tile::Down)) {
 			xpos += 0.5 * Tile::Width;
@@ -136,7 +131,7 @@ void Lvl::draw(Image &img) const {
 				rot = 180;
 			else if (tiles[t].flags & Tile::Down)
 				rot = 270;
-			img.add(new Image::Triangle(xpos, ypos, width,
+			img.add(new Image::Triangle(xpos, ypos, Tile::Width,
 				45.0, rot, Image::black));
 		}
 	}

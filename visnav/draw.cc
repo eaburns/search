@@ -5,7 +5,7 @@
 #include <cstring>
 #include <cerrno>
 
-static void usage(int);
+static void helpmsg(int);
 
 static const char *infile;
 static const char *outfile;
@@ -13,18 +13,24 @@ static bool echo;
 
 int main(int argc, char *argv[]) {
 	for (int i = 1; i < argc; i++) {
-		if (strcmp(argv[i], "-h") == 0)
-			usage(0);
-		else if (strcmp(argv[i], "-e") == 0)
+		if (strcmp(argv[i], "-h") == 0) {
+			helpmsg(0);
+		} else if (strcmp(argv[i], "-e") == 0) {
 			echo = true;
-		else if (i < argc - 1 && strcmp(argv[i], "-o") == 0)
+		} else if (i < argc - 1 && strcmp(argv[i], "-o") == 0) {
 			outfile = argv[++i];
-		else if (i < argc - 1 && strcmp(argv[i], "-i") == 0)
+		} else if (i < argc - 1 && strcmp(argv[i], "-i") == 0) {
 			infile = argv[++i];
+		} else {
+			printf("Unknown option: %s\n", argv[i]);
+			helpmsg(1);
+		}
 	}
 
-	if (!outfile)
-		usage(1);
+	if (!outfile) {
+		printf("No output file specified\n");
+		helpmsg(1);
+	}
 
 	FILE *in = stdin;
 	if (infile) {
@@ -47,7 +53,7 @@ int main(int argc, char *argv[]) {
 	return 0;
 }
 
-static void usage(int ret) {
+static void helpmsg(int ret) {
 	puts("Usage: disp -o <outfile> [options]");
 	puts("Options:");
 	puts("	-h	print this help message");
