@@ -17,8 +17,7 @@
 		like the boarder around
 		the maps
 
-• image: don't emit the background
-	if none of the pixels were set
+• visnav: fail with bad arguments
 
 • More domains:
 

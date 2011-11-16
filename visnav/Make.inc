@@ -1,9 +1,3 @@
-BINS+=\
-	visnav/rand\
-	visnav/disp\
-	visnav/inst\
-	visnav/visnav_solver\
-
 VISNAVSRC=\
 	visnav/visgraph.cc\
 	visnav/visnav.cc\
@@ -14,13 +8,19 @@ VISNAVHDR=\
 
 visnav/*.o: $(VISNAVHDR)
 
+BINS+=\
+	visnav/rand\
+	visnav/draw\
+	visnav/inst\
+	visnav/visnav_solver\
+
 visnav/rand: $(OBJS) $(HDRS) $(VISNAVHDR) $(VISNAVSRC) visnav/rand.cc
 	$(CXX) $(CXXFLAGS) $(OBJS) $(LDFLAGS) $(VISNAVSRC)\
 		visnav/rand.cc -o visnav/rand
 
-visnav/disp: $(OBJS) $(HDRS) $(VISNAVHDR) $(VISNAVSRC) visnav/disp.cc
+visnav/draw: $(OBJS) $(HDRS) $(VISNAVHDR) $(VISNAVSRC) visnav/draw.cc
 	$(CXX) $(CXXFLAGS) $(OBJS) $(LDFLAGS) $(VISNAVSRC)\
-		visnav/disp.cc -o visnav/disp
+		visnav/draw.cc -o visnav/draw
 
 visnav/inst: $(OBJS) $(HDRS) $(VISNAVHDR) $(VISNAVSRC) visnav/inst.cc
 	$(CXX) $(CXXFLAGS) $(OBJS) $(LDFLAGS) $(VISNAVSRC)\
