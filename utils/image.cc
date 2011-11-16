@@ -24,8 +24,7 @@ const Color somecolors[] = {
 const unsigned int Nsomecolors = sizeof(somecolors) / sizeof(somecolors[0]);
 
 Image::Image(unsigned int width, unsigned int height, const char *t) :
-		w(width), h(height), title(t) {
-	data = new Color[w * h];
+		w(width), h(height), title(t), data(NULL) {
 }
 
 Image::~Image(void) {
@@ -33,7 +32,8 @@ Image::~Image(void) {
 		delete comps.back();
 		comps.pop_back();
 	}
-	delete[] data;
+	if (data)
+		delete[] data;
 }
 
 void Image::save(const char *path, bool usletter, int marginpt) const {
@@ -53,7 +53,8 @@ void Image::output(FILE *out, bool usletter, int marginpt) const {
 	else
 		outputhdr(out, marginpt);
 
-	outputdata(out);
+	if (data)
+		outputdata(out);
 
 	for (unsigned int i = 0; i < comps.size(); i++) {
 		fputc('\n', out);
@@ -76,7 +77,7 @@ void Image::outputhdr_usletter(FILE *out, unsigned int marginpt) const {
 
 	double maxw = Widthpt - marginpt * 2, maxh = Heightpt - marginpt * 2;
 	double scalex = maxw / w, scaley = maxh / h;
-	double transx = marginpt, transy = (Heightpt - h * scalex) / 2;
+	double transx = marginpt, transy = -(Heightpt - h * scalex) / 2;
 
 	double scale = scalex;
 	if (scaley < scalex) {
@@ -293,4 +294,23 @@ void Image::Circle::write(FILE *out) const {
 	}
 	fprintf(out, "%g %g %g setrgbcolor\n", c.getred(), c.getgreen(), c.getblue());
 	fprintf(out, "newpath %g %g %g 0 360 arc %s\n", x, y, r, finish);
+}
+
+void Image::Rect::write(FILE *out) const {
+	fprintf(out, "%% Rect\n");
+	const char *finish = "stroke";
+	if (lwidth <= 0) {
+		finish = "fill";
+		fprintf(out, "0.1 setlinewidth\n");
+	} else {
+		fprintf(out, "%g setlinewidth\n", lwidth);
+	}
+	fprintf(out, "%g %g %g setrgbcolor\n", c.getred(), c.getgreen(), c.getblue());
+	fputs("0 setlinejoin\n", out);
+	fputs("newpath\n", out);
+	fprintf(out, "%g %g moveto\n", x, y);
+	fprintf(out, "%g %g lineto\n", x + w, y);
+	fprintf(out, "%g %g lineto\n", x + w, y + h);
+	fprintf(out, "%g %g lineto\n", x, y + h);
+	fprintf(out, "closepath\n%s\n", finish);
 }

@@ -46,11 +46,18 @@ struct Image {
 
 	~Image(void);
 
-	void set(unsigned int x, unsigned int y, Color c) { data[y * w + x] = c; }
+	void set(unsigned int x, unsigned int y, Color c) {
+		if (!data)
+			data = new Color[w * h];
+		data[y * w + x] = c;
+	}
+
 	void save(const char *, bool usletter = false, int marginpt = -1) const;
+
 	void output(FILE*, bool usletter = false, int marginpt = -1) const;
 
 	unsigned int width() const { return w; }
+
 	unsigned int height() const { return h; }
 
 	struct Component {
@@ -239,10 +246,21 @@ private:
 	// Non-positive lwidth will fill
 	struct Circle : public Component {
 		Circle(double _x, double _y, double _r, Color _c = Image::black,
-			double _lwidth = -1) :x(_x), y(_y), r(_r), c(_c), lwidth(_lwidth) { }
+			double _lwidth = -1) : x(_x), y(_y), r(_r), c(_c), lwidth(_lwidth) { }
 		virtual void write(FILE*) const;
 	private:
 		double x, y, r;
+		Color c;
+		double lwidth;
+	};
+
+	struct Rect : public Component {
+		Rect(double _x, double _y, double _w, double _h,
+			Color _c = Image::black, double _lwidth = -1.0) :
+			x(_x), y(_y), w(_w), h(_h), c(_c), lwidth(_lwidth) { }
+		virtual void write(FILE*) const;
+	private:
+		double x, y, w, h;
 		Color c;
 		double lwidth;
 	};
