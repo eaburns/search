@@ -82,6 +82,7 @@ void Image::outputhdr_usletter(FILE *out, unsigned int marginpt) const {
 	double scale = scalex;
 	if (scaley < scalex) {
 		scale = scaley;
+		transy = marginpt;
 		transx = (Widthpt - w * scaley) / 2;
 	}
 
