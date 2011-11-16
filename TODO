@@ -19,6 +19,11 @@
 
 • visnav: fail with bad arguments
 
+• plat2d/draw: cmd-line args
+
+• plat2d: draw the level as a raster
+	image
+
 • More domains:
 
 	- Dynamic robot path finding
