@@ -8,4 +8,5 @@ utils/pathfor
 visnav/draw
 visnav/rand
 visnav/inst
+plat2d/draw
 plat2d/midsrc/*
