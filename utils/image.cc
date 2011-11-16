@@ -77,7 +77,7 @@ void Image::outputhdr_usletter(FILE *out, unsigned int marginpt) const {
 
 	double maxw = Widthpt - marginpt * 2, maxh = Heightpt - marginpt * 2;
 	double scalex = maxw / w, scaley = maxh / h;
-	double transx = marginpt, transy = -(Heightpt - h * scalex) / 2;
+	double transx = marginpt, transy = (Heightpt - h * scalex) / 2;
 
 	double scale = scalex;
 	if (scaley < scalex) {
