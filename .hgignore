@@ -5,7 +5,7 @@ syntax: glob
 structs/test
 utils/test
 utils/pathfor
-visnav/disp
+visnav/draw
 visnav/rand
 visnav/inst
 plat2d/midsrc/*
