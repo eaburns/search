@@ -52,7 +52,6 @@ struct Hitzone {
 	Hitzone(Rect a, const Point &v) {
 		Rect b(a);
 		b.move(v.x, v.y);
-		a.normalize();
 
 		x0 = a.a.x < b.a.x ? a.a.x : b.a.x;
 		y0 = a.a.y < b.b.y ? a.a.y : b.a.y;

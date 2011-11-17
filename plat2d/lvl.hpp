@@ -34,7 +34,6 @@ struct Lvl {
 	};
 
 	Blkinfo majorblk(unsigned int z, Rect r) const {
-		r.normalize();
 		unsigned int x = ((r.b.x + r.a.x) / 2) / Tile::Width;
 		unsigned int y = ((r.b.y + r.a.y) / 2) / Tile::Height;
 		return Blkinfo(blks[ind(x, y, z)], x, y);

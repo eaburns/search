@@ -15,6 +15,8 @@ struct Player {
 			unsigned int w, unsigned int h) :
 		body(x, y, z, w, h), jframes(0), jmp(false) { }
 
+	Player(const Player &o) : body(o.body), jframes(o.jframes), jmp(o.jmp) { }
+
 	void act(const Lvl&, int);
 
 private:

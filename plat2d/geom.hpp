@@ -10,6 +10,8 @@ static bool between(double min, double max, double n) {
 struct Point {
 	Point(double a, double b) : x(a), y(b) { }
 
+	Point(const Point &o) : x(o.x), y(o.y) { }
+
 	void move(double dx, double dy) {
 		x += dx;
 		y += dy;
@@ -50,18 +52,7 @@ struct Rect {
 	Rect(double x0, double y0, double x1, double y1) :
 		a(x0, y0), b(x1, y1) { normalize(); }
 
-	void normalize(void) {
-		if (a.x > b.x) {
-			double t = a.x;
-			a.x = b.x;
-			b.x = t;
-		}
-		if (a.y > b.y) {
-			double t = a.y;
-			a.y = b.y;
-			b.y = t;
-		}
-	}
+	Rect(const Rect &o) : a(o.a), b(o.b) { }
 
 	void move(double dx, double dy) {
 		a.move(dx, dy);
@@ -96,12 +87,29 @@ struct Rect {
 	}
 
 	Point a, b;
+
+private:
+
+	void normalize(void) {
+		if (a.x > b.x) {
+			double t = a.x;
+			a.x = b.x;
+			b.x = t;
+		}
+		if (a.y > b.y) {
+			double t = a.y;
+			a.y = b.y;
+			b.y = t;
+		}
+	}
 };
 
 struct Body {
 	Body(unsigned int x, unsigned int y, unsigned int _z,
 			unsigned int w, unsigned int h) :
 		z(_z), bbox(x, y, x + w, y + h), vel(0, 0), acc(0, 0), fall(false) { }
+
+	Body(const Body &o) : z(o.z), bbox(o.bbox), vel(o.vel), acc(o.acc), fall(o.fall) { }
 
 	void move(const Lvl&);
 	
