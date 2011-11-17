@@ -21,17 +21,17 @@ int Tile::read(FILE *f)
 }
 
 Tiles::Tiles(void) {
-	tiles[' '] = Tile(0);
-	tiles['#'] = Tile(Tile::Collide | Tile::Opaque);
-	tiles['w'] = Tile(Tile::Water);
-	tiles['>'] = Tile(Tile::Bdoor);
-	tiles[')'] = Tile(Tile::Bdoor | Tile::Water);
-	tiles['<'] = Tile(Tile::Fdoor);
-	tiles['('] = Tile(Tile::Fdoor | Tile::Water);
-	tiles['d'] = Tile(Tile::Down);
-	tiles['D'] = Tile(Tile::Down | Tile::Water);
-	tiles['u'] = Tile(Tile::Up);
-	tiles['U'] = Tile(Tile::Up | Tile::Water);
+	tiles[' '] = Tile(' ', 0);
+	tiles['#'] = Tile('#', Tile::Collide | Tile::Opaque);
+	tiles['w'] = Tile('w', Tile::Water);
+	tiles['>'] = Tile('>', Tile::Bdoor);
+	tiles[')'] = Tile(')', Tile::Bdoor | Tile::Water);
+	tiles['<'] = Tile('<', Tile::Fdoor);
+	tiles['('] = Tile('(', Tile::Fdoor | Tile::Water);
+	tiles['d'] = Tile('d', Tile::Down);
+	tiles['D'] = Tile('D', Tile::Down | Tile::Water);
+	tiles['u'] = Tile('u', Tile::Up);
+	tiles['U'] = Tile('U', Tile::Up | Tile::Water);
 }
 
 const Tiles tiles;

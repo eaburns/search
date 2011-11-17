@@ -18,8 +18,8 @@ struct Tile {
 	};
 
 	enum {
-		Width = 64,
-		Height = 64,
+		Width = 32,
+		Height = 32,
 	};
 
 	static int read(FILE*);
@@ -31,9 +31,9 @@ struct Tile {
 
 	static void draw(Image&, unsigned int, unsigned int, Color);
 
-	Tile(void) : ok(false) { }
+	Tile(void) : c(0) { }
 
-	Tile(unsigned int f) : ok(true), flags(f) { }
+	Tile(char _c, unsigned int f) : c(_c), flags(f) { }
 
 	Isect isection(unsigned int x, unsigned int y, const Rect & r) const {	
 		if (!(flags & Collide))
@@ -51,7 +51,7 @@ struct Tile {
 		return flags & Water ? 0.7 : 1.0;
 	}
 
-	bool ok;
+	char c;	// c == 0 is invalid
 	unsigned int flags;
 };
 
@@ -60,11 +60,12 @@ struct Tiles {
 	Tiles(void);
 
 	bool istile(int t) const {
-		return t >= 0 && t < Ntiles && tiles[t].ok;
+		return t >= 0 && t < Ntiles && tiles[t].c != 0;
 	}
 
 	const Tile &operator[](unsigned int i) const {
-		assert (tiles[i].ok);
+		assert (tiles[i].c != 0);
+		assert ((unsigned int) tiles[i].c == i);
 		return tiles[i];
 	}
 

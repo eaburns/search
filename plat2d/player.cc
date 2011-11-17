@@ -1,7 +1,7 @@
 #include "player.hpp"
 #include "lvl.hpp"
 
-void Player::act(const Lvl &lvl, int a) {
+void Player::act(const Lvl &lvl, unsigned int a) {
 	chngjmp(a);
 	chngdir(a);
 
@@ -23,7 +23,7 @@ void Player::act(const Lvl &lvl, int a) {
 		jframes--;
 }
 
-void Player::chngdir(int a) {
+void Player::chngdir(unsigned int a) {
 	body.vel.x = 0;
 	if(a & Left)
 		body.vel.x -= runspeed();
@@ -31,7 +31,7 @@ void Player::chngdir(int a) {
 		body.vel.x += runspeed();
 }
 
-void Player::chngjmp(int a) {
+void Player::chngjmp(unsigned int a) {
 	if (jmp == (a & Jump))	// nothing changed
 		return;
 
@@ -52,7 +52,7 @@ void Player::chngjmp(int a) {
 	}
 }
 
-void Player::trydoor(const Lvl &lvl, int a) {
+void Player::trydoor(const Lvl &lvl, unsigned int a) {
 	if (!(a & Act))
 		return;
 

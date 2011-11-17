@@ -17,12 +17,14 @@ struct Player {
 
 	Player(const Player &o) : body(o.body), jframes(o.jframes), jmp(o.jmp) { }
 
-	void act(const Lvl&, int);
+	void act(const Lvl&, unsigned int);
+
+	Body body;
 
 private:
-	void chngdir(int);
-	void chngjmp(int);
-	void trydoor(const Lvl&, int);
+	void chngdir(unsigned int);
+	void chngjmp(unsigned int);
+	void trydoor(const Lvl&, unsigned int);
 
 	static const unsigned int Maxjframes = 8;
 	static const double Dex = 5;	// Initial value from mid
@@ -31,7 +33,6 @@ private:
 
 	double jmpspeed(void) const { return 7 + Dex / 5.0; }
 
-	Body body;
 	unsigned int jframes;
 	bool jmp;	// true if jump was held in previous frame
 };
