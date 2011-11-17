@@ -24,11 +24,20 @@ struct Lvl {
 
 	struct Blk { unsigned int tile; };
 
-	const Blk &majorblk(unsigned int z, Rect r) const {
+	struct Blkinfo {
+		Blkinfo(const Blk &b, unsigned int _x, unsigned int _y) :
+			blk(b), tile(tiles[b.tile]), x(_x), y(_y) { }
+
+		const Blk &blk;
+		const Tile &tile;
+		unsigned int x, y;
+	};
+
+	Blkinfo majorblk(unsigned int z, Rect r) const {
 		r.normalize();
-		double xmid = (r.b.x + r.a.x) / 2;
-		double ymid = (r.b.y + r.a.y) / 2;
-		return blks[ind(xmid / Tile::Width, ymid / Tile::Height, z)];
+		unsigned int x = ((r.b.x + r.a.x) / 2) / Tile::Width;
+		unsigned int y = ((r.b.y + r.a.y) / 2) / Tile::Height;
+		return Blkinfo(blks[ind(x, y, z)], x, y);
 	}
 
 private:

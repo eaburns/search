@@ -104,16 +104,16 @@ struct Body {
 		z(_z), bbox(x, y, x + w, y + h), vel(0, 0), acc(0, 0), fall(false) { }
 
 	void move(const Lvl&);
-
-private:
-
-	Point step(const Point&);
-	void dofall(const Lvl&, const Isect&);
 	
 	unsigned int z;
 	Rect bbox;
 	Point vel, acc;
 	bool fall;
+
+private:
+
+	Point step(const Point&);
+	void dofall(const Lvl&, const Isect&);
 };
 
 #endif	// _GEOM_HPP_

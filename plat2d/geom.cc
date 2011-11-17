@@ -49,7 +49,8 @@ Point Body::step(const Point &v) {
 }
 
 void Body::dofall(const Lvl &lvl, const Isect &is) {
-	double g = tiles[lvl.majorblk(z, bbox).tile].gravity();
+	Lvl::Blkinfo bi = lvl.majorblk(z, bbox);
+	double g = bi.tile.gravity();
 
 	if(vel.y > 0 && is.dy > 0 && fall) { /* hit the ground */
 		/* Constantly try to fall in order to test ground
