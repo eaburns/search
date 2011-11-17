@@ -32,8 +32,6 @@ void Player::chngdir(int a) {
 }
 
 void Player::chngjmp(int a) {
-	static const unsigned int Maxjframes = 8;
-
 	if (jmp == (a & Jump))	// nothing changed
 		return;
 

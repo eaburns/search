@@ -22,6 +22,7 @@ private:
 	void chngjmp(int);
 	void trydoor(const Lvl&, int);
 
+	static const unsigned int Maxjframes = 8;
 	static const double Dex = 5;	// Initial value from mid
 
 	double runspeed(void) const { return 2 + Dex / 4.0; }
