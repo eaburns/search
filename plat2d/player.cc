@@ -13,11 +13,11 @@ void Player::act(const Lvl &lvl, unsigned int a) {
 	double oldddy = body.acc.y;
 	body.acc.y = bi.tile.gravity();
 
+	trydoor(lvl, a);
+
 	body.move(lvl);
 	body.vel.x = olddx;
 	body.acc.y = oldddy;
-
-	trydoor(lvl, a);
 
 	if (jframes > 0)
 		jframes--;

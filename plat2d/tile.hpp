@@ -35,9 +35,17 @@ struct Tile {
 
 	Tile(char _c, unsigned int f) : c(_c), flags(f) { }
 
-	Isect isection(unsigned int x, unsigned int y, const Rect & r) const {	
+	Isect isection(unsigned int x, unsigned int y, const Rect & r) const {
+		if (x == 2 && y == 3)
+			printf("c='%c', flags=%#x", c, flags);
+
 		if (!(flags & Collide))
 			return Isect();
+
+		Rect b = bbox(x, y);
+
+		if (x == 2 && y == 3)
+			printf("bbox=%g, %g → %g, %g\n", b.a.x, b.a.y, b.b.x, b.b.y);
 	
 		return r.isection(bbox(x, y));
 	}

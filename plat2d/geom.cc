@@ -7,7 +7,8 @@ static double tillwhole(double, double);
 void Body::move(const Lvl &lvl) {
 	double xmul = vel.x > 0 ? 1.0 : -1.0;
 	double ymul = vel.y > 0 ? 1.0 : -1.0;
-	Point v(vel), left(fabs(v.x), fabs(v.y));
+	Point v(vel);
+	Point left(fabs(v.x), fabs(v.y));
 	Isect fallis;
 
 	while (left.x > 0.0 || left.y > 0.0) {
@@ -16,16 +17,25 @@ void Body::move(const Lvl &lvl) {
 		left.y -= fabs(d.y);
 
 		Isect is(lvl.isection(z, bbox, d));
-		if (is.is && is.dy != 0.0)
+		printf("%g, %g → %g, %g\n", bbox.a.x, bbox.a.y, bbox.b.x, bbox.b.y);
+		if (is.is && is.dy != 0.0) {
+			printf("yis=%g, dy=%g\n", is.dy, d.y);
 			fallis = is;
+		} else {
+			printf("no intersection\n");
+		}
+		printf("\n");
 
-		d.x = d.x + -xmul * is.dx;
-		d.y = d.y + -ymul * is.dy;
+		d.x = d.x - xmul * is.dx;
+		d.y = d.y - ymul * is.dy;
 		v.x -= d.x;
 		v.y -= d.y;
 
+		printf("final dy=%g\n", d.y);
+
 		bbox.move(d.x, d.y);
 	}
+
 	dofall(lvl, fallis);
 }
 
@@ -62,11 +72,15 @@ void Body::dofall(const Lvl &lvl, const Isect &is) {
 		acc.y = g;
 		fall = true;
 	}
+
 	if (!is.is && !fall) { /* are we falling now? */
-		vel.y = 0;
 		acc.y = g;
+		vel.y = 0;
 		fall = true;
 	}
+
+	if (fall && vel.y < Maxdy)
+		vel.y += acc.y;
 }
 
 static double tillwhole(double loc, double vel)

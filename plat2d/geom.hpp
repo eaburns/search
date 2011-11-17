@@ -1,6 +1,8 @@
 #ifndef _GEOM_HPP_
 #define _GEOM_HPP_
 
+#include <cassert>
+
 struct Lvl;
 
 static bool between(double min, double max, double n) {
@@ -64,10 +66,10 @@ struct Rect {
 			between(b.x, b.y, p.y);
 	}
 
-	Isect isection(const Rect &b) const {
-		double ix = projx().isection(b.projx());
+	Isect isection(const Rect &o) const {
+		double ix = projx().isection(o.projx());
 		if(ix > 0.0){
-			double iy = projy().isection(b.projy());
+			double iy = projy().isection(o.projy());
 			if(iy > 0.0)
 				return Isect(ix, iy);
 		}
@@ -75,15 +77,13 @@ struct Rect {
 	}
 
 	Line1d projx(void) const {
-		if(a.x < b.x)
-			return Line1d(a.x, b.x);
-		return Line1d(b.x, a.x);
+		assert (a.x <= b.x);
+		return Line1d(a.x, b.x);
 	}
 
 	Line1d projy(void) const {
-		if(a.y < b.y)
-			return Line1d(a.y, b.y);
-		return Line1d(b.y, a.y);
+		assert (a.y <= b.y);
+		return Line1d(a.y, b.y);
 	}
 
 	Point a, b;
@@ -105,6 +105,8 @@ private:
 };
 
 struct Body {
+	enum { Maxdy = 12 };
+
 	Body(unsigned int x, unsigned int y, unsigned int _z,
 			unsigned int w, unsigned int h) :
 		z(_z), bbox(x, y, x + w, y + h), vel(0, 0), acc(0, 0), fall(false) { }
