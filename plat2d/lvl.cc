@@ -53,12 +53,14 @@ struct Hitzone {
 		Rect b(a);
 		b.move(v.x, v.y);
 
-		x0 = 0.5 + a.a.x / (double) Tile::Width;
-		y0 = 0.5 + a.a.y / (double) Tile::Height;
-		x1 = 0.5 + ceil(a.b.x) / (double) Tile::Width;
-		y1 = 0.5 + ceil(a.b.y) / (double) Tile::Height;
+		x0 = a.a.x / (double) Tile::Width;
+		y0 = a.a.y / (double) Tile::Height;
+		x1 = ceil(a.b.x) / (double) Tile::Width;
+		y1 = ceil(a.b.y) / (double) Tile::Height;
 		if (y0 > 0)
 			y0--;
+		if (x0 > 0)
+			x0--;
 	}
 
 	unsigned int x0, y0, x1, y1;
@@ -69,14 +71,12 @@ Isect Lvl::isection(unsigned int z, const Rect &r, const Point &v) const {
 	Isect isect;
 	Rect mv(r);
 
-	printf("hitzone: x=%u→%u, y=%u→%u\n", test.x0, test.x1, test.y0, test.y1);
-
+	mv.move(0, v.y);
 	for (unsigned int x = test.x0; x <= test.x1; x++) {
 	for (unsigned int y = test.y0; y <= test.y1; y++) {
 		unsigned int t = blks[ind(x, y, z)].tile;
 		Isect is(tiles[t].isection(x, y, mv));
 		if (is.is && is.dy > isect.dy) {
-			printf("isect!, x=%u, y=%u\n", x, y);
 			isect.is = true;
 			isect.dy = is.dy;
 		}

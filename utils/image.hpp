@@ -21,9 +21,9 @@ struct Color {
 	double getred(void) const { return r; }
 	double getgreen(void) const { return g; }
 	double getblue(void) const { return b; }
-	char getred255(void) const { return 255 * r; }
-	char getgreen255(void) const { return 255 * g; }
-	char getblue255(void) const { return 255 * b; }
+	unsigned char getred255(void) const { return 255 * r; }
+	unsigned char getgreen255(void) const { return 255 * g; }
+	unsigned char getblue255(void) const { return 255 * b; }
 private:
 	static double clamp(double d) {
 		if (d < 0.0) return 0.0;

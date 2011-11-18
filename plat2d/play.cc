@@ -34,7 +34,7 @@ int main(int argc, char *argv[]) {
 	Player p(2 * Tile::Width + PlayerOffx, 2 * Tile::Height + PlayerOffy,
 		0, PlayerWidth, PlayerHeight);
 
-	for (unsigned int i = 0; i < 100; i++) {
+	for ( ; ; ) {
 		unsigned int next = SDL_GetTicks() + 20;
 
 		draw(lvl, p);
@@ -60,8 +60,29 @@ static void init(void) {
 	SDL_WM_SetCaption("play", "play");
 }
 
+#if SDLVER == 13
 static unsigned int keys(void) {
-	const Uint8 *state = SDL_GetKeyState(NULL);
+	int nkeys;
+	const Uint8 *state = SDL_GetKeyboardState(&nkeys);
+
+	unsigned int keys = 0;
+	if (state[SDL_SCANCODE_LEFT])
+		keys |= Player::Left;
+	if (state[SDL_SCANCODE_RIGHT])
+		keys |= Player::Right;
+	if (state[SDL_SCANCODE_UP])
+		keys |= Player::Jump;
+	if (state[SDL_SCANCODE_SPACE])
+		keys |= Player::Act;
+	if (state[SDL_SCANCODE_Q])
+		exit(0);
+
+	return keys;
+}
+#else
+static unsigned int keys(void) {
+	int nkeys;
+	const Uint8 *state = SDL_GetKeyState(&nkeys);
 
 	unsigned int keys = 0;
 	if (state[SDLK_LEFT])
@@ -77,6 +98,7 @@ static unsigned int keys(void) {
 
 	return keys;
 }
+#endif
 
 static void draw(const Lvl &lvl, const Player &p) {
 	clear();

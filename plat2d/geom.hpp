@@ -68,7 +68,7 @@ struct Rect {
 
 	Isect isection(const Rect &o) const {
 		double ix = projx().isection(o.projx());
-		if(ix > 0.0){
+		if(ix > 0.0) {
 			double iy = projy().isection(o.projy());
 			if(iy > 0.0)
 				return Isect(ix, iy);

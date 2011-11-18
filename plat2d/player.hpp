@@ -29,9 +29,9 @@ private:
 	static const unsigned int Maxjframes = 8;
 	static const double Dex = 5;	// Initial value from mid
 
-	double runspeed(void) const { return 2 + Dex / 4.0; }
+	double runspeed(void) const { return 2.0 + Dex / 4.0; }
 
-	double jmpspeed(void) const { return 7 + Dex / 5.0; }
+	double jmpspeed(void) const { return 7.0 + Dex / 5.0; }
 
 	unsigned int jframes;
 	bool jmp;	// true if jump was held in previous frame

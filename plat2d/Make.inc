@@ -12,6 +12,7 @@ PLAT2DHDR=\
 
 plat2d/*.o: $(PLAT2DHDR)
 
+
 BINS+=\
 	plat2d/draw\
 	plat2d/play\
@@ -20,6 +21,8 @@ plat2d/draw: $(OBJS) $(HDRS) $(PLAT2DHDR) $(PLAT2DSRC) plat2d/draw.cc
 	$(CXX) $(CXXFLAGS) $(OBJS) $(LDFLAGS) $(PLAT2DSRC)\
 		plat2d/draw.cc -o plat2d/draw
 
+SDLVER=$(shell sdl-config --version | sed 's/\([0-9]\)\.\([0-9]\).*/\1\2/')
+
 plat2d/play: $(OBJS) $(HDRS) $(PLAT2DHDR) $(PLAT2DSRC) plat2d/play.cc
 	$(CXX) $(CXXFLAGS) $(OBJS) $(LDFLAGS) $(PLAT2DSRC)\
-		plat2d/play.cc -lSDL -o plat2d/play
+		-DSDLVER=$(SDLVER) plat2d/play.cc -lSDL -o plat2d/play

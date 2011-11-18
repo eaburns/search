@@ -5,8 +5,8 @@
 static double tillwhole(double, double);
 
 void Body::move(const Lvl &lvl) {
-	double xmul = vel.x > 0 ? 1.0 : -1.0;
-	double ymul = vel.y > 0 ? 1.0 : -1.0;
+	double xmul = vel.x > 0 ? 1 : -1;
+	double ymul = vel.y > 0 ? 1 : -1;
 	Point v(vel);
 	Point left(fabs(v.x), fabs(v.y));
 	Isect fallis;
@@ -17,22 +17,13 @@ void Body::move(const Lvl &lvl) {
 		left.y -= fabs(d.y);
 
 		Isect is(lvl.isection(z, bbox, d));
-		printf("%g, %g → %g, %g\n", bbox.a.x, bbox.a.y, bbox.b.x, bbox.b.y);
-		if (is.is && is.dy != 0.0) {
-			printf("yis=%g, dy=%g\n", is.dy, d.y);
+		if (is.is && is.dy != 0.0)
 			fallis = is;
-		} else {
-			printf("no intersection\n");
-		}
-		printf("\n");
 
 		d.x = d.x - xmul * is.dx;
 		d.y = d.y - ymul * is.dy;
 		v.x -= d.x;
 		v.y -= d.y;
-
-		printf("final dy=%g\n", d.y);
-
 		bbox.move(d.x, d.y);
 	}
 

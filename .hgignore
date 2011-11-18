@@ -9,4 +9,5 @@ visnav/draw
 visnav/rand
 visnav/inst
 plat2d/draw
+plat2d/play
 plat2d/midsrc/*

@@ -8,7 +8,7 @@ void Player::act(const Lvl &lvl, unsigned int a) {
 	Lvl::Blkinfo bi = lvl.majorblk(body.z, body.bbox);
 	double olddx = body.vel.x;
 	if (olddx)
-		body.vel.x = olddx < 0 ? -1 : 1 * bi.tile.drag() * runspeed();
+		body.vel.x = (olddx < 0 ? -1 : 1) * bi.tile.drag() * runspeed();
 
 	double oldddy = body.acc.y;
 	body.acc.y = bi.tile.gravity();
