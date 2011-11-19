@@ -19,6 +19,9 @@ struct Player {
 
 	void act(const Lvl&, unsigned int);
 
+	// bottom left
+	Point loc(void) { return body.bbox.a; }
+
 	Body body;
 
 private:

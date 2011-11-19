@@ -1,7 +1,7 @@
 #include "lvl.hpp"
+#include "geom.hpp"
 #include "player.hpp"
 #include "../utils/utils.hpp"
-#include <boost/cstdint.hpp>
 #include <SDL/SDL.h>
 #include <unistd.h>	// sleep()
 #include <cstdlib>
@@ -18,9 +18,11 @@ enum {
 };
 
 SDL_Surface *screen;
+Point tr(0, 0);
 
 static void init(void);
 static unsigned int keys(void);
+static void scroll(const Point&, const Point&);
 static void draw(const Lvl&, const Player&);
 static void drawlvl(unsigned int z, const Lvl&);
 static void drawplayer(const Player&);
@@ -38,7 +40,11 @@ int main(int argc, char *argv[]) {
 		unsigned int next = SDL_GetTicks() + 20;
 
 		draw(lvl, p);
+
+		Point l0(p.loc());
 		p.act(lvl, keys());
+		scroll(l0, p.loc());
+
 		SDL_PumpEvents();
 
 		while (SDL_GetTicks() < next)
@@ -100,6 +106,17 @@ static unsigned int keys(void) {
 }
 #endif
 
+static void scroll(const Point &l0, const Point &l1) {
+	Point delta(l1.x - l0.x, l1.y - l0.y);
+
+	if ((delta.x > 0 && l1.x + tr.x > Width * 0.75) ||
+		(delta.x < 0 && l1.x + tr.x < Width * 0.25))
+		tr.x -= delta.x;
+	if ((delta.y > 0 && l1.y + tr.y > Height * 0.75) ||
+		(delta.y < 0 && l1.y + tr.y < Height * 0.25))
+		tr.y -= delta.y;
+}
+
 static void draw(const Lvl &lvl, const Player &p) {
 	clear();
 	drawlvl(0, lvl);
@@ -114,8 +131,8 @@ static void drawlvl(unsigned int z, const Lvl &lvl) {
 		SDL_Rect r;
 		r.w = Tile::Width;
 		r.h = Tile::Height;
-		r.x = x * Tile::Width;
-		r.y = y * Tile::Height;
+		r.x = x * Tile::Width + tr.x;
+		r.y = y * Tile::Height + tr.y;
 
 		if (bi.tile.flags & Tile::Collide)
 			fillrect(&r, Image::black);
@@ -129,8 +146,8 @@ static void drawplayer(const Player &p) {
 	SDL_Rect r;
 	r.w = p.body.bbox.b.x - p.body.bbox.a.x;
 	r.h = p.body.bbox.b.y - p.body.bbox.a.y;
-	r.x = p.body.bbox.a.x;
-	r.y = p.body.bbox.a.y;
+	r.x = p.body.bbox.a.x + tr.x;
+	r.y = p.body.bbox.a.y + tr.y;
 	fillrect(&r, Image::green);
 }
 
@@ -146,6 +163,5 @@ static void fillrect(SDL_Rect *rect, Color color) {
 	unsigned char r = color.getred255();
 	unsigned char g = color.getgreen255();
 	unsigned char b = color.getblue255();
-	boost::uint32_t c = SDL_MapRGB(screen->format, r, g, b);
-	SDL_FillRect(screen, rect, c);
+	SDL_FillRect(screen, rect, SDL_MapRGB(screen->format, r, g, b));
 }
