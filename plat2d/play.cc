@@ -144,10 +144,11 @@ static void drawlvl(unsigned int z, const Lvl &lvl) {
 
 static void drawplayer(const Player &p) {
 	SDL_Rect r;
-	r.w = p.body.bbox.b.x - p.body.bbox.a.x;
-	r.h = p.body.bbox.b.y - p.body.bbox.a.y;
-	r.x = p.body.bbox.a.x + tr.x;
-	r.y = p.body.bbox.a.y + tr.y;
+	Rect bbox(p.bbox());
+	r.w = bbox.b.x - bbox.a.x;
+	r.h = bbox.b.y - bbox.a.y;
+	r.x = bbox.a.x + tr.x;
+	r.y = bbox.a.y + tr.y;
 	fillrect(&r, Image::green);
 }
 

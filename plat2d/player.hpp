@@ -19,10 +19,9 @@ struct Player {
 
 	void act(const Lvl&, unsigned int);
 
-	// bottom left
-	Point loc(void) { return body.bbox.a; }
+	Point loc(void) const { return body.bbox.a; }
 
-	Body body;
+	Rect bbox(void) const { return body.bbox; }
 
 private:
 	void chngdir(unsigned int);
@@ -36,5 +35,6 @@ private:
 
 	double jmpspeed(void) const { return 7.0 + Dex / 5.0; }
 
+	Body body;
 	unsigned int jframes;
 };
