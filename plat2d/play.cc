@@ -163,5 +163,5 @@ static void fillrect(SDL_Rect *rect, Color color) {
 	unsigned char r = color.getred255();
 	unsigned char g = color.getgreen255();
 	unsigned char b = color.getblue255();
-	SDL_FillRect(screen, rect, SDL_MapRGB(screen->format, r, g, b));
+	SDL_FillRect(screen, rect, SDL_MapRGB(screen->format, b, g, r));
 }
