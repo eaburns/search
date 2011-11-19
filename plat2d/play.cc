@@ -7,8 +7,8 @@
 #include <cstdlib>
 
 enum {
-	Width = 1024,
-	Height = 768,
+	Width = 640,
+	Height = 480,
 
 	// from mid
 	PlayerWidth = 21,

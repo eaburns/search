@@ -13,9 +13,9 @@ struct Player {
 
 	Player(unsigned int x, unsigned int y, unsigned int z,
 			unsigned int w, unsigned int h) :
-		body(x, y, z, w, h), jframes(0), jmp(false) { }
+		body(x, y, z, w, h), jframes(0) { }
 
-	Player(const Player &o) : body(o.body), jframes(o.jframes), jmp(o.jmp) { }
+	Player(const Player &o) : body(o.body), jframes(o.jframes) { }
 
 	void act(const Lvl&, unsigned int);
 
@@ -34,5 +34,4 @@ private:
 	double jmpspeed(void) const { return 7.0 + Dex / 5.0; }
 
 	unsigned int jframes;
-	bool jmp;	// true if jump was held in previous frame
 };

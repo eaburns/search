@@ -32,12 +32,7 @@ void Player::chngdir(unsigned int a) {
 }
 
 void Player::chngjmp(unsigned int a) {
-	if (jmp == (a & Jump))	// nothing changed
-		return;
-
-	jmp = a & Jump;
-
-	if (!jmp && body.fall) {	// stop holding jump
+	if (!(a & Jump) && body.fall) {	// stop holding jump
 		if (body.vel.y < 0) {
 			body.vel.y += (Maxjframes - jframes);
 			if (body.vel.y > 0)
@@ -45,7 +40,7 @@ void Player::chngjmp(unsigned int a) {
 		}
 		jframes = 0;
 
-	} else if (jmp && !body.fall) {
+	} else if (a & Jump && !body.fall) {
 		body.vel.y = -jmpspeed();
 		body.fall = 1;
 		jframes = Maxjframes;
