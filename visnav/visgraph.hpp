@@ -4,6 +4,11 @@
 
 class Image;
 
+// A multiple-layer visibility graph.  Each z-layer is
+// composed of a bunch of polygons in 2d space.  The
+// vertices of each layer are linked based on visibility.
+// Additional vertices and links can be added to link the
+// different layers too.
 struct VisGraph {
 	VisGraph(void) { }
 
