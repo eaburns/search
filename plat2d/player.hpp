@@ -22,6 +22,8 @@ struct Player {
 	// bottom left
 	Point loc(void) { return body.bbox.a; }
 
+	unsigned int z(void) const { return body.z; }
+
 	Body body;
 
 private:

@@ -119,7 +119,7 @@ static void scroll(const Point &l0, const Point &l1) {
 
 static void draw(const Lvl &lvl, const Player &p) {
 	clear();
-	drawlvl(0, lvl);
+	drawlvl(p.z(), lvl);
 	drawplayer(p);
 	SDL_Flip(screen);
 }
