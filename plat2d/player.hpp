@@ -22,9 +22,9 @@ struct Player {
 	// bottom left
 	Point loc(void) { return body.bbox.a; }
 
-	unsigned int z(void) const { return body.z; }
+	const Rect &bbox(void) const { return body.bbox; }
 
-	Body body;
+	unsigned int z(void) const { return body.z; }
 
 private:
 	void chngdir(unsigned int);
@@ -38,5 +38,6 @@ private:
 
 	double jmpspeed(void) const { return 7.0 + Dex / 5.0; }
 
+	Body body;
 	unsigned int jframes;
 };
