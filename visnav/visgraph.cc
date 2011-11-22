@@ -168,11 +168,10 @@ void VisGraph::linkvert(unsigned int i, unsigned int z) {
 		LineSeg line(verts[i].pt, verts[j].pt);
 		line = LineSeg(line.along(Epsilon), line.p1);
 
-		if (verts[i].polyno == verts[j].polyno) {
-			Point mid = line.midpt();
-			if (layers[z][verts[i].polyno].contains(mid))
-				continue;
-		}
+		Point mid = line.midpt();
+		if (layers[z][verts[i].polyno].contains(mid)
+				|| layers[z][verts[j].polyno].contains(mid))
+			continue;
 
 		double len = line.length();
 		bool vis = true;

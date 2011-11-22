@@ -174,7 +174,7 @@ private:
 
 // Disjoint sets
 struct Djset {
-	Djset(void) : rank(0) { parent = this; }
+	Djset(void) : aux(NULL), rank(0) { parent = this; }
 
 	void clear(void) {
 		rank = 0;
@@ -202,7 +202,7 @@ struct Djset {
 		}
 	}
 
-	void *aux;	// Never touched; can be used however.
+	void *aux;	// Inited to NULL. Never touched; can be used however.
 
 private:
 	Djset *parent;
