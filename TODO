@@ -1,3 +1,15 @@
+• visnav: remove z-layers
+
+• gridpath: 2poly to convert a grid
+	map to polygons
+
+	- component class
+
+	- min/max cell based
+		poligonization
+
+• visnav: O(n lg n) alg for visnav
+
 • plat2d/play: draw doors
 
 • plat2d/play: no repeat on
@@ -12,15 +24,6 @@
 • Port tiles PDB code from C
 
 • Bit-packed pancake states
-
-• visnav: O(n lg n) alg for visnav
-
-• gridpath: 2poly to convert a grid
-	map to polygons
-
-	- need to detect non-polygons
-		like the boarder around
-		the maps
 
 • More domains:
 

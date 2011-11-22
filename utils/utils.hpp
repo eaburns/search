@@ -193,11 +193,11 @@ struct Djset {
 		Djset *oroot = o.find();
 		if (root == oroot)
 			return;
-		if (rank < o.rank) {
-			parent = oroot;
+		if (root->rank < oroot->rank) {
+			root->parent = oroot;
 		} else {
-			o.parent = root;
-			if (rank == o.rank)
+			oroot->parent = root;
+			if (root->rank == oroot->rank)
 				rank++;
 		}
 	}
