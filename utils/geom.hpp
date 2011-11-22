@@ -289,6 +289,8 @@ struct Polygon {
 
 	bool hits(const LineSeg &) const;
 
+	bool isreflex(unsigned int) const;
+
 	// Indices of reflex vertices.
 	void reflexes(std::vector<unsigned int>&) const;
 

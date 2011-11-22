@@ -153,9 +153,11 @@ void VisGraph::linkvert(unsigned int i) {
 		line = LineSeg(line.along(Epsilon), line.p1);
 
 		Point mid = line.midpt();
-		if (polys[verts[i].polyno].contains(line.p0))
+		if (verts[i].polyno < polys.size() &&
+			polys[verts[i].polyno].contains(line.p0))
 			continue;
-		if (polys[verts[j].polyno].contains(line.along(line.length() - Epsilon)))
+		if (verts[j].polyno < polys.size() &&
+			polys[verts[j].polyno].contains(line.along(line.length() - Epsilon)))
 			continue;
 
 		double len = line.length();
@@ -179,6 +181,7 @@ bool VisGraph::consecutive(unsigned int i, unsigned int j) {
 
 	unsigned int n = polys[verts[i].polyno].verts.size();
 	unsigned int u = verts[i].vertno, v = verts[j].vertno;
+
 	return abs(u - v) == 1 || (u == 0 && v == n - 1) || (u == n - 1 && v == 0);
 }
 

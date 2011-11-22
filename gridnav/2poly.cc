@@ -9,8 +9,6 @@ static std::vector<Comp*> comps(const GridMap&);
 static Polygon poly(const GridMap&, const Comp*);
 static void adduniq(std::vector<Point>&, const Point&);
 Polygon giftwrap(double, const std::vector<Point>&);
-static unsigned int mincwangle(double, const std::vector<Point>&, unsigned int,
-	unsigned int);
 static unsigned int minx(const std::vector<Point>&);
 
 int main(int argc, char *argv[]) {
@@ -101,44 +99,35 @@ Polygon giftwrap(double d, const std::vector<Point> &pts) {
 	unsigned int min = minx(pts);
 
 	unsigned int cur = min, prev = pts.size();
+	Point prevpt(pts[cur].x, pts[cur].y - 0.1);
+	double prevangle = FP_NAN;
+
 	do {
-		unsigned int next = mincwangle(d, pts, prev, cur);
+		double nextangle = std::numeric_limits<double>::infinity();
+		unsigned int next = cur;
+		for (unsigned int i = 0; i < pts.size(); i++) {
+			double dist = Point::distance(pts[cur], pts[i]);
+			if (i == prev || i == cur || dist > d * 1.01)
+				continue;
+			double t = Point::cwangle(prevpt, pts[cur], pts[i]);
+			if (t < nextangle) {
+				nextangle = t;
+				next = i;
+			}
+		}
 
 		for (unsigned int i = 0; i < hull.size(); i++)
 			assert(hull[i] != pts[next]);
 
 		hull.push_back(pts[next]);
+
 		prev = cur;
+		prevpt = pts[cur];
+		prevangle = nextangle;
 		cur = next;
 	} while (cur != min);
 
 	return Polygon(hull);
-}
-
-static unsigned int mincwangle(double d, const std::vector<Point> &pts,
-		unsigned int prev, unsigned int cur) {
-	double mint = std::numeric_limits<double>::infinity();
-	unsigned int mini = 0;
-	double mind = -1;
-
-	for (unsigned int i = 0; i < pts.size(); i++) {
-		double dist = Point::distance(pts[cur], pts[i]);
-		if (i == prev || i == cur || dist > d * 1.01)
-			continue;
-
-		Point prevpt(pts[cur].x, pts[cur].y - 0.1);
-		if (prev < pts.size())
-			prevpt = pts[prev];
-
-		double t = Point::cwangle(prevpt, pts[cur], pts[i]);
-		if (t < mint) {
-			mind = dist;
-			mint = t;
-			mini = i;
-		}
-	}
-
-	return mini;
 }
 
 static unsigned int minx(const std::vector<Point> &pts) {

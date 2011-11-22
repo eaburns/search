@@ -11,6 +11,9 @@
 
 • visnav: O(n lg n) alg for visnav
 
+• visnav: don't fatalx on read fail
+	it prints Success…
+
 • plat2d/play: draw doors
 
 • plat2d/play: no repeat on

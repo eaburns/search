@@ -162,19 +162,22 @@ Polygon Polygon::random(unsigned int n, double xc, double yc, double r) {
 	return Polygon(verts);
 }
 
+bool Polygon::isreflex(unsigned int i) const {
+	const Point &u = i == 0 ? verts[verts.size() - 1] : verts[i-1];
+	const Point &v = verts[i];
+	const Point &w = i == verts.size() - 1 ? verts[0] : verts[i+1];
+	Point a = v.minus(u), b = w.minus(v);
+
+	// interior angle via some voodoo from the internet.
+	double t = M_PI - fmod(atan2(b.x*a.y - a.x*b.y, b.x*a.x + b.y*a.y), 2 * M_PI);
+
+	return t < M_PI;
+}
+
 void Polygon::reflexes(std::vector<unsigned int> &rs) const {
 	rs.clear();
-
 	for (unsigned int i = 0; i < verts.size(); i++) {
-		const Point &u = i == 0 ? verts[verts.size() - 1] : verts[i-1];
-		const Point &v = verts[i];
-		const Point &w = i == verts.size() - 1 ? verts[0] : verts[i+1];
-		Point a = v.minus(u), b = w.minus(v);
-
-		// interior angle via some voodoo from the internet.
-		double t = M_PI - fmod(atan2(b.x*a.y - a.x*b.y, b.x*a.x + b.y*a.y), 2 * M_PI);
-
-		if (t < M_PI)
+		if (isreflex(i))
 			rs.push_back(i);
 	}
 }
