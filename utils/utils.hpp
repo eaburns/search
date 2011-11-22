@@ -133,3 +133,78 @@ private:
 };
 
 unsigned int ilog2(boost::uint32_t);
+
+struct Djforrest {
+	Djforrest(unsigned int sz) {
+		for (unsigned int i = 0; i < sz; i++)
+			sets.push_back(Set(i));
+	}
+
+	unsigned int find(unsigned int s) {
+		if (sets[s].parent == s)
+			return s;
+		sets[s].parent = find(sets[s].parent);
+		return sets[s].parent;
+	}
+
+	void join(unsigned int a, unsigned int b) {
+		unsigned int aroot = find(a);
+		unsigned int broot = find(b);
+		if (aroot == broot)
+			return;
+		if (sets[a].rank < sets[b].rank) {
+			sets[a].parent = broot;
+		} else if (sets[b].rank < sets[a].rank) {
+			sets[b].parent = aroot;
+		} else {
+			sets[b].parent = aroot;
+			sets[a].rank++;
+		}
+	}
+	
+	struct Set {
+		Set(unsigned int n) : parent(n), rank(0) { }
+
+		unsigned int parent, rank;
+	};
+
+private:
+	std::vector<Set> sets; 
+};
+
+// Disjoint sets
+struct Djset {
+	Djset(void) : rank(0) { parent = this; }
+
+	void clear(void) {
+		rank = 0;
+		parent = this;
+	}
+
+	Djset *find(void) {
+		if (parent == this)
+			return parent;
+		parent = parent->find();
+		return parent;
+	}
+
+	void join(Djset &o) {
+		Djset *root = find();
+		Djset *oroot = o.find();
+		if (root == oroot)
+			return;
+		if (rank < o.rank) {
+			parent = oroot;
+		} else {
+			o.parent = root;
+			if (rank == o.rank)
+				rank++;
+		}
+	}
+
+	void *aux;	// Never touched; can be used however.
+
+private:
+	Djset *parent;
+	unsigned int rank;
+};

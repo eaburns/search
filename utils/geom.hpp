@@ -13,8 +13,6 @@ static inline bool inrange(double min, double max, double x) {
 
 struct Point {
 
-//	static Point cross(const Point &a, const Point &b) { return a.cross(b); }
-
 	static double dot(const Point &a, const Point &b) { return a.dot(b); }
 
 	static Point sub(const Point &a, const Point &b) { return a.minus(b); }
