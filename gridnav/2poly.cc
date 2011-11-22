@@ -100,7 +100,6 @@ Polygon giftwrap(double d, const std::vector<Point> &pts) {
 
 	unsigned int cur = min, prev = pts.size();
 	Point prevpt(pts[cur].x, pts[cur].y - 0.1);
-	double prevangle = FP_NAN;
 
 	do {
 		double nextangle = std::numeric_limits<double>::infinity();
@@ -123,7 +122,6 @@ Polygon giftwrap(double d, const std::vector<Point> &pts) {
 
 		prev = cur;
 		prevpt = pts[cur];
-		prevangle = nextangle;
 		cur = next;
 	} while (cur != min);
 

@@ -260,7 +260,8 @@ struct Polygon {
 	Polygon(std::vector<Point> &pts) : verts(pts), bbox(pts) {
 		if (pts.size() < 3)
 			fatal("A polygon needs at least 3 points\n");
-		initsides(verts);
+		collapseflats();
+		initsides();
 	}
 
 	Polygon(unsigned int, ...);
@@ -275,7 +276,7 @@ struct Polygon {
 			verts[i].y *= f;
 		}
 		bbox = Bbox(verts);
-		initsides(verts);
+		initsides();
 	}
 
 	// If the lwidth is <0 then the polygon is filled.
@@ -289,8 +290,6 @@ struct Polygon {
 
 	bool hits(const LineSeg &) const;
 
-	bool isreflex(unsigned int) const;
-
 	// Indices of reflex vertices.
 	void reflexes(std::vector<unsigned int>&) const;
 
@@ -300,7 +299,7 @@ struct Polygon {
 			verts[i].x += dx;
 			verts[i].y += dy;
 		}
-		initsides(verts);
+		initsides();
 	}
 
 	std::vector<Point> verts;
@@ -308,5 +307,8 @@ struct Polygon {
 	Bbox bbox;
 
 private:
-	void initsides(std::vector<Point>&);
+	double interangle(unsigned int) const;
+	bool isreflex(unsigned int) const;
+	void collapseflats(void);
+	void initsides(void);
 };

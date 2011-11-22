@@ -180,7 +180,8 @@ bool VisGraph::consecutive(unsigned int i, unsigned int j) {
 		return false;
 
 	unsigned int n = polys[verts[i].polyno].verts.size();
-	unsigned int u = verts[i].vertno, v = verts[j].vertno;
+	unsigned int u = verts[i].vertno;
+	unsigned int v = verts[j].vertno;
 
 	return abs(u - v) == 1 || (u == 0 && v == n - 1) || (u == n - 1 && v == 0);
 }

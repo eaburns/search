@@ -33,7 +33,8 @@ Polygon::Polygon(unsigned int n, ...) {
 	}
 	va_end(ap);
 	bbox = Bbox(verts);
-	initsides(verts);
+	collapseflats();
+	initsides();
 }
 
 Polygon::Polygon(FILE *in) {
@@ -48,7 +49,8 @@ Polygon::Polygon(FILE *in) {
 		verts.push_back(Point(x, y));
 	}
 	bbox = Bbox(verts);
-	initsides(verts);
+	collapseflats();
+	initsides();
 }
 
 void Polygon::output(FILE *out) const {
@@ -125,11 +127,20 @@ void Polygon::draw(Image &img, Color c, double lwidth) const {
 	img.add(p);
 }
 
-void Polygon::initsides(std::vector<Point> &pts) {
+void Polygon::collapseflats(void) {
+	for (unsigned int i = 0; i < verts.size(); ) {
+		if (fabs(interangle(i) - M_PI) < std::numeric_limits<double>::epsilon())
+			verts.erase(verts.begin() + i);
+		else
+			i++;
+	}
+}
+
+void Polygon::initsides(void) {
 	sides.clear();
-	for (unsigned int i = 1; i < pts.size(); i++)
-		sides.push_back(LineSeg(pts[i-1], pts[i]));
-	sides.push_back(LineSeg(pts[pts.size() - 1], pts[0]));
+	for (unsigned int i = 1; i < verts.size(); i++)
+		sides.push_back(LineSeg(verts[i-1], verts[i]));
+	sides.push_back(LineSeg(verts[verts.size() - 1], verts[0]));
 }
 
 Polygon Polygon::random(unsigned int n, double xc, double yc, double r) {
@@ -162,16 +173,17 @@ Polygon Polygon::random(unsigned int n, double xc, double yc, double r) {
 	return Polygon(verts);
 }
 
-bool Polygon::isreflex(unsigned int i) const {
+double Polygon::interangle(unsigned int i) const {
 	const Point &u = i == 0 ? verts[verts.size() - 1] : verts[i-1];
 	const Point &v = verts[i];
 	const Point &w = i == verts.size() - 1 ? verts[0] : verts[i+1];
 	Point a = v.minus(u), b = w.minus(v);
 
-	// interior angle via some voodoo from the internet.
-	double t = M_PI - fmod(atan2(b.x*a.y - a.x*b.y, b.x*a.x + b.y*a.y), 2 * M_PI);
+	return M_PI - fmod(atan2(b.x*a.y - a.x*b.y, b.x*a.x + b.y*a.y), 2 * M_PI);
+}
 
-	return t < M_PI;
+bool Polygon::isreflex(unsigned int i) const {
+	return interangle(i) < M_PI;
 }
 
 void Polygon::reflexes(std::vector<unsigned int> &rs) const {
