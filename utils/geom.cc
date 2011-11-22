@@ -4,8 +4,9 @@
 #include <cstdarg>
 #include <cerrno>
 
-static Point mincwangle(const std::vector<Point>&, Point, Point);
-static Point minx(const std::vector<Point>&);
+static unsigned int mincwangle(const std::vector<Point>&, unsigned int,
+	unsigned int);
+static unsigned int minx(const std::vector<Point>&);
 static void xsortedpts(std::vector<Point>&, double, double, double);
 static bool cmpx(const Point&, const Point&);
 
@@ -180,12 +181,12 @@ void Polygon::reflexes(std::vector<unsigned int> &rs) const {
 
 Polygon Polygon::giftwrap(const std::vector<Point> &pts) {
 	std::vector<Point> hull;
-	Point min = minx(pts);
+	unsigned int min = minx(pts);
 
-	Point cur = min, prev(min.x, min.y - 0.1);
+	unsigned int cur = min, prev = pts.size();
 	do {
-		Point next = mincwangle(pts, prev, cur);
-		hull.push_back(next);
+		unsigned int next = mincwangle(pts, prev, cur);
+		hull.push_back(pts[next]);
 		prev = cur;
 		cur = next;
 	} while (cur != min);
@@ -193,28 +194,33 @@ Polygon Polygon::giftwrap(const std::vector<Point> &pts) {
 	return Polygon(hull);
 }
 
-static Point mincwangle(const std::vector<Point> &pts, Point prev, Point cur) {
+static unsigned int mincwangle(const std::vector<Point> &pts,  unsigned int prev,
+		unsigned int cur) {
 	double mint = std::numeric_limits<double>::infinity();
 	unsigned int mini = 0;
 
 	for (unsigned int i = 0; i < pts.size(); i++) {
-		if (pts[i] == prev || pts[i] == cur)
+		if (i == prev || i == cur)
 			continue;
 
-		double t = Point::cwangle(prev, cur, pts[i]);
+		Point prevpt(pts[cur].x, pts[cur].y - 0.1);
+		if (prev < pts.size())
+			prevpt = pts[prev];
+
+		double t = Point::cwangle(prevpt, pts[cur], pts[i]);
 		if (t < mint) {
 			mint = t;
 			mini = i;
 		}
 	}
-	return pts[mini];
+	return mini;
 }
 
-static Point minx(const std::vector<Point> &pts) {
-	Point min = Point::inf();
+static unsigned int minx(const std::vector<Point> &pts) {
+	unsigned int min = pts.size();
 	for (unsigned int i = 0; i < pts.size(); i++) {
-		if (pts[i].x < min.x)
-			min = pts[i];
+		if (min >= pts.size() || pts[i].x < pts[min].x)
+			min = i;
 	}
 	return min;
 }
