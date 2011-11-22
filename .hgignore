@@ -2,6 +2,7 @@ syntax: glob
 *.o
 *.gch
 */*_solver
+gridpath/2poly
 structs/test
 utils/test
 utils/pathfor

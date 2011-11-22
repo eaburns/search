@@ -19,6 +19,8 @@ public:
 
 	unsigned int y(unsigned int loc) const { return loc / w; }
 
+	bool passable(unsigned int loc) const { return flags[loc] & Passable; }
+
 	unsigned int loc(unsigned int x, unsigned int y) const { return y * w + x; }
 
 	unsigned int width(void) const { return w; }
