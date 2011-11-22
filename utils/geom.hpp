@@ -92,7 +92,7 @@ struct Line {
 
 	// If they are parallel then (∞,∞), if they are
 	// the same line then (FP_NAN, FP_NAN)
-	Point isect(const Line &l) const {
+	Point isection(const Line &l) const {
 		if (std::isinf(m) || std::isinf(l.m))
 			return vertisect(*this, l);
 
@@ -104,6 +104,7 @@ struct Line {
 
 	// In case of a vertical line: m == ∞ and b = x
 	double m, b;
+
 private:
 	static Point vertisect(const Line &a, const Line &b) {
 		if (std::isinf(a.m) && std::isinf(b.m)) {
@@ -146,6 +147,10 @@ struct LineSeg : public Line {
 		img.add(new Image::Line(p0.x, p0.y, p1.x, p1.y, w, c));
 	}
 
+	double length(void) const {
+		return Point::distance(p0, p1);
+	}
+
 	Point midpt(void) const {
 		return Point((p0.x + p1.x) / 2, (p0.y + p1.y) / 2);
 	}
@@ -155,21 +160,17 @@ struct LineSeg : public Line {
 		return Point(p0.x + dist * cos(theta), p0.y + dist * sin(theta));
 	}
 
-	double length(void) const {
-		return Point::distance(p0, p1);
-	}
-
 	bool contains(const Point &p) const {
 		if (fabs(m) < std::numeric_limits<double>::epsilon())
 			return inrange(mins.x, maxes.x, p.x);
 		return inrange(mins.x, maxes.x, p.x) && inrange(mins.y, maxes.y, p.y);
 	}
 
-	Point isect(const LineSeg &l) const {
+	Point isection(const LineSeg &l) const {
 		if (isvertical() || l.isvertical())
 			return vertisect(*this, l);
 
-		Point p = Line::isect(l);
+		Point p = Line::isection(l);
 		if (!contains(p) || !l.contains(p))
 			return Point::inf();
 		return p;
@@ -231,8 +232,9 @@ struct Bbox {
 		return inrange(min.x, max.x, p.x) && inrange(min.y, max.y, p.y);
 	}
 
-	bool isect(const Bbox &b) const {
-		return !(min.x > b.max.x || b.min.x > max.x || min.y > b.max.y || b.min.y > max.y);
+	bool hits(const Bbox &b) const {
+		return !(min.x > b.max.x || b.min.x > max.x
+			|| min.y > b.max.y || b.min.y > max.y);
 	}
 
 	void move(double dx, double dy) {
@@ -256,19 +258,27 @@ struct Polygon {
 	// of the given set of points.
 	static Polygon giftwrap(const std::vector<Point>&);
 
-	// vertices are given clock-wise around the polygon.
-	Polygon(std::vector<Point> &pts) : verts(pts), bbox(pts) {
-		if (pts.size() < 3)
-			fatal("A polygon needs at least 3 points\n");
-		collapseflats();
-		initsides();
-	}
+	Polygon(const std::vector<Point>&);
 
 	Polygon(unsigned int, ...);
 
 	Polygon(FILE*);
 
 	void output(FILE*) const;
+
+	// If the lwidth is <0 then the polygon is filled.
+	void draw(Image&, Color c = Image::black, double lwidth = 1) const;
+
+	bool contains(const Point&) const;
+
+	bool hits(const LineSeg &) const;
+
+	Point minisect(const LineSeg&) const;
+
+	std::vector<Point> isections(const LineSeg&) const;
+
+	// Indices of reflex vertices.
+	std::vector<unsigned int> reflexes(void) const;
 
 	void scale(double f) {
 		for (unsigned long i = 0; i < verts.size(); i++) {
@@ -278,20 +288,6 @@ struct Polygon {
 		bbox = Bbox(verts);
 		initsides();
 	}
-
-	// If the lwidth is <0 then the polygon is filled.
-	void draw(Image&, Color c = Image::black, double lwidth = 1) const;
-
-	bool contains(const Point&) const;
-
-	void isects(const LineSeg&, std::vector<Point>&) const;
- 
-	Point minisect(const LineSeg&) const;
-
-	bool hits(const LineSeg &) const;
-
-	// Indices of reflex vertices.
-	void reflexes(std::vector<unsigned int>&) const;
 
 	void move(double dx, double dy) {
 		bbox.move(dx, dy);

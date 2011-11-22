@@ -118,9 +118,8 @@ void VisGraph::computegraph(void) {
 
 void VisGraph::computeverts(void) {
 	for (unsigned int polyno = 0; polyno < polys.size(); polyno++) {
-		std::vector<unsigned int> rs;
 		Polygon &p = polys[polyno];
-		p.reflexes(rs);
+		std::vector<unsigned int> rs = p.reflexes();
 		for (unsigned int i = 0; i < rs.size(); i++) {
 			unsigned int vertno = rs[i];
 			unsigned int vid = verts.size();

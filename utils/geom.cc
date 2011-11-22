@@ -4,8 +4,7 @@
 #include <cstdarg>
 #include <cerrno>
 
-static unsigned int mincwangle(const std::vector<Point>&, unsigned int,
-	unsigned int);
+static bool isisect(const Point&);
 static unsigned int minx(const std::vector<Point>&);
 static void xsortedpts(std::vector<Point>&, double, double, double);
 static bool cmpx(const Point&, const Point&);
@@ -21,6 +20,14 @@ void Bbox::draw(Image &img, Color c, double lwidth) const {
 	p->lineto(max.x, min.y);
 	p->closepath();
 	img.add(p);
+}
+
+// vertices are given clock-wise around the polygon.
+Polygon::Polygon(const std::vector<Point> &vs) : verts(vs), bbox(verts) {
+	if (verts.size() < 3)
+		fatal("A polygon needs at least 3 points\n");
+	collapseflats();
+	initsides();
 }
 
 Polygon::Polygon(unsigned int n, ...) {
@@ -53,96 +60,6 @@ Polygon::Polygon(FILE *in) {
 	initsides();
 }
 
-void Polygon::output(FILE *out) const {
-	fprintf(out, "%lu", (unsigned long) verts.size());
-	for (unsigned int i = 0; i < verts.size(); i++)
-		fprintf(out, " %g %g", verts[i].x, verts[i].y);
-	fputc('\n', out);
-}
-
-static bool isisect(const Point &p) {
-	return !std::isinf(p.x) && !std::isnan(p.x) && !std::isinf(p.y) && !std::isnan(p.y);
-}
-
-bool Polygon::contains(const Point &p) const {
-	bool even = true, isect = false;
-	Line ray(p, Point(p.x + 1, p.y));
-
-	for (unsigned int i = 0; i < sides.size(); i++) {
-		Point hit = ray.isect(sides[i]);
-		if (isisect(hit) && hit.x > p.x && sides[i].contains(hit)) {
-			isect = true;
-			even = !even;
-		}
-	}
-
-	return isect && !even;
-}
-
-void Polygon::isects(const LineSeg &l, std::vector<Point> &is) const {
-	is.clear();
-	for (unsigned int i = 0; i < sides.size(); i++) {
-		Point p = l.isect(sides[i]);
-		if (isisect(p))
-			is.push_back(p);
-	}
-}
-
-Point Polygon::minisect(const LineSeg &l) const {
-	Point min = Point::inf();
-	double mindist = std::numeric_limits<double>::infinity();
-
-	for (unsigned int i = 0; i < sides.size(); i++) {
-		Point p = l.isect(sides[i]);
-		double d = Point::distance(p, l.p0);
-		if (isisect(p) && d < mindist) {
-			mindist = d;
-			min = p;
-		}
-	}
-
-	return min;
-}
-
-bool Polygon::hits(const LineSeg &l) const {
-	for (unsigned int i = 0; i < sides.size(); i++) {
-		Point p = l.isect(sides[i]);
-		if (isisect(p))
-			return true;
-	}
-	return false;
-}
-
-void Polygon::draw(Image &img, Color c, double lwidth) const {
-	Image::Path *p = new Image::Path();
-	p->setlinejoin(Image::Path::Round);
-	p->setlinewidth(lwidth < 0 ? 0.1 : lwidth);
-	p->setcolor(c);
-	p->moveto(verts[0].x, verts[0].y);
-	for (unsigned int i = 1; i < verts.size(); i++)
-		p->lineto(verts[i].x, verts[i].y);
-	p->closepath();
-	if (lwidth < 0)
-		p->fill();
-	img.add(p);
-}
-
-void Polygon::collapseflats(void) {
-	for (unsigned int i = 0; i < verts.size(); ) {
-		if (fabs(interangle(i) - M_PI) < std::numeric_limits<double>::epsilon())
-			verts.erase(verts.begin() + i);
-		else
-			i++;
-	}
-}
-
-void Polygon::initsides(void) {
-	sides.clear();
-	for (unsigned int i = 1; i < verts.size(); i++)
-		sides.push_back(LineSeg(verts[i-1], verts[i]));
-	sides.push_back(LineSeg(verts[verts.size() - 1], verts[0]));
-}
-
 Polygon Polygon::random(unsigned int n, double xc, double yc, double r) {
 	if (n < 3)
 		fatal("A polygon needs at least 3 points\n");
@@ -173,6 +90,119 @@ Polygon Polygon::random(unsigned int n, double xc, double yc, double r) {
 	return Polygon(verts);
 }
 
+Polygon Polygon::giftwrap(const std::vector<Point> &pts) {
+	std::vector<Point> hull;
+	unsigned int min = minx(pts);
+
+	unsigned int cur = min, prev = pts.size();
+	Point prevpt(pts[cur].x, pts[cur].y - 0.1);
+
+	do {
+		unsigned int next = 0;
+		double ang = std::numeric_limits<double>::infinity();
+		for (unsigned int i = 0; i < pts.size(); i++) {
+			if (i == prev || i == cur)
+				continue;
+			double t = Point::cwangle(prevpt, pts[cur], pts[i]);
+			if (t < ang) {
+				ang = t;
+				next = i;
+			}
+		}
+		
+		hull.push_back(pts[next]);
+		prev = cur;
+		prevpt = pts[prev];
+		cur = next;
+	} while (cur != min);
+
+	return Polygon(hull);
+}
+
+void Polygon::output(FILE *out) const {
+	fprintf(out, "%lu", (unsigned long) verts.size());
+	for (unsigned int i = 0; i < verts.size(); i++)
+		fprintf(out, " %g %g", verts[i].x, verts[i].y);
+	fputc('\n', out);
+}
+
+void Polygon::draw(Image &img, Color c, double lwidth) const {
+	Image::Path *p = new Image::Path();
+	p->setlinejoin(Image::Path::Round);
+	p->setlinewidth(lwidth < 0 ? 0.1 : lwidth);
+	p->setcolor(c);
+	p->moveto(verts[0].x, verts[0].y);
+	for (unsigned int i = 1; i < verts.size(); i++)
+		p->lineto(verts[i].x, verts[i].y);
+	p->closepath();
+	if (lwidth < 0)
+		p->fill();
+	img.add(p);
+}
+
+bool Polygon::contains(const Point &p) const {
+	bool even = true, isect = false;
+	Line ray(p, Point(p.x + 1, p.y));
+
+	for (unsigned int i = 0; i < sides.size(); i++) {
+		Point hit = ray.isection(sides[i]);
+		if (isisect(hit) && hit.x > p.x && sides[i].contains(hit)) {
+			isect = true;
+			even = !even;
+		}
+	}
+
+	return isect && !even;
+}
+
+std::vector<Point> Polygon::isections(const LineSeg &l) const {
+	std::vector<Point> is;
+
+	for (unsigned int i = 0; i < sides.size(); i++) {
+		Point p = l.isection(sides[i]);
+		if (isisect(p))
+			is.push_back(p);
+	}
+
+	return is;
+}
+
+Point Polygon::minisect(const LineSeg &l) const {
+	Point min = Point::inf();
+	double mindist = std::numeric_limits<double>::infinity();
+
+	for (unsigned int i = 0; i < sides.size(); i++) {
+		Point p = l.isection(sides[i]);
+		double d = Point::distance(p, l.p0);
+		if (isisect(p) && d < mindist) {
+			mindist = d;
+			min = p;
+		}
+	}
+
+	return min;
+}
+
+bool Polygon::hits(const LineSeg &l) const {
+	for (unsigned int i = 0; i < sides.size(); i++) {
+		Point p = l.isection(sides[i]);
+		if (isisect(p))
+			return true;
+	}
+	return false;
+}
+
+std::vector<unsigned int> Polygon::reflexes(void) const {
+	std::vector<unsigned int> rs;
+
+	for (unsigned int i = 0; i < verts.size(); i++) {
+		if (isreflex(i))
+			rs.push_back(i);
+	}
+
+	return rs;
+}
+
 double Polygon::interangle(unsigned int i) const {
 	const Point &u = i == 0 ? verts[verts.size() - 1] : verts[i-1];
 	const Point &v = verts[i];
@@ -186,49 +216,24 @@ bool Polygon::isreflex(unsigned int i) const {
 	return interangle(i) < M_PI;
 }
 
-void Polygon::reflexes(std::vector<unsigned int> &rs) const {
-	rs.clear();
-	for (unsigned int i = 0; i < verts.size(); i++) {
-		if (isreflex(i))
-			rs.push_back(i);
+void Polygon::collapseflats(void) {
+	for (unsigned int i = 0; i < verts.size(); ) {
+		if (fabs(interangle(i) - M_PI) < std::numeric_limits<double>::epsilon())
+			verts.erase(verts.begin() + i);
+		else
+			i++;
 	}
 }
 
-Polygon Polygon::giftwrap(const std::vector<Point> &pts) {
-	std::vector<Point> hull;
-	unsigned int min = minx(pts);
-
-	unsigned int cur = min, prev = pts.size();
-	do {
-		unsigned int next = mincwangle(pts, prev, cur);
-		hull.push_back(pts[next]);
-		prev = cur;
-		cur = next;
-	} while (cur != min);
-
-	return Polygon(hull);
+void Polygon::initsides(void) {
+	sides.clear();
+	for (unsigned int i = 1; i < verts.size(); i++)
+		sides.push_back(LineSeg(verts[i-1], verts[i]));
+	sides.push_back(LineSeg(verts[verts.size() - 1], verts[0]));
 }
 
-static unsigned int mincwangle(const std::vector<Point> &pts,  unsigned int prev,
-		unsigned int cur) {
-	double mint = std::numeric_limits<double>::infinity();
-	unsigned int mini = 0;
-
-	for (unsigned int i = 0; i < pts.size(); i++) {
-		if (i == prev || i == cur)
-			continue;
-
-		Point prevpt(pts[cur].x, pts[cur].y - 0.1);
-		if (prev < pts.size())
-			prevpt = pts[prev];
-
-		double t = Point::cwangle(prevpt, pts[cur], pts[i]);
-		if (t < mint) {
-			mint = t;
-			mini = i;
-		}
-	}
-	return mini;
+static bool isisect(const Point &p) {
+	return !std::isinf(p.x) && !std::isnan(p.x) && !std::isinf(p.y) && !std::isnan(p.y);
 }
 
 static unsigned int minx(const std::vector<Point> &pts) {

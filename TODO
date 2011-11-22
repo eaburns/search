@@ -3,6 +3,12 @@
 • 2poly: min/max cell based
 	poligonization
 
+• 2dpoly: rename to vis
+
+• geom: use the same epsilon
+
+• utils: doubleeq()
+
 • visnav: bounding box to prune
 	links to out-of-bound verts.
 

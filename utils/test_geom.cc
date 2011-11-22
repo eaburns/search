@@ -48,7 +48,7 @@ bool test_line_isect(void) {
 
 	Line a(Point(0, 0), Point(1, 1));
 	Line b(Point(0, 0), Point(-1, 1));
-	Point is = a.isect(b);
+	Point is = a.isection(b);
 	if (!eq(is.x, 0) || !eq(is.y, 0)) {
 		testpr("Expected isection 0,0, got %g,%g\n", is.x, is.y);
 		ok = false;
@@ -56,7 +56,7 @@ bool test_line_isect(void) {
 
 	a = Line(Point(0, 0), Point(1, 1));
 	b = Line(Point(0, 2), Point(2, 0));
-	is = a.isect(b);
+	is = a.isection(b);
 	if (!eq(is.x, 1) || !eq(is.y, 1)) {
 		testpr("Expected isection 1,1, got %g,%g\n", is.x, is.y);
 		ok = false;
@@ -64,7 +64,7 @@ bool test_line_isect(void) {
 
 	a = Line(Point(0, 0), Point(1, 1));
 	b = Line(Point(0, 1), Point(1, 2));
-	is = a.isect(b);
+	is = a.isection(b);
 	if (!std::isinf(is.x) || !std::isinf(is.y)) {
 		testpr("Expected isection ∞,∞, got %g,%g\n", is.x, is.y);
 		ok = false;
@@ -72,7 +72,7 @@ bool test_line_isect(void) {
 
 	a = Line(Point(0, 0), Point(1, 1));
 	b = Line(Point(-1, -1), Point(2, 2));
-	is = a.isect(b);
+	is = a.isection(b);
 	if (!std::isnan(is.x) || !std::isnan(is.y)) {
 		testpr("Expected isection NaN,NaN, got %g,%g\n", is.x, is.y);
 		ok = false;
@@ -279,7 +279,7 @@ bool test_lineseg_isect(void) {
 
 	LineSeg a(Point(-1, 0), Point(1, 0));
 	LineSeg b(Point(0, -1), Point(0, 1));
-	Point is = a.isect(b);
+	Point is = a.isection(b);
 	if (!eq(is.x, 0) || !eq(is.y, 0)) {
 		testpr("Expected isection 0,0, got %g,%g\n", is.x, is.y);
 		ok = false;
@@ -287,7 +287,7 @@ bool test_lineseg_isect(void) {
 
 	a = LineSeg(Point(0, -1), Point(0, 1));
 	b = LineSeg(Point(1, 0), Point(-1, 0));
-	is = a.isect(b);
+	is = a.isection(b);
 	if (!eq(is.x, 0) || !eq(is.y, 0)) {
 		testpr("Expected isection 0,0, got %g,%g\n", is.x, is.y);
 		ok = false;
@@ -295,7 +295,7 @@ bool test_lineseg_isect(void) {
 
 	a = LineSeg(Point(0, -1), Point(0, 1));
 	b = LineSeg(Point(1, -1), Point(1, 1));
-	is = a.isect(b);
+	is = a.isection(b);
 	if (!std::isinf(is.x) || !std::isinf(is.y)) {
 		testpr("Expected isection ∞,∞, got %g,%g\n", is.x, is.y);
 		ok = false;
@@ -303,7 +303,7 @@ bool test_lineseg_isect(void) {
 
 	a = LineSeg(Point(-1, 0), Point(1, 0));
 	b = LineSeg(Point(-1, 1), Point(1, 1));
-	is = a.isect(b);
+	is = a.isection(b);
 	if (!std::isinf(is.x) || !std::isinf(is.y)) {
 		testpr("Expected isection ∞,∞, got %g,%g\n", is.x, is.y);
 		ok = false;
@@ -311,7 +311,7 @@ bool test_lineseg_isect(void) {
 
 	a = LineSeg(Point(-1, 0), Point(1, 0));
 	b = LineSeg(Point(-1, -2), Point(1, -1));
-	is = a.isect(b);
+	is = a.isection(b);
 	if (!std::isinf(is.x) || !std::isinf(is.y)) {
 		testpr("Expected isection ∞,∞, got %g,%g\n", is.x, is.y);
 		ok = false;
@@ -319,7 +319,7 @@ bool test_lineseg_isect(void) {
 
 	a = LineSeg(Point(-1, -1), Point(1, 1));
 	b = LineSeg(Point(-1, 1), Point(1, -1));
-	is = a.isect(b);
+	is = a.isection(b);
 	if (!eq(is.x, 0) || !eq(is.y, 0)) {
 		testpr("Expected isection 0,0, got %g,%g\n", is.x, is.y);
 		ok = false;
@@ -327,7 +327,7 @@ bool test_lineseg_isect(void) {
 
 	a = LineSeg(Point(0, 0), Point(2, 2));
 	b = LineSeg(Point(0, 2), Point(2, 0));
-	is = a.isect(b);
+	is = a.isection(b);
 	if (!eq(is.x, 1) || !eq(is.y, 1)) {
 		testpr("Expected isection 1,1, got %g,%g\n", is.x, is.y);
 		ok = false;
@@ -335,7 +335,7 @@ bool test_lineseg_isect(void) {
 
 	a = LineSeg(Point(0, 0), Point(0, 1));
 	b = LineSeg(Point(0.5, 0.5), Point(1.5, 0.5));
-	is = a.isect(b);
+	is = a.isection(b);
 	if (!std::isinf(is.x) || !std::isinf(is.y)) {
 		testpr("Expected isect of 0,0 → 0,1 with ½,½ → 1½,1½ to be ∞,∞, got %g,%g\n",
 			is.x, is.y);
@@ -344,7 +344,7 @@ bool test_lineseg_isect(void) {
 
 	a = LineSeg(Point(0, 1), Point(1, 1));
 	b = LineSeg(Point(0.5, 0.5), Point(1.5, 0.5));
-	is = a.isect(b);
+	is = a.isection(b);
 	if (!std::isinf(is.x) || !std::isinf(is.y)) {
 		testpr("Expected isect of 0,1 → 1,1 with ½,½ → 1½,1½ to be ∞,∞, got %g,%g\n",
 			is.x, is.y);
@@ -353,7 +353,7 @@ bool test_lineseg_isect(void) {
 
 	a = LineSeg(Point(1, 1), Point(1, 0));
 	b = LineSeg(Point(0.5, 0.5), Point(1.5, 0.5));
-	is = a.isect(b);
+	is = a.isection(b);
 	if (!eq(is.x, 1) || !eq(is.y, 0.5)) {
 		testpr("Expected isect of 1,1 → 1,0 with ½,½ → 1½,1½ to be 1,½, got %g,%g\n",
 			is.x, is.y);
@@ -407,7 +407,7 @@ bool test_poly_isects(void) {
 	Polygon sq(4, 0.0, 0.0, 100.0, 0.0, 100.0, 100.0, 0.0, 100.0);
 
 	LineSeg l(Point(50, 50), Point(150, 50));
-	sq.isects(l, is);
+	is = sq.isections(l);
 	if (!samepts(is, 1, 100.0, 50.0)) {
 		testpr("Unexpected collisions for 50,50 → 150,50: ");
 		drawisects(sq, l);
@@ -415,7 +415,7 @@ bool test_poly_isects(void) {
 	}
 
 	l = LineSeg(Point(-50, 50), Point(150, 50));
-	sq.isects(l, is);
+	is = sq.isections(l);
 	if (!samepts(is, 2, 0.0, 50.0, 100.0, 50.0)) {
 		testpr("Unexpected collisions for -50,50 → 150,50: ");
 		drawisects(sq, l);
@@ -423,7 +423,7 @@ bool test_poly_isects(void) {
 	}
 
 	l = LineSeg(Point(150, 50), Point(250, 50));
-	sq.isects(l, is);
+	is = sq.isections(l);
 	if (!samepts(is, 0)) {
 		testpr("Unexpected collisions for 150,50 → 250,50: ");
 		drawisects(sq, l);
@@ -525,8 +525,7 @@ static void drawisects(const Polygon &poly, const LineSeg &line) {
 	poly.draw(img, Image::green);
 	line.draw(img, Image::red);
 
-	std::vector<Point> is;
-	poly.isects(line, is);
+	std::vector<Point> is = poly.isections(line);
 	for (unsigned int i = 0; i < is.size(); i++)
 		is[i].draw(img, Image::black, 4);
 

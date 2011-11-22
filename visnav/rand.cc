@@ -74,7 +74,7 @@ redo:
 		Polygon p = Polygon::random(randgen.integer(3, Maxverts), x, y, r);
 			
 		for (unsigned int i = 0; i < polys.size(); i++) {
-			if (polys[i].bbox.isect(p.bbox))
+			if (polys[i].bbox.hits(p.bbox))
 				goto redo;
 		}
 
