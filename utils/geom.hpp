@@ -44,10 +44,7 @@ struct Point {
 	// Get the clock-wise swing between uv and vw
 	static double cwangle(const Point &u, const Point &v, const Point &w) {
 		Point a = v.minus(u), b = w.minus(v);
-		double t = -atan2(a.x*b.y - a.y*b.x, a.x*b.x+a.y*b.y);
-		if (t < 0)
-			t = M_PI - t;
-		return t;
+		return -atan2(a.x*b.y - a.y*b.x, a.x*b.x+a.y*b.y);
 	}
 
 	Point(void) { }
