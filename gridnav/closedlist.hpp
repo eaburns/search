@@ -1,11 +1,11 @@
-#include "gridpath.hpp"
+#include "gridnav.hpp"
 #include "../search/closedlist.hpp"
 #include <cassert>
 
-template<class Node> struct ClosedEntry<Node, GridPath> { };
+template<class Node> struct ClosedEntry<Node, GridNav> { };
 
-template<class Ops, class Node> struct ClosedList<Ops, Node, GridPath> {
-	typedef GridPath::PackedState PackedState;
+template<class Ops, class Node> struct ClosedList<Ops, Node, GridNav> {
+	typedef GridNav::PackedState PackedState;
 
 	ClosedList(unsigned long szhint) : len(0), cap(szhint) {
 		nodes = new Node*[cap];
@@ -13,7 +13,7 @@ template<class Ops, class Node> struct ClosedList<Ops, Node, GridPath> {
 
 	~ClosedList(void) { delete[] nodes; }
 
-	void init(GridPath &d) {
+	void init(GridNav &d) {
 		len = d.width() * d.height();
 		if (cap >= len)
 			return;

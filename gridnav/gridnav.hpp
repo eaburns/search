@@ -6,7 +6,7 @@
 #include <cmath>
 #include <cstdlib>
 
-class GridPath {
+class GridNav {
 public:
 
 	enum { UnitCost = false };
@@ -17,11 +17,11 @@ public:
 	typedef int Oper;	// Index into the ops arrays.
 	enum { Nop = -1 };
 
-	GridPath(GridMap*, unsigned int, unsigned int,
+	GridNav(GridMap*, unsigned int, unsigned int,
 		unsigned int, unsigned int);
 
 	class State {
-		friend class GridPath;
+		friend class GridNav;
 		unsigned int loc;
 		int nops;
 		Oper ops[8];

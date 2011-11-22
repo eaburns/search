@@ -1,5 +1,5 @@
 #include "gridmap.hpp"
-#include "gridpath.hpp"
+#include "gridnav.hpp"
 #include "../search/search.hpp"
 #include <string>
 #include <iostream>
@@ -13,8 +13,8 @@ struct Scenario;
 
 struct ScenarioEntry {
 	ScenarioEntry(Scenario &);
-	Result<GridPath> run(Search<GridPath>*);
-	void outputrow(FILE*, unsigned int, Result<GridPath>&);
+	Result<GridNav> run(Search<GridNav>*);
+	void outputrow(FILE*, unsigned int, Result<GridNav>&);
 private:
 	friend std::istream &operator>>(std::istream &, ScenarioEntry &);
 
@@ -43,6 +43,6 @@ private:
 	char **argv;
 	std::string maproot;
 	GridMap *lastmap;
-	Result<GridPath> res;
+	Result<GridNav> res;
 	int entry, nentries;
 };

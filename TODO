@@ -1,6 +1,6 @@
 • visnav: remove z-layers
 
-• gridpath: 2poly to convert a grid
+• gridnav: 2poly to convert a grid
 	map to polygons
 
 	- component class

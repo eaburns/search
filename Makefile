@@ -61,7 +61,7 @@ include structs/Make.inc
 include utils/Make.inc
 include tiles/Make.inc
 include pancake/Make.inc
-include gridpath/Make.inc
+include gridnav/Make.inc
 include visnav/Make.inc
 include plat2d/Make.inc
 

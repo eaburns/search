@@ -31,14 +31,14 @@ void Scenario::run(std::istream &in) {
 	checkver(in);
 	outputhdr(stdout);
 
-	Search<GridPath> *srch = getsearch<GridPath>(argc, argv);
+	Search<GridNav> *srch = getsearch<GridNav>(argc, argv);
 	ScenarioEntry ent(*this);
 	while (in >> ent) {
 		nentries++;
 		if (entry >= 0 && nentries - 1 != entry)
 			continue;
 
-		Result<GridPath> r = ent.run(srch);
+		Result<GridNav> r = ent.run(srch);
 		ent.outputrow(stdout, nentries-1, r);
 		res.add(r);
 		srch->reset();
@@ -78,11 +78,11 @@ GridMap *Scenario::getmap(std::string mapfile) {
 
 ScenarioEntry::ScenarioEntry(Scenario &s) : scen(s) { }
 
-Result<GridPath> ScenarioEntry::run(Search<GridPath> *srch) {
-	GridPath d(scen.getmap(mapfile), x0, y0, x1, y1);
-	GridPath::State s0 = d.initialstate();
+Result<GridNav> ScenarioEntry::run(Search<GridNav> *srch) {
+	GridNav d(scen.getmap(mapfile), x0, y0, x1, y1);
+	GridNav::State s0 = d.initialstate();
 
-	Result<GridPath> &r = srch->search(d, s0);
+	Result<GridNav> &r = srch->search(d, s0);
 	// Scenario file has 0-cost for no-path.  We use -1.
 	if (fabsf(r.cost - opt) > Epsilon && !(opt == 0 && r.cost == -1))
 		fatal("Expected optimal cost of %g, got %g\n", opt, r.cost);
@@ -90,7 +90,7 @@ Result<GridPath> ScenarioEntry::run(Search<GridPath> *srch) {
 	return r;
 }
 
-void ScenarioEntry::outputrow(FILE *out, unsigned int n, Result<GridPath> &r) {
+void ScenarioEntry::outputrow(FILE *out, unsigned int n, Result<GridNav> &r) {
 	dfrow(out, "run", "uuuuuuuuguugugg",
 		(unsigned long) n, (unsigned long) bucket, (unsigned long) w,
 		(unsigned long) h, (unsigned long) x0, (unsigned long) y0,

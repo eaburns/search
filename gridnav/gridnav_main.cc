@@ -1,5 +1,5 @@
 #include "closedlist.hpp"
-#include "gridpath.hpp"
+#include "gridnav.hpp"
 #include "../search/main.hpp"
 #include <cstdio>
 
@@ -13,8 +13,8 @@ int main(int argc, char *argv[]) {
 	if (fscanf(stdin, " %u %u %u %u", &x0, &y0, &xg, &yg) != 4)
 		fatal("Failed to read start and end locations");
 
-	GridPath d(&map, x0, y0, xg, yg);
-	search<GridPath>(d, argc, argv);
+	GridNav d(&map, x0, y0, xg, yg);
+	search<GridNav>(d, argc, argv);
 
 	return 0;
 }
