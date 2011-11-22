@@ -1,10 +1,7 @@
-• gridnav: 2poly to convert a grid
-	map to polygons
+• 2poly component class
 
-	- component class
-
-	- min/max cell based
-		poligonization
+• 2poly: min/max cell based
+	poligonization
 
 • visnav: bounding box to prune
 	links to out-of-bound verts.
