@@ -8,7 +8,8 @@
 void fatal(const char*, ...);
 
 static inline bool inrange(double min, double max, double x) {
- 	return x >= min && x <= max;
+ 	return x >= min - sqrt(std::numeric_limits<double>::epsilon())
+		&& x <= max + sqrt(std::numeric_limits<double>::epsilon());
 }
 
 struct Point {
@@ -108,8 +109,7 @@ private:
 		if (std::isinf(a.m) && std::isinf(b.m)) {
 			if (a.b == b.b)
 				return Point(FP_NAN, FP_NAN);
-			else
-				return Point::inf();
+			return Point::inf();
 		}
 
 		const Line *v = &a, *l = &b;
@@ -160,6 +160,8 @@ struct LineSeg : public Line {
 	}
 
 	bool contains(const Point &p) const {
+		if (fabs(m) < std::numeric_limits<double>::epsilon())
+			return inrange(mins.x, maxes.x, p.x);
 		return inrange(mins.x, maxes.x, p.x) && inrange(mins.y, maxes.y, p.y);
 	}
 

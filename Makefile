@@ -1,6 +1,6 @@
 CXX=g++
 
-FLAGS=-Wall -Werror -g
+FLAGS=-Wall -Werror -O3
 
 CXXFLAGS=$(FLAGS)
 

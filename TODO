@@ -1,5 +1,3 @@
-• visnav: remove z-layers
-
 • gridnav: 2poly to convert a grid
 	map to polygons
 
@@ -7,6 +5,9 @@
 
 	- min/max cell based
 		poligonization
+
+• visnav: bounding box to prune
+	links to out-of-bound verts.
 
 • visnav: O(n lg n) alg for visnav
 

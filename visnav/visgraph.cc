@@ -20,7 +20,9 @@ VisGraph::VisGraph(FILE *in) {
 		verts[i].input(verts, i, in);
 }
 
-void VisGraph::draw(Image &img, double scale) const {
+enum { Bufsz = 128 };
+
+void VisGraph::draw(Image &img, double scale, bool nums) const {
 	static const unsigned int Vradius = 1;
 	unsigned int nextcolor = 0;
 	for (unsigned int i = 0; i < polys.size(); i++) {
@@ -46,6 +48,13 @@ void VisGraph::draw(Image &img, double scale) const {
 		p.x *= scale;
 		p.y *= scale;
 		p.draw(img, Image::black, Vradius);
+
+		if (!nums)
+			continue;
+
+		char buf[Bufsz];
+		snprintf(buf, Bufsz, "%u", i);
+		img.add(new Image::Text(buf, p.x, p.y + Vradius, 8));
 	}
 }
 
@@ -144,7 +153,9 @@ void VisGraph::linkvert(unsigned int i) {
 		line = LineSeg(line.along(Epsilon), line.p1);
 
 		Point mid = line.midpt();
-		if (polys[verts[i].polyno].contains(mid))
+		if (polys[verts[i].polyno].contains(line.p0))
+			continue;
+		if (polys[verts[j].polyno].contains(line.along(line.length() - Epsilon)))
 			continue;
 
 		double len = line.length();
