@@ -45,8 +45,8 @@ static std::vector<Comp*> comps(const GridMap &map) {
 			forest[l].join(forest[map.right(l)]);
 
 		// split map in half to ensure outter boundry is a polygon
-		if (y < map.height() - 1 && y != map.height() / 2 &&
-				!map.passable(map.down(l)))
+		if (y < map.height() - 1 && !map.passable(map.down(l)) &&
+ 			(y != map.height() / 2 || forest[l].find() != forest[0].find()))
 			forest[l].join(forest[map.down(l)]);
 	}
 
