@@ -10,30 +10,20 @@ class Image;
 // Additional vertices and links can be added to link the
 // different layers too.
 struct VisGraph {
-	VisGraph(void) { }
-
-	VisGraph(std::vector<Polygon> &ps) {
-		layers.push_back(ps);
+	VisGraph(std::vector<Polygon> &ps) : polys(ps) {
 		computegraph();
 	}
 
 	VisGraph(FILE*);
 
-	void draw(Image&, double scale=1, unsigned int z = 0) const;
-
+	void draw(Image&, double scale=1) const;
 	void output(FILE*) const;
 
-	// Add a layer and return its z-value.
-	unsigned int pushlayer(std::vector<Polygon>&);
-
 	// Add a vertex to the graph.
-	unsigned int add(double, double, unsigned int z = 0);
-
-	// Link two vertices.
-	void link(unsigned int, unsigned int, double);
+	unsigned int add(double, double);
 
 	// Is the given point outside all polygons?
-	bool isoutside(double, double, unsigned int z = 0);
+	bool isoutside(double, double);
 
 	struct Vert;
 
@@ -47,16 +37,16 @@ struct VisGraph {
 	struct Vert {
 		Vert(void) { }
 
-		Vert(unsigned int _vid, const Point &_pt, unsigned int _z, unsigned int _polyno,
+		Vert(unsigned int _vid, const Point &_pt, unsigned int _polyno,
 				unsigned int _vertno) :
-			pt(_pt), vid(_vid), z(_z), polyno(_polyno), vertno(_vertno) { }
+			pt(_pt), vid(_vid), polyno(_polyno), vertno(_vertno) { }
 
 		void input(std::vector<Vert>&, unsigned int, FILE*);
 		void output(FILE *out) const;
 
 		Point pt;
 		unsigned int vid;
-		unsigned int z, polyno, vertno;	// polyno within z-layer
+		unsigned int polyno, vertno;
 		std::vector<Edge> succs;
 	};
 
@@ -64,11 +54,12 @@ struct VisGraph {
 
 private:
 	void computegraph(void);
-	void computeverts(unsigned int);
-	void linkverts(unsigned int);
-	void linkvert(unsigned int, unsigned int);
+	void computeverts(void);
+	void linkverts(void);
+	void linkvert(unsigned int vid);
+	void addedge(unsigned int, unsigned int, double);
 	bool consecutive(unsigned int, unsigned int);	// On same poly-side?
 
-	std::vector< std::vector<Polygon> > layers;
+	std::vector<Polygon> polys;
 	std::vector<Vert> verts;
 };
