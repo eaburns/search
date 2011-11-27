@@ -5,6 +5,13 @@
 
 • 2dpoly: rename to vis
 
+• plat2d heuristic: vis graph but
+	don't allow vertical > max
+	jump frames.
+
+• plat2d search: special noop
+	closed list?
+
 • geom: use the same epsilon
 
 • utils: doubleeq()
