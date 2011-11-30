@@ -145,7 +145,7 @@ static Pdb *gen(void) {
 	while (current || next) {
 		if (!current) {
 			printf("depth %u: %lu nodes %lu MB\n", depth, num,
-				virtmem() / (1024 * 1024));
+				virtmem() / 1024);
 			current = next;
 			next = NULL;
 			depth++;
