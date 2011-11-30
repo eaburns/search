@@ -1,6 +1,3 @@
-BINS+=\
-	tiles/15md_solver\
-
 TILESSRC=\
 	tiles/tiles.cc\
 	tiles/mdist.cc\
@@ -14,7 +11,17 @@ TILESHDR=\
 
 tiles/*.o: $(TILESHDR)
 
+BINS+=\
+	tiles/15md_solver\
+	tiles/15pdbgen\
+
+
 tiles/15md_solver: $(OBJS) $(HDRS) $(TILESHDR) $(TILESSRC) tiles/main_mdist.cc
 	$(CXX) $(CXXFLAGS) $(OBJS) $(LDFLAGS) $(TILESSRC)\
 		-DWIDTH=4 -DHEIGHT=4 tiles/main_mdist.cc\
 		-o tiles/15md_solver
+
+tiles/15pdbgen: $(OBJS) $(HDRS) $(TILESHDR) $(TILESSRC) tiles/pdbgen.cc
+	$(CXX) $(CXXFLAGS) $(OBJS) $(LDFLAGS) $(TILESSRC)\
+		-DWIDTH=4 -DHEIGHT=4 tiles/pdbgen.cc\
+		-o tiles/15pdbgen

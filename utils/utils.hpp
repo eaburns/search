@@ -14,6 +14,10 @@ void fatalx(int, const char*, ...);
 double walltime(void);
 double cputime(void);
 
+// virtmem returns the maximum virtual memory usage
+// of the current program in Kilobytes.
+unsigned long virtmem(void);
+
 void dfpair(FILE *, const char *key, const char *fmt, ...);
 void dfrowhdr(FILE *, const char *name, int ncols, ...);
 // colfmt is a string of characters: g, f, d, and u with the

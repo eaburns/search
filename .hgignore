@@ -2,10 +2,11 @@ syntax: glob
 *.o
 *.gch
 */*_solver
-gridnav/2poly
 structs/test
 utils/test
 utils/pathfor
+tiles/*pdbgen
+gridnav/2poly
 visnav/draw
 visnav/rand
 visnav/inst

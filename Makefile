@@ -21,6 +21,7 @@ OBJS=\
 	utils/geom.o\
 	utils/rank.o\
 	utils/math.o\
+	utils/mem.o\
 	\
 	structs/stn.o\
 	\

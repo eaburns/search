@@ -41,7 +41,9 @@
 
 • tiles:
 
-	- port PDB code from C
+	- PDBs on disk
+
+	- use PDBs for search
 
 • pancake:
 
