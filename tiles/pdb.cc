@@ -14,6 +14,7 @@ Pdb::Pdb(unsigned long csz, unsigned int psz, const Tiles::Tile p[]) :
 		nents(fallfact(Tiles::Ntiles, patsz)) {
 	memcpy(pat, p, psz * sizeof(*p));
 	costs = new char[costssz];
+	printf("%lu cost entries\n", costssz);
 	memset(costs, -1, costssz * sizeof(*costs));
 }
 

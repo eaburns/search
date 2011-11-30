@@ -17,6 +17,14 @@ struct Pdb {
 		return costs + ind;
 	}
 
+	char *poscost(const unsigned char ps[]) {
+		// convert character sized elements into Tiles::Pos.
+		Tiles::Pos psbig[Tiles::Ntiles];
+		for (unsigned int i = 0; i < patsz; i++)
+			psbig[i] = ps[i];
+		return poscost(psbig);
+	}
+
 protected:
 
 	// posind computes an index into the costs array for

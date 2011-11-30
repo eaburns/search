@@ -6,35 +6,38 @@ struct Node;
 // Big is true if the number of tiles are greater than the bits in a long.
 enum { Big = Tiles::Ntiles > sizeof(unsigned long) * 8 };
 
-static unsigned int patsz;
-static Tiles::Tile pattern[Tiles::Ntiles];
+#ifndef PATTERN
+//#define PATTERN 1, 4, 5, 8, 9, 12, 13
+#define PATTERN 2, 3, 6, 7, 10, 11, 14, 15
+#endif
+
+const Tiles::Tile pattern[] = { PATTERN };
+enum { Patsz = sizeof(pattern) / sizeof(pattern[0]) };
+
 static bool sparse;
 
 static void helpmsg(int);
 static Pdb *gen(void);
 static void putnode(Node**, Node*);
-static void freenodes(Node*);
+static unsigned long freenodes(Node*);
 
 int main(int argc, char *argv[]) {
 
-	if (argc < 3)
+	if (argc > 2)
 		helpmsg(1);
 
-	if (strcmp(argv[1], "true") == 0)
+	if (argc == 2 && strcmp(argv[1], "-sparse") == 0)
 		sparse = true;
-	else if (strcmp(argv[1], "false") != 0)
+	else if (argc == 2)
 		helpmsg(1);
 
 	printf("Big: %d\n", Big);
 	printf("sparse: %d\n", sparse);
 	printf("Ntiles: %u\n", Tiles::Ntiles);
-
-	for (int i = 2; i < argc; i++) {
-		pattern[patsz] = strtoll(argv[i], NULL, 10);
-		if (pattern[patsz] >= Tiles::Ntiles)
-			fatal("%u is out of range of the tiles", pattern[patsz]);
-		patsz++;
-	}
+	printf("Pattern:");
+	for (unsigned int i = 0; i < Patsz; i++)
+		printf(" %d", pattern[i]);
+	printf("\n");
 
 	Pdb *p = gen();
 	delete p;
@@ -45,8 +48,7 @@ int main(int argc, char *argv[]) {
 }
 
 static void helpmsg(int status) {
-	puts("Usage: pdbgen <bool> <tile>+");
-	puts("The boolean argument is true for a sparse PDB and false for a dense one.");
+	puts("Usage: pdbgen [-sparse]");
 	exit(status);
 }
 
@@ -54,28 +56,24 @@ struct Node {
 
 	static Tiles tiles;
 
-	Node(Tiles::Tile pat[]) : next(NULL) {
-		ps = new Tiles::Pos[patsz];
-		for (unsigned int i = 0; i < patsz; i++)
+	Node(const Tiles::Tile pat[]) : next(NULL) {
+		for (unsigned int i = 0; i < Patsz; i++)
 			ps[i] = pat[i];
 	}
 
 	Node(const Node *o) : next(NULL) {
-		ps = new Tiles::Pos[patsz];
 		*this = *o;
 	}
 
-	~Node(void) { delete[] ps; }
-
 	void operator=(const Node &o) {
-		memcpy(ps, o.ps, patsz * sizeof(*ps));
+		memcpy(ps, o.ps, Patsz * sizeof(*ps));
 	}
 
 	Node *expand(Node **freelst) const {
 		Node *lst = NULL;
 		unsigned long blkd = Big ? 0 : blkdmask();
 
-		for (unsigned int i = 0; i < patsz; i++) {
+		for (unsigned int i = 0; i < Patsz; i++) {
 			Tiles::Pos src = ps[i];
 
 			for (unsigned int j= 0; j < tiles.ops[src].n; j++) {
@@ -94,14 +92,14 @@ struct Node {
 	}
 
 	Node *next;
-	Tiles::Pos *ps;
+	unsigned char ps[Patsz];
 
 private:
-	
+
 	Node *dup(Node **nodes) const {
-		if (!*nodes)
-			return new Node(this);
 		Node *d = *nodes;
+		if (!d)
+			return new Node(this);
 		*nodes = d->next;
 		*d = *this;
 		return d;
@@ -110,7 +108,7 @@ private:
 	unsigned long blkdmask(void) const {
 		assert(!Big);
 		unsigned long blkd = 0;
-		for (unsigned int i = 0; i < patsz; i++)
+		for (unsigned int i = 0; i < Patsz; i++)
 			blkd |= 1 << ps[i];
 		return blkd;
 	}
@@ -119,7 +117,7 @@ private:
 		if (!Big)
 			return !(blkd & 1 << dst);
 
-		for (unsigned int i = 0; i < patsz; i++) {
+		for (unsigned int i = 0; i < Patsz; i++) {
 			if (ps[i] == p)
 				continue;
 			if (ps[i] == (unsigned int) dst)
@@ -134,9 +132,9 @@ Tiles Node::tiles;
 static Pdb *gen(void) {
 	Pdb *pdb;
 	if (sparse)
-		pdb = new SparsePdb(patsz, pattern);
+		pdb = new SparsePdb(Patsz, pattern);
 	else
-		pdb = new CompactPdb(patsz, pattern);
+		pdb = new CompactPdb(Patsz, pattern);
 
 	double start = walltime();
 	unsigned int depth = 0;
@@ -146,7 +144,8 @@ static Pdb *gen(void) {
 
 	while (current || next) {
 		if (!current) {
-			printf("depth %u: %lu nodes\n", depth, num);
+			printf("depth %u: %lu nodes %lu MB\n", depth, num,
+				virtmem() / (1024 * 1024));
 			current = next;
 			next = NULL;
 			depth++;
@@ -174,9 +173,12 @@ static Pdb *gen(void) {
 		putnode(&free, n);
 	}
 
+	unsigned long nodes = freenodes(free);
+	unsigned int nodesz = sizeof(Node);
 	printf("%lu entries in %g seconds\n", num, walltime() - start);
+	printf("%lu nodes allocated\n", nodes);
+	printf("%lu bytes for nodes, %u each\n", nodes * nodesz, nodesz);
 	printf("maximum depth: %u\n", depth);
-	freenodes(free);
 
 	return pdb;
 }
@@ -186,10 +188,13 @@ static void putnode(Node **nodes, Node *n) {
 	*nodes = n;
 }
 
-static void freenodes(Node *nodes) {
+static unsigned long freenodes(Node *nodes) {
+	unsigned long count = 0;
 	while (nodes) {
 		Node *n = nodes;
 		nodes = n->next;
 		delete n;
+		count++;
 	}
+	return count;
 }
