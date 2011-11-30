@@ -55,10 +55,6 @@
 
 • utils:
 
-	- make sure not to use
-	deprecated filesystem
-	calls from boost.
-
 	- doubleeq()
 
 • More domains:
