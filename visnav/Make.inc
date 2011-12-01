@@ -1,31 +1,28 @@
-VISNAVSRC=\
-	visnav/visgraph.cc\
-	visnav/visnav.cc\
+VISNAVOBJS=\
+	visnav/visgraph.o\
+	visnav/visnav.o\
 
-VISNAVHDR=\
-	visnav/visgraph.hpp\
-	visnav/visnav.hpp\
+include $(VISNAVOBJS:.o=.d)
 
-visnav/*.o: $(VISNAVHDR)
+visnav: visnav/rand visnav/draw visnav/inst visnav/visnav_solver
 
-BINS+=\
+EVERYTHING+=visnav
+
+visnav/rand: $(VISNAVOBJS) visnav/rand.cc utils/utils.a
+	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
+
+visnav/draw: $(VISNAVOBJS) visnav/draw.cc utils/utils.a
+	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
+
+visnav/inst: $(VISNAVOBJS) visnav/inst.cc utils/utils.a
+	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
+
+visnav/visnav_solver: $(VISNAVOBJS) visnav/main.cc\
+	utils/utils.a structs/structs.a search/search.a
+	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
+
+CLEAN+=$(VISNAVOBJS)\
 	visnav/rand\
 	visnav/draw\
 	visnav/inst\
 	visnav/visnav_solver\
-
-visnav/rand: $(OBJS) $(HDRS) $(VISNAVHDR) $(VISNAVSRC) visnav/rand.cc
-	$(CXX) $(CXXFLAGS) $(OBJS) $(LDFLAGS) $(VISNAVSRC)\
-		visnav/rand.cc -o visnav/rand
-
-visnav/draw: $(OBJS) $(HDRS) $(VISNAVHDR) $(VISNAVSRC) visnav/draw.cc
-	$(CXX) $(CXXFLAGS) $(OBJS) $(LDFLAGS) $(VISNAVSRC)\
-		visnav/draw.cc -o visnav/draw
-
-visnav/inst: $(OBJS) $(HDRS) $(VISNAVHDR) $(VISNAVSRC) visnav/inst.cc
-	$(CXX) $(CXXFLAGS) $(OBJS) $(LDFLAGS) $(VISNAVSRC)\
-		visnav/inst.cc -o visnav/inst
-
-visnav/visnav_solver: $(OBJS) $(HDRS) $(VISNAVHDR) $(VISNAVSRC) visnav/main.cc
-	$(CXX) $(CXXFLAGS) $(OBJS) $(LDFLAGS) $(VISNAVSRC)\
-		visnav/main.cc -o visnav/visnav_solver

@@ -1,28 +1,27 @@
-GRIDSRC=\
-	gridnav/gridmap.cc\
-	gridnav/gridnav.cc\
+GRIDNAVOBJS=\
+	gridnav/gridmap.o\
+	gridnav/gridnav.o\
+	gridnav/scenario.o\
 
-GRIDHDR=\
-	gridnav/gridmap.hpp\
-	gridnav/gridnav.hpp\
-	gridnav/closedlist.hpp\
+include $(GRIDNAVOBJS:.o=.d)
 
-gridnav/*.o: $(GRIDHDR)
+gridnav: gridnav/scenario_solver gridnav/gridnav_solver gridnav/2poly
 
-BINS+=\
+EVERYTHING+=gridnav
+
+gridnav/scenario_solver: $(GRIDNAVOBJS) gridnav/scenario_main.cc\
+	utils/utils.a structs/structs.a search/search.a
+	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
+
+gridnav/gridnav_solver: $(GRIDNAVOBJS) gridnav/gridnav_main.cc\
+	utils/utils.a structs/structs.a search/search.a
+	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
+
+gridnav/2poly: $(GRIDNAVOBJS) gridnav/2poly.cc visnav/visgraph.cc\
+	utils/utils.a structs/structs.a search/search.a
+	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
+
+CLEAN+=$(GRIDNAVOBJS)\
 	gridnav/scenario_solver\
 	gridnav/gridnav_solver\
 	gridnav/2poly\
-
-gridnav/scenario_solver: $(OBJS) $(HDRS) $(GRIDHDR) $(GRIDSRC)\
-		gridnav/scenario.hpp gridnav/scenario.cc gridnav/scenario_main.cc
-	$(CXX) $(CXXFLAGS) $(OBJS) $(LDFLAGS) $(GRIDSRC)\
-		gridnav/scenario.cc gridnav/scenario_main.cc -o gridnav/scenario_solver
-
-gridnav/gridnav_solver: $(OBJS) $(HDRS) $(GRIDHDR) $(GRIDSRC) gridnav/gridnav_main.cc
-	$(CXX) $(CXXFLAGS) $(OBJS) $(LDFLAGS) $(GRIDSRC)\
-		gridnav/gridnav_main.cc -o gridnav/gridnav_solver
-
-gridnav/2poly: $(OBJS) $(HDRS) $(GRIDHDR) $(GRIDSRC) gridnav/2poly.cc visnav/visgraph.cc
-	$(CXX) $(CXXFLAGS) $(OBJS) $(LDFLAGS) $(GRIDSRC)\
-		visnav/visgraph.cc gridnav/2poly.cc -o gridnav/2poly

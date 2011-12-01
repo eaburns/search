@@ -1,5 +1,7 @@
 syntax: glob
 *.o
+*.d
+*.a
 *.gch
 */*_solver
 structs/test
