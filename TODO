@@ -57,6 +57,14 @@
 
 	- doubleeq()
 
+• fix the build system:
+
+	- each domain should be
+	its own target
+
+	- do proper dependency
+	tracking
+
 • More domains:
 
 	- Dynamic robot path finding
