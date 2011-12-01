@@ -24,5 +24,5 @@ visnav/visnav_solver: $(VISNAVOBJS) visnav/main.cc\
 CLEAN+=$(VISNAVOBJS)\
 	visnav/rand\
 	visnav/draw\
-	visnav/inst\
-	visnav/visnav_solver\
+	visnav/ins\
+	visnav/visnav_solver

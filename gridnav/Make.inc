@@ -24,4 +24,4 @@ gridnav/2poly: $(GRIDNAVOBJS) gridnav/2poly.cc visnav/visgraph.cc\
 CLEAN+=$(GRIDNAVOBJS)\
 	gridnav/scenario_solver\
 	gridnav/gridnav_solver\
-	gridnav/2poly\
+	gridnav/2poly
