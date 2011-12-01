@@ -11,13 +11,13 @@ struct Pdb {
 
 	// poscost gets a pointer to the cost entry for the given
 	// of pattern tile positions.
-	char *poscost(const Tiles::Pos ps[]) {
+	unsigned char *poscost(const Tiles::Pos ps[]) {
 		unsigned long ind = posind(ps);
 		assert (ind < costssz);
 		return costs + ind;
 	}
 
-	char *poscost(const unsigned char ps[]) {
+	unsigned char *poscost(const unsigned char ps[]) {
 		// convert character sized elements into Tiles::Pos.
 		Tiles::Pos psbig[Tiles::Ntiles];
 		for (unsigned int i = 0; i < patsz; i++)
@@ -35,7 +35,7 @@ protected:
 	Tiles::Tile pat[Tiles::Ntiles];
 
 	unsigned long costssz;
-	char *costs;
+	unsigned char *costs;
 
 	unsigned long nents;
 };

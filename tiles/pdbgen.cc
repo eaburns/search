@@ -7,8 +7,8 @@ struct Node;
 enum { Big = Tiles::Ntiles > sizeof(unsigned long) * 8 };
 
 #ifndef PATTERN
-//#define PATTERN 1, 4, 5, 8, 9, 12, 13
-#define PATTERN 2, 3, 6, 7, 10, 11, 14, 15
+#define PATTERN 1, 4, 5, 8, 9, 12, 13
+//#define PATTERN 2, 3, 6, 7, 10, 11, 14, 15
 #endif
 
 const Tiles::Tile pattern[] = { PATTERN };
@@ -18,6 +18,8 @@ static bool sparse;
 
 static void helpmsg(int);
 static Pdb *gen(void);
+static Node *expand(Node**, const Node*);
+static Node *dupnode(Node**, const Node*);
 static void putnode(Node**, Node*);
 static unsigned long freenodes(Node*);
 
@@ -54,8 +56,6 @@ static void helpmsg(int status) {
 
 struct Node {
 
-	static Tiles tiles;
-
 	Node(const Tiles::Tile pat[]) : next(NULL) {
 		for (unsigned int i = 0; i < Patsz; i++)
 			ps[i] = pat[i];
@@ -67,42 +67,6 @@ struct Node {
 
 	void operator=(const Node &o) {
 		memcpy(ps, o.ps, Patsz * sizeof(*ps));
-	}
-
-	Node *expand(Node **freelst) const {
-		Node *lst = NULL;
-		unsigned long blkd = Big ? 0 : blkdmask();
-
-		for (unsigned int i = 0; i < Patsz; i++) {
-			Tiles::Pos src = ps[i];
-
-			for (unsigned int j= 0; j < tiles.ops[src].n; j++) {
-				Tiles::Oper dst = tiles.ops[src].mvs[j];
-				if (!mvok(blkd, src, dst))
-					continue;
-
-				Node *kid = dup(freelst);
-				kid->ps[i] = dst;
-				kid->next = lst;
-				lst = kid;
-			}
-		}
-
-		return lst;
-	}
-
-	Node *next;
-	unsigned char ps[Patsz];
-
-private:
-
-	Node *dup(Node **nodes) const {
-		Node *d = *nodes;
-		if (!d)
-			return new Node(this);
-		*nodes = d->next;
-		*d = *this;
-		return d;
 	}
 
 	unsigned long blkdmask(void) const {
@@ -125,9 +89,10 @@ private:
 		}
 		return true;
 	}
-};
 
-Tiles Node::tiles;
+	Node *next;
+	unsigned char ps[Patsz];
+};
 
 static Pdb *gen(void) {
 	Pdb *pdb;
@@ -140,7 +105,8 @@ static Pdb *gen(void) {
 	unsigned int depth = 0;
 	unsigned long num = 1;
 	Node *current = new Node(pattern), *next = NULL, *free = NULL;
-	*pdb->poscost(current->ps) = 0;
+	unsigned char *goalcost = pdb->poscost(current->ps);
+       	*goalcost = 0;
 
 	while (current || next) {
 		if (!current) {
@@ -155,11 +121,11 @@ static Pdb *gen(void) {
 		Node *n = current;
 		current = n->next;
 
-		for (Node *q, *p = n->expand(&free); p; p = q) {
+		for (Node *q, *p = expand(&free, n); p; p = q) {
 			q = p->next;
 
-			char *c = pdb->poscost(p->ps);
-			if (*c >= 0) {
+			unsigned char *c = pdb->poscost(p->ps);
+			if (*c > 0 || c == goalcost) {
 				putnode(&free, p);
 				continue;
 			}
@@ -181,6 +147,38 @@ static Pdb *gen(void) {
 	printf("maximum depth: %u\n", depth);
 
 	return pdb;
+}
+
+static Node *expand(Node **nodes, const Node *n) {
+	static Tiles tiles;
+	Node *lst = NULL;
+	unsigned long blkd = Big ? 0 : n->blkdmask();
+
+	for (unsigned int i = 0; i < Patsz; i++) {
+		Tiles::Pos src = n->ps[i];
+
+		for (unsigned int j= 0; j < tiles.ops[src].n; j++) {
+			Tiles::Oper dst = tiles.ops[src].mvs[j];
+			if (!n->mvok(blkd, src, dst))
+				continue;
+
+			Node *kid = dupnode(nodes, n);
+			kid->ps[i] = dst;
+			kid->next = lst;
+			lst = kid;
+		}
+	}
+
+	return lst;
+}
+
+static Node *dupnode(Node **nodes, const Node *n) {
+	Node *d = *nodes;
+	if (!d)
+		return new Node(n);
+	*nodes = d->next;
+	*d = *n;
+	return d;
 }
 
 static void putnode(Node **nodes, Node *n) {

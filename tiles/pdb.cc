@@ -13,9 +13,9 @@ Pdb::Pdb(unsigned long csz, unsigned int psz, const Tiles::Tile p[]) :
 		patsz(psz), costssz(csz), costs(NULL),
 		nents(fallfact(Tiles::Ntiles, patsz)) {
 	memcpy(pat, p, psz * sizeof(*p));
-	costs = new char[costssz];
+	costs = new unsigned char[costssz];
 	printf("%lu cost entries\n", costssz);
-	memset(costs, -1, costssz * sizeof(*costs));
+	memset(costs, 0, costssz * sizeof(*costs));
 }
 
 SparsePdb::SparsePdb(unsigned int psz, const Tiles::Tile p[]) :
