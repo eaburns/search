@@ -19,7 +19,7 @@ struct Player {
 		Offy = 2,
 	};
 
-	Player(void) : jframes(0) { }
+	Player(void) { }
 
 	Player(unsigned int x, unsigned int y, unsigned int z,
 			unsigned int w, unsigned int h) :
