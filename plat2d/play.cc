@@ -9,12 +9,6 @@
 enum {
 	Width = 640,
 	Height = 480,
-
-	// from mid
-	PlayerWidth = 21,
-	PlayerOffx = 7,
-	PlayerHeight = 29,
-	PlayerOffy = 2,
 };
 
 SDL_Surface *screen;
@@ -33,8 +27,8 @@ int main(int argc, char *argv[]) {
 	init();
 
 	Lvl lvl(stdin);
-	Player p(2 * Tile::Width + PlayerOffx, 2 * Tile::Height + PlayerOffy,
-		0, PlayerWidth, PlayerHeight);
+	Player p(2 * Tile::Width + Player::Offx, 2 * Tile::Height + Player::Offy,
+		0, Player::Width, Player::Height);
 
 	for ( ; ; ) {
 		unsigned int next = SDL_GetTicks() + 20;

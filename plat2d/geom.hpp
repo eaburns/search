@@ -107,6 +107,8 @@ private:
 struct Body {
 	enum { Maxdy = 12 };
 
+	Body(void) : z(0), bbox(0, 0, 1, 1), vel(0, 0), acc(0, 0), fall(false) { }
+
 	Body(unsigned int x, unsigned int y, unsigned int _z,
 			unsigned int w, unsigned int h) :
 		z(_z), bbox(x, y, x + w, y + h), vel(0, 0), acc(0, 0), fall(false) { }
