@@ -1,4 +1,4 @@
-#include "plat2d.hpp"
+#include "closedlist.hpp"
 #include "../search/main.hpp"
 #include <cstdio>
 

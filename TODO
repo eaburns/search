@@ -13,9 +13,6 @@
 	don't allow vertical > max
 	jump frames.
 
-	- search: special noop
-	closed list?
-
 	- play: draw doors
 
 	- play: no repeat on
