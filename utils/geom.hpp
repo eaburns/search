@@ -55,7 +55,8 @@ struct Point {
 	Point(double _x, double _y, double _z) : x(_x), y(_y) { }
 
 	bool operator==(const Point &p) const {
-		return x == p.x && y == p.y;
+		return fabs(x - p.x) < std::numeric_limits<double>::epsilon()
+			&& fabs(y - p.y) < std::numeric_limits<double>::epsilon();
 	}
 
 	bool operator!=(const Point &p) const { return !(*this == p); }
@@ -81,7 +82,7 @@ struct Line {
 	Line(Point p0, Point p1) {
 		double dx = p1.x - p0.x;
 		double dy = p1.y - p0.y;
-		if (dx == 0.0) {
+		if (fabs(dx) < std::numeric_limits<double>::epsilon()) {
 			m = std::numeric_limits<double>::infinity();
 			b = p1.x;
  		} else {
@@ -108,7 +109,7 @@ struct Line {
 private:
 	static Point vertisect(const Line &a, const Line &b) {
 		if (std::isinf(a.m) && std::isinf(b.m)) {
-			if (a.b == b.b)
+			if (fabs(a.b - b.b) < std::numeric_limits<double>::epsilon())
 				return Point(FP_NAN, FP_NAN);
 			return Point::inf();
 		}
@@ -177,7 +178,7 @@ struct LineSeg : public Line {
 	}
 
 	bool isvertical(void) const {
-		return p0.x == p1.x;
+		return fabs(p0.x - p1.x) < std::numeric_limits<double>::epsilon();
 	}
 
 	Point p0, p1;
