@@ -1,19 +1,16 @@
-PCAKESRC=\
+PANCAKESRC=\
 	pancake/pancake.cc\
 
-PCAKEHDR=\
-	pancake/pancake.hpp\
+pancake: pancake/50pancake_solver pancake/70pancake_solver
 
-pancake/*.o: $(PCAKEHDR)
+EVERYTHING+=pancake
 
-BINS+=\
-	pancake/50pancake_solver\
-	pancake/70pancake_solver\
+pancake/50pancake_solver: $(PANCAKESRC) pancake/main.cc\
+	utils/utils.a structs/structs.a search/search.a
+	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -DNCAKES=50 -o $@
 
-pancake/50pancake_solver: $(OBJS) $(HDRS) $(PCAKEHDR) $(PCAKESRC) pancake/main.cc
-	$(CXX) $(CXXFLAGS) $(OBJS) $(LDFLAGS) $(PCAKESRC)\
-		-DNCAKES=50  pancake/main.cc -o pancake/50pancake_solver
+pancake/70pancake_solver: $(PANCAKESRC) pancake/main.cc\
+	utils/utils.a structs/structs.a search/search.a
+	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -DNCAKES=70  -o $@
 
-pancake/70pancake_solver: $(OBJS) $(HDRS) $(PCAKEHDR) $(PCAKESRC) pancake/main.cc
-	$(CXX) $(CXXFLAGS) $(OBJS) $(LDFLAGS) $(PCAKESRC)\
-		-DNCAKES=70  pancake/main.cc -o pancake/70pancake_solver
+CLEAN+=$(PANCAKESRC:.cc=.o) pancake/50pancake_solver pancake/70pancake_solver

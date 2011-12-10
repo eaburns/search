@@ -1,16 +1,23 @@
-BINS+=\
-	structs/test\
+STRUCTSOBJS:=\
+	structs/stn.o\
 
-structs/test: $(OBJS) $(HDRS)\
+include $(STRUCTSOBJS:.o=.d)
+
+structs: structs/structs.a structs/test
+
+EVERYTHING+=structs
+
+structs/test:\
 	structs/test_htable.cc\
 	structs/test_intpq.cc\
 	structs/test_binheap.cc\
 	structs/test_stn.cc\
-	structs/test.cc
-	$(CXX) $(CXXFLAGS) $(OBJS) $(LDFLAGS)\
-		structs/test.cc\
-		structs/test_htable.cc\
-		structs/test_intpq.cc\
-		structs/test_binheap.cc\
-		structs/test_stn.cc\
-		-o structs/test
+	structs/test.cc\
+	utils/utils.a\
+	structs/structs.a
+	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
+
+structs/structs.a: $(STRUCTSOBJS)
+	$(AR) rsc $@ $(STRUCTSOBJS)
+
+CLEAN+=$(STRUCTSOBJS) structs/test structs/structs.a

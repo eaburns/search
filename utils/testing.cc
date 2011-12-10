@@ -2,6 +2,8 @@
 #include <cstdarg>
 #include <cstdio>
 #include <string>
+#include <limits>
+#include <cmath>
 #include <sys/types.h>
 #include <regex.h>
 
@@ -92,7 +94,7 @@ static void runbench(const Benchmark &b) {
 		double strt = walltime(), end = 0.0;
 		b.run(n, &strt, &end);
 
-		if (end == 0)
+		if (fabs(end) < std::numeric_limits<double>::epsilon())
 			end = walltime();
 
 		ttime = end - strt;

@@ -1,43 +1,58 @@
-• 2poly component class
+• 2poly:
 
-• 2poly: min/max cell based
+	- component class
+
+	- min/max cell based
 	poligonization
 
-• 2dpoly: rename to vis
+	- rename to vis
 
-• plat2d heuristic: vis graph but
+• plat2d:
+
+	-  heuristic: vis graph but
 	don't allow vertical > max
 	jump frames.
 
-• plat2d search: special noop
-	closed list?
+	- play: draw doors
 
-• geom: use the same epsilon
-
-• utils: doubleeq()
-
-• visnav: bounding box to prune
-	links to out-of-bound verts.
-
-• visnav: O(n lg n) alg for visnav
-
-• visnav: don't fatalx on read fail
-	it prints Success…
-
-• plat2d/play: draw doors
-
-• plat2d/play: no repeat on
+	- play: no repeat on
 	jump and act
 
-• visnav specific closed list
+• visnav:
 
-• Make sure that the size of grids
-	doesn't overflow the size
-	of a signed integer
+	- bounding box to prune
+	links to out-of-bound verts.
 
-• Port tiles PDB code from C
+	- O(n lg n) alg for visnav
 
-• Bit-packed pancake states
+	- don't fatalx on read fail
+	it prints Success…
+
+	- specific closed list
+
+• gridnav:
+
+	- Make sure that the size of
+	grids doesn't overflow the
+	size of a signed integer
+
+• tiles:
+
+	- PDBs on disk
+
+	- use PDBs for search
+
+• pancake:
+
+	- Bit-packed states
+
+• geom:
+
+	- use the same epsilon
+
+• utils:
+
+	- doubleeq()
 
 • More domains:
 

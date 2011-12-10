@@ -7,6 +7,12 @@
 bool Tiles::hashvecinit = false;
 unsigned long Tiles::hashvec[Ntiles][Ntiles];
 
+Tiles::Tiles(void) {
+	initops();
+	if (!hashvecinit)
+		inithashvec();
+}
+
 Tiles::Tiles(FILE *in) {
 	readruml(in);
 	initops();

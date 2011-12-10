@@ -11,6 +11,16 @@ struct Player {
 		Act = 1 <<3,
 	};
 
+	enum {
+		// from mid
+		Width = 21,
+		Offx = 7,
+		Height = 29,
+		Offy = 2,
+	};
+
+	Player(void) { }
+
 	Player(unsigned int x, unsigned int y, unsigned int z,
 			unsigned int w, unsigned int h) :
 		body(x, y, z, w, h), jframes(0) { }

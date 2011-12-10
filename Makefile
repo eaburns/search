@@ -1,74 +1,40 @@
-CXX=g++
+CXX:=g++
 
-FLAGS=-Wall -Werror -O3
+CC:=gcc
 
-CXXFLAGS=$(FLAGS)
+AR:=ar
 
-CFLAGS=$(FLAGS)
+FLAGS:=-Wall -Werror -O3
 
-LDFLAGS=
+CXXFLAGS:=$(FLAGS)
 
-OBJS=\
-	utils/fatal.o\
-	utils/time.o\
-	utils/datafile.o\
-	utils/rdb.o\
-	utils/testing.o\
-	utils/hash.o\
-	utils/rand.o\
-	utils/encode.o\
-	utils/image.o\
-	utils/geom.o\
-	utils/rank.o\
-	utils/math.o\
-	\
-	structs/stn.o\
-	\
-	search/search.o\
+CFLAGS:=$(FLAGS)
 
-TMPLS=\
-	search/main.hpp\
-	search/openlist.hpp\
-	search/closedlist.hpp\
-	search/idastar.hpp\
-	search/astar.hpp\
-	search/wastar.hpp\
-	search/greedy.hpp\
-	search/bugsy.hpp\
-	search/arastar.hpp\
-	\
-	structs/intpq.hpp\
-	structs/binheap.hpp\
-	structs/htable.hpp\
-	structs/stn.hpp\
+LDFLAGS:=
 
-HDRS=\
-	utils/utils.hpp\
-	utils/image.hpp\
-	utils/geom.hpp\
-	\
-	search/search.hpp\
-
-HDRS+=$(TMPLS)
-
-BINS=
+EVERYTHING:=
 
 all: everything
 
-*/*.o: $(HDRS)
-
-include structs/Make.inc
 include utils/Make.inc
+include structs/Make.inc
+include search/Make.inc
 include tiles/Make.inc
 include pancake/Make.inc
 include gridnav/Make.inc
 include visnav/Make.inc
 include plat2d/Make.inc
 
-everything: $(TMPLS:.hpp=.hpp.gch) $(BINS)
+everything: $(EVERYTHING)
 
-%.hpp.gch: %.hpp
-	$(CXX) $(CXXFLAGS) -c $^
+%.d: %.cc
+	./dep.sh $(CXX) $(shell dirname $*) $(CXXFLAGS) $^ > $@
+
+%.d: %.c
+	./dep.sh $(CC) $(shell dirname $*) $(CFLAGS) $^ > $@
 
 clean:
-	rm -f $(OBJS) $(BINS) $(TMPLS:.hpp=.hpp.gch)
+	rm -f $(CLEAN) $(BINS) $(TMPLS:.hpp=.hpp.gch)
+
+nuke: clean
+	rm -f $(shell find . -name \*.d) 

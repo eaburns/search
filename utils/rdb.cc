@@ -77,7 +77,7 @@ static std::string makepath(bf::path root, RdbAttrs attrs) {
 
 static bool getkey(const bf::path &p, std::string &key) {
 	for (bf::directory_iterator it(p); it != bf::directory_iterator(); it++) {
-		const char *fname = it->string().c_str();
+		const char *fname = it->path().string().c_str();
 		const char *keyfile = strstr(fname, "KEY=");
 		if (!keyfile)
 			continue;

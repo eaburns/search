@@ -10,6 +10,8 @@ static bool between(double min, double max, double n) {
 }
 
 struct Point {
+	Point(void) { }
+
 	Point(double a, double b) : x(a), y(b) { }
 
 	Point(const Point &o) : x(o.x), y(o.y) { }
@@ -50,6 +52,8 @@ struct Isect {
 };
 
 struct Rect {
+
+	Rect(void) { }
 
 	Rect(double x0, double y0, double x1, double y1) :
 		a(x0, y0), b(x1, y1) { normalize(); }
@@ -106,6 +110,8 @@ private:
 
 struct Body {
 	enum { Maxdy = 12 };
+
+	Body(void) { }
 
 	Body(unsigned int x, unsigned int y, unsigned int _z,
 			unsigned int w, unsigned int h) :

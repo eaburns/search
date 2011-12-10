@@ -1,28 +1,26 @@
-PLAT2DSRC=\
-	plat2d/lvl.cc\
-	plat2d/tile.cc\
-	plat2d/geom.cc\
-	plat2d/player.cc\
+PLAT2DOBJS=\
+	plat2d/lvl.o\
+	plat2d/tile.o\
+	plat2d/geom.o\
+	plat2d/player.o\
+	plat2d/plat2d.o\
 
-PLAT2DHDR=\
-	plat2d/lvl.hpp\
-	plat2d/tile.hpp\
-	plat2d/geom.hpp\
-	plat2d/player.hpp\
+include $(PLAT2DOBJS:.o=.d)
 
-plat2d/*.o: $(PLAT2DHDR)
+plat2d: plat2d/plat2d_solver plat2d/draw plat2d/play
 
+EVERYTHING+=plat2d
 
-BINS+=\
-	plat2d/draw\
-	plat2d/play\
+plat2d/plat2d_solver: $(PLAT2DOBJS) plat2d/main.cc\
+	utils/utils.a structs/structs.a search/search.a
+	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
 
-plat2d/draw: $(OBJS) $(HDRS) $(PLAT2DHDR) $(PLAT2DSRC) plat2d/draw.cc
-	$(CXX) $(CXXFLAGS) $(OBJS) $(LDFLAGS) $(PLAT2DSRC)\
-		plat2d/draw.cc -o plat2d/draw
+plat2d/draw: $(PLAT2DOBJS) plat2d/draw.cc utils/utils.a
+	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
 
 SDLVER=$(shell sdl-config --version | sed 's/\([0-9]\)\.\([0-9]\).*/\1\2/')
 
-plat2d/play: $(OBJS) $(HDRS) $(PLAT2DHDR) $(PLAT2DSRC) plat2d/play.cc
-	$(CXX) $(CXXFLAGS) $(OBJS) $(LDFLAGS) $(PLAT2DSRC)\
-		-DSDLVER=$(SDLVER) plat2d/play.cc -lSDL -o plat2d/play
+plat2d/play: $(PLAT2DOBJS) plat2d/play.cc utils/utils.a
+	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -DSDLVER=$(SDLVER) -lSDL -o $@
+
+CLEAN+=$(PLAT2DOBJS) plat2d/plat2d_solver plat2d/draw plat2d/play

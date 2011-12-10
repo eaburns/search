@@ -21,6 +21,8 @@ public:
 	typedef int Oper;
 	enum { Nop = -1 };
 
+	Tiles(void);
+
 	Tiles(FILE*);
 
 	static void dumptiles(FILE*, Tile []);
@@ -43,8 +45,6 @@ public:
 		return h;
 	}
 
-protected:
-
 	struct {
 		unsigned int n;
 		Pos mvs[4];
@@ -52,6 +52,7 @@ protected:
 
 	Tile init[Ntiles];
 	Pos goalpos[Ntiles];
+
 private:
 	void readruml(FILE*);
 	void initops(void);
