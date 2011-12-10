@@ -305,6 +305,6 @@ struct Polygon {
 private:
 	double interangle(unsigned int) const;
 	bool isreflex(unsigned int) const;
-	void collapseflats(void);
+	void removecolinear(void);
 	void initsides(void);
 };

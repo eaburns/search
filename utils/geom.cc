@@ -26,7 +26,7 @@ void Bbox::draw(Image &img, Color c, double lwidth) const {
 Polygon::Polygon(const std::vector<Point> &vs) : verts(vs), bbox(verts) {
 	if (verts.size() < 3)
 		fatal("A polygon needs at least 3 points\n");
-	collapseflats();
+	removecolinear();
 	initsides();
 }
 
@@ -40,7 +40,7 @@ Polygon::Polygon(unsigned int n, ...) {
 	}
 	va_end(ap);
 	bbox = Bbox(verts);
-	collapseflats();
+	removecolinear();
 	initsides();
 }
 
@@ -56,7 +56,7 @@ Polygon::Polygon(FILE *in) {
 		verts.push_back(Point(x, y));
 	}
 	bbox = Bbox(verts);
-	collapseflats();
+	removecolinear();
 	initsides();
 }
 
@@ -216,7 +216,7 @@ bool Polygon::isreflex(unsigned int i) const {
 	return interangle(i) < M_PI;
 }
 
-void Polygon::collapseflats(void) {
+void Polygon::removecolinear(void) {
 	for (unsigned int i = 0; i < verts.size(); ) {
 		if (fabs(interangle(i) - M_PI) < std::numeric_limits<double>::epsilon())
 			verts.erase(verts.begin() + i);
