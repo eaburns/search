@@ -1,4 +1,6 @@
-• -Wfloat-equal
+• use Epsilon instead of the numeric_limits trash
+
+• use Inifinty instead of the numeric_limits trash
 
 • 2poly:
 
@@ -50,7 +52,7 @@
 
 • geom:
 
-	- use the same epsilon
+	- more tests
 
 • utils:
 
@@ -65,8 +67,6 @@
 	- Multiple sequence alignment
 
 	- Roadmap path finding
-
-	- 2d scroller path finding
 
 	- Hanoi
 

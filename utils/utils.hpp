@@ -20,6 +20,12 @@ static inline bool doubleeq(double a, double b) {
 	return a < b + Epsilon && a > b - Epsilon;
 }
 
+// doubleneq is a double equality test that does not use !=, instead
+// it performs an approximate non-equality test for within Epsilon.
+static inline bool doubleneq(double a, double b) {
+	return a > b + Epsilon || a < b - Epsilon;
+}
+
 // warn prints the formatted warning message.
 void warn(const char *, ...);
 
