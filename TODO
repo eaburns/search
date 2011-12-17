@@ -1,3 +1,5 @@
+• -Wfloat-equal
+
 • 2poly:
 
 	- component class
@@ -52,7 +54,7 @@
 
 • utils:
 
-	- doubleeq()
+	- return string from encode/decodes
 
 • More domains:
 

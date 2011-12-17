@@ -4,7 +4,7 @@
 #include <iostream>
 #include <cmath>
 
-static const float Epsilon = 0.01;
+static const float Eps = 0.01;
 
 Scenario::Scenario(int ac, char *av[]) :
 		argc(ac), argv(av), maproot("./"), lastmap(NULL),
@@ -84,7 +84,7 @@ Result<GridNav> ScenarioEntry::run(Search<GridNav> *srch) {
 
 	Result<GridNav> &r = srch->search(d, s0);
 	// Scenario file has 0-cost for no-path.  We use -1.
-	if (fabsf(r.cost - opt) > Epsilon && !(opt == 0 && r.cost == -1))
+	if (fabsf(r.cost - opt) > Eps && !(opt == 0 && r.cost == -1))
 		fatal("Expected optimal cost of %g, got %g\n", opt, r.cost);
 
 	return r;

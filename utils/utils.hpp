@@ -4,22 +4,57 @@
 #include <vector>
 #include <deque>
 #include <map>
+#include <limits>
 #include <boost/cstdint.hpp>
 
+// Epsilon is the smallest double value that can be added
+// to 1 to make it no longer equal to 1.
+static const double Epsilon = std::numeric_limits<double>::epsilon();
+
+// Inifinity is the double representation of inifinity.
+static const double Infinity = std::numeric_limits<double>::infinity();
+
+// doubleeq is a double equality test that does not use ==, instead
+// it performs an approximate equality test for within Epsilon.
+static inline bool doubleeq(double a, double b) {
+	return a < b + Epsilon && a > b - Epsilon;
+}
+
+// warn prints the formatted warning message.
 void warn(const char *, ...);
+
+// warnx prints the formatted warning message along with the
+// string representation of the errno value.
 void warnx(int, const char *, ...);
+
+// fatal prints a formated error message and exits with failure
+// status.
 void fatal(const char*, ...);
+
+// fatalx prints a formatted error message along with the error
+// string for the errno and exits with failure status.
 void fatalx(int, const char*, ...);
 
+// walltime returns the current wall-cloce time in seconds
 double walltime(void);
+
+// cputime returns the current CPU time in seconds.
 double cputime(void);
 
 // virtmem returns the maximum virtual memory usage
 // of the current program in Kilobytes.
 unsigned long virtmem(void);
 
+// dfpair writes a datafile-formatted key/value pair to the
+// given output file.
 void dfpair(FILE *, const char *key, const char *fmt, ...);
+
+// dfrowhdr writes 'altcol' header information to the given file.
+// ncols specifies the number of columns and the variadic
+// arguments be ncols strings representing the column headers.
 void dfrowhdr(FILE *, const char *name, int ncols, ...);
+
+// dfrow writes an 'altcols' row to the given file.
 // colfmt is a string of characters: g, f, d, and u with the
 // following meaning:
 // g is a %g formatted double,
@@ -27,32 +62,58 @@ void dfrowhdr(FILE *, const char *name, int ncols, ...);
 // d is a %ld formatted long
 // u is a %lu formatted unsigned long
 void dfrow(FILE *, const char *name, const char *colfmt, ...);
+
+// dfheader writes the datafile format header information to
+// the file.
 void dfheader(FILE *);
+
+// dffooter writes the datafile format footer information to
+// the file.
 void dffooter(FILE *);
+
+// dfprocstatus writes status from the /proc filesystem to the file
+// if the proc/ filesystem is readable.
 void dfprocstatus(FILE*);
 
-// Read pairs from the data file and pass each to
-// // the given function.
 typedef void(*Pairhandler)(const char*, const char*, void*);
+
+// dfreadpairs reads pairs from the given datafile and calls
+// the handler for each pair.  If echo is true then the lines that
+// are read are echoed back out standard output.
 void dfreadpairs(FILE*, Pairhandler, void *priv = NULL, bool echo = false);
 
+// The RdbAttrs struct holds attributes for the RDB database.
+// It behaves as a FIFO queue of attributes.
 struct RdbAttrs {
-	bool push_back(const std::string &key, const std::string &val);	// false if duplicate
 
+	// push_back adds a new key=value pair to the attribute
+	// vector.  It returs false if the key is already added as one
+	// of the attributes.
+	bool push_back(const std::string &key, const std::string &val);
+
+	// pop_front removes the first attribute that was added to the
+	// list.
 	void pop_front(void) {
 		const std::string &k = keys.front();
 		pairs.erase(pairs.find(k));
 		keys.pop_front();
 	}
 
+	// front returns the key for the next attribute pair.
 	const std::string &front(void) { return keys.front(); }
 
+	// size returns the number of key=value pairs.
 	unsigned int size(void) const { return keys.size(); }
 
+	// rm removes the pair for the given key.
 	bool rm(const std::string &key);
 
+	// lookup returns the value associated with the given
+	// key.
 	const std::string &lookup(const std::string &key) { return pairs[key]; }
 
+	// mem returns true if there is a value bound to the given
+	// key.
 	bool mem(const std::string &key) const {
 		return pairs.find(key) != pairs.end();
 	}
@@ -62,8 +123,12 @@ private:
 	std::deque<std::string> keys;
 };
 
+// rdbpathfor returns the filesystem path for the given attribute
+// set rooted at the given root directory.
 std::string rdbpathfor(const char *, RdbAttrs);
 
+// A Test holds information on a unit test that may be run
+// via the testing framework.
 struct Test {
 	const char *name;
 	bool (*run)(void);
@@ -71,6 +136,8 @@ struct Test {
 	Test(const char *n, bool (*r)(void)) : name(n), run(r) {}
 };
 
+// A benchmark holds information on a benchmark that
+// may be run via the testing framework.
 struct Benchmark {
 	const char *name;
 	void (*run)(unsigned long n, double *strt, double *end);
@@ -79,19 +146,43 @@ struct Benchmark {
 		name(n), run(r) {}
 };
 
+// runtests runs all of the tests in the list that match the given
+// regular expression.  Information on each test and the number
+// of passed and failed tests is printed to standard output.
 bool runtests(const Test [], int, const char *regexp);
+
+// runbenches runs all of the benchmarks that match the given
+// regular expression.  Timing information is printed for each
+// benchmark.
 void runbenches(const Benchmark[], int, const char *regexp);
+
+// testpr can be used to display formatted output from within
+// a testing function.  The output is surpressed until the test is
+// completed.  Upon completion the formatted output is printed
+// to standard output.
 void testpr(const char *fmt, ...);
 
+// hashbytes computes a hash on an arbitrary array of bytes.
+// The hash function is by Bob Jenkins (2006) and the resulting
+// hash value is 32-bits.
 extern "C" unsigned long hashbytes(unsigned char[], unsigned int);
 
+// Rand is pseudo-random number generator (RNG1 from
+// Numerical Recipes).
 class Rand {
 public:
+	// Rand creates a new Rand with the given seed.
 	Rand(unsigned long);
+
+	// bits returns the next 64 pseudo-random bits.
 	unsigned long bits(void);
-	// (not sure if it's inclusive or exclusive)
+
+	// integer returns a pseudo-random integer between min
+	// and max. (not sure if it's inclusive or exclusive)
 	long integer(long min, long max);
-	// between 0 and 1 (not sure if it's inclusive or exclusive)
+
+	// real returns the a pseudo-random double between
+	// 0 and 1 (not sure if it's inclusive).
 	double real(void);
 
 	unsigned long seed(void) const { return theseed; }
@@ -100,25 +191,36 @@ private:
 	uint64_t v;
 };
 
-// A global, pre-seeded random number generator.
+// randgen is a pre-seeded pseudo-random number generator that
+// is seeded with the current time upon program initialization.
 extern Rand randgen;
 
+// runlenenc performs a run-length encoding of the given string
+// of data.  The result is returned via the dst argument.
 void runlenenc(std::string &dst, const std::string &data);
+
+// runlendec decodes a run-length encoded string.
 void runlendec(std::string &dst, const std::string &data);
+
+// ascii85enc encodes a string using ASCII-85 encoding.
 void ascii85enc(std::string &dst, const std::string &data);
 
+// The Ranker type generates permutation ranks.
 struct Ranker {
-	// Rank the permutation 0..n-1
+	// Ranker creates a new Ranker for the permutation
+	// 0..n-1
 	Ranker(unsigned int n);
 
-	// Permrank for a subset of the permutation
-	// 0..(n-1) that contains sz elements.
-	// Cannot be unranked!
+	// Ranker generates a Ranker for a subset of the
+	// permutation 0..(n-1) that contains sz elements.
+	// Ranks made from a Ranker created with this
+	// constructor cannot be unranked!  This is one-way.
 	Ranker(unsigned int sz, unsigned int n);
 
 	~Ranker(void);
 
-	// The array must have ≤ sz elements.
+	// rank returns the permutation rank for the given
+	// permutation. The array must have ≤ sz elements.
 	unsigned long rank(const unsigned int []);
 
 private:
@@ -136,55 +238,24 @@ private:
 	unsigned int treesz;
 };
 
+// ilog2 returns the interger logorithm base 2.
 unsigned int ilog2(boost::uint32_t);
 
-struct Djforrest {
-	Djforrest(unsigned int sz) {
-		for (unsigned int i = 0; i < sz; i++)
-			sets.push_back(Set(i));
-	}
-
-	unsigned int find(unsigned int s) {
-		if (sets[s].parent == s)
-			return s;
-		sets[s].parent = find(sets[s].parent);
-		return sets[s].parent;
-	}
-
-	void join(unsigned int a, unsigned int b) {
-		unsigned int aroot = find(a);
-		unsigned int broot = find(b);
-		if (aroot == broot)
-			return;
-		if (sets[a].rank < sets[b].rank) {
-			sets[a].parent = broot;
-		} else if (sets[b].rank < sets[a].rank) {
-			sets[b].parent = aroot;
-		} else {
-			sets[b].parent = aroot;
-			sets[a].rank++;
-		}
-	}
-	
-	struct Set {
-		Set(unsigned int n) : parent(n), rank(0) { }
-
-		unsigned int parent, rank;
-	};
-
-private:
-	std::vector<Set> sets; 
-};
-
-// Disjoint sets
+// The Djset type is a disjoint forrest implementation of disjoint
+// sets.
 struct Djset {
+
+	// Djset creates a new set.
 	Djset(void) : aux(NULL), rank(0) { parent = this; }
 
+	// clear resets the set as though it has just been freshly
+	// created.
 	void clear(void) {
 		rank = 0;
 		parent = this;
 	}
 
+	// find returns the canonical representation of this set.
 	Djset *find(void) {
 		if (parent == this)
 			return parent;
@@ -192,6 +263,8 @@ struct Djset {
 		return parent;
 	}
 
+	// join unions two sets so that performing a find on either
+	// will return the same canonical set.
 	void join(Djset &o) {
 		Djset *root = find();
 		Djset *oroot = o.find();
@@ -206,7 +279,9 @@ struct Djset {
 		}
 	}
 
-	void *aux;	// Inited to NULL. Never touched; can be used however.
+	// aux is initialized to NULL and is never again touched by
+	// this code.  This may be used however you please.
+	void *aux;
 
 private:
 	Djset *parent;
