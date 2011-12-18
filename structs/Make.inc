@@ -10,7 +10,7 @@ EVERYTHING+=structs
 TESTS+=.structs_test
 
 .structs_test: ./structs/test
-	./structs/test ".*test" | tee $@
+	./structs/test ".*test" && touch $@
 
 structs/test:\
 	structs/test_htable.cc\

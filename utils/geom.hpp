@@ -15,17 +15,21 @@ static const double Epsilon = std::numeric_limits<double>::epsilon();
 static const double Infinity = std::numeric_limits<double>::infinity();
 
 // doubleeq is a double equality test that does not use ==, instead
-// it performs an approximate equality test for within Epsilon.
+// it performs an approximate equality test for within
+// 10·Epsilon.
 static inline bool doubleeq(double a, double b) {
-	return (std::isnan(a) && std::isnan(b)) ||
-		(std::isinf(a) && std::isinf(b)) ||
-		(a < b + Epsilon && a > b - Epsilon);
+	return fabs(a - b) < 10 * Epsilon ||
+		(std::isnan(a) && std::isnan(b)) ||
+		(std::isinf(a) && std::isinf(b));
 }
 
 // doubleneq is a double equality test that does not use !=, instead
-// it performs an approximate non-equality test for within Epsilon.
+// it performs an approximate non-equality test for within
+// 10·Epsilon.
 static inline bool doubleneq(double a, double b) {
-	return a > b + Epsilon || a < b - Epsilon;
+	return fabs(a - b) > 10 * Epsilon ||
+		(std::isnan(a) != std::isnan(b)) ||
+		(std::isinf(a) != std::isinf(b));
 }
 
 // inrange returns true if x is between min and max.
@@ -179,14 +183,20 @@ struct LineSeg : public Line {
 		img.add(new Image::Line(p0.x, p0.y, p1.x, p1.y, w, c));
 	}
 
+	// length returns the length of the line segment.
 	double length(void) const {
 		return Point::distance(p0, p1);
 	}
 
+	// midpt returns the point directly in the middle of the
+	// line segment.
 	Point midpt(void) const {
 		return Point((p0.x + p1.x) / 2, (p0.y + p1.y) / 2);
 	}
 
+	// along returns the point that is the given distance along
+	// the line segment from the starting point.  The distance
+	// can be greater than the length of the segment.
 	Point along(double dist) const {
 		double theta = Point::angle(p1.minus(p0));
 		return Point(p0.x + dist * cos(theta), p0.y + dist * sin(theta));

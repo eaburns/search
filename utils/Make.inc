@@ -21,6 +21,8 @@ UTILOBJS:=\
 
 include $(UTILOBJS:.o=.d)
 
+CLEAN+=$(UTILOBJS)
+
 utils: utils/utils.a utils/test utils/pathfor
 
 EVERYTHING+=utils
@@ -28,15 +30,17 @@ EVERYTHING+=utils
 TESTS+=.utils_test
 
 .utils_test: ./utils/test
-	./utils/test ".*test" | tee $@
+	./utils/test ".*test" && touch $@
+CLEAN+=.utils_test
 
 utils/utils.a: $(UTILOBJS)
 	$(AR) rsc $@ $(UTILOBJS)
+CLEAN+=utils.a
 
 utils/test: utils/test_geom.cc utils/test_rdb.cc utils/test.cc utils/utils.a
 	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
+CLEAN+=utils/test
 
 utils/pathfor: utils/pathfor.cc utils/utils.a
 	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
-
-CLEAN+=$(UTILOBJS) utils/utils.a utils/test utils/pathfor
+CLEAN+=utils/pathfor

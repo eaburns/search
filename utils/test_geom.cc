@@ -2,9 +2,49 @@
 #include "geom.hpp"
 #include <cstdarg>
 
-static bool eq(double, double);
 static void drawisects(const Polygon&, const LineSeg&);
 static bool samepts(std::vector<Point>&, unsigned int n, ...);
+
+static struct { double a, b; bool eq; } eqtst[] = {
+	{ 1, 1, true },
+	{ 2, 2, true },
+	{ 1e90, 1e90, true },
+	{ M_PI, M_PI, true },
+	{ 1, 2, false },
+	{ 2, 3, false },
+	{ 1e90, 1.0000001e90, false },
+	{ M_PI, M_PI + 11 * Epsilon, false },
+};
+
+bool test_doubleeq(void) {
+	bool ok = true;
+	for (unsigned int i = 0; i < sizeof(eqtst) / sizeof(eqtst[0]); i++) {
+		if (doubleneq(eqtst[i].a, eqtst[i].b) != eqtst[i].eq)
+			continue;
+
+		const char *expect = eqtst[i].eq ? "true" : "false";
+		const char *got = eqtst[i].eq ? "false" : "true";
+		testpr("expected doubleeq(%g,%g)=%s, but got %s\n",
+			eqtst[i].a, eqtst[i].b, expect, got);
+		ok = false;
+	}
+	return ok;
+}
+
+bool test_doubleneq(void) {
+	bool ok = true;
+	for (unsigned int i = 0; i < sizeof(eqtst) / sizeof(eqtst[0]); i++) {
+		if (doubleeq(eqtst[i].a, eqtst[i].b) == eqtst[i].eq)
+			continue;
+
+		const char *expect = eqtst[i].eq ? "true" : "false";
+		const char *got = eqtst[i].eq ? "false" : "true";
+		testpr("expected doubleeq(%g,%g)=%s, but got %s\n",
+			eqtst[i].a, eqtst[i].b, expect, got);
+		ok = false;
+	}
+	return ok;
+}
 
 bool test_point_angle(void) {
 	struct { double x, y, theta; } tst[] = {
@@ -22,11 +62,11 @@ bool test_point_angle(void) {
 	for (unsigned int i = 0; i < sizeof(tst) / sizeof(tst[0]); i++) {
 		Point p(tst[i].x, tst[i].y);
 		double t = p.angle();
-		if (doubleneq(t, tst[i].theta)) {
-			testpr("%g,%g, expected %grad, got %grad\n", tst[i].x,
-				tst[i].y, tst[i].theta, t);
-			ok = false;
-		}
+		if (doubleeq(t, tst[i].theta))
+			continue;
+		testpr("%g,%g, expected %g rad, got %g rad\n", tst[i].x,
+			tst[i].y, tst[i].theta, t);
+		ok = false;
 	}
 
 	return ok;
@@ -62,13 +102,13 @@ bool test_line_isect(void) {
 				tst[i].x10, tst[i].y10, tst[i].x11, tst[i].y11);
 			ok = false;
 		}
-		if (isect0 != expect) {
-			testpr("%d: %g,%g → %g,%g; %g,%g → %g,%g: expected %g,%g, got %g,%g\n",
-				i, tst[i].x00, tst[i].y00, tst[i].x01, tst[i].y01,
-				tst[i].x10, tst[i].y10, tst[i].x11, tst[i].y11,
-				expect.x, expect.y, isect0.x, isect0.y);
-			ok = false;
-		}
+		if (isect0 == expect)
+			continue;
+		testpr("%d: %g,%g → %g,%g; %g,%g → %g,%g: expected %g,%g, got %g,%g\n",
+			i, tst[i].x00, tst[i].y00, tst[i].x01, tst[i].y01,
+			tst[i].x10, tst[i].y10, tst[i].x11, tst[i].y11,
+			expect.x, expect.y, isect0.x, isect0.y);
+		ok = false;
 	}
 
 	return ok;
@@ -89,100 +129,11 @@ bool test_line_isabove(void) {
 		Line l(Point(tst[i].x0, tst[i].y0), Point(tst[i].x1, tst[i].y1));
 		Point pt(tst[i].x, tst[i].y);
 		bool above = l.isabove(pt);
-		if (above != tst[i].above) {
-			testpr("%d: %g,%g → %g,%g; %g,%g expected above: %d, got %d\n",
-				i, tst[i].x0, tst[i].y0, tst[i].x1, tst[i].y1,
-				tst[i].x, tst[i].y, tst[i].above, above);
-			ok = false;
-		}
-	}
-
-	return ok;
-}
-
-bool test_lineseg_along(void) {
-	bool ok = true;
-	Point origin(0,0);
-
-	LineSeg l(origin, Point(1, 0));
-	Point a = l.along(10);
-	if (!eq(a.x, 10) || !eq(a.y, 0)) {
-		testpr("Expect 10,0, got %g,%g\n", a.x, a.y);
-		ok = false;
-	}
-	a = l.along(-10);
-	if (!eq(a.x, -10) || !eq(a.y, 0)) {
-		testpr("Expect -10,0, got %g,%g\n", a.x, a.y);
-		ok = false;
-	}
-
-	l = LineSeg(origin, Point(-1, 0));
-	a = l.along(10);
-	if (!eq(a.x, -10) || !eq(a.y, 0)) {
-		testpr("Expect -10,0, got %g,%g\n", a.x, a.y);
-		ok = false;
-	}
-	a = l.along(-10);
-	if (!eq(a.x, 10) || !eq(a.y, 0)) {
-		testpr("Expect 10,0, got %g,%g\n", a.x, a.y);
-		ok = false;
-	}
-
-	l = LineSeg(origin, Point(0, 1));
-	a = l.along(10);
-	if (!eq(a.x, 0) || !eq(a.y, 10)) {
-		testpr("Expect 0,10, got %g,%g\n", a.x, a.y);
-		ok = false;
-	}
-	a = l.along(-10);
-	if (!eq(a.x, 0) || !eq(a.y, -10)) {
-		testpr("Expect 0,-10, got %g,%g\n", a.x, a.y);
-		ok = false;
-	}
-
-	l = LineSeg(origin, Point(0, -1));
-	a = l.along(10);
-	if (!eq(a.x, 0) || !eq(a.y, -10)) {
-		testpr("Expect 0,-10, got %g,%g\n", a.x, a.y);
-		ok = false;
-	}
-	a = l.along(-10);
-	if (!eq(a.x, 0) || !eq(a.y, 10)) {
-		testpr("Expect 0,10, got %g,%g\n", a.x, a.y);
-		ok = false;
-	}
-
-	return ok;
-}
-
-bool test_lineseg_midpt(void) {
-	bool ok = true;
-
-	LineSeg l(Point(0, 0), Point(1, 0));
-	Point p = l.midpt();
-	if (!eq(p.x, 0.5) || !eq(p.y, 0)) {
-		testpr("Expected ½,0, got %g,%g\n", p.x, p.y);
-		ok = false;
-	}
-
-	l = LineSeg(Point(0, 0), Point(-1, 0));
-	p = l.midpt();
-	if (!eq(p.x, -0.5) || !eq(p.y, 0)) {
-		testpr("Expected -½,0, got %g,%g\n", p.x, p.y);
-		ok = false;
-	}
-
-	l = LineSeg(Point(0, 0), Point(0, 1));
-	p = l.midpt();
-	if (!eq(p.x, 0) || !eq(p.y, 0.5)) {
-		testpr("Expected 0,½, got %g,%g\n", p.x, p.y);
-		ok = false;
-	}
-
-	l = LineSeg(Point(0, 0), Point(0, -1));
-	p = l.midpt();
-	if (!eq(p.x, 0) || !eq(p.y, -0.5)) {
-		testpr("Expected 0,-½, got %g,%g\n", p.x, p.y);
+		if (above == tst[i].above)
+			continue;
+		testpr("%d: %g,%g → %g,%g; %g,%g expected above: %d, got %d\n",
+			i, tst[i].x0, tst[i].y0, tst[i].x1, tst[i].y1,
+			tst[i].x, tst[i].y, tst[i].above, above);
 		ok = false;
 	}
 
@@ -190,35 +141,87 @@ bool test_lineseg_midpt(void) {
 }
 
 bool test_lineseg_length(void) {
+	struct { double x0, y0, x1, y1, len; } tst[] = {
+		{ 0, 0, 1, 0,	1 },
+		{ 0, 0, -1, 0,	1 },
+		{ 0, 0, 0, 1,	1 },
+		{ 0, 0, 0, -1,	1 },
+		{ 0, 0, M_PI, 0,	M_PI },
+		{ 0, 0, -M_PI, 0,	M_PI },
+		{ 0, 0, 0, M_PI,	M_PI },
+		{ 0, 0, 0, -M_PI,	M_PI },
+		{ 0, 0, 1, 1,	sqrt(2) },
+		{ 0, 0, 3, 4,	5 },
+	};
 	bool ok = true;
 
-	LineSeg l(Point(0, 0), Point(1, 0));
-	if (!eq(l.length(), 1)) {
-		testpr("Expected length 1, got %g\n", l.length());
+	for (unsigned int i = 0; i < sizeof(tst) / sizeof(tst[0]); i++) {
+		LineSeg l(Point(tst[i].x0, tst[i].y0), Point(tst[i].x1, tst[i].y1));
+		double len = l.length();
+		if (doubleeq(len, tst[i].len))
+			continue;
+		testpr("%d: %g,%g → %g,%g expected length: %g, got %g\n",
+			i, tst[i].x0, tst[i].y0, tst[i].x1, tst[i].y1,
+			tst[i].len, len);
 		ok = false;
 	}
 
-	l = LineSeg(Point(0, 0), Point(-1, 0));
-	if (!eq(l.length(), 1)) {
-		testpr("Expected length 1, got %g\n", l.length());
+	return ok;
+}
+
+bool test_lineseg_midpt(void) {
+	struct { double x0, y0, x1, y1, x, y; } tst[] = {
+		{ -1, 0, 1, 0,	0, 0 },
+		{ 1, 0, -1, 0,	0, 0 },
+		{ 0, -1, 0, 1,	0, 0 },
+		{ 0, 1, 0, -1,	0, 0 },
+		{ -1, -1, 1, 1,	0, 0 },
+		{ -1, 1, 1, -1,	0, 0 },
+		{ 1e8, 1e8, 2e8, 2e8,	1.5e8, 1.5e8 },
+	};
+	bool ok = true;
+
+	for (unsigned int i = 0; i < sizeof(tst) / sizeof(tst[0]); i++) {
+		LineSeg l(Point(tst[i].x0, tst[i].y0), Point(tst[i].x1, tst[i].y1));
+		Point mid(l.midpt());
+		if (mid == Point(tst[i].x, tst[i].y))
+			continue;
+		testpr("%d: %g,%g → %g,%g expected length: %g,%g, got %g,%g\n",
+			i, tst[i].x0, tst[i].y0, tst[i].x1, tst[i].y1,
+			tst[i].x, tst[i].y, mid.x, mid.y);
 		ok = false;
 	}
 
-	l = LineSeg(Point(0, 0), Point(0, 1));
-	if (!eq(l.length(), 1)) {
-		testpr("Expected length 1, got %g\n", l.length());
-		ok = false;
-	}
+	return ok;
+}
 
-	l = LineSeg(Point(0, 0), Point(0, -1));
-	if (!eq(l.length(), 1)) {
-		testpr("Expected length 1, got %g\n", l.length());
-		ok = false;
-	}
 
-	l = LineSeg(Point(1, 1), Point(2, 0));
-	if (!eq(l.length(), sqrt(2))) {
-		testpr("Expected length √2=%g, got %g\n", sqrt(2), l.length());
+bool test_lineseg_along(void) {
+	struct { double x0, y0, x1, y1, dist, x, y; } tst[] = {
+		{ 0, 0, 1, 0,	0.5,	 0.5, 0 },
+		{ 0, 0, 0, 1,	0.5,	 0, 0.5 },
+		{ 0, 0, 1, 1,	0.5,	 0.5*cos(M_PI/4), 0.5*sin(M_PI/4) },
+		// greater than the length of the segment
+		{ 0, 0, 1, 0,	10,	 10, 0 },
+		{ 0, 0, 0, 1,	10,	 0, 10 },
+		{ 0, 0, 1, 1,	10,	 10*cos(M_PI/4), 10*sin(M_PI/4) },
+		// negative
+		{ 0, 0, 1, 0,	-10,	 -10, 0 },
+		{ 0, 0, 0, 1,	-10,	 0, -10 },
+		{ 0, 0, 1, 1,	-10,	 -10*cos(M_PI/4), -10*sin(M_PI/4) },
+	
+	};
+	bool ok = true;
+
+	for (unsigned int i = 0; i < sizeof(tst) / sizeof(tst[0]); i++) {
+		LineSeg l(Point(tst[i].x0, tst[i].y0), Point(tst[i].x1, tst[i].y1));
+		Point expect(tst[i].x, tst[i].y);
+		Point pt(l.along(tst[i].dist));
+		if (pt == expect)
+			continue;
+		testpr("%d: %g,%g → %g,%g; %g along, expected %g,%g got %g,%g\n",
+			i, tst[i].x0, tst[i].y0, tst[i].x1, tst[i].y1,
+			tst[i].dist, tst[i].x, tst[i].y, pt.x, pt.y);
 		ok = false;
 	}
 
@@ -249,7 +252,7 @@ bool test_lineseg_isect(void) {
 	LineSeg a(Point(-1, 0), Point(1, 0));
 	LineSeg b(Point(0, -1), Point(0, 1));
 	Point is = a.isection(b);
-	if (!eq(is.x, 0) || !eq(is.y, 0)) {
+	if (doubleneq(is.x, 0) || doubleneq(is.y, 0)) {
 		testpr("Expected isection 0,0, got %g,%g\n", is.x, is.y);
 		ok = false;
 	}
@@ -257,7 +260,7 @@ bool test_lineseg_isect(void) {
 	a = LineSeg(Point(0, -1), Point(0, 1));
 	b = LineSeg(Point(1, 0), Point(-1, 0));
 	is = a.isection(b);
-	if (!eq(is.x, 0) || !eq(is.y, 0)) {
+	if (doubleneq(is.x, 0) || doubleneq(is.y, 0)) {
 		testpr("Expected isection 0,0, got %g,%g\n", is.x, is.y);
 		ok = false;
 	}
@@ -289,7 +292,7 @@ bool test_lineseg_isect(void) {
 	a = LineSeg(Point(-1, -1), Point(1, 1));
 	b = LineSeg(Point(-1, 1), Point(1, -1));
 	is = a.isection(b);
-	if (!eq(is.x, 0) || !eq(is.y, 0)) {
+	if (doubleneq(is.x, 0) || doubleneq(is.y, 0)) {
 		testpr("Expected isection 0,0, got %g,%g\n", is.x, is.y);
 		ok = false;
 	}
@@ -297,7 +300,7 @@ bool test_lineseg_isect(void) {
 	a = LineSeg(Point(0, 0), Point(2, 2));
 	b = LineSeg(Point(0, 2), Point(2, 0));
 	is = a.isection(b);
-	if (!eq(is.x, 1) || !eq(is.y, 1)) {
+	if (doubleneq(is.x, 1) || doubleneq(is.y, 1)) {
 		testpr("Expected isection 1,1, got %g,%g\n", is.x, is.y);
 		ok = false;
 	}
@@ -323,7 +326,7 @@ bool test_lineseg_isect(void) {
 	a = LineSeg(Point(1, 1), Point(1, 0));
 	b = LineSeg(Point(0.5, 0.5), Point(1.5, 0.5));
 	is = a.isection(b);
-	if (!eq(is.x, 1) || !eq(is.y, 0.5)) {
+	if (doubleneq(is.x, 1) || doubleneq(is.y, 0.5)) {
 		testpr("Expected isect of 1,1 → 1,0 with ½,½ → 1½,1½ to be 1,½, got %g,%g\n",
 			is.x, is.y);
 		ok = false;
@@ -409,7 +412,7 @@ bool test_poly_minisect(void) {
 
 	LineSeg l(Point(50, 50), Point(150, 50));
 	Point m = sq.minisect(l);
-	if (!eq(m.x, 100) || !eq(m.y, 50)) {
+	if (doubleneq(m.x, 100) || doubleneq(m.y, 50)) {
 		testpr("Unexpected min intersection for 50,50 → 150,50: ");
 		drawisects(sq, l);
 		ok = false;
@@ -417,7 +420,7 @@ bool test_poly_minisect(void) {
 
 	l = LineSeg(Point(-50, 50), Point(150, 50));
 	m = sq.minisect(l);
-	if (!eq(m.x, 0) || !eq(m.y, 50)) {
+	if (doubleneq(m.x, 0) || doubleneq(m.y, 50)) {
 		testpr("Unexpected min intersection for -50,50 → 150,50: ");
 		drawisects(sq, l);
 		ok = false;
@@ -425,7 +428,7 @@ bool test_poly_minisect(void) {
 
 	l = LineSeg(Point(150, 50), Point(-50, 50));
 	m = sq.minisect(l);
-	if (!eq(m.x, 100) || !eq(m.y, 50)) {
+	if (doubleneq(m.x, 100) || doubleneq(m.y, 50)) {
 		testpr("Unexpected min intersection for 150,50 → -50,50: ");
 		drawisects(sq, l);
 		ok = false;
@@ -478,10 +481,6 @@ bool test_poly_hits(void) {
 	return ok;
 }
 
-static bool eq(double x, double y) {
-	return fabs(x - y) < 1e-5;
-}
-
 enum { Bufsz = 128 };
 
 static void drawisects(const Polygon &poly, const LineSeg &line) {
@@ -519,7 +518,7 @@ static bool samepts(std::vector<Point> &pts, unsigned int n, ...) {
 
 		bool found = false;
 		for (unsigned int j = 0; j < pts.size(); j++) {
-			if (eq(pts[j].x, x) && eq(pts[j].y, y)) {
+			if (doubleeq(pts[j].x, x) && doubleeq(pts[j].y, y)) {
 				found = true;
 				break;
 			}

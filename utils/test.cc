@@ -1,5 +1,7 @@
 #include "utils.hpp"
 
+bool test_doubleeq(void);
+bool test_doubleneq(void);
 bool test_point_angle(void);
 bool test_line_isect(void);
 bool test_line_isabove(void);
@@ -18,6 +20,8 @@ bool test_rdbpathfor_shareprefix(void);
 bool test_rdbpathfor_existing(void);
 
 static const Test tests[] = {
+	Test("doubleeq test", test_doubleeq),
+	Test("doubleneq test", test_doubleneq),
 	Test("point angle test", test_point_angle),
 	Test("line isect test", test_line_isect),
 	Test("line isabove test", test_line_isabove),
