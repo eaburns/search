@@ -203,13 +203,13 @@ extern Rand randgen;
 
 // runlenenc performs a run-length encoding of the given string
 // of data.  The result is returned via the dst argument.
-void runlenenc(std::string &dst, const std::string &data);
+std::string runlenenc(const std::string &data);
 
 // runlendec decodes a run-length encoded string.
-void runlendec(std::string &dst, const std::string &data);
+std::string runlendec(const std::string &data);
 
 // ascii85enc encodes a string using ASCII-85 encoding.
-void ascii85enc(std::string &dst, const std::string &data);
+std::string ascii85enc(const std::string &data);
 
 // The Ranker type generates permutation ranks.
 struct Ranker {

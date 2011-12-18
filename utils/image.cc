@@ -114,24 +114,23 @@ void Image::outputdata(FILE *out) const {
 	fprintf(out, "false	%% false == single data source (rgb)\n");
 	fprintf(out, "3	%% number of color components\n");
 	fprintf(out, "colorimage\n");
-	std::string encoded;
-	encodedata(encoded);
+	std::string encoded = encodedata();
 	fprintf(out, "%s\n", encoded.c_str());
 	fprintf(out, "grestore\n");
 }
 
-void Image::encodedata(std::string &dst) const {
+std::string Image::encodedata(void) const {
 	std::string cs;
 	for (unsigned int i = 0; i < w * h; i++) {
 		cs.push_back(data[i].getred255());
 		cs.push_back(data[i].getgreen255());
 		cs.push_back(data[i].getblue255());
 	}
-	std::string rlenc;
-	runlenenc(rlenc, cs);
-	ascii85enc(dst, rlenc);
+	std::string rlenc = runlenenc(cs);
+	std::string dst = ascii85enc(rlenc);
 	dst.push_back('~');
 	dst.push_back('>');
+	return dst;
 }
 
 Image::Path::~Path(void) {

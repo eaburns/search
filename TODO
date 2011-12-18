@@ -54,10 +54,6 @@
 
 	- more tests
 
-• utils:
-
-	- return string from encode/decodes
-
 • More domains:
 
 	- Dynamic robot path finding

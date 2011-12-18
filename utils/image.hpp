@@ -285,7 +285,7 @@ private:
 	void outputhdr_usletter(FILE*, unsigned int marginpt = 72/2) const;
 	void outputhdr(FILE*, unsigned int marginpt = 0) const;
 	void outputdata(FILE*) const;
-	void encodedata(std::string&) const;
+	std::string encodedata(void) const;
 
 	unsigned int w, h;
 	std::string title;

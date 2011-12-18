@@ -13,8 +13,8 @@ static unsigned int cntsame(const std::string &s, unsigned int strt) {
 	return i - strt;
 }
 
-void runlenenc(std::string &dst, const std::string &data) {
-	std::string buf;
+std::string runlenenc(const std::string &data) {
+	std::string buf, dst;
 
 	for (unsigned int i = 0; i < data.size(); /* Nothing */) {
 		unsigned int nsame = cntsame(data, i);
@@ -50,9 +50,11 @@ void runlenenc(std::string &dst, const std::string &data) {
 		dst.append(buf);
 		buf.clear();
 	}
+	return dst;
 }
 
-void runlendec(std::string &dst, const std::string &data) {
+std::string runlendec(const std::string &data) {
+	std::string dst;
 	unsigned int i = 0;
 	while (i < data.size()) {
 		char n = data[i++];
@@ -73,6 +75,7 @@ void runlendec(std::string &dst, const std::string &data) {
 		for (; i < end; i++)
 			dst.push_back(data[i]);
 	}
+	return dst;
 }
 
 static void digits85(std::string &dst, unsigned int n, uint32_t word) {
@@ -92,7 +95,8 @@ static void digits85(std::string &dst, unsigned int n, uint32_t word) {
 	assert (word == 0);
 }
 
-void ascii85enc(std::string &dst, const std::string &data) {
+std::string ascii85enc(const std::string &data) {
+	std::string dst;
 	uint32_t word;
 	unsigned int i = 0;
 
@@ -105,7 +109,7 @@ void ascii85enc(std::string &dst, const std::string &data) {
 	}
 
 	if (data.size() - i == 0)
-		return;
+		return dst;
 
 	assert (data.size() - i < 4);
 	word = (unsigned char) data[i] << 24;
@@ -115,6 +119,7 @@ void ascii85enc(std::string &dst, const std::string &data) {
 		word |= (unsigned char) data[i+2] << 8;
 
 	digits85(dst, data.size() - i + 1, word);
+	return dst;
 }
 
 // Decoding ascii85:
