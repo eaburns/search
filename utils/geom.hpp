@@ -202,12 +202,20 @@ struct LineSeg : public Line {
 		return Point(p0.x + dist * cos(theta), p0.y + dist * sin(theta));
 	}
 
+	// containt returns true if the line contains the given point.
 	bool contains(const Point &p) const {
-		if (fabs(m) < std::numeric_limits<double>::epsilon())
-			return inrange(mins.x, maxes.x, p.x);
-		return inrange(mins.x, maxes.x, p.x) && inrange(mins.y, maxes.y, p.y);
+		if (doubleeq(m, 0.0))
+			return doubleeq(mins.y, p.y) &&
+				inrange(mins.x, maxes.x, p.x);
+		return inrange(mins.x, maxes.x, p.x) &&
+			inrange(mins.y, maxes.y, p.y);
 	}
 
+	// isection returns the point at which the two line segments
+	// intersect.  If they do not intersect then Point::inf() is
+	// returned.  If the Line (infinite line) corresponding to
+	// the two lines is the same then the return value is
+	// also Point::inf().
 	Point isection(const LineSeg &l) const {
 		if (isvertical() || l.isvertical())
 			return vertisect(*this, l);
@@ -218,9 +226,8 @@ struct LineSeg : public Line {
 		return p;
 	}
 
-	bool isvertical(void) const {
-		return fabs(p0.x - p1.x) < std::numeric_limits<double>::epsilon();
-	}
+	// isvertical returns true if the line is a vertical line.
+	bool isvertical(void) const { return doubleeq(p0.x, p1.x); }
 
 	Point p0, p1;
 	Point mins, maxes;
@@ -270,15 +277,21 @@ struct Bbox {
 
 	void draw(Image&, Color c = Image::black, double lwidth = 1) const;
 
+	// contains returns true if the bounding box contains
+	// the given point.
 	bool contains(const Point &p) const {
 		return inrange(min.x, max.x, p.x) && inrange(min.y, max.y, p.y);
 	}
 
+	// hits returns true if the bounding box intersects
+	// this bounding box.
 	bool hits(const Bbox &b) const {
 		return !(min.x > b.max.x || b.min.x > max.x
 			|| min.y > b.max.y || b.min.y > max.y);
 	}
 
+	// move translates the bounding box by the given
+	// delta values.
 	void move(double dx, double dy) {
 		min.x += dx;
 		max.x += dx;
@@ -291,13 +304,13 @@ struct Bbox {
 
 struct Polygon {
 
-	// Generates a random polygon for which no
-	// side crosses the line between the vertices
-	// the minimum and maximum x value.
+	// random generates a random polygon for which no side
+	// crosses the line between the vertices with the minimum
+	// and maximum x value.
 	static Polygon random(unsigned int n, double xc, double yc, double r);
 
-	// Return the polygon that is the outter-hull
-	// of the given set of points.
+	// giftwrap returns the polygon for the outter-hull of the
+	// given set of points.
 	static Polygon giftwrap(const std::vector<Point>&);
 
 	Polygon(const std::vector<Point>&);

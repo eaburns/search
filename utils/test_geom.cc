@@ -229,17 +229,31 @@ bool test_lineseg_along(void) {
 }
 
 bool test_lineseg_contains(void) {
+	struct { double x0, y0, x1, y1, x, y; bool cont; } tst[] = {
+		{ 0, 0, 1, 0,	0, 0,	true },
+		{ 0, 0, 1, 0,	1, 0,	true },
+		{ -1, 0, 0, 0,	0, 0,	true },
+		{ -1, 0, 0, 0,	-1, 0,	true },
+		{ -1, 0, 1, 0,	0, 0,	true },
+		{ 0, -1, 0, 1,	0, 0,	true },
+		{ -1, -1, 1, 1,	0, 0,	true },
+		{ 1, -1, -1, 1,	0, 0,	true },
+		{ 0, 0, 5, 0,	M_PI, 0,	true },
+		{ 0, 0, 5, 0,	6, 0,	false },
+		{ -1, 0, 1, 0,	0, 1,	false },
+		{ 0, -1, 0, 1,	1, 0,	false },
+		{ 0, 0, 5, 0,	M_PI, 1,	false },
+	
+	};
 	bool ok = true;
 
-	LineSeg l(Point(-1, 0), Point(1, 0));
-	if (!l.contains(Point(0, 0))) {
-		testpr("Expected 0,0 to be contained in -1,0 → 1.0\n");
-		ok = false;
-	}
-
-	l = LineSeg(Point(0, -1), Point(0, 1));
-	if (!l.contains(Point(0, 0))) {
-		testpr("Expected 0,0 to be contained in 0,-1 → 0,1\n");
+	for (unsigned int i = 0; i < sizeof(tst) / sizeof(tst[0]); i++) {
+		LineSeg l(Point(tst[i].x0, tst[i].y0), Point(tst[i].x1, tst[i].y1));
+		if (l.contains(Point(tst[i].x, tst[i].y)) == tst[i].cont)
+			continue;
+		testpr("%d: %g,%g → %g,%g;  %g,%g expected %d\n",
+			i, tst[i].x0, tst[i].y0, tst[i].x1, tst[i].y1,
+			tst[i].x, tst[i].y, tst[i].cont);
 		ok = false;
 	}
 
@@ -247,88 +261,43 @@ bool test_lineseg_contains(void) {
 }
 
 bool test_lineseg_isect(void) {
+	struct { double x00, y00, x01, y01, x10, y10, x11, y11, xi, yi; } tst[] = {
+		// same line
+		{ 0, 0, 1, 0,	0, 0, 1, 0,	Infinity, Infinity },
+		{ 0, 0, 1, 1,	0, 0, 1, 1,	Infinity, Infinity },
+		{ 0, 0, 0, 1,	0, 0, 0, 1,	Infinity, Infinity },
+		// parallel
+		{ 0, 0, 1, 0,	0, 1, 1, 1,	Infinity, Infinity },
+		{ 0, 0, 1, 1,	0, 1, 1, 2,	Infinity, Infinity },
+		{ 0, 0, 0, 1,	1, 0, 1, 1,	Infinity, Infinity },
+		// vertical/horizontal intersection
+		{ 0, -1, 0, 1,	-1, 0, 1, 0,	0, 0 },
+		// other intersections
+		{ -1, -1, 1, 1,	-1, 1, 1, -1,	0, 0 },
+		{ 0, 2, 2, 0,	0, 0, 2, 2,	1, 1 },
+		// end-on-end (same Line, so Point::inf())
+		{ 0, 0, 1, 0,	-1, 0, 0, 0,	Infinity, Infinity },
+	};
+
 	bool ok = true;
-
-	LineSeg a(Point(-1, 0), Point(1, 0));
-	LineSeg b(Point(0, -1), Point(0, 1));
-	Point is = a.isection(b);
-	if (doubleneq(is.x, 0) || doubleneq(is.y, 0)) {
-		testpr("Expected isection 0,0, got %g,%g\n", is.x, is.y);
-		ok = false;
-	}
-
-	a = LineSeg(Point(0, -1), Point(0, 1));
-	b = LineSeg(Point(1, 0), Point(-1, 0));
-	is = a.isection(b);
-	if (doubleneq(is.x, 0) || doubleneq(is.y, 0)) {
-		testpr("Expected isection 0,0, got %g,%g\n", is.x, is.y);
-		ok = false;
-	}
-
-	a = LineSeg(Point(0, -1), Point(0, 1));
-	b = LineSeg(Point(1, -1), Point(1, 1));
-	is = a.isection(b);
-	if (!std::isinf(is.x) || !std::isinf(is.y)) {
-		testpr("Expected isection ∞,∞, got %g,%g\n", is.x, is.y);
-		ok = false;
-	}
-
-	a = LineSeg(Point(-1, 0), Point(1, 0));
-	b = LineSeg(Point(-1, 1), Point(1, 1));
-	is = a.isection(b);
-	if (!std::isinf(is.x) || !std::isinf(is.y)) {
-		testpr("Expected isection ∞,∞, got %g,%g\n", is.x, is.y);
-		ok = false;
-	}
-
-	a = LineSeg(Point(-1, 0), Point(1, 0));
-	b = LineSeg(Point(-1, -2), Point(1, -1));
-	is = a.isection(b);
-	if (!std::isinf(is.x) || !std::isinf(is.y)) {
-		testpr("Expected isection ∞,∞, got %g,%g\n", is.x, is.y);
-		ok = false;
-	}
-
-	a = LineSeg(Point(-1, -1), Point(1, 1));
-	b = LineSeg(Point(-1, 1), Point(1, -1));
-	is = a.isection(b);
-	if (doubleneq(is.x, 0) || doubleneq(is.y, 0)) {
-		testpr("Expected isection 0,0, got %g,%g\n", is.x, is.y);
-		ok = false;
-	}
-
-	a = LineSeg(Point(0, 0), Point(2, 2));
-	b = LineSeg(Point(0, 2), Point(2, 0));
-	is = a.isection(b);
-	if (doubleneq(is.x, 1) || doubleneq(is.y, 1)) {
-		testpr("Expected isection 1,1, got %g,%g\n", is.x, is.y);
-		ok = false;
-	}
-
-	a = LineSeg(Point(0, 0), Point(0, 1));
-	b = LineSeg(Point(0.5, 0.5), Point(1.5, 0.5));
-	is = a.isection(b);
-	if (!std::isinf(is.x) || !std::isinf(is.y)) {
-		testpr("Expected isect of 0,0 → 0,1 with ½,½ → 1½,1½ to be ∞,∞, got %g,%g\n",
-			is.x, is.y);
-		ok = false;
-	}
-
-	a = LineSeg(Point(0, 1), Point(1, 1));
-	b = LineSeg(Point(0.5, 0.5), Point(1.5, 0.5));
-	is = a.isection(b);
-	if (!std::isinf(is.x) || !std::isinf(is.y)) {
-		testpr("Expected isect of 0,1 → 1,1 with ½,½ → 1½,1½ to be ∞,∞, got %g,%g\n",
-			is.x, is.y);
-		ok = false;
-	}
-
-	a = LineSeg(Point(1, 1), Point(1, 0));
-	b = LineSeg(Point(0.5, 0.5), Point(1.5, 0.5));
-	is = a.isection(b);
-	if (doubleneq(is.x, 1) || doubleneq(is.y, 0.5)) {
-		testpr("Expected isect of 1,1 → 1,0 with ½,½ → 1½,1½ to be 1,½, got %g,%g\n",
-			is.x, is.y);
+	for (unsigned int i = 0; i < sizeof(tst) / sizeof(tst[0]); i++) {
+		Line l0(Point(tst[i].x00, tst[i].y00), Point(tst[i].x01, tst[i].y01));
+		Line l1(Point(tst[i].x10, tst[i].y10), Point(tst[i].x11, tst[i].y11));
+		Point expect(tst[i].xi, tst[i].yi);
+		Point isect0 = l0.isection(l1);
+		Point isect1 = l1.isection(l0);
+		if (isect0 != isect1) {
+			testpr("%g,%g → %g,%g; %g,%g → %g,%g: isect order differed\n",
+				tst[i].x00, tst[i].y00, tst[i].x01, tst[i].y01,
+				tst[i].x10, tst[i].y10, tst[i].x11, tst[i].y11);
+			ok = false;
+		}
+		if (isect0 == expect)
+			continue;
+		testpr("%d: %g,%g → %g,%g; %g,%g → %g,%g: expected %g,%g, got %g,%g\n",
+			i, tst[i].x00, tst[i].y00, tst[i].x01, tst[i].y01,
+			tst[i].x10, tst[i].y10, tst[i].x11, tst[i].y11,
+			expect.x, expect.y, isect0.x, isect0.y);
 		ok = false;
 	}
 
