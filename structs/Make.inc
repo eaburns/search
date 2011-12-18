@@ -7,10 +7,10 @@ structs: structs/structs.a structs/test
 
 EVERYTHING+=structs
 
-TESTS+=structs_test
+TESTS+=.structs_test
 
-structs_test:
-	./structs/test ".*test"
+.structs_test: ./structs/test
+	./structs/test ".*test" | tee $@
 
 structs/test:\
 	structs/test_htable.cc\
