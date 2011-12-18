@@ -4,27 +4,7 @@
 #include <vector>
 #include <deque>
 #include <map>
-#include <limits>
 #include <boost/cstdint.hpp>
-
-// Epsilon is the smallest double value that can be added
-// to 1 to make it no longer equal to 1.
-static const double Epsilon = std::numeric_limits<double>::epsilon();
-
-// Inifinity is the double representation of inifinity.
-static const double Infinity = std::numeric_limits<double>::infinity();
-
-// doubleeq is a double equality test that does not use ==, instead
-// it performs an approximate equality test for within Epsilon.
-static inline bool doubleeq(double a, double b) {
-	return a < b + Epsilon && a > b - Epsilon;
-}
-
-// doubleneq is a double equality test that does not use !=, instead
-// it performs an approximate non-equality test for within Epsilon.
-static inline bool doubleneq(double a, double b) {
-	return a > b + Epsilon || a < b - Epsilon;
-}
 
 // warn prints the formatted warning message.
 void warn(const char *, ...);

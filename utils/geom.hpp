@@ -5,44 +5,63 @@
 #include <cmath>
 #include <cstdio>
 
-void fatal(const char*, ...);
+extern void fatal(const char*, ...);	// from utils.hpp
 
-static inline bool inrange(double min, double max, double x) {
- 	return x >= min - sqrt(std::numeric_limits<double>::epsilon())
-		&& x <= max + sqrt(std::numeric_limits<double>::epsilon());
+// Epsilon is the smallest double value that can be added
+// to 1 to make it no longer equal to 1.
+static const double Epsilon = std::numeric_limits<double>::epsilon();
+
+// Inifinity is the double representation of inifinity.
+static const double Infinity = std::numeric_limits<double>::infinity();
+
+// doubleeq is a double equality test that does not use ==, instead
+// it performs an approximate equality test for within Epsilon.
+static inline bool doubleeq(double a, double b) {
+	return (std::isnan(a) && std::isnan(b)) ||
+		(std::isinf(a) && std::isinf(b)) ||
+		(a < b + Epsilon && a > b - Epsilon);
 }
 
+// doubleneq is a double equality test that does not use !=, instead
+// it performs an approximate non-equality test for within Epsilon.
+static inline bool doubleneq(double a, double b) {
+	return a > b + Epsilon || a < b - Epsilon;
+}
+
+// inrange returns true if x is between min and max.
+static inline bool inrange(double min, double max, double x) {
+ 	return x >= min - sqrt(Epsilon) && x <= max + sqrt(Epsilon);
+}
+
+// The Point structure represents a point in 2D space.
 struct Point {
 
+	// dot returns the dot product of the two points.
 	static double dot(const Point &a, const Point &b) { return a.dot(b); }
 
+	// sub returns the value of the component-wise subtraction
+	// of b from a.
 	static Point sub(const Point &a, const Point &b) { return a.minus(b); }
 
+	// distance returns the Euclidean distance of two points.
 	static double distance(const Point &a, const Point &b) {
 		Point diff = b.minus(a);
 		return sqrt(dot(diff, diff));
 	}
 
-	static Point inf(void) {
-		return Point(std::numeric_limits<double>::infinity(),
-			std::numeric_limits<double>::infinity());
-	}
+	// inf returns a point with infinite values for both x and y.
+	static Point inf(void) { return Point(Infinity, Infinity); }
 
-	static Point neginf(void) {
-		return Point(-std::numeric_limits<double>::infinity(),
-			-std::numeric_limits<double>::infinity());
-	}
+	// neginf returns a point with negative infinity values for
+	// both x and y.
+	static Point neginf(void) { return Point(-Infinity, -Infinity); }
 
-	// Get the angle off of the positive x axis
-	// between 0 and 2π.
-	static double angle(const Point &a) {
-		double angle = atan2(a.y, a.x);
-		if (angle < 0)
-			return 2 * M_PI + angle;
-		return angle;
-	}
+	// angle returns the angle to the point off of the positive x axis.
+	// The value is between 0 and 2π.
+	static double angle(const Point &a) {	return a.angle(); }
 
-	// Get the clock-wise swing between uv and vw
+	// cwangle returns the clock-wise angle between the lines from
+	// u to v and v to w.
 	static double cwangle(const Point &u, const Point &v, const Point &w) {
 		Point a = v.minus(u), b = w.minus(v);
 		return -atan2(a.x*b.y - a.y*b.x, a.x*b.x+a.y*b.y);
@@ -52,11 +71,8 @@ struct Point {
 
 	Point(double _x, double _y) : x(_x), y(_y) { }
 
-	Point(double _x, double _y, double _z) : x(_x), y(_y) { }
-
 	bool operator==(const Point &p) const {
-		return fabs(x - p.x) < std::numeric_limits<double>::epsilon()
-			&& fabs(y - p.y) < std::numeric_limits<double>::epsilon();
+		return doubleeq(x, p.x) && doubleeq(y, p.y);
 	}
 
 	bool operator!=(const Point &p) const { return !(*this == p); }
@@ -65,10 +81,22 @@ struct Point {
 		img.add(new Image::Circle(x, y, r,  c, -1));
 	}
 
+	// angle returns the angle to the point off of the positive x axis.
+	// The value is between 0 and 2π.
+	double angle(void) const {
+		double angle = atan2(y, x);
+		if (angle < 0)
+			return 2 * M_PI + angle;
+		return angle;
+	}
+
+	// dot returns the dot product of this point with point b.
 	double dot(const Point &b) const {
 		return x * b.x + y * b.y;
 	}
 
+	// minus returns the point resulting from component-wise
+	// subtraction of b from the current point.
 	Point minus(const Point &b) const {
 		return Point(x - b.x, y - b.y);
 	}
@@ -76,9 +104,11 @@ struct Point {
 	double x, y;
 };
 
+// The Line struct represents an infinite line in Euclidean space.
 struct Line {
 	Line(void) { }
 
+	// Line(Point,Point) creates a line defined by the two points.
 	Line(Point p0, Point p1) {
 		double dx = p1.x - p0.x;
 		double dy = p1.y - p0.y;
@@ -91,16 +121,20 @@ struct Line {
 		}
 	}
 
-	// If they are parallel then (∞,∞), if they are
-	// the same line then (FP_NAN, FP_NAN)
+	// isection returns the point of intersection between two lines.
+	// If the lines are parallel then Point::inf is returned.
 	Point isection(const Line &l) const {
 		if (std::isinf(m) || std::isinf(l.m))
 			return vertisect(*this, l);
+
+		if (doubleeq(m, l.m))
+			return Point::inf();
 
 		double x = (l.b - b) / (m - l.m);
 		return Point(x, m * x + b);
 	}
 
+	// isabove returns true if the point is above the given line.
 	bool isabove(const Point &p) const { return (m * p.x + b) < p.y; }
 
 	// In case of a vertical line: m == ∞ and b = x
@@ -108,11 +142,8 @@ struct Line {
 
 private:
 	static Point vertisect(const Line &a, const Line &b) {
-		if (std::isinf(a.m) && std::isinf(b.m)) {
-			if (fabs(a.b - b.b) < std::numeric_limits<double>::epsilon())
-				return Point(FP_NAN, FP_NAN);
+		if (std::isinf(a.m) && std::isinf(b.m))
 			return Point::inf();
-		}
 
 		const Line *v = &a, *l = &b;
 		if (std::isinf(b.m)) {

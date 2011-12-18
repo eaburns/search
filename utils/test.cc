@@ -18,22 +18,22 @@ bool test_rdbpathfor_shareprefix(void);
 bool test_rdbpathfor_existing(void);
 
 static const Test tests[] = {
-	Test("point angle", test_point_angle),
-	Test("line isect", test_line_isect),
-	Test("line isabove", test_line_isabove),
-	Test("lineseg midpt", test_lineseg_midpt),
-	Test("lineseg along", test_lineseg_along),
-	Test("lineseg length", test_lineseg_length),
-	Test("lineseg contains", test_lineseg_contains),
-	Test("lineseg isect", test_lineseg_isect),
-	Test("poly contains", test_poly_contains),
-	Test("poly isects", test_poly_isects),
-	Test("poly minisect", test_poly_minisect),
-	Test("poly hits", test_poly_hits),
-	Test("rdbpathfor newpath", test_rdbpathfor_newpath),
-	Test("rdbpathfor samepath", test_rdbpathfor_samepath),
-	Test("rdbpathfor shareprefix", test_rdbpathfor_shareprefix),
-	Test("rdbpathfor existing", test_rdbpathfor_existing),
+	Test("point angle test", test_point_angle),
+	Test("line isect test", test_line_isect),
+	Test("line isabove test", test_line_isabove),
+	Test("lineseg midpt test", test_lineseg_midpt),
+	Test("lineseg along test", test_lineseg_along),
+	Test("lineseg length test", test_lineseg_length),
+	Test("lineseg contains test", test_lineseg_contains),
+	Test("lineseg isect test", test_lineseg_isect),
+	Test("poly contains test", test_poly_contains),
+	Test("poly isects test", test_poly_isects),
+	Test("poly minisect test", test_poly_minisect),
+	Test("poly hits test", test_poly_hits),
+	Test("rdbpathfor newpath test", test_rdbpathfor_newpath),
+	Test("rdbpathfor samepath test", test_rdbpathfor_samepath),
+	Test("rdbpathfor shareprefix test", test_rdbpathfor_shareprefix),
+	Test("rdbpathfor existing test", test_rdbpathfor_existing),
 };
 
 enum { Ntests = sizeof(tests) / sizeof(tests[0]) };
