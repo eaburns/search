@@ -11,13 +11,14 @@ enum { Big = Tiles::Ntiles > sizeof(unsigned long) * 8 };
 //#define PATTERN 2, 3, 6, 7, 10, 11, 14, 15
 #endif
 
-const Tiles::Tile pattern[] = { PATTERN };
+static const Tiles::Tile pattern[] = { PATTERN };
 enum { Patsz = sizeof(pattern) / sizeof(pattern[0]) };
 
 static bool sparse;
 
 static void helpmsg(int);
 static Pdb *gen(void);
+static Pdb *newpdb(void);
 static Node *expand(Node**, const Node*);
 static Node *dupnode(Node**, const Node*);
 static void putnode(Node**, Node*);
@@ -95,11 +96,7 @@ struct Node {
 };
 
 static Pdb *gen(void) {
-	Pdb *pdb;
-	if (sparse)
-		pdb = new SparsePdb(Patsz, pattern);
-	else
-		pdb = new CompactPdb(Patsz, pattern);
+	Pdb *pdb = newpdb();
 
 	double start = walltime();
 	unsigned int depth = 0;
@@ -110,7 +107,7 @@ static Pdb *gen(void) {
 
 	while (current || next) {
 		if (!current) {
-			printf("depth %u: %lu nodes %lu MB\n", depth, num,
+			printf("depth %u:\t%lu nodes\t%lu MB\n", depth + 1, num,
 				virtmem() / 1024);
 			current = next;
 			next = NULL;
@@ -147,6 +144,12 @@ static Pdb *gen(void) {
 	printf("maximum depth: %u\n", depth);
 
 	return pdb;
+}
+
+static Pdb *newpdb(void) {
+	if (sparse)
+		return new SparsePdb(Patsz, pattern);
+	return new CompactPdb(Patsz, pattern);
 }
 
 static Node *expand(Node **nodes, const Node *n) {
