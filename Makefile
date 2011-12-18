@@ -14,7 +14,9 @@ LDFLAGS:=
 
 EVERYTHING:=
 
-all: everything
+TESTS:=
+
+all: everything tests
 
 include utils/Make.inc
 include structs/Make.inc
@@ -26,6 +28,8 @@ include visnav/Make.inc
 include plat2d/Make.inc
 
 everything: $(EVERYTHING)
+
+tests: $(TESTS)
 
 %.d: %.cc
 	./dep.sh $(CXX) $(shell dirname $*) $(CXXFLAGS) $^ > $@

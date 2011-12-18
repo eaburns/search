@@ -7,6 +7,11 @@ structs: structs/structs.a structs/test
 
 EVERYTHING+=structs
 
+TESTS+=structs_test
+
+structs_test:
+	./structs/test ".*test"
+
 structs/test:\
 	structs/test_htable.cc\
 	structs/test_intpq.cc\

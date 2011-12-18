@@ -25,6 +25,11 @@ utils: utils/utils.a utils/test utils/pathfor
 
 EVERYTHING+=utils
 
+TESTS+=utils_test
+
+utils_test: ./utils/test
+	./utils/test ".*test"
+
 utils/utils.a: $(UTILOBJS)
 	$(AR) rsc $@ $(UTILOBJS)
 
