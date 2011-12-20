@@ -2,8 +2,7 @@
 
 • use Inifinty instead of the numeric_limits trash
 
-• Figure out what to do about returning
-	operator vectors from a search.
+• some kind of search node sharing/cleanup
 
 • 2poly:
 
