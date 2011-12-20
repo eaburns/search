@@ -78,6 +78,7 @@ private:
 
 			if (goal) {
 				Search<D>::res.path.push_back(s);
+				Search<D>::res.ops.push_back(op);
 				return true;
 			}
 		}

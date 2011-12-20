@@ -17,7 +17,7 @@ template <class D> struct ArastarNode {
 	typedef typename D::PackedState PackedState;
 
 	PackedState packed;
-	Oper pop;
+	Oper op, pop;
 	Cost g, h;
 	double fprime;
 	Node *parent;
@@ -245,6 +245,7 @@ private:
 			Search<D>::res.reopnd++;
 			dup->fprime = dup->fprime - dup->g + k->g;
 			dup->g = k->g;
+			dup->op = k->op;
 			dup->pop = k->pop;
 			dup->parent = k->parent;
 
@@ -262,6 +263,7 @@ private:
 	Node *kid(D &d, Node *pnode, State &pstate, Oper op) {
 		Node *kid = nodes->construct();
 		kid->g = pnode->g + d.opcost(pstate, op);
+		kid->op = op;
 		kid->pop = d.revop(pstate, op);
 		kid->parent = pnode;
 		Undo u(pstate, op);
@@ -280,7 +282,7 @@ private:
 		n0->g = 0;
 		n0->h = d.h(s0);
 		n0->fprime = wt * n0->h;
-		n0->pop = D::Nop;
+		n0->pop = n0->op = D::Nop;
 		n0->parent = NULL;
 		return n0;
 	}
@@ -291,6 +293,8 @@ private:
 			State buf;
 			State &state = d.unpack(buf, n->packed);
 			Search<D>::res.path.push_back(state);
+			if (n->parent)
+				Search<D>::res.ops.push_back(n->op);
 		}
 	}
 

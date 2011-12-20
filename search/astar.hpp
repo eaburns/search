@@ -6,7 +6,7 @@
 template <class D, class Cost> struct AstarNode {
 	ClosedEntry<AstarNode, D> closedent;
 	typename D::PackedState packed;
-	typename D::Oper pop;
+	typename D::Oper op, pop;
 	Cost g, f;
 	AstarNode *parent;
 	long openind;
@@ -28,7 +28,7 @@ template <class D> struct AstarNode <D, IntOpenCost> {
 	ClosedEntry<AstarNode, D> closedent;
 	OpenEntry<AstarNode> openent;
 	typename D::PackedState packed;
-	typename D::Oper pop;
+	typename D::Oper op, pop;
 	typename D::Cost g, f;
 	AstarNode *parent;
 
@@ -127,6 +127,7 @@ private:
 
 			dup->f = dup->f - dup->g + k->g;
 			dup->g = k->g;
+			dup->op = k->op;
 			dup->pop = k->pop;
 			dup->parent = k->parent;
 
@@ -145,6 +146,7 @@ private:
 		Node *kid = nodes->construct();
 
 		kid->g = pnode->g + d.opcost(pstate, op);
+		kid->op = op;
 		kid->pop = d.revop(pstate, op);
 		kid->parent = pnode;
 
@@ -162,7 +164,7 @@ private:
 		d.pack(n0->packed, s0);
 		n0->g = 0;
 		n0->f = d.h(s0);
-		n0->pop = D::Nop;
+		n0->pop = n0->op = D::Nop;
 		n0->parent = NULL;
 		return n0;
 	}
@@ -174,6 +176,8 @@ private:
 			State buf;
 			State &state = d.unpack(buf, n->packed);
 			Search<D>::res.path.push_back(state);
+			if (n->parent)
+				Search<D>::res.ops.push_back(n->op);
 		}
 	}
 

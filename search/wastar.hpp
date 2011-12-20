@@ -8,7 +8,7 @@ void fatal(const char*, ...);	// utils.hpp
 template <class D> struct WastarNode {
 	ClosedEntry<WastarNode, D> closedent;
 	typename D::PackedState packed;
-	typename D::Oper pop;
+	typename D::Oper op, pop;
 	double g, f, fprime;
 	WastarNode *parent;
 	int openind;
@@ -126,6 +126,7 @@ private:
 			dup->fprime = dup->fprime - dup->g + k->g;
 			dup->f = dup->f - dup->g + k->g;
 			dup->g = k->g;
+			dup->op = k->op;
 			dup->pop = k->pop;
 			dup->parent = k->parent;
 
@@ -144,6 +145,7 @@ private:
 		Node *kid = nodes->construct();
 
 		kid->g = pnode->g + d.opcost(pstate, op);
+		kid->op = op;
 		kid->pop = d.revop(pstate, op);
 		kid->parent = pnode;
 
@@ -165,7 +167,7 @@ private:
 		double h = d.h(s0);
 		n0->f = h;
 		n0->fprime = wt * h;
-		n0->pop = D::Nop;
+		n0->pop = n0->op = D::Nop;
 		n0->parent = NULL;
 		return n0;
 	}

@@ -6,7 +6,7 @@
 template <class D, class Cost> struct GreedyNode {
 	ClosedEntry<GreedyNode, D> closedent;
 	typename D::PackedState packed;
-	typename D::Oper pop;
+	typename D::Oper op, pop;
 	Cost g, h;
 	GreedyNode *parent;
 
@@ -25,7 +25,7 @@ template <class D> struct GreedyNode <D, IntOpenCost> {
 	ClosedEntry<GreedyNode, D> closedent;
 	OpenEntry<GreedyNode> openent;
 	typename D::PackedState packed;
-	typename D::Oper pop;
+	typename D::Oper op, pop;
 	typename D::Cost g, h;
 	GreedyNode *parent;
 
@@ -124,6 +124,7 @@ private:
 	Node *kid(D &d, Node *pnode, State &pstate, Oper op) {
 		Node *kid = nodes->construct();
 		kid->g = pnode->g + d.opcost(pstate, op);
+		kid->op = op;
 		kid->pop = d.revop(pstate, op);
 		kid->parent = pnode;
 		Undo u(pstate, op);
@@ -140,7 +141,7 @@ private:
 		d.pack(n0->packed, s0);
 		n0->g = 0;
 		n0->h = speedy ? d.d(s0) : d.h(s0);
-		n0->pop = D::Nop;
+		n0->pop = n0->op = D::Nop;
 		n0->parent = NULL;
 		return n0;
 	}
@@ -152,6 +153,8 @@ private:
 			State buf;
 			State &state = d.unpack(buf, n->packed);
 			Search<D>::res.path.push_back(state);
+			if (n->parent)
+				Search<D>::res.ops.push_back(n->op);
 		}
 	}
 

@@ -26,9 +26,9 @@ int main(int argc, const char *argv[]) {
 	Result<Plat2d> res = search<Plat2d>(d, argc, argv);
 
 	std::vector<unsigned int> controls;
-	for (int i = res.path.size() - 1; i > 0; i--) {
-		if (i < (int) res.path.size() - 1)
-			controls.push_back(res.path[i].control);
+	for (int i = res.ops.size() - 1; i > 0; i--) {
+		if (i < (int) res.ops.size() - 1)
+			controls.push_back(res.ops[i]);
 	}
 	dfpair(stdout, "controls", "%s", controlstr(controls).c_str());
 
