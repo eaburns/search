@@ -48,6 +48,7 @@ private:
 		if ((D::UnitCost || f <= bound) && d.isgoal(s)) {
 			Search<D>::res.cost = g;
 			Search<D>::res.path.push_back(s);
+			Search<D>::res.ops.push_back(pop);
 			return true;
 		}
 
@@ -78,6 +79,8 @@ private:
 
 			if (goal) {
 				Search<D>::res.path.push_back(s);
+				if (g > 0)
+					Search<D>::res.ops.push_back(pop);
 				return true;
 			}
 		}
