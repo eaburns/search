@@ -2,6 +2,9 @@
 
 • use Inifinty instead of the numeric_limits trash
 
+• Figure out what to do about returning
+	operator vectors from a search.
+
 • 2poly:
 
 	- component class
@@ -24,10 +27,11 @@
 
 • visnav:
 
+	- point-point visibility
+	queries?
+
 	- bounding box to prune
 	links to out-of-bound verts.
-
-	- O(n lg n) alg for visnav
 
 	- don't fatalx on read fail
 	it prints Success…
