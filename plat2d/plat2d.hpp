@@ -53,7 +53,7 @@ struct Plat2d {
 	}
 
 	bool isgoal(State &s) {
-		return false;
+		return lvl.majorblk(s.player.z(), s.player.bbox()).tile.flags & Tile::Down;
 	}
 
 	unsigned int nops(State &s) {
