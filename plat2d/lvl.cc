@@ -145,3 +145,8 @@ void Lvl::draw(Image &img) const {
 			Image::red, 25.0));
 	}
 }
+
+std::vector<Polygon> Lvl::polys(void) const {
+	fatal("Unimplemented");
+	return std::vector<Polygon>();
+}

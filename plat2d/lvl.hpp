@@ -1,6 +1,7 @@
 #include "body.hpp"
 #include "tile.hpp"
 #include <cstdio>
+#include <vector>
 
 struct Image;
 
@@ -42,6 +43,9 @@ struct Lvl {
 		double y = (r.max.y + r.min.y) / 2.0;
 		return at(x / Tile::Width, y / Tile::Height, z);
 	}
+
+	// polys returns a vector of polygons that represent the level.
+	std::vector<Polygon> polys(void) const;
 
 private:
 

@@ -7,6 +7,7 @@ syntax: glob
 structs/test
 utils/test
 utils/pathfor
+utils/withattrs
 tiles/*pdbgen
 gridnav/2poly
 visnav/draw
