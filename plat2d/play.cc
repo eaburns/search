@@ -196,6 +196,15 @@ static void scroll(const Point &l0, const Point &l1) {
 static void draw(const Lvl &lvl, const Player &p) {
 	clear();
 	drawlvl(p.z(), lvl);
+
+	Lvl::Blkinfo bi = lvl.majorblk(p.z(), p.bbox());
+	SDL_Rect r;
+	r.w = Tile::Width;
+	r.h = Tile::Height;
+	r.x = bi.x * Tile::Width + tr.x;
+	r.y = bi.y * Tile::Height + tr.y;
+	fillrect(&r, Image::blue);
+
 	drawplayer(p);
 	SDL_Flip(screen);
 }

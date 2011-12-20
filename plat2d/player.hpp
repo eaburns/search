@@ -27,6 +27,10 @@ struct Player {
 
 	Player(const Player &o) : body(o.body), jframes(o.jframes) { }
 
+	bool operator==(const Player &o) const {
+		return jframes == o.jframes && body == o.body;
+	}
+
 	void act(const Lvl&, unsigned int);
 
 	// bottom left

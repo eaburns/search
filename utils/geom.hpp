@@ -287,6 +287,10 @@ struct Rectangle {
 		}
 	}
 
+	bool operator==(const Rectangle &o) const {
+		return min == o.min && max == o.max;
+	}
+
 	void draw(Image&, Color c = Image::black, double lwidth = 1) const;
 
 	// contains returns true if the rectangle contains

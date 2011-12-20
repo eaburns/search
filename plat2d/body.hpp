@@ -67,6 +67,11 @@ struct Body {
 	Body(const Body &o) :
 		z(o.z), bbox(o.bbox), vel(o.vel), acc(o.acc), fall(o.fall) { }
 
+	bool operator==(const Body &o) const {
+		return z == o.z && fall == o.fall && bbox == o.bbox &&
+			vel == o.vel && acc == o.acc;
+	}
+
 	void move(const Lvl&);
 	
 	unsigned int z;

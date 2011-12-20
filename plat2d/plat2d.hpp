@@ -57,7 +57,8 @@ struct Plat2d {
 	}
 
 	bool isgoal(State &s) {
-		return lvl.majorblk(s.player.z(), s.player.bbox()).tile.flags & Tile::Down;
+		const Tile &t = lvl.majorblk(s.player.z(), s.player.bbox()).tile;
+		return t.flags & Tile::Down;
 	}
 
 	unsigned int nops(State &s) {
@@ -97,6 +98,8 @@ struct Plat2d {
 	static void dumpstate(FILE *out, State &s) {
 		fprintf(out, "%g, %g\n", s.player.loc().x, s.player.loc().y);
 	}
+
+	Lvl &level(void) { return lvl; }
 
 private:
 	Lvl lvl;
