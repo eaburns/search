@@ -5,6 +5,8 @@
 namespace bf = boost::filesystem;
 
 static std::string makepath(bf::path, RdbAttrs);
+static void walkwithattrs(bf::path, RdbAttrs&, std::vector<std::string>&);
+static void addpath(bf::path, RdbAttrs&, std::vector<std::string>&);
 // Get the key for the given path.
 static bool getkey(const bf::path&, std::string&);
 static bf::path keyfile(const std::string&);
@@ -33,6 +35,39 @@ bool RdbAttrs::rm(const std::string &key) {
 	return true;	
 }
 
+std::vector<std::string> rdbwithattrs(const char *root, RdbAttrs attrs) {
+	std::vector<std::string> files;
+	walkwithattrs(root, attrs, files);
+	return files;
+}
+
+static void walkwithattrs(bf::path path, RdbAttrs &attrs, std::vector<std::string> &files) {
+	if (!bf::exists(path) || !bf::is_directory(path))
+		return;
+
+	std::string curkey;
+	if (!getkey(path, curkey))
+		return;
+
+	if (attrs.mem(curkey)) {
+		path /= attrs.lookup(curkey);
+		return addpath(path, attrs, files);
+	}
+
+	for (bf::directory_iterator it(path); it != bf::directory_iterator(); it++)
+		addpath(*it, attrs, files);
+}
+
+static void addpath(bf::path path, RdbAttrs &attrs, std::vector<std::string> &files) {
+	if (strstr(path.string().c_str(), "KEY=") != NULL)
+		return;
+	if (!bf::exists(path))
+		return;
+	if (bf::is_directory(path))
+		return walkwithattrs(path, attrs, files);
+	files.push_back(path.string());
+}
+
 std::string rdbpathfor(const char *root, RdbAttrs attrs) {
 	bf::path path(root);
 	std::string curkey;
@@ -42,7 +77,7 @@ std::string rdbpathfor(const char *root, RdbAttrs attrs) {
 			if (!bf::is_directory(path) && attrs.size() > 0)
 				fatal("%s is not a directory\n", path.string().c_str());
 			if (!getkey(path, curkey))
-				return makepath(path.string().c_str(), attrs);
+				return makepath(path, attrs);
 			if (!attrs.mem(curkey)) {
 				path /= "UNSPECIFIED";
 			} else {
@@ -50,7 +85,7 @@ std::string rdbpathfor(const char *root, RdbAttrs attrs) {
 				attrs.rm(curkey);
 			}
 		} else {
-			return makepath(path.string().c_str(), attrs);
+			return makepath(path, attrs);
 		}
 	}
 
@@ -77,7 +112,7 @@ static std::string makepath(bf::path root, RdbAttrs attrs) {
 
 static bool getkey(const bf::path &p, std::string &key) {
 	for (bf::directory_iterator it(p); it != bf::directory_iterator(); it++) {
-		const char *fname = it->path().string().c_str();
+		const char *fname = it->string().c_str();
 		const char *keyfile = strstr(fname, "KEY=");
 		if (!keyfile)
 			continue;

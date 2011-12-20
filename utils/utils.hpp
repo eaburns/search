@@ -113,6 +113,10 @@ private:
 // set rooted at the given root directory.
 std::string rdbpathfor(const char *, RdbAttrs);
 
+// rdbwithattrs returns a vector of all file paths that have the given
+// attributes under the given root directory.
+std::vector<std::string> rdbwithattrs(const char*, RdbAttrs);
+
 // A Test holds information on a unit test that may be run
 // via the testing framework.
 struct Test {
