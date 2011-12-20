@@ -1,21 +1,32 @@
-#include "lvl.hpp"
 #include "geom.hpp"
-#include "player.hpp"
+#include "plat2d.hpp"
 #include "../utils/utils.hpp"
 #include <SDL/SDL.h>
 #include <unistd.h>	// sleep()
+#include <vector>
 #include <cstdlib>
+#include <cerrno>
 
 enum {
 	Width = 640,
 	Height = 480,
 };
 
+static unsigned int frametime = 20;
+static unsigned int echo = false;
+static int nextctrl = -1;
+static std::vector<unsigned int> controls;
+
 SDL_Surface *screen;
 Point tr(0, 0);
 
-static void init(void);
+static void parseargs(int, const char*[]);
+static void helpmsg(int);
+static Lvl *getlvl(void);
+static void handlepair(const char*, const char*, void*);
+static void initsdl(void);
 static unsigned int keys(void);
+static unsigned int sdlkeys(void);
 static void scroll(const Point&, const Point&);
 static void draw(const Lvl&, const Player&);
 static void drawlvl(unsigned int z, const Lvl&);
@@ -23,20 +34,21 @@ static void drawplayer(const Player&);
 static void clear(void);
 static void fillrect(SDL_Rect*, Color);
 
-int main(int argc, char *argv[]) {
-	init();
+int main(int argc, const char *argv[]) {
+	parseargs(argc, argv);
+	Lvl *lvl = getlvl();
+	initsdl();
 
-	Lvl lvl(stdin);
 	Player p(2 * Tile::Width + Player::Offx, 2 * Tile::Height + Player::Offy,
 		0, Player::Width, Player::Height);
 
 	for ( ; ; ) {
-		unsigned int next = SDL_GetTicks() + 20;
+		unsigned int next = SDL_GetTicks() + frametime;
 
-		draw(lvl, p);
+		draw(*lvl, p);
 
 		Point l0(p.loc());
-		p.act(lvl, keys());
+		p.act(*lvl, keys());
 		scroll(l0, p.loc());
 
 		SDL_PumpEvents();
@@ -45,10 +57,71 @@ int main(int argc, char *argv[]) {
 			;
 	}
 
+	delete lvl;
+
 	return 0;
 }
 
-static void init(void) {
+static void parseargs(int argc, const char *argv[]) {
+	for (int i = 1; i < argc; i++) {
+		if (strcmp(argv[i], "-h") == 0)
+			helpmsg(0);
+		else if (i < argc - 1 && strcmp(argv[i], "-t") == 0)
+			frametime = strtol(argv[++i], NULL, 10);
+		else if (strcmp(argv[i], "-e") == 0)
+			echo = true;
+		else {
+			printf("Unknown option %s\n", argv[i]);
+			helpmsg(1);
+		}
+	}
+}
+
+static void helpmsg(int res) {
+	puts("Usage: play <options>");
+	puts("Options:");
+	puts("-h	display this help message");
+	puts("-e	echo the input back to the output if the input is a datafile");
+	puts("-t <num>	sets the frame time in milliseconds");
+	exit(res);
+}
+
+static Lvl *getlvl(void) {
+	int c = fgetc(stdin);
+	if (c == EOF)
+		return NULL;
+	ungetc(c, stdin);
+
+	if (c != '#')
+		return new Lvl(stdin);
+
+	char *path = NULL;
+	dfreadpairs(stdin, handlepair, &path, echo);
+	if (!path)
+		fatal("No level key found");
+
+	FILE *f = fopen(path, "r");
+	if (!f)
+		fatalx(errno, "Failed to open %s for reading", path);
+
+	Lvl *lvl = new Lvl(f);
+	fclose(f);
+	return lvl;
+}
+
+static void handlepair(const char *key, const char *val, void *_pathp) {
+	if (strcmp(key, "level") == 0) {
+		char **pathp = (char**) _pathp;
+		unsigned int sz = sizeof(val[0]) * (strlen(val) + 1);
+		*pathp = (char*) malloc(sz);
+		memcpy(*pathp, val, sz);
+	} else if (strcmp(key, "controls") == 0) {
+		nextctrl = 0;
+		controls = controlvec(val);
+	}
+}
+
+static void initsdl(void) {
 	if (SDL_Init(SDL_INIT_VIDEO) < 0)
 		fatal("Failed to init SDL: %s\n", SDL_GetError());
 
@@ -60,8 +133,18 @@ static void init(void) {
 	SDL_WM_SetCaption("play", "play");
 }
 
-#if SDLVER == 13
 static unsigned int keys(void) {
+	if (nextctrl < 0)
+		return sdlkeys();
+	if (nextctrl >= (int) controls.size())
+		exit(0);
+	unsigned int c = controls[nextctrl++];
+	printf("%#x\n", c);
+	return c;
+}
+
+#if SDLVER == 13
+static unsigned int sdlkeys(void) {
 	int nkeys;
 	const Uint8 *state = SDL_GetKeyboardState(&nkeys);
 
@@ -80,7 +163,7 @@ static unsigned int keys(void) {
 	return keys;
 }
 #else
-static unsigned int keys(void) {
+static unsigned int sdlkeys(void) {
 	int nkeys;
 	const Uint8 *state = SDL_GetKeyState(&nkeys);
 

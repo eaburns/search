@@ -1,9 +1,41 @@
 #include "closedlist.hpp"
 #include "../search/main.hpp"
+#include "../utils/utils.hpp"
 #include <cstdio>
+#include <cerrno>
 
-int main(int argc, char *argv[]) {
-	Plat2d d(stdin);
-	search<Plat2d>(d, argc, argv);
+const char *lvl = NULL;
+
+static void parseargs(int, const char*[]);
+
+int main(int argc, const char *argv[]) {
+	parseargs(argc, argv);
+
+	FILE *infile = stdin;
+	if (lvl) {
+		infile = fopen(lvl, "r");
+		if (!infile)
+			fatalx(errno, "Failed to open %s for reading", lvl);
+		dfpair(stdout, "level", "%s", lvl);
+	}
+
+	Plat2d d(infile);
+	if (infile != stdin)
+		fclose(infile);
+
+	Result<Plat2d> res = search<Plat2d>(d, argc, argv);
+
+	std::vector<unsigned int> controls;
+	for (int i = res.ops.size() - 1; i > 0; i--)
+		controls.push_back(i);
+	dfpair(stdout, "controls", "%s", controlstr(controls).c_str());
+
 	return 0;
+}
+
+static void parseargs(int argc, const char *argv[]) {
+	for (int i = 1; i < argc; i++) {
+		if (i < argc - 1 && strcmp(argv[i], "-lvl") == 0)
+			lvl = argv[++i];
+	}
 }

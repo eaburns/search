@@ -42,7 +42,7 @@ template <class D> struct Bugsy : public Search<D> {
 	typedef typename D::Oper Oper;
 	typedef BugsyNode<D> Node;
 
-	Bugsy(int argc, char *argv[]) :
+	Bugsy(int argc, const char *argv[]) :
 			Search<D>(argc, argv),
 			timeper(0.0), nresort(0), pertick(20), nexp(0), state(WaitTick),
 			closed(30000001) {

@@ -3,7 +3,7 @@
 #include <cstdio>
 #include <cerrno>
 
-int main(int argc, char *argv[]) {
+int main(int argc, const char *argv[]) {
 	VisGraph g(stdin);
 	double x0, y0, x1, y1;
 	if (fscanf(stdin, " %lg %lg %lg %lg", &x0, &y0, &x1, &y1) != 4)

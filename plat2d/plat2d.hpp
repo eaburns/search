@@ -1,7 +1,10 @@
-#include "../utils/utils.hpp"
 #include "player.hpp"
 #include "lvl.hpp"
+#include <vector>
+#include <string>
 #include <cstdio>
+
+void fatal(const char*, ...);
 
 struct Plat2d {
 
@@ -89,10 +92,16 @@ struct Plat2d {
 		return pkd;
 	}
 
-	void dumpstate(FILE *out, State &s) {
+	static void dumpstate(FILE *out, State &s) {
 		fprintf(out, "%g, %g\n", s.player.loc().x, s.player.loc().y);
 	}
 
 private:
 	Lvl lvl;
 };
+
+// controlstr converts a vector of controls to an ASCII string.
+std::string controlstr(const std::vector<unsigned int>&);
+
+// controlvec converts a string of controls back into a vector.
+std::vector<unsigned int> controlvec(const std::string&);

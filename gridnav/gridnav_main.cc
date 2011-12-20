@@ -3,7 +3,7 @@
 #include "../search/main.hpp"
 #include <cstdio>
 
-int main(int argc, char *argv[]) {
+int main(int argc, const char *argv[]) {
 	GridMap map(stdin);
 
 	if (map.movetype() != GridMap::FourWay && map.movetype() != GridMap::EightWay)

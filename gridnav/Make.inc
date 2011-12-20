@@ -4,24 +4,29 @@ GRIDNAVOBJS=\
 	gridnav/scenario.o\
 
 include $(GRIDNAVOBJS:.o=.d)
+CLEAN+=$(GRIDNAVOBJS)
 
 gridnav: gridnav/scenario_solver gridnav/gridnav_solver gridnav/2poly
 
 EVERYTHING+=gridnav
 
-gridnav/scenario_solver: $(GRIDNAVOBJS) gridnav/scenario_main.cc\
+gridnav/scenario_solver: $(GRIDNAVOBJS) gridnav/scenario_main.o\
 	utils/utils.a structs/structs.a search/search.a
 	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
 
-gridnav/gridnav_solver: $(GRIDNAVOBJS) gridnav/gridnav_main.cc\
+include gridnav/scenario_main.d
+CLEAN+=gridnav/scenario_solver gridnav/scenario_main.o
+
+gridnav/gridnav_solver: $(GRIDNAVOBJS) gridnav/gridnav_main.o\
 	utils/utils.a structs/structs.a search/search.a
 	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
 
-gridnav/2poly: $(GRIDNAVOBJS) gridnav/2poly.cc visnav/visgraph.cc\
+include gridnav/gridnav_main.d
+CLEAN+=gridnav/gridnav_solver gridnav/gridnav_main.o
+
+gridnav/2poly: $(GRIDNAVOBJS) gridnav/2poly.cc visnav/visgraph.o\
 	utils/utils.a structs/structs.a search/search.a
 	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
 
-CLEAN+=$(GRIDNAVOBJS)\
-	gridnav/scenario_solver\
-	gridnav/gridnav_solver\
-	gridnav/2poly
+include gridnav/2poly.d
+CLEAN+=gridnav/2poly gridnav/2poly.o

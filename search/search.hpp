@@ -66,13 +66,13 @@ struct Limit {
 	}
 
 	Limit(void);
-	Limit(int, char*[]);
+	Limit(int, const char*[]);
 	void output(FILE*);
 };
 
 template <class D> class Search {
 public:
-	Search(int argc, char *argv[]) : lim(argc, argv) { }
+	Search(int argc, const char *argv[]) : lim(argc, argv) { }
 	virtual ~Search() { }
 	virtual Result<D> &search(D &, typename D::State &) = 0;
 

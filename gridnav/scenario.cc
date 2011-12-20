@@ -6,7 +6,7 @@
 
 static const float Eps = 0.01;
 
-Scenario::Scenario(int ac, char *av[]) :
+Scenario::Scenario(int ac, const char *av[]) :
 		argc(ac), argv(av), maproot("./"), lastmap(NULL),
 		entry(-1), nentries(0) {
 	for (int i = 0; i < argc; i++) {

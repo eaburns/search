@@ -45,7 +45,7 @@ template <class D, bool speedy = false> struct Greedy : public Search<D> {
 	typedef typename D::Oper Oper;
 	typedef GreedyNode<D, Cost> Node;
 
-	Greedy(int argc, char *argv[]) :
+	Greedy(int argc, const char *argv[]) :
 		Search<D>(argc, argv), closed(30000001) {
 		nodes = new boost::object_pool<Node>();
 	}

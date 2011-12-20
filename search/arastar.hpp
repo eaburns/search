@@ -76,7 +76,7 @@ template <class D> struct Arastar : public Search<D> {
 	typedef typename D::Oper Oper;
 	typedef ArastarNode<D> Node;
 
-	Arastar(int argc, char *argv[]) :
+	Arastar(int argc, const char *argv[]) :
 			Search<D>(argc, argv), closed(30000001),
 			incons(30000001) {
 

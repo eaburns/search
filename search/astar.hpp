@@ -48,7 +48,7 @@ template <class D> struct Astar : public Search<D> {
 	typedef typename D::Oper Oper;
 	typedef AstarNode<D, Cost> Node;
 
-	Astar(int argc, char *argv[]) :
+	Astar(int argc, const char *argv[]) :
 		Search<D>(argc, argv), closed(30000001) {
 		nodes = new boost::object_pool<Node>();
 	}

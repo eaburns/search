@@ -37,7 +37,7 @@ template <class D> struct Wastar : public Search<D> {
 	typedef typename D::Oper Oper;
 	typedef WastarNode<D> Node;
 
-	Wastar(int argc, char *argv[]) :
+	Wastar(int argc, const char *argv[]) :
 			Search<D>(argc, argv), wt(-1.0), closed(30000001) {
 		for (int i = 0; i < argc; i++) {
 			if (i < argc - 1 && strcmp(argv[i], "-wt") == 0)

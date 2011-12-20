@@ -29,7 +29,7 @@ private:
 
 struct Scenario {
 
-	Scenario(int, char *[]);
+	Scenario(int, const char *[]);
 	~Scenario(void);
 
 	void run(std::istream&);
@@ -40,7 +40,7 @@ private:
 	void outputhdr(FILE*);
 
 	int argc;
-	char **argv;
+	const char **argv;
 	std::string maproot;
 	GridMap *lastmap;
 	Result<GridNav> res;
