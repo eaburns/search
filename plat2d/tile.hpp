@@ -3,7 +3,7 @@
 
 #include <cstdio>
 #include <cassert>
-#include "geom.hpp"
+#include "body.hpp"
 #include "../utils/image.hpp"
 
 struct Tile {
@@ -24,8 +24,8 @@ struct Tile {
 
 	static int read(FILE*);
 
-	static Rect bbox(unsigned int x, unsigned int y) {
-		return Rect(x * Width, y * Height,
+	static Bbox bbox(unsigned int x, unsigned int y) {
+		return Bbox(x * Width, y * Height,
 			(x + 1) * Width, (y + 1) * Height);
 	}
 
@@ -35,7 +35,7 @@ struct Tile {
 
 	Tile(char _c, unsigned int f) : c(_c), flags(f) { }
 
-	Isect isection(unsigned int x, unsigned int y, const Rect & r) const {
+	Isect isection(unsigned int x, unsigned int y, const Bbox & r) const {
 		if (!(flags & Collide))
 			return Isect();	
 		return r.isection(bbox(x, y));

@@ -1,4 +1,4 @@
-#include "geom.hpp"
+#include "body.hpp"
 #include "tile.hpp"
 #include <cstdio>
 
@@ -20,7 +20,7 @@ struct Lvl {
 
 	void draw(Image&) const;
 
-	Isect isection(unsigned int, const Rect&, const Point&) const;
+	Isect isection(unsigned int, const Bbox&, const Point&) const;
 
 	struct Blk { unsigned int tile; };
 
@@ -37,9 +37,9 @@ struct Lvl {
 		return Blkinfo(blks[ind(x, y, z)], x, y);
 	}
 
-	Blkinfo majorblk(unsigned int z, const Rect &r) const {
-		double x = (r.b.x + r.a.x) / 2.0;
-		double y = (r.b.y + r.a.y) / 2.0;
+	Blkinfo majorblk(unsigned int z, const Bbox &r) const {
+		double x = (r.max.x + r.min.x) / 2.0;
+		double y = (r.max.y + r.min.y) / 2.0;
 		return at(x / Tile::Width, y / Tile::Height, z);
 	}
 

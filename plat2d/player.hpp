@@ -1,4 +1,4 @@
-#include "geom.hpp"
+#include "body.hpp"
 
 struct Lvl;
 
@@ -30,9 +30,9 @@ struct Player {
 	void act(const Lvl&, unsigned int);
 
 	// bottom left
-	Point loc(void) { return body.bbox.a; }
+	Point loc(void) { return body.bbox.min; }
 
-	const Rect &bbox(void) const { return body.bbox; }
+	const Bbox &bbox(void) const { return body.bbox; }
 
 	unsigned int z(void) const { return body.z; }
 

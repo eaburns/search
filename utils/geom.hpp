@@ -32,8 +32,8 @@ static inline bool doubleneq(double a, double b) {
 		(std::isinf(a) != std::isinf(b));
 }
 
-// inrange returns true if x is between min and max.
-static inline bool inrange(double min, double max, double x) {
+// between returns true if x is between min and max.
+static inline bool between(double min, double max, double x) {
  	return x >= min - sqrt(Epsilon) && x <= max + sqrt(Epsilon);
 }
 
@@ -73,6 +73,8 @@ struct Point {
 
 	Point(void) { }
 
+	Point(const Point &o) : x(o.x), y(o.y) { }
+
 	Point(double _x, double _y) : x(_x), y(_y) { }
 
 	bool operator==(const Point &p) const {
@@ -103,6 +105,12 @@ struct Point {
 	// subtraction of b from the current point.
 	Point minus(const Point &b) const {
 		return Point(x - b.x, y - b.y);
+	}
+
+	// move moves the point by the given deltas.
+	void move(double dx, double dy) {
+		x += dx;
+		y += dy;
 	}
 
 	double x, y;
@@ -206,9 +214,9 @@ struct LineSeg : public Line {
 	bool contains(const Point &p) const {
 		if (doubleeq(m, 0.0))
 			return doubleeq(mins.y, p.y) &&
-				inrange(mins.x, maxes.x, p.x);
-		return inrange(mins.x, maxes.x, p.x) &&
-			inrange(mins.y, maxes.y, p.y);
+				between(mins.x, maxes.x, p.x);
+		return between(mins.x, maxes.x, p.x) &&
+			between(mins.y, maxes.y, p.y);
 	}
 
 	// isection returns the point at which the two line segments
@@ -252,13 +260,17 @@ private:
 	}
 };
 
-struct Bbox {
-	Bbox(void) : min(Point::inf()), max(Point::neginf()) { }
+struct Rectangle {
+	Rectangle(void) : min(Point::inf()), max(Point::neginf()) { }
 
-	Bbox(const Point &_min, const Point &_max) : min(_min), max(_max) { }
+	Rectangle(double x0, double y0, double x1, double y1) :
+		min(x0, y0), max(x1, y1) { normalize(); }
+
+	Rectangle(const Point &_min, const Point &_max) :
+			min(_min), max(_max) { normalize(); }
 
 	// Get the bounding box for the set of points
-	Bbox(std::vector<Point> &pts) {
+	Rectangle(std::vector<Point> &pts) {
 		min = Point::inf();
 		max = Point::neginf();
 
@@ -277,29 +289,41 @@ struct Bbox {
 
 	void draw(Image&, Color c = Image::black, double lwidth = 1) const;
 
-	// contains returns true if the bounding box contains
+	// contains returns true if the rectangle contains
 	// the given point.
 	bool contains(const Point &p) const {
-		return inrange(min.x, max.x, p.x) && inrange(min.y, max.y, p.y);
+		return between(min.x, max.x, p.x) && between(min.y, max.y, p.y);
 	}
 
-	// hits returns true if the bounding box intersects
-	// this bounding box.
-	bool hits(const Bbox &b) const {
+	// hits returns true if the rectangles intersect
+	bool hits(const Rectangle &b) const {
 		return !(min.x > b.max.x || b.min.x > max.x
 			|| min.y > b.max.y || b.min.y > max.y);
 	}
 
-	// move translates the bounding box by the given
+	// move translates the rectangle by the given
 	// delta values.
 	void move(double dx, double dy) {
-		min.x += dx;
-		max.x += dx;
-		min.y += dy;
-		max.y += dy;
+		min.move(dx, dy);
+		max.move(dx, dy);
 	}
 
 	Point min, max;
+
+protected:
+
+	void normalize(void) {
+		if (min.x > max.x) {
+			double t = min.x;
+			min.x = max.x;
+			max.x = t;
+		}
+		if (min.y > max.y) {
+			double t = min.y;
+			min.y = max.y;
+			max.y = t;
+		}
+	}
 };
 
 struct Polygon {
@@ -340,7 +364,7 @@ struct Polygon {
 			verts[i].x *= f;
 			verts[i].y *= f;
 		}
-		bbox = Bbox(verts);
+		bbox = Rectangle(verts);
 		initsides();
 	}
 
@@ -355,7 +379,7 @@ struct Polygon {
 
 	std::vector<Point> verts;
 	std::vector<LineSeg> sides;
-	Bbox bbox;
+	Rectangle bbox;
 
 private:
 	double interangle(unsigned int) const;

@@ -61,7 +61,7 @@ void Player::trydoor(const Lvl &lvl, unsigned int a) {
 
 	if (body.z != oldz) {	// center on door
 		Point dst(bi.x * Tile::Width, bi.y * Tile::Height);
-		Point src(body.bbox.a);
+		Point src(body.bbox.min);
 		double dx = dst.x - src.x;
 		double dy = dst.y - src.y;
 		body.bbox.move(dx, dy);

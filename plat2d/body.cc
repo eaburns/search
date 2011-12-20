@@ -1,4 +1,4 @@
-#include "geom.hpp"
+#include "body.hpp"
 #include "lvl.hpp"
 #include <cmath>
 
@@ -31,7 +31,7 @@ void Body::move(const Lvl &lvl) {
 }
 
 Point Body::step(const Point &v) {
-	Point loc(bbox.a);
+	Point loc(bbox.min);
 	Point d(tillwhole(loc.x, v.x), tillwhole(loc.y, v.y));
 
 	if (d.x == 0.0 && v.x != 0.0)

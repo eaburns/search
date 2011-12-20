@@ -9,7 +9,7 @@ static unsigned int minx(const std::vector<Point>&);
 static void xsortedpts(std::vector<Point>&, double, double, double);
 static bool cmpx(const Point&, const Point&);
 
-void Bbox::draw(Image &img, Color c, double lwidth) const {
+void Rectangle::draw(Image &img, Color c, double lwidth) const {
 	Image::Path *p = new Image::Path();
 	p->setlinejoin(Image::Path::Miter);
 	p->setlinewidth(lwidth < 0 ? 0.1 : lwidth);
@@ -39,7 +39,7 @@ Polygon::Polygon(unsigned int n, ...) {
 		verts.push_back(Point(x, y));
 	}
 	va_end(ap);
-	bbox = Bbox(verts);
+	bbox = Rectangle(verts);
 	removecolinear();
 	initsides();
 }
@@ -55,7 +55,7 @@ Polygon::Polygon(FILE *in) {
 			fatalx(errno, "Failed to read a vertex");
 		verts.push_back(Point(x, y));
 	}
-	bbox = Bbox(verts);
+	bbox = Rectangle(verts);
 	removecolinear();
 	initsides();
 }

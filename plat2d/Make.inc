@@ -1,7 +1,7 @@
 PLAT2DOBJS=\
 	plat2d/lvl.o\
 	plat2d/tile.o\
-	plat2d/geom.o\
+	plat2d/body.o\
 	plat2d/player.o\
 	plat2d/plat2d.o\
 

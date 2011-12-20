@@ -1,4 +1,4 @@
-#include "geom.hpp"
+#include "body.hpp"
 #include "plat2d.hpp"
 #include "../utils/utils.hpp"
 #include <SDL/SDL.h>
@@ -95,6 +95,7 @@ static Lvl *getlvl(void) {
 		return new Lvl(stdin);
 
 	char *path = NULL;
+	nextctrl = 0;
 	dfreadpairs(stdin, handlepair, &path, echo);
 	if (!path)
 		fatal("No level key found");
@@ -115,7 +116,6 @@ static void handlepair(const char *key, const char *val, void *_pathp) {
 		*pathp = (char*) malloc(sz);
 		memcpy(*pathp, val, sz);
 	} else if (strcmp(key, "controls") == 0) {
-		nextctrl = 0;
 		controls = controlvec(val);
 	}
 }
@@ -222,11 +222,11 @@ static void drawlvl(unsigned int z, const Lvl &lvl) {
 
 static void drawplayer(const Player &p) {
 	SDL_Rect r;
-	Rect bbox(p.bbox());
-	r.w = bbox.b.x - bbox.a.x;
-	r.h = bbox.b.y - bbox.a.y;
-	r.x = bbox.a.x + tr.x;
-	r.y = bbox.a.y + tr.y;
+	Bbox bbox(p.bbox());
+	r.w = bbox.max.x - bbox.min.x;
+	r.h = bbox.max.y - bbox.min.y;
+	r.x = bbox.min.x + tr.x;
+	r.y = bbox.min.y + tr.y;
 	fillrect(&r, Image::green);
 }
 
