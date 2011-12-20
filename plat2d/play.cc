@@ -138,9 +138,7 @@ static unsigned int keys(void) {
 		return sdlkeys();
 	if (nextctrl >= (int) controls.size())
 		exit(0);
-	unsigned int c = controls[nextctrl++];
-	printf("%#x\n", c);
-	return c;
+	return controls[nextctrl++];
 }
 
 #if SDLVER == 13
@@ -215,6 +213,8 @@ static void drawlvl(unsigned int z, const Lvl &lvl) {
 			fillrect(&r, Image::black);
 		else if (bi.tile.flags & Tile::Water)
 			fillrect(&r, Image::blue);
+		else if (bi.tile.flags & Tile::Down)
+			fillrect(&r, Image::red);
 	}
 	}
 }

@@ -200,8 +200,6 @@ private:
 			State buf;
 			State &state = d.unpack(buf, n->packed);
 			Search<D>::res.path.push_back(state);
-			if (n->parent)
-				Search<D>::res.ops.push_back(n->pop);
 		}
 	}
 

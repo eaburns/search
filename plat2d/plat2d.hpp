@@ -36,6 +36,7 @@ struct Plat2d {
 			return false;
 		}
 
+		unsigned char control;
 		Player player;
 	};
 
@@ -81,6 +82,7 @@ struct Plat2d {
 		assert (op != Nop);
 		buf = s;
 		buf.player.act(lvl, (unsigned int) op);
+		buf.control = op;
 		return buf;
 	}
 

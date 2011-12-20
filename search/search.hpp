@@ -39,7 +39,6 @@ struct SearchStats {
 template <class D> struct Result : public SearchStats {
 	typename D::Cost cost;
 	std::vector<typename D::State> path;
-	std::vector<typename D::Oper> ops;
 
 	Result(void) : cost(D::InfCost) { }
 
