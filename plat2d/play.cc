@@ -29,7 +29,7 @@ static unsigned int keys(void);
 static unsigned int sdlkeys(void);
 static void scroll(const Point&, const Point&);
 static void draw(const Lvl&, const Player&);
-static void drawlvl(unsigned int z, const Lvl&);
+static void drawlvl(unsigned int, const Lvl&);
 static void drawplayer(const Player&);
 static void clear(void);
 static void fillrect(SDL_Rect*, Color);
@@ -46,7 +46,6 @@ int main(int argc, const char *argv[]) {
 		unsigned int next = SDL_GetTicks() + frametime;
 
 		draw(*lvl, p);
-
 		Point l0(p.loc());
 		p.act(*lvl, keys());
 		scroll(l0, p.loc());
@@ -136,8 +135,10 @@ static void initsdl(void) {
 static unsigned int keys(void) {
 	if (nextctrl < 0)
 		return sdlkeys();
-	if (nextctrl >= (int) controls.size())
+	if (nextctrl >= (int) controls.size()) {
+		SDL_Delay(1000);
 		exit(0);
+	}
 	return controls[nextctrl++];
 }
 
