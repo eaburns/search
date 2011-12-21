@@ -3,45 +3,39 @@
 
 void Player::act(const Lvl &lvl, unsigned int a) {
 	chngjmp(a);
-	chngdir(a);
-
-	Lvl::Blkinfo bi = lvl.majorblk(body.z, body.bbox);
-	double olddx = body.vel.x;
-	if (olddx)
-		body.vel.x = (olddx < 0 ? -1 : 1) * bi.tile.drag() * runspeed();
-
-	double oldddy = body.acc.y;
-	body.acc.y = bi.tile.gravity();
 
 	trydoor(lvl, a);
-
-	body.move(lvl);
-	body.vel.x = olddx;
-	body.acc.y = oldddy;
+	body.move(lvl, xvel(lvl, a));
 
 	if (jframes > 0)
 		jframes--;
 }
 
-void Player::chngdir(unsigned int a) {
-	body.vel.x = 0;
+double Player::xvel(const Lvl &lvl, unsigned int a) {
+	double dx = 0;
 	if(a & Left)
-		body.vel.x -= runspeed();
+		dx -= runspeed();
 	if (a & Right)
-		body.vel.x += runspeed();
+		dx += runspeed();
+
+	Lvl::Blkinfo bi = lvl.majorblk(body.z, body.bbox);
+	if (dx)
+		dx = (dx < 0 ? -1 : 1) * bi.tile.drag() * runspeed();
+
+	return dx;
 }
 
 void Player::chngjmp(unsigned int a) {
 	if (!(a & Jump) && body.fall) {	// stop holding jump
-		if (body.vel.y < 0) {
-			body.vel.y += (Maxjframes - jframes);
-			if (body.vel.y > 0)
-				body.vel.y = 0;
+		if (body.dy < 0) {
+			body.dy += (Maxjframes - jframes);
+			if (body.dy > 0)
+				body.dy = 0;
 		}
 		jframes = 0;
 
 	} else if (a & Jump && !body.fall) {
-		body.vel.y = -jmpspeed();
+		body.dy = -jmpspeed();
 		body.fall = 1;
 		jframes = Maxjframes;
 	}

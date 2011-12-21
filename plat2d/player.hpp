@@ -41,8 +41,11 @@ struct Player {
 	unsigned int z(void) const { return body.z; }
 
 private:
-	void chngdir(unsigned int);
+	// xvel returns the x velocity given the control bits.
+	double xvel(const Lvl&, unsigned int);
+
 	void chngjmp(unsigned int);
+
 	void trydoor(const Lvl&, unsigned int);
 
 	static const unsigned int Maxjframes = 8;
@@ -53,5 +56,5 @@ private:
 	double jmpspeed(void) const { return 7.0 + Dex / 5.0; }
 
 	Body body;
-	unsigned int jframes;
+	unsigned char jframes;
 };

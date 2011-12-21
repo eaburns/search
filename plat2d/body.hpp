@@ -62,21 +62,21 @@ struct Body {
 
 	Body(unsigned int x, unsigned int y, unsigned int _z,
 			unsigned int w, unsigned int h) :
-		z(_z), bbox(x, y, x + w, y + h), vel(0, 0), acc(0, 0), fall(false) { }
+		bbox(x, y, x + w, y + h), dy(0), z(_z), fall(false) { }
 
 	Body(const Body &o) :
-		z(o.z), bbox(o.bbox), vel(o.vel), acc(o.acc), fall(o.fall) { }
+		bbox(o.bbox), dy(o.dy), z(o.z), fall(o.fall) { }
 
 	bool operator==(const Body &o) const {
 		return z == o.z && fall == o.fall && bbox == o.bbox &&
-			vel == o.vel && acc == o.acc;
+			doubleeq(dy, o.dy);
 	}
 
-	void move(const Lvl&);
+	void move(const Lvl&, double dx);
 	
-	unsigned int z;
 	Bbox bbox;
-	Point vel, acc;
+	double dy;
+	unsigned char z;
 	bool fall;
 
 private:

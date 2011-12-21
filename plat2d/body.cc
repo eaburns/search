@@ -4,10 +4,10 @@
 
 static double tillwhole(double, double);
 
-void Body::move(const Lvl &lvl) {
-	double xmul = vel.x > 0 ? 1 : -1;
-	double ymul = vel.y > 0 ? 1 : -1;
-	Point v(vel);
+void Body::move(const Lvl &lvl, double dx) {
+	double xmul = dx > 0 ? 1 : -1;
+	double ymul = dy > 0 ? 1 : -1;
+	Point v(dx, dy);
 	Point left(fabs(v.x), fabs(v.y));
 	Isect fallis;
 
@@ -50,28 +50,25 @@ Point Body::step(const Point &v) {
 }
 
 void Body::dofall(const Lvl &lvl, const Isect &is) {
-	Lvl::Blkinfo bi = lvl.majorblk(z, bbox);
-	double g = bi.tile.gravity();
 
-	if(vel.y > 0 && is.dy > 0 && fall) { /* hit the ground */
+	if(dy > 0 && is.dy > 0 && fall) { /* hit the ground */
 		/* Constantly try to fall in order to test ground
 		 * beneath us. */
-		acc.y = g;
 		fall = false;
-	} else if (vel.y < 0 && is.dy > 0) { /* hit my head on something */
-		vel.y = 0;
-		acc.y = g;
+	} else if (dy < 0 && is.dy > 0) { /* hit my head on something */
+		dy = 0;
 		fall = true;
 	}
 
 	if (!is.is && !fall) { /* are we falling now? */
-		acc.y = g;
-		vel.y = 0;
+		dy = 0;
 		fall = true;
 	}
 
-	if (fall && vel.y < Maxdy)
-		vel.y += acc.y;
+	if (fall && dy < Maxdy) {
+		Lvl::Blkinfo bi = lvl.majorblk(z, bbox);
+		dy += bi.tile.gravity();
+	}
 }
 
 static double tillwhole(double loc, double vel)
