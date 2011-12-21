@@ -1,5 +1,4 @@
-//#include "closedlist.hpp"
-#include "plat2d.hpp"
+#include "closedlist.hpp"
 #include "../search/main.hpp"
 #include "../utils/utils.hpp"
 #include <cstdio>
