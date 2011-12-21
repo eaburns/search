@@ -195,6 +195,12 @@ std::string runlendec(const std::string &data);
 // ascii85enc encodes a string using ASCII-85 encoding.
 std::string ascii85enc(const std::string &data);
 
+// base64enc encodes a string using MIME's base64 encoding.
+std::string base64enc(const std::string &data);
+
+// base64dec decodes a MIME base64 encoded string.
+std::string base64dec(const std::string &data);
+
 // The Ranker type generates permutation ranks.
 struct Ranker {
 	// Ranker creates a new Ranker for the permutation

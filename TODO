@@ -4,6 +4,8 @@
 
 • some kind of search node sharing/cleanup
 
+• bulid .d files use $<
+
 • 2poly:
 
 	- component class
@@ -14,6 +16,9 @@
 	- rename to vis
 
 • plat2d:
+
+	- run-length/base64 encode the
+	controls string that is output
 
 	-  heuristic: vis graph but
 	don't allow vertical > max
