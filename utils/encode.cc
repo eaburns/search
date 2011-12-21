@@ -1,5 +1,6 @@
 #include "utils.hpp"
 #include <cassert>
+#include <cstring>
 
 enum {
 	Maxrun = 127,
@@ -140,9 +141,9 @@ std::string base64enc(const std::string &data) {
 	std::string enc;
 
 	for (unsigned int i = 0; i < data.size(); i+=3) {
-		unsigned long b = data[i] << 16;
-		if (i+1 < data.size()) b |= data[i+1] << 8;
-		if (i+2 < data.size()) b |= data[i+2];
+		unsigned long b = (data[i] & 0xFF) << 16;
+		if (i+1 < data.size()) b |= (data[i+1] & 0xFF) << 8;
+		if (i+2 < data.size()) b |= (data[i+2] & 0xFF);
 
 		char e[5];
 		e[4] = '\0';
@@ -153,7 +154,7 @@ std::string base64enc(const std::string &data) {
 			b >>= 6;
 		}
 
-		if (i > data.size() - 3) {
+		if (data.size() < 3 || i > data.size() - 3) {
 			unsigned int pad = i + 3 - data.size();
 			assert (pad < 3);
 			if (pad > 0) e[3] = '=';

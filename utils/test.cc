@@ -20,6 +20,7 @@ bool test_rdbpathfor_shareprefix(void);
 bool test_rdbpathfor_existing(void);
 bool test_base64enc(void);
 bool test_base64dec(void);
+bool test_encdec(void);
 
 static const Test tests[] = {
 	Test("doubleeq test", test_doubleeq),
@@ -42,6 +43,7 @@ static const Test tests[] = {
 	Test("rdbpathfor existing test", test_rdbpathfor_existing),
 	Test("base64enc test", test_base64enc),
 	Test("base64dec test", test_base64dec),
+	Test("encode/decode test", test_encdec),
 };
 
 enum { Ntests = sizeof(tests) / sizeof(tests[0]) };
