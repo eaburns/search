@@ -27,19 +27,23 @@ struct Plat2d {
 		State(unsigned int x, unsigned int y, unsigned int z,
 			unsigned int w, unsigned int h) : player(x, y, z, w, h) { }
 
+		Player player;
+	};
+
+	struct PackedState {
 		// hash does nothing since the hash table
 		// for plat2d states doesn't store anything.
 		unsigned long hash(void) { return -1; }
 
-		bool eq(State &) const {
+		bool eq(PackedState &) const {
 			fatal("Unimplemented");
 			return false;
 		}
 
-		Player player;
+		double x, y, dy;
+		unsigned char z, jframes;
+		bool fall;
 	};
-
-	typedef State PackedState;
 
 	struct Undo {
 		Undo(State&, Oper) { }
@@ -56,7 +60,8 @@ struct Plat2d {
 	}
 
 	bool isgoal(State &s) {
-		const Tile &t = lvl.majorblk(s.player.z(), s.player.bbox()).tile;
+		Lvl::Blkinfo bi = lvl.majorblk(s.player.body.z, s.player.body.bbox);
+		const Tile &t = bi.tile;
 		return t.flags & Tile::Down;
 	}
 
@@ -86,11 +91,24 @@ struct Plat2d {
 	}
 
 	void pack(PackedState &dst, State &src) {
-		dst = src;
+		dst.x = src.player.body.bbox.min.x;
+		dst.y = src.player.body.bbox.min.y;
+		dst.dy = src.player.body.dy;
+		dst.z = src.player.body.z;
+		dst.fall = src.player.body.fall;
+		dst.jframes = src.player.jframes;
 	}
 
 	State &unpack(State &buf, PackedState &pkd) {
-		return pkd;
+		buf.player.jframes = pkd.jframes;
+		buf.player.body.z = pkd.z;
+		buf.player.body.fall = pkd.fall;
+		buf.player.body.dy = pkd.dy;
+		buf.player.body.bbox.min.x = pkd.x;
+		buf.player.body.bbox.min.y = pkd.y;
+		buf.player.body.bbox.max.x = pkd.x + Player::Width;
+		buf.player.body.bbox.max.y = pkd.y + Player::Height;
+		return buf;
 	}
 
 	static void dumpstate(FILE *out, State &s) {

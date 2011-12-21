@@ -36,9 +36,8 @@ struct Player {
 	// bottom left
 	Point loc(void) { return body.bbox.min; }
 
-	const Bbox &bbox(void) const { return body.bbox; }
-
-	unsigned int z(void) const { return body.z; }
+	Body body;
+	unsigned char jframes;
 
 private:
 	// xvel returns the x velocity given the control bits.
@@ -54,7 +53,4 @@ private:
 	double runspeed(void) const { return 2.0 + Dex / 4.0; }
 
 	double jmpspeed(void) const { return 7.0 + Dex / 5.0; }
-
-	Body body;
-	unsigned char jframes;
 };

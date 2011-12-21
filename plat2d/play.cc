@@ -195,9 +195,9 @@ static void scroll(const Point &l0, const Point &l1) {
 
 static void draw(const Lvl &lvl, const Player &p) {
 	clear();
-	drawlvl(p.z(), lvl);
+	drawlvl(p.body.z, lvl);
 
-	Lvl::Blkinfo bi = lvl.majorblk(p.z(), p.bbox());
+	Lvl::Blkinfo bi = lvl.majorblk(p.body.z, p.body.bbox);
 	SDL_Rect r;
 	r.w = Tile::Width;
 	r.h = Tile::Height;
@@ -231,7 +231,7 @@ static void drawlvl(unsigned int z, const Lvl &lvl) {
 
 static void drawplayer(const Player &p) {
 	SDL_Rect r;
-	Bbox bbox(p.bbox());
+	Bbox bbox(p.body.bbox);
 	r.w = bbox.max.x - bbox.min.x;
 	r.h = bbox.max.y - bbox.min.y;
 	r.x = bbox.min.x + tr.x;
