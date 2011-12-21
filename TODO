@@ -17,9 +17,6 @@
 
 • plat2d:
 
-	- run-length/base64 encode the
-	controls string that is output
-
 	-  heuristic: vis graph but
 	don't allow vertical > max
 	jump frames.

@@ -34,10 +34,11 @@ std::string controlstr(const std::vector<unsigned int> &controls) {
 	std::string bytes;
 	for (unsigned int i = 0; i < controls.size(); i++)
 		bytes.push_back((controls[i] & 0xFF) + encbase);
-	return bytes;
+	return base64enc(runlenenc(bytes));
 }
 
-std::vector<unsigned int> controlvec(const std::string &bytes) {
+std::vector<unsigned int> controlvec(const std::string &enc) {
+	std::string bytes = runlendec(base64dec(enc));
 	std::vector<unsigned int> v;
 	for (unsigned int i = 0; i < bytes.size(); i++)
 		v.push_back(bytes[i] - encbase);
