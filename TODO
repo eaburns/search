@@ -21,8 +21,11 @@
 
 	- play: draw doors
 
-	- play: no repeat on
-	jump and act
+	- packed states: instead of
+	storing the entire bounding-box
+	just store the corner point.  The
+	other two can be computed
+	because the player is a fixed size.
 
 • visnav:
 
