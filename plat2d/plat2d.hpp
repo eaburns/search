@@ -35,14 +35,19 @@ struct Plat2d {
 		// for plat2d states doesn't store anything.
 		unsigned long hash(void) { return -1; }
 
-		bool eq(PackedState &) const {
-			fatal("Unimplemented");
-			return false;
+		bool eq(PackedState &o) const {
+			return jframes == o.jframes &&
+				z == o.z &&
+				doubleeq(x, o.x) &&
+				doubleeq(y, o.y) &&
+				doubleeq(dy, o.dy);
 		}
 
 		double x, y, dy;
-		unsigned char z, jframes;
-		bool fall;
+		unsigned char z;
+		// The body's fall flag is packed as the high-order bit
+		// of jframes.
+		unsigned char jframes;
 	};
 
 	struct Undo {
@@ -95,14 +100,15 @@ struct Plat2d {
 		dst.y = src.player.body.bbox.min.y;
 		dst.dy = src.player.body.dy;
 		dst.z = src.player.body.z;
-		dst.fall = src.player.body.fall;
 		dst.jframes = src.player.jframes;
+		if (src.player.body.fall)
+			dst.jframes |= 1 << 7;
 	}
 
 	State &unpack(State &buf, PackedState &pkd) {
-		buf.player.jframes = pkd.jframes;
+		buf.player.jframes = pkd.jframes & 0x7F;
+		buf.player.body.fall = pkd.jframes & (1 << 7);
 		buf.player.body.z = pkd.z;
-		buf.player.body.fall = pkd.fall;
 		buf.player.body.dy = pkd.dy;
 		buf.player.body.bbox.min.x = pkd.x;
 		buf.player.body.bbox.min.y = pkd.y;
