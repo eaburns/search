@@ -5,6 +5,7 @@
 #include <cstdio>
 
 void fatal(const char*, ...);
+extern "C" unsigned long hashbytes(unsigned char[], unsigned int);
 
 struct Plat2d {
 
@@ -33,7 +34,33 @@ struct Plat2d {
 	struct PackedState {
 		// hash does nothing since the hash table
 		// for plat2d states doesn't store anything.
-		unsigned long hash(void) { return -1; }
+		unsigned long hash(void) {
+			unsigned int ix = x;
+			unsigned int iy = y;
+			unsigned int idy = dy;
+
+			static unsigned int sz = sizeof(ix) + sizeof(iy) +
+				sizeof(idy) + sizeof(z) + sizeof(jframes);
+			unsigned char bytes[sz];
+
+			unsigned int i = 0;
+			for (unsigned int j = 0; j < sizeof(ix); j++) {
+				bytes[i++] = ix & 0xFF;
+				ix >>= 8;
+			}
+			for (unsigned int j = 0; j < sizeof(iy); j++) {
+				bytes[i++] = iy & 0xFF;
+				iy >>= 8;
+			}
+			for (unsigned int j = 0; j < sizeof(idy); j++) {
+				bytes[i++] = idy & 0xFF;
+				idy >>= 8;
+			}
+			bytes[i++] = z;
+			bytes[i++] = jframes;
+			assert (i <= sz);
+			return hashbytes(bytes, i);
+		}
 
 		bool eq(PackedState &o) const {
 			return jframes == o.jframes &&
@@ -79,6 +106,10 @@ struct Plat2d {
 	}
 
 	Oper revop(State &s, Oper op) {
+		if (op == Player::Left)
+			return Player::Right;
+		if (op == Player::Right)
+			return Player::Left;
 		return Nop;
 	}
 

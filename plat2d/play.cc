@@ -20,6 +20,10 @@ static std::vector<unsigned int> controls;
 SDL_Surface *screen;
 Point tr(0, 0);
 
+// p is the player.  It is only global so we can print its location
+// on exit.
+static Player p;
+
 static void parseargs(int, const char*[]);
 static void helpmsg(int);
 static Lvl *getlvl(void);
@@ -39,7 +43,7 @@ int main(int argc, const char *argv[]) {
 	Lvl *lvl = getlvl();
 	initsdl();
 
-	Player p(2 * Tile::Width + Player::Offx, 2 * Tile::Height + Player::Offy,
+	p = Player(2 * Tile::Width + Player::Offx, 2 * Tile::Height + Player::Offy,
 		0, Player::Width, Player::Height);
 
 	for ( ; ; ) {
@@ -136,6 +140,7 @@ static unsigned int keys(void) {
 	if (nextctrl < 0)
 		return sdlkeys();
 	if (nextctrl >= (int) controls.size()) {
+		printf("%g, %g\n", p.body.bbox.min.x, p.body.bbox.min.y);
 		SDL_Delay(1000);
 		exit(0);
 	}
