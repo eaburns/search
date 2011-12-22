@@ -1,6 +1,5 @@
 #include "plat2d.hpp"
 #include "../visnav/visgraph.hpp"
-#include <vector>
 #include <cstdio>
 
 int main(void) {
