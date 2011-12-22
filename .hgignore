@@ -4,6 +4,8 @@ syntax: glob
 *.a
 *.gch
 */*_solver
+.utils_test
+.structs_test
 structs/test
 utils/test
 utils/pathfor
@@ -16,4 +18,4 @@ visnav/inst
 visnav/disp
 plat2d/draw
 plat2d/play
-plat2d/midsrc/*
+plat2d/2poly
