@@ -44,7 +44,7 @@ int main(int argc, char *argv[]) {
 		graph.output(stdout);
 
 	Image img(400, 400);
-	graph.draw(img, 400);
+	graph.draw(img, 10);
 	img.save(outfile, true, 72.0/2.0);
 
 	if (infile)

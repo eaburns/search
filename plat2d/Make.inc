@@ -8,7 +8,7 @@ PLAT2DOBJS=\
 include $(PLAT2DOBJS:.o=.d)
 CLEAN+=$(PLAT2DOBJS)
 
-plat2d: plat2d/plat2d_solver plat2d/draw plat2d/play
+plat2d: plat2d/plat2d_solver plat2d/draw plat2d/play plat2d/2poly
 
 EVERYTHING+=plat2d
 
@@ -24,6 +24,12 @@ plat2d/draw: $(PLAT2DOBJS) plat2d/draw.o utils/utils.a
 
 include plat2d/draw.d
 CLEAN+=plat2d/draw plat2d/draw.o
+
+plat2d/2poly: $(PLAT2DOBJS) plat2d/2poly.o visnav/visgraph.o utils/utils.a
+	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
+
+include plat2d/2poly.d
+CLEAN+=plat2d/2poly plat2d/2poly.o
 
 SDLVER=$(shell sdl-config --version | sed 's/\([0-9]\)\.\([0-9]\).*/\1\2/')
 

@@ -4,15 +4,6 @@
 
 • some kind of search node sharing/cleanup
 
-• 2poly:
-
-	- component class
-
-	- min/max cell based
-	poligonization
-
-	- rename to vis
-
 • plat2d:
 
 	-  heuristic: vis graph but

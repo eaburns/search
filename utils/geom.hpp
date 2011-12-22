@@ -1,3 +1,6 @@
+#ifndef _GEOM_HPP_
+#define _GEOM_HPP_
+
 #include "image.hpp"
 #include <iterator>
 #include <vector>
@@ -391,3 +394,5 @@ private:
 	void removecolinear(void);
 	void initsides(void);
 };
+
+#endif	// _GEOM_HPP_

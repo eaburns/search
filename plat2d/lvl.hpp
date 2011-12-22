@@ -34,6 +34,10 @@ struct Lvl {
 		unsigned int x, y;
 	};
 
+	bool blocked(unsigned int x, unsigned int y, unsigned int z) const {
+		return tiles[blks[ind(x, y, z)].tile].flags & Tile::Collide;
+	}
+
 	Blkinfo at(unsigned int x, unsigned int y, unsigned int z) const {
 		return Blkinfo(blks[ind(x, y, z)], x, y);
 	}
@@ -44,8 +48,9 @@ struct Lvl {
 		return at(x / Tile::Width, y / Tile::Height, z);
 	}
 
-	// polys returns a vector of polygons that represent the level.
-	std::vector<Polygon> polys(void) const;
+	// polys returns a vector of polygons that represent the
+	// given z-layer of the level.
+	std::vector<Polygon> polys(unsigned int) const;
 
 private:
 
