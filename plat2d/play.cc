@@ -33,7 +33,7 @@ static unsigned int keys(void);
 static unsigned int sdlkeys(void);
 static void scroll(const Point&, const Point&);
 static void draw(const Lvl&, const Player&);
-static void drawlvl(unsigned int, const Lvl&);
+static void drawlvl(const Lvl&);
 static void drawplayer(const Player&);
 static void clear(void);
 static void fillrect(SDL_Rect*, Color);
@@ -44,7 +44,7 @@ int main(int argc, const char *argv[]) {
 	initsdl();
 
 	p = Player(2 * Tile::Width + Player::Offx, 2 * Tile::Height + Player::Offy,
-		0, Player::Width, Player::Height);
+		Player::Width, Player::Height);
 
 	for ( ; ; ) {
 		unsigned int next = SDL_GetTicks() + frametime;
@@ -159,8 +159,6 @@ static unsigned int sdlkeys(void) {
 		keys |= Player::Right;
 	if (state[SDL_SCANCODE_UP])
 		keys |= Player::Jump;
-	if (state[SDL_SCANCODE_SPACE])
-		keys |= Player::Act;
 	if (state[SDL_SCANCODE_Q])
 		exit(0);
 
@@ -178,8 +176,6 @@ static unsigned int sdlkeys(void) {
 		keys |= Player::Right;
 	if (state[SDLK_UP])
 		keys |= Player::Jump;
-	if (state[SDLK_SPACE])
-		keys |= Player::Act;
 	if (state[SDLK_q])
 		exit(0);
 
@@ -200,9 +196,9 @@ static void scroll(const Point &l0, const Point &l1) {
 
 static void draw(const Lvl &lvl, const Player &p) {
 	clear();
-	drawlvl(p.body.z, lvl);
+	drawlvl(lvl);
 
-	Lvl::Blkinfo bi = lvl.majorblk(p.body.z, p.body.bbox);
+	Lvl::Blkinfo bi = lvl.majorblk(p.body.bbox);
 	SDL_Rect r;
 	r.w = Tile::Width;
 	r.h = Tile::Height;
@@ -214,10 +210,10 @@ static void draw(const Lvl &lvl, const Player &p) {
 	SDL_Flip(screen);
 }
 
-static void drawlvl(unsigned int z, const Lvl &lvl) {
+static void drawlvl(const Lvl &lvl) {
 	for (unsigned int x = 0; x < lvl.width(); x++) {
 	for (unsigned int y = 0; y < lvl.height(); y++) {
-		Lvl::Blkinfo bi(lvl.at(x, y, z));
+		Lvl::Blkinfo bi(lvl.at(x, y));
 		SDL_Rect r;
 		r.w = Tile::Width;
 		r.h = Tile::Height;

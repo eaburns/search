@@ -5,14 +5,8 @@ const unsigned int Plat2d::Ops[] = {
 	Player::Left,
 	Player::Right,
 	Player::Jump,
-	Player::Act,
 	Player::Left | Player::Jump,
 	Player::Right | Player::Jump,
-	Player::Left | Player::Act,
-	Player::Right | Player::Act,
-	Player::Jump | Player::Act,
-	Player::Left | Player::Jump | Player::Act,
-	Player::Right | Player::Jump | Player::Act,
 };
 
 const unsigned int Plat2d::Nops = sizeof(Plat2d::Ops) / sizeof(Plat2d::Ops[0]);

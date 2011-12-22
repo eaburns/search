@@ -7,7 +7,7 @@ struct Image;
 
 struct Lvl {
 
-	Lvl(unsigned int, unsigned int, unsigned int);
+	Lvl(unsigned int, unsigned int);
 
 	Lvl(FILE*);
 
@@ -17,11 +17,9 @@ struct Lvl {
 
 	unsigned int height(void) const { return h; }
 
-	unsigned int depth(void) const { return d; }
-
 	void draw(Image&) const;
 
-	Isect isection(unsigned int, const Bbox&, const Point&) const;
+	Isect isection(const Bbox&, const Point&) const;
 
 	struct Blk { unsigned int tile; };
 
@@ -34,39 +32,38 @@ struct Lvl {
 		unsigned int x, y;
 	};
 
-	bool blocked(unsigned int x, unsigned int y, unsigned int z) const {
-		return tiles[blks[ind(x, y, z)].tile].flags & Tile::Collide;
+	bool blocked(unsigned int x, unsigned int y) const {
+		return tiles[blks[ind(x, y)].tile].flags & Tile::Collide;
 	}
 
-	Blkinfo at(unsigned int x, unsigned int y, unsigned int z) const {
-		return Blkinfo(blks[ind(x, y, z)], x, y);
+	Blkinfo at(unsigned int x, unsigned int y) const {
+		return Blkinfo(blks[ind(x, y)], x, y);
 	}
 
-	Blkinfo majorblk(unsigned int z, const Bbox &r) const {
+	Blkinfo majorblk(const Bbox &r) const {
 		double x = (r.max.x + r.min.x) / 2.0;
 		double y = (r.max.y + r.min.y) / 2.0;
-		return at(x / Tile::Width, y / Tile::Height, z);
+		return at(x / Tile::Width, y / Tile::Height);
 	}
 
-	// polys returns a vector of polygons that represent the
-	// given z-layer of the level.
-	std::vector<Polygon> polys(unsigned int) const;
+	// polys returns a vector of polygons that represent the level
+	std::vector<Polygon> polys(void) const;
 
 private:
 
 	void read(FILE*);
 
-	void readtile(FILE*, unsigned int, unsigned int, unsigned int);
+	void readtile(FILE*, unsigned int, unsigned int);
 
-	unsigned int ind(unsigned int x, unsigned int y, unsigned int z) const {
-		return z * w * h + y * w + x;
+	unsigned int ind(unsigned int x, unsigned int y) const {
+		return x * h + y;
 	}
 
-	Blk *blk(unsigned int x, unsigned int y, unsigned int z) {
-		return blks + ind(x, y, z);
+	Blk *blk(unsigned int x, unsigned int y) {
+		return blks + ind(x, y);
 	}
 
-	unsigned int w, h, d;
+	unsigned int w, h;
 
 	Blk *blks;
 };

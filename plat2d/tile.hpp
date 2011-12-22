@@ -10,8 +10,6 @@ struct Tile {
 	enum {
 		Collide = 1<<0,
 		Water = 1<<1,
-		Fdoor = 1<<2,
-		Bdoor = 1<<3,
 		Down = 1 << 4,
 		Up = 1 << 5,
 		Opaque = 1 << 6,

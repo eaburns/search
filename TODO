@@ -14,8 +14,6 @@
 	in half.  Instead, properly detect the
 	outter bounding polygon.
 
-	- play: draw doors
-
 • visnav:
 
 	- bounding box to prune

@@ -25,17 +25,19 @@ int main(int argc, const char *argv[]) {
 
 	Result<Plat2d> res = search<Plat2d>(d, argc, argv);
 
+	if (res.path.size() == 0)
+		return 0;
+
 	std::vector<unsigned int> controls;
 	Player p(2 * Tile::Width + Player::Offx, 2 * Tile::Height + Player::Offy,
-		0, Player::Width, Player::Height);
+	Player::Width, Player::Height);
 	for (int i = res.ops.size() - 1; i >= 0; i--) {
 		controls.push_back(res.ops[i]);
 		p.act(d.level(), res.ops[i]);
 		assert(p == res.path[i].player);
 	}
 	const Player &final = res.path[0].player;
-	assert(d.level().majorblk(final.body.z, final.body.bbox).tile.flags &
-			Tile::Down);
+	assert(d.level().majorblk(final.body.bbox).tile.flags & Tile::Down);
 
 	dfpair(stdout, "final x loc", "%g", final.body.bbox.min.x);
 	dfpair(stdout, "final y loc", "%g", final.body.bbox.min.y);

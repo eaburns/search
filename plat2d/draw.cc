@@ -14,7 +14,7 @@ int main(int argc, char *argv[]) {
 
 	Image img(
 		lvl.width() * Tile::Width,
-		lvl.height() * lvl.depth() * Tile::Height,
+		lvl.height() * Tile::Height,
 		outfile);
 
 	lvl.draw(img);

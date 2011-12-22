@@ -24,10 +24,6 @@ Tiles::Tiles(void) {
 	tiles[' '] = Tile(' ', 0);
 	tiles['#'] = Tile('#', Tile::Collide | Tile::Opaque);
 	tiles['w'] = Tile('w', Tile::Water);
-	tiles['>'] = Tile('>', Tile::Bdoor);
-	tiles[')'] = Tile(')', Tile::Bdoor | Tile::Water);
-	tiles['<'] = Tile('<', Tile::Fdoor);
-	tiles['('] = Tile('(', Tile::Fdoor | Tile::Water);
 	tiles['d'] = Tile('d', Tile::Down);
 	tiles['D'] = Tile('D', Tile::Down | Tile::Water);
 	tiles['u'] = Tile('u', Tile::Up);

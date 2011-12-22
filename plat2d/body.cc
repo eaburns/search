@@ -16,7 +16,7 @@ void Body::move(const Lvl &lvl, double dx) {
 		left.x -= fabs(d.x);
 		left.y -= fabs(d.y);
 
-		Isect is(lvl.isection(z, bbox, d));
+		Isect is(lvl.isection(bbox, d));
 		if (is.is && is.dy != 0.0)
 			fallis = is;
 
@@ -66,7 +66,7 @@ void Body::dofall(const Lvl &lvl, const Isect &is) {
 	}
 
 	if (fall && dy < Maxdy) {
-		Lvl::Blkinfo bi = lvl.majorblk(z, bbox);
+		Lvl::Blkinfo bi = lvl.majorblk(bbox);
 		dy += bi.tile.gravity();
 	}
 }

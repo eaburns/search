@@ -26,7 +26,7 @@ struct Plat2d {
 		State(void) { }
 
 		State(unsigned int x, unsigned int y, unsigned int z,
-			unsigned int w, unsigned int h) : player(x, y, z, w, h) { }
+			unsigned int w, unsigned int h) : player(x, y, w, h) { }
 
 		Player player;
 	};
@@ -39,8 +39,8 @@ struct Plat2d {
 			unsigned int iy = y;
 			unsigned int idy = dy;
 
-			static unsigned int sz = sizeof(ix) + sizeof(iy) +
-				sizeof(idy) + sizeof(z) + sizeof(jframes);
+			static const unsigned int sz = sizeof(ix) +
+				sizeof(iy) + sizeof(idy) + sizeof(jframes);
 			unsigned char bytes[sz];
 
 			unsigned int i = 0;
@@ -56,7 +56,6 @@ struct Plat2d {
 				bytes[i++] = idy & 0xFF;
 				idy >>= 8;
 			}
-			bytes[i++] = z;
 			bytes[i++] = jframes;
 			assert (i <= sz);
 			return hashbytes(bytes, i);
@@ -64,14 +63,12 @@ struct Plat2d {
 
 		bool eq(PackedState &o) const {
 			return jframes == o.jframes &&
-				z == o.z &&
 				doubleeq(x, o.x) &&
 				doubleeq(y, o.y) &&
 				doubleeq(dy, o.dy);
 		}
 
 		double x, y, dy;
-		unsigned char z;
 		// The body's fall flag is packed as the high-order bit
 		// of jframes.
 		unsigned char jframes;
@@ -92,7 +89,7 @@ struct Plat2d {
 	}
 
 	bool isgoal(State &s) {
-		Lvl::Blkinfo bi = lvl.majorblk(s.player.body.z, s.player.body.bbox);
+		Lvl::Blkinfo bi = lvl.majorblk(s.player.body.bbox);
 		const Tile &t = bi.tile;
 		return t.flags & Tile::Down;
 	}
@@ -130,7 +127,6 @@ struct Plat2d {
 		dst.x = src.player.body.bbox.min.x;
 		dst.y = src.player.body.bbox.min.y;
 		dst.dy = src.player.body.dy;
-		dst.z = src.player.body.z;
 		dst.jframes = src.player.jframes;
 		if (src.player.body.fall)
 			dst.jframes |= 1 << 7;
@@ -139,7 +135,6 @@ struct Plat2d {
 	State &unpack(State &buf, PackedState &pkd) {
 		buf.player.jframes = pkd.jframes & 0x7F;
 		buf.player.body.fall = pkd.jframes & (1 << 7);
-		buf.player.body.z = pkd.z;
 		buf.player.body.dy = pkd.dy;
 		buf.player.body.bbox.min.x = pkd.x;
 		buf.player.body.bbox.min.y = pkd.y;

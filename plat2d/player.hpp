@@ -8,7 +8,6 @@ struct Player {
 		Left = 1<<0,
 		Right = 1 << 1,
 		Jump = 1 << 2,
-		Act = 1 <<3,
 	};
 
 	enum {
@@ -19,11 +18,14 @@ struct Player {
 		Offy = 2,
 	};
 
+	enum { Maxjframes = 8 };
+
+	static const double Dex = 5;	// Initial value from mid
+
 	Player(void) { }
 
-	Player(unsigned int x, unsigned int y, unsigned int z,
-			unsigned int w, unsigned int h) :
-		body(x, y, z, w, h), jframes(0) { }
+	Player(unsigned int x, unsigned int y, unsigned int w, unsigned int h) :
+		body(x, y, w, h), jframes(0) { }
 
 	Player(const Player &o) : body(o.body), jframes(o.jframes) { }
 
@@ -50,7 +52,4 @@ private:
 	void chngjmp(unsigned int);
 
 	void trydoor(const Lvl&, unsigned int);
-
-	static const unsigned int Maxjframes = 8;
-	static const double Dex = 5;	// Initial value from mid
 };
