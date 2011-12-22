@@ -52,8 +52,9 @@ struct VisNav {
 	State initialstate(void);
 
 	Cost h(State &s) {
-		double dx = x1 - g.vertex(s.vert).pt.x;
-		double dy = y1 - g.vertex(s.vert).pt.y;
+		const Point &pt = g.verts[s.vert].pt;
+		double dx = x1 - pt.x;
+		double dy = y1 - pt.y;
 		return sqrt(dx * dx + dy * dy);
 	}
 
@@ -67,11 +68,11 @@ struct VisNav {
 	}
 
 	unsigned int nops(State &s) {
-		return g.vertex(s.vert).succs.size();
+		return g.verts[s.vert].edges.size();
 	}
 
 	Oper nthop(State &s, unsigned int n) {
-		return Oper(&g.vertex(s.vert).succs[n]);
+		return Oper(&g.verts[s.vert].edges[n]);
 	}
 
 	Oper revop(State &s, Oper op) {

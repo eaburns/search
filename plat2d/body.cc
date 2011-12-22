@@ -24,7 +24,7 @@ void Body::move(const Lvl &lvl, double dx) {
 		d.y = d.y - ymul * is.dy;
 		v.x -= d.x;
 		v.y -= d.y;
-		bbox.move(d.x, d.y);
+		bbox.translate(d.x, d.y);
 	}
 
 	dofall(lvl, fallis);

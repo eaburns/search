@@ -51,7 +51,7 @@ void Lvl::read(FILE *f)
 struct Hitzone {
 	Hitzone(Bbox a, const Point &v) {
 		Bbox b(a);
-		b.move(v.x, v.y);
+		b.translate(v.x, v.y);
 
 		x0 = a.min.x / (double) Tile::Width;
 		y0 = a.min.y / (double) Tile::Height;
@@ -71,7 +71,7 @@ Isect Lvl::isection(unsigned int z, const Bbox &r, const Point &v) const {
 	Isect isect;
 	Bbox mv(r);
 
-	mv.move(0, v.y);
+	mv.translate(0, v.y);
 	for (unsigned int x = test.x0; x <= test.x1; x++) {
 	for (unsigned int y = test.y0; y <= test.y1; y++) {
 		unsigned int t = blks[ind(x, y, z)].tile;
@@ -87,7 +87,7 @@ Isect Lvl::isection(unsigned int z, const Bbox &r, const Point &v) const {
 		return isect;
 
 	mv = r;
-	mv.move(v.x, v.y + (v.y < 0 ? isect.dy : -isect.dy));
+	mv.translate(v.x, v.y + (v.y < 0 ? isect.dy : -isect.dy));
 
 	for (unsigned int x = test.x0; x <= test.x1; x++) {
 	for (unsigned int y = test.y0; y <= test.y1; y++) {

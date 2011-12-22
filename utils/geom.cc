@@ -45,14 +45,20 @@ Polygon::Polygon(unsigned int n, ...) {
 }
 
 Polygon::Polygon(FILE *in) {
-	unsigned long nverts;
-	if (fscanf(in, " %lu", &nverts) != 1)
-		fatalx(errno, "Failed to read the number of vertices");
+	unsigned int nverts;
+	int res = fscanf(in, " %u", &nverts);
+	if (res == EOF)
+		fatalx(errno, "Failed to read the polygon");
+	if (res != 1)
+		fatal("Malformed polygon");
 
-	for (unsigned long i = 0; i < nverts; i++) {
+	for (unsigned int i = 0; i < nverts; i++) {
 		double x, y;
-		if (fscanf(in, " %lg %lg", &x, &y) != 2)
-			fatalx(errno, "Failed to read a vertex");
+		res = fscanf(in, " %lg %lg", &x, &y);
+		if (res == EOF)
+			fatalx(errno, "Failed to read the polygon's vertices");
+		if (res != 2)
+			fatal("Malformed vertex");
 		verts.push_back(Point(x, y));
 	}
 	bbox = Rectangle(verts);
@@ -123,7 +129,6 @@ void Polygon::output(FILE *out) const {
 	fprintf(out, "%lu", (unsigned long) verts.size());
 	for (unsigned int i = 0; i < verts.size(); i++)
 		fprintf(out, " %g %g", verts[i].x, verts[i].y);
-	fputc('\n', out);
 }
 
 void Polygon::draw(Image &img, Color c, double lwidth) const {

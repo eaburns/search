@@ -13,7 +13,7 @@ static struct { double a, b; bool eq; } eqtst[] = {
 	{ 1, 2, false },
 	{ 2, 3, false },
 	{ 1e90, 1.0000001e90, false },
-	{ M_PI, M_PI + 11 * Epsilon, false },
+	{ M_PI, M_PI + Threshold + Epsilon, false },
 };
 
 bool test_doubleeq(void) {
@@ -277,6 +277,9 @@ bool test_lineseg_isect(void) {
 		{ 0, 2, 2, 0,	0, 0, 2, 2,	1, 1 },
 		// end-on-end (same Line, so Point::inf())
 		{ 0, 0, 1, 0,	-1, 0, 0, 0,	Infinity, Infinity },
+		// intersections that may have failed at one point
+		// or another.
+		{ 100, 115, 70, 45,	35, 60, 95, 60,	(60.0-(45.0-490.0/3.0))/(7.0/3.0), 60 },
 	};
 
 	bool ok = true;
@@ -287,9 +290,11 @@ bool test_lineseg_isect(void) {
 		Point isect0 = l0.isection(l1);
 		Point isect1 = l1.isection(l0);
 		if (isect0 != isect1) {
-			testpr("%g,%g → %g,%g; %g,%g → %g,%g: isect order differed\n",
+			testpr("%g,%g → %g,%g; %g,%g → %g,%g: isect order differed:\n",
 				tst[i].x00, tst[i].y00, tst[i].x01, tst[i].y01,
 				tst[i].x10, tst[i].y10, tst[i].x11, tst[i].y11);
+			testpr("0→1: %g, %g\n", isect0.x, isect0.y);
+			testpr("1→0: %g, %g\n", isect1.x, isect1.y);
 			ok = false;
 		}
 		if (isect0 == expect)
@@ -415,38 +420,22 @@ bool test_poly_minisect(void) {
 }
 
 bool test_poly_hits(void) {
+	struct { Polygon p; LineSeg l; bool hit; } tst[] = {
+		{ Polygon(4, 7.0, 11.0, 7.0, 12.0, 19.0, 12.0, 19.0, 11.0),
+			LineSeg(Point(13, 10), Point(20, 23)),
+			true },
+		{ Polygon(8, 5.0,46.0, 5.0,47.0, 6.0,47.0, 6.0,48.0, 7.0,48.0, 7.0,47.0, 8.0,47.0, 8.0,46.0),
+			LineSeg(Point(5.000000008304548, 36.000000099654578), Point(5.999999900000001, 47.999998800000000)),
+			true },
+	};
 	bool ok = true;
-
-	Polygon sq(4, 0.0, 0.0, 100.0, 0.0, 100.0, 100.0, 0.0, 100.0);
-
-	LineSeg l(Point(50, 50), Point(150, 50));
-	if (!sq.hits(l)) {
-		testpr("Unexpected miss with 50,50 → 150,50: ");
-		drawisects(sq, l);
-		ok = false;
+	for (unsigned int i = 0 ; i < sizeof(tst) / sizeof(tst[0]); i++) {
+		if (tst[i].p.hits(tst[i].l) != tst[i].hit) {
+			testpr("Unexpected hit value\n");
+			drawisects(tst[i].p, tst[i].l);
+			ok = false;
+		}
 	}
-
-	l = LineSeg(Point(-50, 50), Point(150, 50));
-	if (!sq.hits(l)) {
-		testpr("Unexpected miss with -50,50 → 150,50: ");
-		drawisects(sq, l);
-		ok = false;
-	}
-
-	l = LineSeg(Point(150, 50), Point(-50, 50));
-	if (!sq.hits(l)) {
-		testpr("Unexpected miss with 150,50 → -50,50: ");
-		drawisects(sq, l);
-		ok = false;
-	}
-
-	l = LineSeg(Point(150, 50), Point(250, 50));
-	if (sq.hits(l)) {
-		testpr("Unexpected hit with 150,50 → 250,50: ");
-		drawisects(sq, l);
-		ok = false;
-	}
-
 	return ok;
 }
 
@@ -463,10 +452,14 @@ static void drawisects(const Polygon &poly, const LineSeg &line) {
 	line.draw(img, Image::red);
 
 	std::vector<Point> is = poly.isections(line);
-	for (unsigned int i = 0; i < is.size(); i++)
-		is[i].draw(img, Image::black, 4);
+	for (unsigned int i = 0; i < is.size(); i++) {
+		if (std::isnormal(is[i].x) && std::isnormal(is[i].x))
+			is[i].draw(img, Image::black, 4);
+	}
 
-	poly.minisect(line).draw(img, Image::red, 2);
+	Point min = poly.minisect(line);
+	if (std::isnormal(min.x) && std::isnormal(min.y))
+		min.draw(img, Image::red, 2);
 
 	char buf[Bufsz];
 	snprintf(buf, Bufsz, "failure%u.eps", n++);

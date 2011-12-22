@@ -9,7 +9,12 @@ static void helpmsg(int);
 
 static const char *infile;
 static const char *outfile;
-static bool echo;
+static bool echo, labels;
+
+enum {
+	Width = 400,
+	Height = 400,
+};
 
 int main(int argc, char *argv[]) {
 	for (int i = 1; i < argc; i++) {
@@ -21,6 +26,8 @@ int main(int argc, char *argv[]) {
 			outfile = argv[++i];
 		} else if (i < argc - 1 && strcmp(argv[i], "-i") == 0) {
 			infile = argv[++i];
+		} else if (strcmp(argv[i], "-l") == 0) {
+			labels = true;
 		} else {
 			printf("Unknown option: %s\n", argv[i]);
 			helpmsg(1);
@@ -43,8 +50,22 @@ int main(int argc, char *argv[]) {
 	if (echo)
 		graph.output(stdout);
 
-	Image img(400, 400);
-	graph.draw(img, 10);
+	if (labels)
+		graph.dumpvertlocs(stderr);
+
+	Point min = graph.min();
+	Point max = graph.max();
+	graph.translate(-min.x, -min.y);
+	double w = max.x - min.x;
+	double h = max.y - min.y;
+	double sx = Width / w, sy = Height / h;
+	if (sx < sy)
+		graph.scale(sx, sx);
+	else
+		graph.scale(sy, sy);
+
+	Image img(Width, Height);
+	graph.draw(img, labels);
 	img.save(outfile, true, 72.0/2.0);
 
 	if (infile)
@@ -59,5 +80,6 @@ static void helpmsg(int ret) {
 	puts("	-h	print this help message");
 	puts("	-i <infile>	read input from file");
 	puts("	-e	echo input to standard output");
+	puts("	-l	draw vertex labels and dump their locations to stderr");
 	exit(ret);
 }

@@ -58,6 +58,6 @@ void Player::trydoor(const Lvl &lvl, unsigned int a) {
 		Point src(body.bbox.min);
 		double dx = dst.x - src.x;
 		double dy = dst.y - src.y;
-		body.bbox.move(dx, dy);
+		body.bbox.translate(dx, dy);
 	}
 }

@@ -1,65 +1,81 @@
-#include "../utils/geom.hpp"
+#include "vismap.hpp"
 #include <vector>
 #include <cstdio>
 
-class Image;
+struct Image;
 
-// A multiple-layer visibility graph.  Each z-layer is
-// composed of a bunch of polygons in 2d space.  The
-// vertices of each layer are linked based on visibility.
-// Additional vertices and links can be added to link the
-// different layers too.
-struct VisGraph {
-	VisGraph(std::vector<Polygon> &ps) : polys(ps) {
-		computegraph();
-	}
+// A VisGraph is a visibility map along with edges
+// between pairs of visible vertices.
+struct VisGraph : public VisMap {
+
+	VisGraph(std::vector<Polygon>&);
 
 	VisGraph(FILE*);
 
-	void draw(Image&, double scale=1, bool nums=false) const;
+	// output writes the visibility graph to the
+	// given file.
 	void output(FILE*) const;
 
-	// Add a vertex to the graph.
-	unsigned int add(double, double);
+	// dumpvertlocs writes the location of each vertex
+	// to the given file.  This is mostly for debugging.
+	void dumpvertlocs(FILE*) const;
 
-	// Is the given point outside all polygons?
-	bool isoutside(double, double);
+	// draw draws the visibility graph to the give
+	// image.  If label is true then each vertex
+	// is labeled with its ID number.
+	void draw(Image&, bool label = false) const;
 
-	struct Vert;
+	// scale scales the visibility graph by the
+	// given factors in both the x and y directions.
+	void scale(double, double);
+
+	// translate translates the visibility graph by the
+	// give x and y values.
+	void translate(double, double);
+
+	unsigned int add(double, double) { return -1; }
 
 	struct Edge {
-		Edge(unsigned int _src, unsigned int _dst, double _dist) :
-			src(_src), dst(_dst), dist(_dist) { }
+		Edge(unsigned int s, unsigned int d, double c) :
+ 			src(s), dst(d), dist(c) { }
+
+		Edge(FILE*);
+
+		void output(FILE*) const;
+
 		unsigned int src, dst;
 		double dist;
 	};
 
 	struct Vert {
-		Vert(void) { }
+		Vert(unsigned int i, const Point &p) : id(i), pt(p) { }
 
-		Vert(unsigned int _vid, const Point &_pt, unsigned int _polyno,
-				unsigned int _vertno) :
-			pt(_pt), vid(_vid), polyno(_polyno), vertno(_vertno) { }
+		Vert(FILE*);
 
-		void input(std::vector<Vert>&, unsigned int, FILE*);
-		void output(FILE *out) const;
+		void output(FILE*) const;
 
-		Point pt;
-		unsigned int vid;
-		unsigned int polyno, vertno;
-		std::vector<Edge> succs;
+		unsigned int id;
+ 		Point pt;
+		std::vector<Edge> edges;
 	};
 
-	const Vert &vertex(unsigned int i) const { return verts[i]; }
+	std::vector<Vert> verts;
 
 private:
-	void computegraph(void);
-	void computeverts(void);
-	void linkverts(void);
-	void linkvert(unsigned int vid);
-	void addedge(unsigned int, unsigned int, double);
-	bool consecutive(unsigned int, unsigned int);	// On same poly-side?
 
-	std::vector<Polygon> polys;
-	std::vector<Vert> verts;
+	// build bulids the visibility graph for the
+	// polygons.
+	void build(void);
+
+	// popverts populates the vertex vector and
+	// adds edges between adjacent vertices.
+	void popverts(void);
+
+	// visedges adds edges between each pair of
+	// vertices that are visible from eachother.
+	void visedges(void);
+
+	// addedge adds an edge between the two vertices
+	// with the given IDs.
+	void addedge(unsigned int, unsigned int);
 };

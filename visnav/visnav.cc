@@ -23,11 +23,11 @@ void VisNav::save(const char *file, std::vector<State> path) const {
 	p->setlinejoin(Image::Path::Round);
 	p->setlinewidth(3);
 	p->setcolor(Image::red);
-	p->moveto(g.vertex(path[0].vert).pt.x * scale,
-		g.vertex(path[0].vert).pt.y * scale);
+	p->moveto(g.verts[path[0].vert].pt.x * scale,
+		g.verts[path[0].vert].pt.y * scale);
 	for (unsigned int i = 1; i < path.size(); i++) {
-		p->lineto(g.vertex(path[i].vert).pt.x * scale,
-			g.vertex(path[i].vert).pt.y * scale);
+		p->lineto(g.verts[path[i].vert].pt.x * scale,
+			g.verts[path[i].vert].pt.y * scale);
 	}
 	img.add(p);
 

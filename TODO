@@ -14,14 +14,8 @@
 
 • visnav:
 
-	- point-point visibility
-	queries?
-
 	- bounding box to prune
 	links to out-of-bound verts.
-
-	- don't fatalx on read fail
-	it prints Success…
 
 	- specific closed list
 

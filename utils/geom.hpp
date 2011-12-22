@@ -17,22 +17,21 @@ static const double Epsilon = std::numeric_limits<double>::epsilon();
 // Inifinity is the double representation of inifinity.
 static const double Infinity = std::numeric_limits<double>::infinity();
 
+// Threshold is the threshold to which equality is performed
+static const double Threshold = 1e-10;
+
 // doubleeq is a double equality test that does not use ==, instead
 // it performs an approximate equality test for within
-// 10·Epsilon.
+// 1e-10.
 static inline bool doubleeq(double a, double b) {
-	return fabs(a - b) < 10 * Epsilon ||
-		(std::isnan(a) && std::isnan(b)) ||
-		(std::isinf(a) && std::isinf(b));
+	return fabs(a - b) < Threshold || (std::isinf(a) && std::isinf(b));
 }
 
 // doubleneq is a double equality test that does not use !=, instead
 // it performs an approximate non-equality test for within
-// 10·Epsilon.
+// 1e-10.
 static inline bool doubleneq(double a, double b) {
-	return fabs(a - b) > 10 * Epsilon ||
-		(std::isnan(a) != std::isnan(b)) ||
-		(std::isinf(a) != std::isinf(b));
+	return fabs(a - b) > Threshold || (std::isinf(a) != std::isinf(b));
 }
 
 // between returns true if x is between min and max.
@@ -110,8 +109,15 @@ struct Point {
 		return Point(x - b.x, y - b.y);
 	}
 
-	// move moves the point by the given deltas.
-	void move(double dx, double dy) {
+	// scale scales the point by the given x and y
+	// factors.
+	void scale(double sx, double sy) {
+		x *= sx;
+		y *= sy;
+	}
+
+	// translate translates the point by the given deltas.
+	void translate(double dx, double dy) {
 		x += dx;
 		y += dy;
 	}
@@ -308,11 +314,11 @@ struct Rectangle {
 			|| min.y > b.max.y || b.min.y > max.y);
 	}
 
-	// move translates the rectangle by the given
+	// translate translates the rectangle by the given
 	// delta values.
-	void move(double dx, double dy) {
-		min.move(dx, dy);
-		max.move(dx, dy);
+	void translate(double dx, double dy) {
+		min.translate(dx, dy);
+		max.translate(dx, dy);
 	}
 
 	Point min, max;
@@ -350,37 +356,47 @@ struct Polygon {
 
 	Polygon(FILE*);
 
+	// output writes the polygon to the given file.
 	void output(FILE*) const;
 
+	// draw draws the polygon to the given image.
 	// If the lwidth is <0 then the polygon is filled.
 	void draw(Image&, Color c = Image::black, double lwidth = 1) const;
 
+	// contains returns true if the polygon contains
+	// the given point.
 	bool contains(const Point&) const;
 
+	// hits returns true if the line segment intersects
+	// one of the sides of the polygon.
 	bool hits(const LineSeg &) const;
 
+	// minisect returns the first intersection point between
+	// the line segment and the polygon.
 	Point minisect(const LineSeg&) const;
 
+	// isections returns a list of all intersections between
+	// the line segment and the polygon.
 	std::vector<Point> isections(const LineSeg&) const;
 
-	// Indices of reflex vertices.
+	// reflexes returns the indices of all reflex vertices.
 	std::vector<unsigned int> reflexes(void) const;
 
-	void scale(double f) {
-		for (unsigned long i = 0; i < verts.size(); i++) {
-			verts[i].x *= f;
-			verts[i].y *= f;
-		}
+	// scale scales the polygon by the given factors
+	// in both the x and y directions.
+	void scale(double sx, double sy) {
+		for (unsigned long i = 0; i < verts.size(); i++)
+			verts[i].scale(sx, sy);
 		bbox = Rectangle(verts);
 		initsides();
 	}
 
-	void move(double dx, double dy) {
-		bbox.move(dx, dy);
-		for (unsigned int i = 0; i < verts.size(); i++) {
-			verts[i].x += dx;
-			verts[i].y += dy;
-		}
+	// translate translates the polygon by the given
+	// values in both the x and y directions.
+	void translate(double dx, double dy) {
+		bbox.translate(dx, dy);
+		for (unsigned int i = 0; i < verts.size(); i++)
+			verts[i].translate(dx, dy);
 		initsides();
 	}
 
