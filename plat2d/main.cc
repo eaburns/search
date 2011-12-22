@@ -33,11 +33,11 @@ int main(int argc, const char *argv[]) {
 	Player::Width, Player::Height);
 	for (int i = res.ops.size() - 1; i >= 0; i--) {
 		controls.push_back(res.ops[i]);
-		p.act(d.level(), res.ops[i]);
+		p.act(d.lvl, res.ops[i]);
 		assert(p == res.path[i].player);
 	}
 	const Player &final = res.path[0].player;
-	assert(d.level().majorblk(final.body.bbox).tile.flags & Tile::Down);
+	assert(d.lvl.majorblk(final.body.bbox).tile.flags & Tile::Down);
 
 	dfpair(stdout, "final x loc", "%g", final.body.bbox.min.x);
 	dfpair(stdout, "final y loc", "%g", final.body.bbox.min.y);

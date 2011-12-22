@@ -147,9 +147,6 @@ struct Plat2d {
 		fprintf(out, "%g, %g\n", s.player.loc().x, s.player.loc().y);
 	}
 
-	Lvl &level(void) { return lvl; }
-
-private:
 	Lvl lvl;
 };
 
