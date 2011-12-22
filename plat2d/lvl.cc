@@ -4,6 +4,7 @@
 #include "../utils/image.hpp"
 #include <cstring>
 #include <cmath>
+#include <cerrno>
 
 Lvl::Lvl(unsigned int _w, unsigned int _h, unsigned int _d) :
 		w(_w), h(_h), d(_d) {
@@ -21,8 +22,11 @@ Lvl::~Lvl(void) {
 
 void Lvl::read(FILE *f)
 {
-	if (fscanf(f, " %d %d %d",&d, &w, &h) != 3)
-		fatal("Invalid lvl header: w = %d, h = %d, d = %d, feof = %d, ferror = %d", w, h, d, feof(f), ferror(f));
+	int ret = fscanf(f, " %d %d %d",&d, &w, &h);
+	if (ret == EOF && ferror(f))
+		fatal("Failed to read the level");
+	if (ret != 3)
+		fatal("Malformed level header");
 
 	blks = new Blk[w * h * d];
 	memset(blks, 0, w * h * d * sizeof(*blks));
@@ -169,14 +173,6 @@ struct Component {
 		pts.push_back(Point(minx * sx, miny * sy));
 
 		for ( ; ; ) {
-			const char *dir = "up";
-			switch (cur.dir) {
-			case Down: dir = "down"; break;
-			case Left: dir = "left"; break;
-			case Right: dir = "right"; break;
-			default: break;
-			}
-			fprintf(stderr, "cur=%u,%u, %s\n", cur.x, cur.y, dir);
 			Pose next = clockwise(cur);
 			if (cur.dir == next.dir) {
 				cur = next;
@@ -186,22 +182,18 @@ struct Component {
 				break;
 			switch (cur.dir) {
 			case Up:
-				fprintf(stderr, "up placing %u,%u\n", cur.x, cur.y+1);
 				pts.push_back(Point(cur.x * sx, (cur.y+1) * sy));
 				break;
 
 			case Down:
-				fprintf(stderr, "down placing %u,%u\n", cur.x+1, cur.y);
 				pts.push_back(Point((cur.x+1) * sx, cur.y * sy));
 				break;
 
 			case Right:
-				fprintf(stderr, "right placing %u,%u\n", cur.x+1, cur.y+1);
 				pts.push_back(Point((cur.x+1) * sx, (cur.y+1) * sy));
 				break;
 
 			case Left:
-				fprintf(stderr, "left placing %u,%u\n", cur.x, cur.y);
 				pts.push_back(Point(cur.x * sx, cur.y * sy));
 				break;
 			}
@@ -276,11 +268,18 @@ static std::vector<Component> components(const Lvl &lvl, unsigned int z) {
 	for (unsigned int y = 0; y < h; y++) {
 		if (!lvl.blocked(x, y, z))
 			continue;
+
 		if (x < w - 1 && lvl.blocked(x+1, y, z))
-			forest[x * h + y].join(forest[(x + 1) * h + y]);
-		if (y < h - 1 && lvl.blocked(x, y+1, z) &&
-			(y != h / 2 || forest[x * h + y].find() != forest[0].find()))
-			forest[x * h + y].join(forest[x * h + y + 1]);
+			forest[x*h + y].join(forest[(x + 1)*h + y]);
+
+		if (y < h - 1 && lvl.blocked(x, y+1, z) && y != h/2)
+			forest[x*h + y].join(forest[x*h + y + 1]);
+
+		if (y < h - 1 && x > 0 && lvl.blocked(x-1, y+1, z) && y != h/2)
+			forest[x*h + y].join(forest[(x - 1)*h + y + 1]);
+
+		if (y < h - 1 && x < w - 1 && lvl.blocked(x+1, y+1, z) && y != h/2)
+			forest[x*h + y].join(forest[(x + 1)*h + y + 1]);
 	}
 	}
 
@@ -306,9 +305,9 @@ std::vector<Polygon> Lvl::polys(unsigned int z) const {
 	std::vector<Component> comps = components(*this, z);
 	std::vector<Polygon> polys;
 	// 2.0 + 5.0 / 4.0 is from Player::runspeed()
-//	double w = Tile::Width / (2.0 + 5.0 / 4.0);
-//	double h = Tile::Height / Body::Maxdy;
+	double w = 1; //Tile::Width / (2.0 + 5.0 / 4.0);
+	double h = 1; // Tile::Height / Body::Maxdy;
 	for (unsigned int i = 0; i < comps.size(); i++)
-		polys.push_back(comps[i].poly(1, 1));
+		polys.push_back(comps[i].poly(w, h));
 	return polys;
 }

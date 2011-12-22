@@ -6,7 +6,7 @@
 VisGraph::VisGraph(FILE *in) : VisMap(in) {
 	unsigned int nverts;
 	int res = fscanf(in, " %u vertices\n", &nverts);
-	if (res == EOF)
+	if (res == EOF && ferror(in))
 		fatalx(errno, "Failed to read the visibility graph");
 	if (res != 1)
 		fatal("Malformed visibility graph");

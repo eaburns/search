@@ -47,7 +47,7 @@ Polygon::Polygon(unsigned int n, ...) {
 Polygon::Polygon(FILE *in) {
 	unsigned int nverts;
 	int res = fscanf(in, " %u", &nverts);
-	if (res == EOF)
+	if (res == EOF && ferror(in))
 		fatalx(errno, "Failed to read the polygon");
 	if (res != 1)
 		fatal("Malformed polygon");
