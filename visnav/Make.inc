@@ -1,6 +1,6 @@
 VISNAVOBJS=\
 	visnav/visgraph.o\
-	visnav/vismap.o\
+	visnav/polymap.o\
 	visnav/visnav.o\
 
 include $(VISNAVOBJS:.o=.d)

@@ -24,7 +24,7 @@ gridnav/gridnav_solver: $(GRIDNAVOBJS) gridnav/gridnav_main.o\
 include gridnav/gridnav_main.d
 CLEAN+=gridnav/gridnav_solver gridnav/gridnav_main.o
 
-gridnav/2poly: $(GRIDNAVOBJS) gridnav/2poly.cc visnav/vismap.o visnav/visgraph.o\
+gridnav/2poly: $(GRIDNAVOBJS) gridnav/2poly.cc visnav/polymap.o visnav/visgraph.o\
 	utils/utils.a structs/structs.a search/search.a
 	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
 

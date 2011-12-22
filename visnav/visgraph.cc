@@ -3,7 +3,7 @@
 #include "../utils/utils.hpp"
 #include <cerrno>
 
-VisGraph::VisGraph(FILE *in) : VisMap(in) {
+VisGraph::VisGraph(FILE *in) : PolyMap(in) {
 	unsigned int nverts;
 	int res = fscanf(in, " %u vertices\n", &nverts);
 	if (res == EOF && ferror(in))
@@ -15,12 +15,12 @@ VisGraph::VisGraph(FILE *in) : VisMap(in) {
 		verts.push_back(Vert(in));
 }
 
-VisGraph::VisGraph(std::vector<Polygon> &polys) : VisMap(polys) {
+VisGraph::VisGraph(std::vector<Polygon> &polys) : PolyMap(polys) {
 	build();
 }
 
 void VisGraph::output(FILE *out) const {
-	VisMap::output(out);
+	PolyMap::output(out);
 
 	fprintf(out, "%u vertices\n", (unsigned int) verts.size());
 	for (unsigned int i = 0; i < verts.size(); i++) {
@@ -63,7 +63,7 @@ void VisGraph::Vert::output(FILE *out) const {
 
 void VisGraph::draw(Image &img, bool label) const {
 	static const double polywidth = 2;
-	VisMap::draw(img, polywidth);
+	PolyMap::draw(img, polywidth);
 
 	for (unsigned int i = 0; i < verts.size(); i++) {
 	for (unsigned int j = 0; j < verts[i].edges.size(); j++) {
@@ -99,7 +99,7 @@ void VisGraph::dumpvertlocs(FILE *out) const {
 }
 
 void VisGraph::scale(double sx, double sy) {
-	VisMap::scale(sx, sy);
+	PolyMap::scale(sx, sy);
 	for (unsigned int i = 0; i < verts.size(); i++)
 		verts[i].pt.scale(sx, sy);
 
@@ -114,7 +114,7 @@ void VisGraph::scale(double sx, double sy) {
 }
 
 void VisGraph::translate(double dx, double dy) {
-	VisMap::translate(dx, dy);
+	PolyMap::translate(dx, dy);
 	for (unsigned int i = 0; i < verts.size(); i++)
 		verts[i].pt.translate(dx, dy);
 }
@@ -152,11 +152,6 @@ void VisGraph::visedges(void) {
 		LineSeg ray(verts[i].pt, verts[j].pt);
 		Point p0(ray.along(1e-7));
 		Point p1(ray.along((1 - 1e-7) * ray.length()));
-
-		extern bool print;
-		print = false;
-		if (i == 3 && j == 6)
-			print = true;
 
 		if (obstructed(p0) || obstructed(p1))
 			continue;
