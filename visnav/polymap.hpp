@@ -13,6 +13,9 @@ struct PolyMap {
 
 	PolyMap(std::vector<Polygon> ps) : polys(ps) { }
 
+	// Constructs a polygon map from a bitmap of obstacles.
+	PolyMap(bool[], unsigned int, unsigned int);
+
 	// input reads the visibility map from a file.
 	void input(FILE*);
 

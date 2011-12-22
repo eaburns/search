@@ -46,9 +46,6 @@ struct Lvl {
 		return at(x / Tile::Width, y / Tile::Height);
 	}
 
-	// polys returns a vector of polygons that represent the level
-	std::vector<Polygon> polys(void) const;
-
 private:
 
 	void read(FILE*);

@@ -19,6 +19,10 @@ VisGraph::VisGraph(std::vector<Polygon> &polys) : PolyMap(polys) {
 	build();
 }
 
+VisGraph::VisGraph(bool blkd[], unsigned int w, unsigned int h) : PolyMap(blkd, w, h) {
+	build();
+}
+
 void VisGraph::output(FILE *out) const {
 	PolyMap::output(out);
 

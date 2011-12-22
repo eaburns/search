@@ -25,7 +25,7 @@ plat2d/draw: $(PLAT2DOBJS) plat2d/draw.o utils/utils.a
 include plat2d/draw.d
 CLEAN+=plat2d/draw plat2d/draw.o
 
-plat2d/2poly: $(PLAT2DOBJS) plat2d/2poly.o visnav/polymap.o visnav/visgraph.o utils/utils.a
+plat2d/2poly: $(PLAT2DOBJS) plat2d/2poly.o visnav/visgraph.a utils/utils.a
 	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
 
 include plat2d/2poly.d

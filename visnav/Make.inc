@@ -1,6 +1,7 @@
 VISNAVOBJS=\
-	visnav/visgraph.o\
 	visnav/polymap.o\
+	visnav/grid2poly.o\
+	visnav/visgraph.o\
 	visnav/visnav.o\
 
 include $(VISNAVOBJS:.o=.d)
@@ -31,6 +32,11 @@ visnav/visnav_solver: $(VISNAVOBJS) visnav/main.o\
 include visnav/main.d
 CLEAN+=visnav/visnav_solver visnav/main.o
 
-visnav: visnav/rand visnav/draw visnav/inst visnav/visnav_solver
+visnav/visgraph.a: visnav/polymap.o visnav/grid2poly.o visnav/visgraph.o
+	$(AR) rsc $@ $^
+
+CLEAN+=visnav/visgraph.a
+
+visnav: visnav/rand visnav/draw visnav/inst visnav/visnav_solver visnav/visgraph.a
 
 EVERYTHING+=visnav

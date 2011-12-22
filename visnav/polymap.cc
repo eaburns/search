@@ -74,3 +74,112 @@ bool PolyMap::isvisible(const Point &a, const Point &b) const {
 	}
 	return true;
 }
+
+struct Component {
+
+	Component(unsigned int _w, unsigned int _h) :
+		w(_w), h(_h), n(0), blks(w * h) { }
+
+	void add(unsigned int x, unsigned int y) {
+		if (n == 0 || x < minx) {
+			minx = x;
+			miny = y;
+		}
+		n++;
+		if (x == minx && y < miny)
+			miny = y;
+		blks[x * h + y] = true;
+	}
+
+	Polygon poly(void) {
+		std::vector<Point> pts;
+
+		Pose cur(minx, miny, Up);
+		pts.push_back(Point(minx, miny));
+
+		for ( ; ; ) {
+			Pose next = clockwise(cur);
+			if (cur.dir == next.dir) {
+				cur = next;
+				continue;
+			}
+			if (next.x == minx && next.y == miny && next.dir == Up)
+				break;
+			switch (cur.dir) {
+			case Up:
+				pts.push_back(Point(cur.x, cur.y+1));
+				break;
+
+			case Down:
+				pts.push_back(Point(cur.x+1, cur.y));
+				break;
+
+			case Right:
+				pts.push_back(Point(cur.x+1, cur.y+1));
+				break;
+
+			case Left:
+				pts.push_back(Point(cur.x, cur.y));
+				break;
+			}
+			cur = next;
+		}
+
+		return Polygon(pts);
+	}
+
+private:
+
+	enum Dir { Up, Down, Left, Right };
+
+	struct Pose {
+		Pose(unsigned int _x, unsigned int _y, Dir _dir) :
+			x(_x), y(_y), dir(_dir) { }
+		unsigned int x, y;
+		Dir dir;
+	};
+
+	Pose clockwise(const Pose &cur) {
+		switch (cur.dir) {
+		case Up:
+			if (blkd(cur.x-1, cur.y+1))
+				return Pose(cur.x-1, cur.y+1, Left);
+			if (blkd(cur.x, cur.y+1))
+				return Pose(cur.x, cur.y+1, Up);
+			return Pose(cur.x, cur.y, Right);
+
+		case Down:
+			if (blkd(cur.x+1, cur.y-1))
+				return Pose(cur.x+1, cur.y-1, Right);
+			if (blkd(cur.x, cur.y-1))
+				return Pose(cur.x, cur.y-1, Down);
+			return Pose(cur.x, cur.y, Left);
+
+		case Left:
+			if (blkd(cur.x-1, cur.y-1))
+				return Pose(cur.x-1, cur.y-1, Down);
+			if (blkd(cur.x-1, cur.y))
+				return Pose(cur.x-1, cur.y, Left);
+			return Pose(cur.x, cur.y, Up);
+
+		default:
+			break;
+		}
+		if (blkd(cur.x+1, cur.y+1))
+			return Pose(cur.x+1, cur.y+1, Up);
+		if (blkd(cur.x+1, cur.y))
+			return Pose(cur.x+1, cur.y, Right);
+		return Pose(cur.x, cur.y, Down);
+	}
+
+	bool blkd(unsigned int x, unsigned int y) const {
+		if (x >= w || y >= w)
+			return false;
+		return blks[x * h + y];
+	}
+
+	unsigned int w, h;
+	unsigned int minx, miny;
+	unsigned int n;
+	std::vector<bool> blks;
+};

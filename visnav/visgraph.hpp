@@ -12,6 +12,10 @@ struct VisGraph : public PolyMap {
 
 	VisGraph(FILE*);
 
+	// Builds a visibility graph from a bitmap of blocked
+	// grid cells.
+	VisGraph(bool[], unsigned int, unsigned int);
+
 	// output writes the visibility graph to the
 	// given file.
 	void output(FILE*) const;
