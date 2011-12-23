@@ -52,7 +52,7 @@ private:
 typedef int IntOpenCost;
 
 template<class Node> struct OpenEntry {
-	unsigned int i;
+	int i;
 };
 
 template <class Ops, class Node> class OpenList <Ops, Node, IntOpenCost> {
