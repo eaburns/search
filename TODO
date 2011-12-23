@@ -8,6 +8,12 @@
 
 • visnav:
 
+	- implement add()
+
+	- profile to figure out why it seems to
+	be a lot slower than the previous
+	implementation
+
 	- grid2poly: detect outter bounding
 	polygon
 
