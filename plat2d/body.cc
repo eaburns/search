@@ -35,13 +35,13 @@ Point Body::step(const Point &v) {
 	Point d(tillwhole(loc.x, v.x), tillwhole(loc.y, v.y));
 
 	if (d.x == 0.0 && v.x != 0.0)
-		d.x = fabs(v.x) / v.x;
+		d.x = v.x < 0 ? -1.0 : 1.0;
 
 	if (fabs(d.x) > fabs(v.x))
 		d.x = v.x;
 
 	if (d.y == 0.0 && v.y != 0.0)
-		d.y = fabs(v.y) / v.y;
+		d.y = v.y < 0 ? -1.0 : 1.0;
 
 	if (fabs(d.y) > fabs(v.y))
 		d.y = v.y;
@@ -73,11 +73,7 @@ void Body::dofall(const Lvl &lvl, const Isect &is) {
 
 static double tillwhole(double loc, double vel)
 {
-	if (vel > 0) {
-		int l = loc + 0.5;
-		return l - loc;
-	} else {
-		int l = loc;
-		return l - loc;
-	}
+	if (vel > 0)
+		return ceil(loc) - loc;
+	return (int) loc - loc;
 }

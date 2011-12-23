@@ -69,6 +69,11 @@ struct Body {
 		return fall == o.fall && bbox == o.bbox && doubleeq(dy, o.dy);
 	}
 
+	void output(FILE *out) const {
+		fprintf(out, "%g,%g,	dy=%g,	fall=%d\n", bbox.min.x, bbox.min.y,
+			dy, fall);
+	}
+
 	void move(const Lvl&, double dx);
 	
 	Bbox bbox;
