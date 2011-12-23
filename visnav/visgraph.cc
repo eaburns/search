@@ -137,6 +137,7 @@ void VisGraph::popverts(void) {
 		for (unsigned int j = 0; j < vs.size(); j++) {
 			const Point &pt = polys[i].verts[vs[j]];
 			verts.push_back(Vert(verts.size(), pt));
+			polyno.push_back(i);
 		}
 
 		// link adjacent vertices
@@ -151,14 +152,19 @@ void VisGraph::popverts(void) {
 }
 
 void VisGraph::visedges(void) {
-	for (unsigned int i = 0; i < verts.size(); i++) {
+	for (unsigned int i = 0; i < verts.size() - 1; i++) {
 	for (unsigned int j = i + 1; j < verts.size(); j++) {
 		LineSeg ray(verts[i].pt, verts[j].pt);
-		Point p0(ray.along(1e-7));
-		Point p1(ray.along((1 - 1e-7) * ray.length()));
+		double len = ray.length();
 
-		if (obstructed(p0) || obstructed(p1))
+		Point p0(ray.along(len * 1e-3));
+		if (i < polyno.size() && polys[polyno[i]].contains(p0))
 			continue;
+
+		Point p1(ray.along(len * (1 - 1e-3)));
+		if (j < polyno.size() && polys[polyno[j]].contains(p1))
+			continue;
+
 		if (isvisible(p0, p1))
 			addedge(i, j);
 	}

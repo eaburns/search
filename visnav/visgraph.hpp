@@ -82,4 +82,6 @@ private:
 	// addedge adds an edge between the two vertices
 	// with the given IDs.
 	void addedge(unsigned int, unsigned int);
+
+	std::vector<unsigned int> polyno;
 };

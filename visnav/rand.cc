@@ -6,7 +6,7 @@
 
 static void randpolys(std::vector<Polygon>&);
 static double rnddbl(double, double);
-static void usage(void);
+static void helpmsg(int);
 
 static unsigned int Npolys = 500;
 static unsigned int Maxverts = 8;
@@ -18,7 +18,7 @@ static bool stats;
 int main(int argc, char *argv[]) {
 	for (int i = 1; i < argc; i++) {
 		if (strcmp(argv[i], "-h") == 0)
-			usage();
+			helpmsg(0);
 		else if (i < argc - 1 && strcmp(argv[i], "-o") == 0)
 			outfile = argv[++i];
 		else if (i < argc - 1 && strcmp(argv[i], "-npolys") == 0)
@@ -31,6 +31,8 @@ int main(int argc, char *argv[]) {
 			Maxrad = strtod(argv[++i], NULL);
 		else if (strcmp(argv[i], "-stats") == 0)
 			stats = true;
+		else
+			helpmsg(1);
 	}
 
 	if (stats)
@@ -87,7 +89,7 @@ static double rnddbl(double min, double max) {
 	return randgen.real() * (max - min) + min;
 }
 
-static void usage(void) {
+static void helpmsg(int res) {
 	puts("Usage: rand [options]");
 	puts("\nPlaces random polygons in the unit square.  Computes the");
 	puts("visibility graph and prints the instance to standard output");
@@ -99,5 +101,5 @@ static void usage(void) {
 	puts("	-minrad <num>	minimum polygon radius (default: 0.05)");
 	puts("	-maxrad <num>	maximum polygon radius (default: 0.075)");
 	puts("	-stats	print some stastics to standard error");
-	exit(0);
+	exit(res);
 }
