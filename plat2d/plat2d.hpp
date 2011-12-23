@@ -12,6 +12,11 @@ struct Plat2d {
 	static const unsigned int Ops[];
 	static const unsigned int Nops;
 
+	// Blkwidth and Blkheight define the number of frames
+	// required to traverse the distance of a block in each
+	// direction while traveling at the maximum speed.
+	static const double Blkwidth, Blkheight;
+
 	enum { UnitCost = true };
 
 	typedef int Cost;
@@ -35,9 +40,9 @@ struct Plat2d {
 		// hash does nothing since the hash table
 		// for plat2d states doesn't store anything.
 		unsigned long hash(void) {
-			unsigned int ix = x;
-			unsigned int iy = y;
-			unsigned int idy = dy;
+			unsigned int ix = x * 1e5;
+			unsigned int iy = y * 1e5;
+			unsigned int idy = dy * 1e5;
 
 			static const unsigned int sz = sizeof(ix) +
 				sizeof(iy) + sizeof(idy) + sizeof(jframes);
@@ -81,7 +86,30 @@ struct Plat2d {
 	State initialstate(void);
 
 	Cost h(State &s) {
-		return 0;
+		return heuclidean(s);
+	}
+
+	Cost heuclidean(State &s) {
+		const Point &loc = s.player.body.bbox.min;
+		Point topleft(gx * Blkwidth, (gy-1) * Blkwidth);
+		double min = Point::distance(loc, topleft);
+
+		Point botleft(gx * Blkwidth, gy * Blkwidth);
+		double d = Point::distance(loc, botleft);
+		if (d < min)
+			min = d;
+
+		Point topright((gx+1) * Blkwidth, (gy-1) * Blkwidth);
+		d = Point::distance(loc, topright);
+		if (d < min)
+			min = d;
+
+		Point botright((gx+1) * Blkwidth, gy * Blkwidth);
+		d = Point::distance(loc, botright);
+		if (d < min)
+			min = d;
+
+		return min + 0.5;		
 	}
 
 	Cost d(State &s) {
@@ -90,8 +118,7 @@ struct Plat2d {
 
 	bool isgoal(State &s) {
 		Lvl::Blkinfo bi = lvl.majorblk(s.player.body.bbox);
-		const Tile &t = bi.tile;
-		return t.flags & Tile::Down;
+		return bi.x == gx && bi.y == gy;
 	}
 
 	unsigned int nops(State &s) {
@@ -147,6 +174,7 @@ struct Plat2d {
 		fprintf(out, "%g, %g\n", s.player.loc().x, s.player.loc().y);
 	}
 
+	unsigned int gx, gy;	// goal tile location
 	Lvl lvl;
 };
 

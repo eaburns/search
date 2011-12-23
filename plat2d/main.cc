@@ -1,4 +1,5 @@
-#include "closedlist.hpp"
+//#include "closedlist.hpp"
+#include "plat2d.hpp"
 #include "../search/main.hpp"
 #include "../utils/utils.hpp"
 #include <cstdio>
@@ -22,6 +23,9 @@ int main(int argc, const char *argv[]) {
 	Plat2d d(infile);
 	if (infile != stdin)
 		fclose(infile);
+
+	dfpair(stdout, "block width", "%g", Plat2d::Blkwidth);
+	dfpair(stdout, "block height", "%g", Plat2d::Blkheight);
 
 	Result<Plat2d> res = search<Plat2d>(d, argc, argv);
 
