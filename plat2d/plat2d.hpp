@@ -85,26 +85,28 @@ struct Plat2d {
 	}
 
 	Cost heuclidean(State &s) {
+		static const double W = Tile::Width;
+		static const double H = Tile::Height;
 		const Point &loc = s.player.body.bbox.min;
-		Point topleft(gx * Tile::Width, (gy-1) * Tile::Height);
+		Point topleft(gx * W, (gy-1) * H);
 		double min = Point::distance(loc, topleft);
 
-		Point botleft(gx * Tile::Width, gy * Tile::Height);
+		Point botleft(gx * W, gy * H);
 		double d = Point::distance(loc, botleft);
 		if (d < min)
 			min = d;
 
-		Point topright((gx+1) * Tile::Width, (gy-1) * Tile::Height);
+		Point topright((gx+1) * W, (gy-1) * H);
 		d = Point::distance(loc, topright);
 		if (d < min)
 			min = d;
 
-		Point botright((gx+1) * Tile::Width, gy * Tile::Height);
+		Point botright((gx+1) * W, gy * H);
 		d = Point::distance(loc, botright);
 		if (d < min)
 			min = d;
 
-		return min + 0.5;		
+		return min;		
 	}
 
 	Cost d(State &s) {
