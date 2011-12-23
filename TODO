@@ -1,23 +1,17 @@
-• use Epsilon instead of the numeric_limits trash
-
-• use Inifinty instead of the numeric_limits trash
-
 • some kind of search node sharing/cleanup
 
 • plat2d:
 
 	-  heuristic: vis graph but
 	don't allow vertical > max
-	jump frames.
-
-	- Don't require the level to be split
-	in half.  Instead, properly detect the
-	outter bounding polygon.
+	jump frames
 
 • visnav:
 
-	- bounding box to prune
-	links to out-of-bound verts.
+	- grid2poly: detect outter bounding
+	polygon
+
+	- allow a bounding outter polygon
 
 	- specific closed list
 
@@ -29,6 +23,8 @@
 
 • tiles:
 
+	- verify that PDBs are correct
+
 	- PDBs on disk
 
 	- use PDBs for search
@@ -39,7 +35,7 @@
 
 • geom:
 
-	- more tests
+	- fix polygon tests
 
 • More domains:
 
