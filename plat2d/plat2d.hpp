@@ -12,15 +12,10 @@ struct Plat2d {
 	static const unsigned int Ops[];
 	static const unsigned int Nops;
 
-	// Blkwidth and Blkheight define the number of frames
-	// required to traverse the distance of a block in each
-	// direction while traveling at the maximum speed.
-	static const double Blkwidth, Blkheight;
-
 	enum { UnitCost = true };
 
-	typedef int Cost;
-	static const int InfCost = -1;
+	typedef double Cost;
+	static const double InfCost = -1;
 
 	typedef int Oper;
 	static const int Nop = -1;
@@ -91,20 +86,20 @@ struct Plat2d {
 
 	Cost heuclidean(State &s) {
 		const Point &loc = s.player.body.bbox.min;
-		Point topleft(gx * Blkwidth, (gy-1) * Blkwidth);
+		Point topleft(gx * Tile::Width, (gy-1) * Tile::Height);
 		double min = Point::distance(loc, topleft);
 
-		Point botleft(gx * Blkwidth, gy * Blkwidth);
+		Point botleft(gx * Tile::Width, gy * Tile::Height);
 		double d = Point::distance(loc, botleft);
 		if (d < min)
 			min = d;
 
-		Point topright((gx+1) * Blkwidth, (gy-1) * Blkwidth);
+		Point topright((gx+1) * Tile::Width, (gy-1) * Tile::Height);
 		d = Point::distance(loc, topright);
 		if (d < min)
 			min = d;
 
-		Point botright((gx+1) * Blkwidth, gy * Blkwidth);
+		Point botright((gx+1) * Tile::Width, gy * Tile::Height);
 		d = Point::distance(loc, botright);
 		if (d < min)
 			min = d;
@@ -137,16 +132,14 @@ struct Plat2d {
 		return Nop;
 	}
 
-	Cost opcost(State &s, Oper op) {
-		return 1;
-	}
-
 	void undo(State &s, Undo &u) { }
 
-	State &apply(State &buf, State &s, Oper op) {
+	State &apply(State &buf, State &s, Cost &c, Oper op) {
 		assert (op != Nop);
 		buf = s;
 		buf.player.act(lvl, (unsigned int) op);
+		c = Point::distance(s.player.body.bbox.min,
+			buf.player.body.bbox.min);
 		return buf;
 	}
 

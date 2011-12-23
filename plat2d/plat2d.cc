@@ -11,13 +11,6 @@ const unsigned int Plat2d::Ops[] = {
 
 const unsigned int Plat2d::Nops = sizeof(Plat2d::Ops) / sizeof(Plat2d::Ops[0]);
 
-const double Plat2d::Blkwidth = Tile::Width / Player::runspeed();
-
-const double Plat2d::Blkheight =
-	Tile::Height / Player::jmpspeed() > Tile::Height / Body::Maxdy ?
-		Tile::Height / Player::jmpspeed() :
-		Tile::Height / Body::Maxdy;
-
 Plat2d::Plat2d(FILE *in) : lvl(in) {
 	gx = lvl.width();
 	gy = lvl.height();

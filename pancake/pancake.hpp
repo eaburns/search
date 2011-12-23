@@ -91,16 +91,13 @@ public:
 		return op;
 	}
 
-	Cost opcost(State &s, Oper op) {
-		return 1;
-	}
-
 	void undo(State &s, Undo &u) {
 		s.h = u.h;
 		s.flip(u.op);
 	}
 
-	State &apply(State &buf, State &s, Oper op) {
+	State &apply(State &buf, State &s, Cost &c, Oper op) {
+		c = 1;
 		bool wasgap = gap(s.cakes, op);
 		s.flip(op);
 

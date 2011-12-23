@@ -105,12 +105,6 @@ struct <DOMAIN> {
 		return 0;
 	}
 
-	// Get the cost of the operator application.
-	Cost opcost(State &s, Oper op) {
-		fatal("Unimplemented");
-		return 0;
-	}
-
 	// Revert changes to the state using information
 	// stored in the undo record.  If the domain doesn't
 	// use in-place modification then this can be a noop.
@@ -123,7 +117,8 @@ struct <DOMAIN> {
 	// then the new state should be placed into 'buf'
 	// which is provided by the caller and is guaranteed
 	// to be live at least until undo is called.
-	State &apply(State &buf, State &s, Oper op) {
+	// The action cost is returned via the Cost& parameter.
+	State &apply(State &buf, State &s, Cost&, Oper op) {
 		fatal("Unimplemented");
 		return s;
 	}

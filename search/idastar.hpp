@@ -70,9 +70,8 @@ private:
 
 			Undo u(s, op);
 			Oper rev = d.revop(s, op);
-			Cost c = d.opcost(s, op);
-
-			State buf, &kid = d.apply(buf, s, op);
+			Cost c;
+			State buf, &kid = d.apply(buf, s, c, op);
 			bool goal = dfs(d, kid, rev, g + c);
 			d.undo(s, u);
 

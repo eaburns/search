@@ -70,17 +70,14 @@ public:
 		return s.b;
 	}
 
-	Cost opcost(State &s, Oper op) {
-		return 1;
-	}
-
 	void undo(State &s, Undo &u) {
 		s.ts[s.b] = s.ts[u.b];
 		s.b = u.b;
 		s.h = u.h;
 	}
 
-	State &apply(State &buf, State &s, Oper newb) {
+	State &apply(State &buf, State &s, Cost &c, Oper newb) {
+		c = 1;
 		Tile t = s.ts[newb];
 		s.ts[s.b] = t;
 		s.h += incr[t][newb][s.b];

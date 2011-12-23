@@ -70,15 +70,12 @@ public:
 		return s.loc;
 	}
 
-	Cost opcost(State &s, Oper op) {
-		if (map->x(s.loc) == map->x(op) || map->y(s.loc) == map->y(op))
-			return 1;
-		return sqrtf(2.0);
-	}
-
 	void undo(State &s, Undo &u) { }
 
-	State &apply(State &buf, State &s, Oper op) {
+	State &apply(State &buf, State &s, Cost &c, Oper op) {
+		c = sqrtf(2.0);
+		if (map->x(s.loc) == map->x(op) || map->y(s.loc) == map->y(op))
+			c = 1.0;
 		buf.loc = op;
 		return buf;
 	}

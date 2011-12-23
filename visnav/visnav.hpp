@@ -79,15 +79,12 @@ struct VisNav {
 		return op;
 	}
 
-	Cost opcost(State &s, Oper op) {
-		return op.edge->dist;
-	}
-
 	void undo(State &s, Undo &u) {
 		s.vert = u.vert;
 	}
 
-	State &apply(State &buf, State &s, Oper op) {
+	State &apply(State &buf, State &s, Cost &c, Oper op) {
+		c = op.edge->dist;
 		s.vert = op.edge->dst;
 		return s;
 	}

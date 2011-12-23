@@ -34,6 +34,7 @@ template <class D> struct Wastar : public Search<D> {
 	typedef typename D::State State;
 	typedef typename D::PackedState PackedState;
 	typedef typename D::Undo Undo;
+	typedef typename D::Cost Cost;
 	typedef typename D::Oper Oper;
 	typedef WastarNode<D> Node;
 
@@ -143,14 +144,13 @@ private:
 
 	Node *kid(D &d, Node *pnode, State &pstate, Oper op) {
 		Node *kid = nodes->construct();
-
-		kid->g = pnode->g + d.opcost(pstate, op);
 		kid->op = op;
 		kid->pop = d.revop(pstate, op);
 		kid->parent = pnode;
-
 		Undo u(pstate, op);
-		State buf, &kidst = d.apply(buf, pstate, op);
+		Cost c;
+		State buf, &kidst = d.apply(buf, pstate, c, op);
+		kid->g = pnode->g + c;
 		double h = d.h(kidst);
 		kid->f = kid->g + h;
 		kid->fprime = kid->g + wt * h;
