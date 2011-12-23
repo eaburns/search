@@ -2,6 +2,10 @@
 
 • plat2d:
 
+	- fix Euclidean heuristic so
+	that it is correct if you are aligned
+	with the exit on x or y directions.
+
 	-  heuristic: vis graph but
 	don't allow vertical > max
 	jump frames
