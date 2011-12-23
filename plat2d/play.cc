@@ -13,16 +13,13 @@ enum {
 };
 
 static unsigned int frametime = 20;
+static unsigned int delay = 0;
 static unsigned int echo = false;
 static int nextctrl = -1;
 static std::vector<unsigned int> controls;
 
 SDL_Surface *screen;
 Point tr(0, 0);
-
-// p is the player.  It is only global so we can print its location
-// on exit.
-static Player p;
 
 static void parseargs(int, const char*[]);
 static void helpmsg(int);
@@ -43,8 +40,10 @@ int main(int argc, const char *argv[]) {
 	Lvl *lvl = getlvl();
 	initsdl();
 
-	p = Player(2 * Tile::Width + Player::Offx, 2 * Tile::Height + Player::Offy,
+	Player p(2 * Tile::Width + Player::Offx, 2 * Tile::Height + Player::Offy,
 		Player::Width, Player::Height);
+
+	SDL_Delay(delay);
 
 	for ( ; ; ) {
 		unsigned int next = SDL_GetTicks() + frametime;
@@ -73,6 +72,8 @@ static void parseargs(int argc, const char *argv[]) {
 			frametime = strtol(argv[++i], NULL, 10);
 		else if (strcmp(argv[i], "-e") == 0)
 			echo = true;
+		else if (i < argc - 1 && strcmp(argv[i], "-d") == 0)
+			delay = 1000 * strtol(argv[++i], NULL, 10);
 		else {
 			printf("Unknown option %s\n", argv[i]);
 			helpmsg(1);
@@ -140,7 +141,6 @@ static unsigned int keys(void) {
 	if (nextctrl < 0)
 		return sdlkeys();
 	if (nextctrl >= (int) controls.size()) {
-		printf("%g, %g\n", p.body.bbox.min.x, p.body.bbox.min.y);
 		SDL_Delay(1000);
 		exit(0);
 	}
@@ -197,15 +197,6 @@ static void scroll(const Point &l0, const Point &l1) {
 static void draw(const Lvl &lvl, const Player &p) {
 	clear();
 	drawlvl(lvl);
-
-	Lvl::Blkinfo bi = lvl.majorblk(p.body.bbox);
-	SDL_Rect r;
-	r.w = Tile::Width;
-	r.h = Tile::Height;
-	r.x = bi.x * Tile::Width + tr.x;
-	r.y = bi.y * Tile::Height + tr.y;
-	fillrect(&r, Image::blue);
-
 	drawplayer(p);
 	SDL_Flip(screen);
 }
