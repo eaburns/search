@@ -75,7 +75,7 @@ int main(int argc, char *argv[]) {
 }
 
 static void helpmsg(int ret) {
-	puts("Usage: disp -o <outfile> [options]");
+	puts("Usage: draw -o <outfile> [options]");
 	puts("Options:");
 	puts("	-h	print this help message");
 	puts("	-i <infile>	read input from file");
