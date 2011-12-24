@@ -12,6 +12,8 @@ TESTS+=.structs_test
 .structs_test: ./structs/test
 	./structs/test ".*test" && touch $@
 
+CLEAN+=.structs_test
+
 structs/test:\
 	structs/test_htable.cc\
 	structs/test_intpq.cc\
