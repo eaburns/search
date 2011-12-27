@@ -2,7 +2,7 @@
 
 • plat2d:
 
-	-  heuristic: vis graph but
+	- heuristic: vis graph but
 	don't allow vertical > max
 	jump frames
 
