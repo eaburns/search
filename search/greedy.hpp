@@ -10,7 +10,7 @@ template <class D, bool speedy = false> struct Greedy : public SearchAlgorithm<D
 	typedef typename D::Oper Oper;
 
 	struct Node : SearchNode<D> {
-		Cost g, h;
+		Cost h;
 
 		static bool pred(Node *a, Node *b) { return a->h < b->h; }
 
@@ -41,7 +41,7 @@ template <class D, bool speedy = false> struct Greedy : public SearchAlgorithm<D
 			State buf, &state = d.unpack(buf, n->packed);
 
 			if (d.isgoal(state)) {
-				SearchAlgorithm<D>::res = Result<D>(d, n->g, n);
+				SearchAlgorithm<D>::res = Result<D>(d, n);
 				break;
 			}
 

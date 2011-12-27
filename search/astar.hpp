@@ -10,7 +10,7 @@ template <class D> struct Astar : public SearchAlgorithm<D> {
 	typedef typename D::Oper Oper;
 	
 	struct Node : SearchNode<D> {
-		Cost g, f;
+		Cost f;
 	
 		static bool pred(Node *a, Node *b) {
 			if (a->f == b->f)
@@ -45,7 +45,7 @@ template <class D> struct Astar : public SearchAlgorithm<D> {
 			State buf, &state = d.unpack(buf, n->packed);
 
 			if (d.isgoal(state)) {
-				SearchAlgorithm<D>::res = Result<D>(d, n->g, n);
+				SearchAlgorithm<D>::res = Result<D>(d, n);
 				break;
 			}
 
@@ -101,7 +101,6 @@ private:
 				open.pre_update(dup);
 
 			dup->f = dup->f - dup->g + k->g;
-			dup->g = k->g;
 			dup->update(*k);
 
 			if (!open.mem(dup))

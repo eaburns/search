@@ -17,7 +17,7 @@ template <class D> struct Arastar : public SearchAlgorithm<D> {
 	typedef typename D::Oper Oper;
 
 	struct Node : SearchNode<D> {
-		Cost g, h;
+		Cost h;
 		double fprime;
 	
 		static bool pred(Node *a, Node *b) {
@@ -149,7 +149,7 @@ private:
 			State buf, &state = d.unpack(buf, n->packed);
 
 			if (d.isgoal(state))
-				SearchAlgorithm<D>::res = Result<D>(d, n->g, n);
+				SearchAlgorithm<D>::res = Result<D>(d, n);
 
 			expand(d, n, state);
 		}
@@ -222,7 +222,6 @@ private:
 
 			SearchAlgorithm<D>::res.reopnd++;
 			dup->fprime = dup->fprime - dup->g + k->g;
-			dup->g = k->g;
 			dup->update(*k);
 
 			if (dup->openind < 0)

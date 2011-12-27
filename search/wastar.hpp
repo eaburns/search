@@ -12,7 +12,6 @@ template <class D> struct Wastar : public SearchAlgorithm<D> {
 	typedef typename D::Oper Oper;
 
 	struct Node : SearchNode<D> {
-		Cost g;
 		double f, fprime;
 
 		static bool pred(Node *a, Node *b) {
@@ -55,7 +54,7 @@ template <class D> struct Wastar : public SearchAlgorithm<D> {
 			State buf, &state = d.unpack(buf, n->packed);
 
 			if (d.isgoal(state)) {
-				SearchAlgorithm<D>::res = Result<D>(d, n->g, n);
+				SearchAlgorithm<D>::res = Result<D>(d, n);
 				break;
 			}
 
@@ -111,7 +110,6 @@ private:
 
 			dup->fprime = dup->fprime - dup->g + k->g;
 			dup->f = dup->f - dup->g + k->g;
-			dup->g = k->g;
 			dup->update(*k);
 
 			if (dup->openind < 0)

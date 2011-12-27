@@ -17,7 +17,7 @@ template <class D> struct Bugsy : public SearchAlgorithm<D> {
 	typedef typename D::Oper Oper;
 
 	struct Node : SearchNode<D> {
-		typename D::Cost f, g, h, d;
+		typename D::Cost f, h, d;
 		double u, t;
 
 		static bool pred(Node *a, Node *b) {
@@ -71,7 +71,7 @@ template <class D> struct Bugsy : public SearchAlgorithm<D> {
 			Node* n = *open.pop();
 			State buf, &state = d.unpack(buf, n->packed);
 			if (d.isgoal(state)) {
-				SearchAlgorithm<D>::res = Result<D>(d, n->g, n);
+				SearchAlgorithm<D>::res = Result<D>(d, n);
 				break;
 			}
 			expand(d, n, state);
@@ -133,9 +133,8 @@ private:
 
 			SearchAlgorithm<D>::res.reopnd++;
 			dup->f = dup->f - dup->g + k->g;
-			dup->g = k->g;
-			computeutil(dup);
 			dup->update(*k);
+			computeutil(dup);
 
 			if (dup->openind < 0)
 				open.push(dup);

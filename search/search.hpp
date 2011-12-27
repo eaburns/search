@@ -84,6 +84,7 @@ private:
 public:
 	int openind;
 	typename D::PackedState packed;
+	typename D::Cost g;
 	typename D::Oper op;
 	typename D::Oper pop;
 	SearchNode *parent;
@@ -117,9 +118,10 @@ public:
 		return a.eq(b);
 	}
 
-	// update updates the parent, op and pop fields of the receiver
-	// to match that of another node.
+	// update updates the g, parent, op and pop fields of
+	// the receiver to match that of another node.
 	void update(const SearchNode &other) {
+		g = other.g;
 		parent = other.parent;
 		op = other.op;
 		pop = other.pop;
@@ -281,7 +283,7 @@ template <class D> struct Result : public SearchStats {
 
 	// Constructs a Result by unrolling the solution path from
 	// the given goal node.
-	Result(D &d, typename D::Cost c, SearchNode<D> *goal) : cost(c) {
+	Result(D &d, SearchNode<D> *goal) : cost(goal->g) {
 		for (SearchNode<D> *n = goal; n; n = n->parent) {
 			typename D::State buf, &state = d.unpack(buf, n->packed);
 			path.push_back(state);
