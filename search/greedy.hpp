@@ -1,52 +1,26 @@
 #include "../search/search.hpp"
-#include "../search/closedlist.hpp"
-#include "../search/openlist.hpp"
 #include <boost/pool/object_pool.hpp>
 
-template <class D, class Cost> struct GreedyNode {
-	ClosedEntry<GreedyNode, D> closedent;
-	typename D::PackedState packed;
-	typename D::Oper op, pop;
-	Cost g, h;
-	GreedyNode *parent;
-
-	GreedyNode(void) { }
-
-	static bool pred(GreedyNode *a, GreedyNode *b) {
-		return a->h < b->h;
-	}
-
-	static void setind(GreedyNode*, int) { }
-
-	static int getind(GreedyNode*) { return -1; }
-};
-
-template <class D> struct GreedyNode <D, IntOpenCost> {
-	ClosedEntry<GreedyNode, D> closedent;
-	OpenEntry<GreedyNode> openent;
-	typename D::PackedState packed;
-	typename D::Oper op, pop;
-	typename D::Cost g, h;
-	GreedyNode *parent;
-
-	static typename D::Cost prio(GreedyNode *n) { return n->h; }
-
-	static OpenEntry<GreedyNode> &openentry(GreedyNode *n) {
-		return n->openent;
-	}
-};
-
-template <class D, bool speedy = false> struct Greedy : public Search<D> {
+template <class D, bool speedy = false> struct Greedy : public SearchAlgorithm<D> {
 
 	typedef typename D::State State;
 	typedef typename D::PackedState PackedState;
 	typedef typename D::Undo Undo;
 	typedef typename D::Cost Cost;
 	typedef typename D::Oper Oper;
-	typedef GreedyNode<D, Cost> Node;
+
+	struct Node : SearchNode<D> {
+		Cost g, h;
+
+		static bool pred(Node *a, Node *b) { return a->h < b->h; }
+
+		static typename D::Cost prio(Node *n) { return n->h; }
+
+		static typename D::Cost tieprio(Node *n) { return n->g; }
+	};
 
 	Greedy(int argc, const char *argv[]) :
-		Search<D>(argc, argv), closed(30000001) {
+		SearchAlgorithm<D>(argc, argv), closed(30000001) {
 		nodes = new boost::object_pool<Node>();
 	}
 
@@ -55,31 +29,31 @@ template <class D, bool speedy = false> struct Greedy : public Search<D> {
 	}
 
 	Result<D> &search(D &d, typename D::State &s0) {
-		Search<D>::res.start();
+		SearchAlgorithm<D>::res.start();
 		closed.init(d);
 
 		Node *n0 = init(d, s0);
 		closed.add(n0);
 		open.push(n0);
 
-		while (!open.empty() && !Search<D>::limit()) {
+		while (!open.empty() && !SearchAlgorithm<D>::limit()) {
 			Node *n = open.pop();
 			State buf, &state = d.unpack(buf, n->packed);
 
 			if (d.isgoal(state)) {
-				handlesol(d, n);
+				SearchAlgorithm<D>::res = Result<D>(d, n->g, n);
 				break;
 			}
 
 			expand(d, n, state);
 		}
-		Search<D>::res.finish();
+		SearchAlgorithm<D>::res.finish();
 
-		return Search<D>::res;
+		return SearchAlgorithm<D>::res;
 	}
 
 	virtual void reset(void) {
-		Search<D>::reset();
+		SearchAlgorithm<D>::reset();
 		open.clear();
 		closed.clear();
 		delete nodes;
@@ -87,7 +61,7 @@ template <class D, bool speedy = false> struct Greedy : public Search<D> {
 	}
 
 	virtual void output(FILE *out) {
-		Search<D>::output(out);
+		SearchAlgorithm<D>::output(out);
 		closed.prstats(stdout, "closed ");
 		dfpair(stdout, "open list type", "%s", open.kind());
 		dfpair(stdout, "node size", "%u", sizeof(Node));
@@ -96,14 +70,14 @@ template <class D, bool speedy = false> struct Greedy : public Search<D> {
 private:
 
 	void expand(D &d, Node *n, State &state) {
-		Search<D>::res.expd++;
+		SearchAlgorithm<D>::res.expd++;
 
 		for (unsigned int i = 0; i < d.nops(state); i++) {
 			Oper op = d.nthop(state, i);
 			if (op == n->pop)
 				continue;
 			Node *k = kid(d, n, state, op);
-			Search<D>::res.gend++;
+			SearchAlgorithm<D>::res.gend++;
 
 			considerkid(d, k);
 		}
@@ -111,9 +85,9 @@ private:
 
 	void considerkid(D &d, Node *k) {
 		unsigned long h = k->packed.hash();
-		Node *dup = closed.find(k->packed, h);
+		SearchNode<D> *dup = closed.find(k->packed, h);
 		if (dup) {
-			Search<D>::res.dups++;
+			SearchAlgorithm<D>::res.dups++;
 			nodes->destroy(k);
 		} else {
 			closed.add(k, h);
@@ -127,9 +101,8 @@ private:
 		kid->pop = d.revop(pstate, op);
 		kid->parent = pnode;
 		Undo u(pstate, op);
-		Cost c;
-		State buf, &kidst = d.apply(buf, pstate, c, op);
-		kid->g = pnode->g + c;
+		State buf, &kidst = d.apply(buf, pstate, kid->g, op);
+		kid->g += pnode->g;
 		kid->h = speedy ? d.d(kidst) : d.h(kidst);
 		d.pack(kid->packed, kidst);
 		d.undo(pstate, u);
@@ -142,31 +115,12 @@ private:
 		d.pack(n0->packed, s0);
 		n0->g = 0;
 		n0->h = speedy ? d.d(s0) : d.h(s0);
-		n0->pop = n0->op = D::Nop;
+		n0->op = n0->pop = D::Nop;
 		n0->parent = NULL;
 		return n0;
 	}
 
-	void handlesol(D &d, Node *n) {
-		Search<D>::res.cost = n->g;
-
-		for ( ; n; n = n->parent) {
-			State buf;
-			State &state = d.unpack(buf, n->packed);
-			Search<D>::res.path.push_back(state);
-			if (n->parent)
-				Search<D>::res.ops.push_back(n->op);
-		}
-	}
-
-	struct ClosedOps {
-		static PackedState &key(Node *n) { return n->packed; }
-		static unsigned long hash(PackedState &s) { return s.hash(); }
-		static bool eq(PackedState &a, PackedState &b) { return a.eq(b); }
-		static ClosedEntry<Node, D> &entry(Node *n) { return n->closedent; }
-	};
-
 	OpenList<Node, Node, Cost> open;
- 	ClosedList<ClosedOps, Node, D> closed;
+ 	ClosedList<SearchNode<D>, SearchNode<D>, D> closed;
 	boost::object_pool<Node> *nodes;
 };

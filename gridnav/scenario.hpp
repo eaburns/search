@@ -13,7 +13,7 @@ struct Scenario;
 
 struct ScenarioEntry {
 	ScenarioEntry(Scenario &);
-	Result<GridNav> run(Search<GridNav>*);
+	Result<GridNav> run(SearchAlgorithm<GridNav>*);
 	void outputrow(FILE*, unsigned int, Result<GridNav>&);
 private:
 	friend std::istream &operator>>(std::istream &, ScenarioEntry &);

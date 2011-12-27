@@ -31,7 +31,7 @@ void Scenario::run(std::istream &in) {
 	checkver(in);
 	outputhdr(stdout);
 
-	Search<GridNav> *srch = getsearch<GridNav>(argc, argv);
+	SearchAlgorithm<GridNav> *srch = getsearch<GridNav>(argc, argv);
 	ScenarioEntry ent(*this);
 	while (in >> ent) {
 		nentries++;
@@ -78,7 +78,7 @@ GridMap *Scenario::getmap(std::string mapfile) {
 
 ScenarioEntry::ScenarioEntry(Scenario &s) : scen(s) { }
 
-Result<GridNav> ScenarioEntry::run(Search<GridNav> *srch) {
+Result<GridNav> ScenarioEntry::run(SearchAlgorithm<GridNav> *srch) {
 	GridNav d(scen.getmap(mapfile), x0, y0, x1, y1);
 	GridNav::State s0 = d.initialstate();
 

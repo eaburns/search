@@ -38,9 +38,14 @@ private:
 
 	struct HtableOps {
 		static PackedState &key(Node *n) { return Ops::key(n); }
+
 		static unsigned long hash(PackedState &s) { return Ops::hash(s); }
+
 		static bool eq(PackedState &a, PackedState &b) { return Ops::eq(a, b); }
-		static HtableEntry<Node> &entry(Node *n) { return Ops::entry(n).ent; }
+
+		static HtableEntry<Node> &entry(Node *n) {
+			return Ops::closedentry(n).ent;
+		}
 	};
 
 	Htable<HtableOps, PackedState&, Node, FillFact> tbl;

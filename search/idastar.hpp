@@ -4,7 +4,7 @@
 void dfrowhdr(FILE *, const char *name, int ncols, ...);
 void dfrow(FILE *, const char *name, const char *colfmt, ...);
 
-template <class D> class Idastar : public Search<D> {
+template <class D> class Idastar : public SearchAlgorithm<D> {
 
 public:
 
@@ -13,32 +13,29 @@ public:
 	typedef typename D::Cost Cost;
 	typedef typename D::Oper Oper;
 
-	Idastar(int argc, const char *argv[]) : Search<D>(argc, argv) { }
+	Idastar(int argc, const char *argv[]) :
+		SearchAlgorithm<D>(argc, argv) { }
 
 	Result<D> &search(D &d, State &s0) {
-		Search<D>::res.start();
+		SearchAlgorithm<D>::res.start();
 		bound = d.h(s0);
 		dfrowhdr(stdout, "iter", 4, "iter no", "iter bound",
 			"iter expd", "iter gend");
 
-		for (int i = 0; !Search<D>::limit(); i++) {
+		for (int i = 0; !SearchAlgorithm<D>::limit(); i++) {
 			minoob = D::InfCost;
 
 			if (dfs(d, s0, D::Nop, 0))
 				break;
 
 			dfrow(stdout, "iter", "dguu", (long) i, (double) bound,
-				Search<D>::res.expd, Search<D>::res.gend); 
+				SearchAlgorithm<D>::res.expd, SearchAlgorithm<D>::res.gend); 
 
 			bound = minoob;
 		}
 
-		Search<D>::res.finish();
-		return Search<D>::res;
-	}
-
-	virtual void reset(void) {
-		Search<D>::reset();
+		SearchAlgorithm<D>::res.finish();
+		return SearchAlgorithm<D>::res;
 	}
 
 private:
@@ -46,8 +43,8 @@ private:
 		Cost f = g + d.h(s);
 
 		if ((D::UnitCost || f <= bound) && d.isgoal(s)) {
-			Search<D>::res.cost = g;
-			Search<D>::res.path.push_back(s);
+			SearchAlgorithm<D>::res.cost = g;
+			SearchAlgorithm<D>::res.path.push_back(s);
 			return true;
 		}
 
@@ -57,16 +54,16 @@ private:
 			return false;
 		}
 
-		Search<D>::res.expd++;
+		SearchAlgorithm<D>::res.expd++;
 
 		for (unsigned int n = 0; n < d.nops(s); n++) {
-			if (Search<D>::limit())
+			if (SearchAlgorithm<D>::limit())
 				return false;
 			Oper op = d.nthop(s, n);
 			if (op == pop)
 				continue;
 
-			Search<D>::res.gend++;
+			SearchAlgorithm<D>::res.gend++;
 
 			Undo u(s, op);
 			Oper rev = d.revop(s, op);
@@ -76,8 +73,8 @@ private:
 			d.undo(s, u);
 
 			if (goal) {
-				Search<D>::res.path.push_back(s);
-				Search<D>::res.ops.push_back(op);
+				SearchAlgorithm<D>::res.path.push_back(s);
+				SearchAlgorithm<D>::res.ops.push_back(op);
 				return true;
 			}
 		}

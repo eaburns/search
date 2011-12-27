@@ -4,46 +4,35 @@
 //Artificial Intelligence (IJCAI-07), 2007
 
 #include "../search/search.hpp"
-#include "../search/closedlist.hpp"
 #include "../structs/binheap.hpp"
 #include <boost/pool/object_pool.hpp>
 
 void fatal(const char*, ...);	// utils.hpp
 
-template <class D> struct BugsyNode {
-	ClosedEntry<BugsyNode, D> closedent;
-	typename D::PackedState packed;
-	typename D::Oper op, pop;
-	typename D::Cost f, g, h, d;
-	double u, t;
-	BugsyNode *parent;
-	int openind;
-
-	BugsyNode(void) : openind(-1) {}
-
-	static bool pred(BugsyNode *a, BugsyNode *b) {
-		if (a->u != b->u)
-			return a->u > b->u;
-		if (a->t != b->t)
-			return a->t < b->t;
-		if (a->f != b->f)
-			return a->f < b->f;
-		return a->g > b->g;
-	}
-
-	static void setind(BugsyNode *n, int i) { n->openind = i; }
-};
-
-template <class D> struct Bugsy : public Search<D> {
+template <class D> struct Bugsy : public SearchAlgorithm<D> {
 	typedef typename D::State State;
 	typedef typename D::PackedState PackedState;
 	typedef typename D::Undo Undo;
 	typedef typename D::Cost Cost;
 	typedef typename D::Oper Oper;
-	typedef BugsyNode<D> Node;
+
+	struct Node : SearchNode<D> {
+		typename D::Cost f, g, h, d;
+		double u, t;
+
+		static bool pred(Node *a, Node *b) {
+			if (a->u != b->u)
+				return a->u > b->u;
+			if (a->t != b->t)
+				return a->t < b->t;
+			if (a->f != b->f)
+				return a->f < b->f;
+			return a->g > b->g;
+		}
+	};
 
 	Bugsy(int argc, const char *argv[]) :
-			Search<D>(argc, argv),
+			SearchAlgorithm<D>(argc, argv),
 			timeper(0.0), nresort(0), pertick(20), nexp(0), state(WaitTick),
 			closed(30000001) {
 		wf = wt = -1;
@@ -69,31 +58,31 @@ template <class D> struct Bugsy : public Search<D> {
 	enum { WaitTick, ExpandSome, WaitExpand };
 
 	Result<D> &search(D &d, typename D::State &s0) {
-		Search<D>::res.start();
+		SearchAlgorithm<D>::res.start();
 		closed.init(d);
 		Node *n0 = init(d, s0);
 		closed.add(n0);
 		open.push(n0);
 
 		lasttick = walltime();
-		while (!open.empty() && !Search<D>::limit()) {
+		while (!open.empty() && !SearchAlgorithm<D>::limit()) {
 			updatetime();
 
 			Node* n = *open.pop();
 			State buf, &state = d.unpack(buf, n->packed);
 			if (d.isgoal(state)) {
-				handlesol(d, n);
+				SearchAlgorithm<D>::res = Result<D>(d, n->g, n);
 				break;
 			}
 			expand(d, n, state);
 		}
 
-		Search<D>::res.finish();
-		return Search<D>::res;
+		SearchAlgorithm<D>::res.finish();
+		return SearchAlgorithm<D>::res;
 	}
 
 	virtual void reset(void) {
-		Search<D>::reset();
+		SearchAlgorithm<D>::reset();
 		open.clear();
 		closed.clear();
 		delete nodes;
@@ -106,7 +95,7 @@ template <class D> struct Bugsy : public Search<D> {
 	}
 
 	virtual void output(FILE *out) {
-		Search<D>::output(out);
+		SearchAlgorithm<D>::output(out);
 		closed.prstats(stdout, "closed ");
 		dfpair(stdout, "open list type", "%s", "binary heap");
 		dfpair(stdout, "node size", "%u", sizeof(Node));
@@ -119,14 +108,14 @@ template <class D> struct Bugsy : public Search<D> {
 private:
 
 	void expand(D &d, Node *n, State &state) {
-		Search<D>::res.expd++;
+		SearchAlgorithm<D>::res.expd++;
 
 		for (unsigned int i = 0; i < d.nops(state); i++) {
 			Oper op = d.nthop(state, i);
 			if (op == n->pop)
 				continue;
 			Node *k = kid(d, n, state, op);
-			Search<D>::res.gend++;
+			SearchAlgorithm<D>::res.gend++;
 
 			considerkid(d, k);
 		}
@@ -134,21 +123,19 @@ private:
 
 	void considerkid(D &d, Node *k) {
 		unsigned long h = k->packed.hash();
-		Node *dup = closed.find(k->packed, h);
+		Node *dup = static_cast<Node*>(closed.find(k->packed, h));
 		if (dup) {
-			Search<D>::res.dups++;
+			SearchAlgorithm<D>::res.dups++;
 			if (k->g >= dup->g) {
 				nodes->destroy(k);
 				return;
 			}
 
-			Search<D>::res.reopnd++;
+			SearchAlgorithm<D>::res.reopnd++;
 			dup->f = dup->f - dup->g + k->g;
 			dup->g = k->g;
 			computeutil(dup);
-			dup->op = k->op;
-			dup->pop = k->pop;
-			dup->parent = k->parent;
+			dup->update(*k);
 
 			if (dup->openind < 0)
 				open.push(dup);
@@ -167,9 +154,8 @@ private:
 		kid->pop = d.revop(pstate, op);
 		kid->parent = pnode;
 		Undo u(pstate, op);
-		Cost c;
-		State buf, &kidst = d.apply(buf, pstate, c, op);
-		kid->g = pnode->g + c;
+		State buf, &kidst = d.apply(buf, pstate, kid->g, op);
+		kid->g += pnode->g;
 		kid->d = d.d(kidst);
 		kid->h = d.h(kidst);
 		kid->f = kid->g + kid->h;
@@ -186,7 +172,7 @@ private:
 		n0->h = n0->f = d.h(s0);
 		n0->d = d.d(s0);
 		computeutil(n0);
-		n0->pop = n0->op = D::Nop;
+		n0->op = n0->pop = D::Nop;
 		n0->parent = NULL;
 		return n0;
 	}
@@ -194,18 +180,6 @@ private:
 	void computeutil(Node *n) {
 		n->t = timeper * n->d;
 		n->u = -(wf * n->f + wt * n->t);
-	}
-
-	void handlesol(D &d, Node *n) {
-		Search<D>::res.cost = n->g;
-
-		for ( ; n; n = n->parent) {
-			State buf;
-			State &state = d.unpack(buf, n->packed);
-			Search<D>::res.path.push_back(state);
-			if (n->parent)
-				Search<D>::res.ops.push_back(n->op);
-		}
 	}
 
 	void updatetime(void) {
@@ -253,14 +227,6 @@ private:
 		open.reinit();
 	}
 
-	struct ClosedOps {
-		static PackedState &key(Node *n) { return n->packed; }
-		static unsigned long hash(PackedState &s) { return s.hash(); }
-		static bool eq(PackedState &a, PackedState &b) { return a.eq(b); }
-		static ClosedEntry<Node, D> &entry(Node *n) { return n->closedent; }
-	};
-
-
 	double wf, wt;
 
 	// for nodes-per-second estimation
@@ -270,6 +236,6 @@ private:
 	int state;
 
 	BinHeap<Node, Node*> open;
- 	ClosedList<ClosedOps, Node, D> closed;
+ 	ClosedList<SearchNode<D>, SearchNode<D>, D> closed;
 	boost::object_pool<Node> *nodes;
 };

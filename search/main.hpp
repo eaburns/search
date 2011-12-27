@@ -15,10 +15,10 @@ void dfpair(FILE *, const char *, const char *, ...);
 void dfprocstatus(FILE*);
 void fatal(const char*, ...);
 
-template<class D> Search<D> *getsearch(int argc, const char *argv[]);
+template<class D> SearchAlgorithm<D> *getsearch(int argc, const char *argv[]);
 
 template<class D> Result<D> search(D &d, int argc, const char *argv[]) {
-	Search<D> *srch = getsearch<D>(argc, argv);
+	SearchAlgorithm<D> *srch = getsearch<D>(argc, argv);
 
 	typename D::State s0 = d.initialstate();
 	dfpair(stdout, "initial heuristic", "%g", (double) d.h(s0));
@@ -33,7 +33,7 @@ template<class D> Result<D> search(D &d, int argc, const char *argv[]) {
 	return res;
 }
 
-template<class D> Search<D> *getsearch(int argc, const char *argv[]) {
+template<class D> SearchAlgorithm<D> *getsearch(int argc, const char *argv[]) {
 	if (argc < 2)
 		fatal("No algorithm specified");
 
