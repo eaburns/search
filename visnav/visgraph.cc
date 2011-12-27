@@ -123,7 +123,7 @@ void VisGraph::translate(double dx, double dy) {
 		verts[i].pt.translate(dx, dy);
 }
 
-unsigned int VisGraph::push(const Point &pt) {
+unsigned int VisGraph::add(const Point &pt) {
 	unsigned int vid = verts.size();
 	verts.push_back(Vert(vid, pt));
 	for (unsigned int i = 0; i < vid; i++)

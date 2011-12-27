@@ -37,8 +37,8 @@ struct VisGraph : public PolyMap {
 	// give x and y values.
 	void translate(double, double);
 
-	// push adds a vertex to the graph.
-	unsigned int push(const Point&);
+	// add adds a vertex to the graph.
+	unsigned int add(const Point&);
 
 	struct Edge {
 		Edge(unsigned int s, unsigned int d, double c) :
