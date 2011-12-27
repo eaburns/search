@@ -291,18 +291,19 @@ template <class D> struct Result : public SearchStats {
 	std::vector<typename D::State> path;
 	std::vector<typename D::Oper> ops;
 
-	// Constructs a Result by unrolling the solution path from
+	Result(void) : cost(D::InfCost) { }
+
+	// Sets the cost and solution path of the result to that of
 	// the given goal node.
-	Result(D &d, SearchNode<D> *goal) : cost(goal->g) {
+	void goal(D &d, SearchNode<D> *goal) {
+		cost = goal->g;
 		for (SearchNode<D> *n = goal; n; n = n->parent) {
 			typename D::State buf, &state = d.unpack(buf, n->packed);
 			path.push_back(state);
 			if (n->parent)
 				ops.push_back(n->op);
-		}	
+		}
 	}
-
-	Result(void) : cost(D::InfCost) { }
 
 	// output writes information to the given file in
 	// datafile format.

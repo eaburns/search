@@ -54,7 +54,7 @@ template <class D> struct Wastar : public SearchAlgorithm<D> {
 			State buf, &state = d.unpack(buf, n->packed);
 
 			if (d.isgoal(state)) {
-				SearchAlgorithm<D>::res = Result<D>(d, n);
+				SearchAlgorithm<D>::res.goal(d, n);
 				break;
 			}
 

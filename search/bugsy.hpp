@@ -71,7 +71,7 @@ template <class D> struct Bugsy : public SearchAlgorithm<D> {
 			Node* n = *open.pop();
 			State buf, &state = d.unpack(buf, n->packed);
 			if (d.isgoal(state)) {
-				SearchAlgorithm<D>::res = Result<D>(d, n);
+				SearchAlgorithm<D>::res.goal(d, n);
 				break;
 			}
 			expand(d, n, state);
