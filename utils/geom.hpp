@@ -278,7 +278,8 @@ struct Rectangle {
 	Rectangle(const Point &_min, const Point &_max) :
 			min(_min), max(_max) { normalize(); }
 
-	// Get the bounding box for the set of points
+	// This constructor gets the bounding box for the
+	// given set of points
 	Rectangle(std::vector<Point> &pts) {
 		min = Point::inf();
 		max = Point::neginf();
@@ -300,6 +301,9 @@ struct Rectangle {
 		return min == o.min && max == o.max;
 	}
 
+	// draw draws the rectangle to the image.  If the line width
+	// is negative then the bounding box is filled, otherwise it
+	// is outlined with a line of the given width.
 	void draw(Image&, Color c = Image::black, double lwidth = 1) const;
 
 	// contains returns true if the rectangle contains
@@ -319,6 +323,13 @@ struct Rectangle {
 	void translate(double dx, double dy) {
 		min.translate(dx, dy);
 		max.translate(dx, dy);
+	}
+
+	// center returns the center point of the rectangle.
+	Point center(void) const {
+		double dx = max.x - min.x;
+		double dy = max.y - min.y;
+		return Point(min.x + dx/2, min.y + dy/2);
 	}
 
 	Point min, max;

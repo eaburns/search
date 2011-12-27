@@ -1,10 +1,8 @@
 • some kind of search node sharing/cleanup
 
-• plat2d:
+• lots of benchmarks
 
-	- fix Euclidean heuristic so
-	that it is correct if you are aligned
-	with the exit on x or y directions.
+• plat2d:
 
 	-  heuristic: vis graph but
 	don't allow vertical > max
@@ -23,7 +21,7 @@
 
 • gridnav:
 
-	- Make sure that the size of
+	- make sure that the size of
 	grids doesn't overflow the
 	size of a signed integer
 
@@ -37,7 +35,7 @@
 
 • pancake:
 
-	- Bit-packed states
+	- bit-packed states
 
 • geom:
 
@@ -70,3 +68,9 @@
 	- LSS-LRTA*
 
 	- EES
+
+• Data structures
+
+	- Red/black tree
+
+	- Skip list (compare with RB tree)

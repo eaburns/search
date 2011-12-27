@@ -84,31 +84,6 @@ struct Plat2d {
 		return heuclidean(s);
 	}
 
-	Cost heuclidean(State &s) {
-		static const double W = Tile::Width;
-		static const double H = Tile::Height;
-		const Point &loc = s.player.body.bbox.min;
-		Point topleft(gx * W, (gy-1) * H);
-		double min = Point::distance(loc, topleft);
-
-		Point botleft(gx * W, gy * H);
-		double d = Point::distance(loc, botleft);
-		if (d < min)
-			min = d;
-
-		Point topright((gx+1) * W, (gy-1) * H);
-		d = Point::distance(loc, topright);
-		if (d < min)
-			min = d;
-
-		Point botright((gx+1) * W, gy * H);
-		d = Point::distance(loc, botright);
-		if (d < min)
-			min = d;
-
-		return min;		
-	}
-
 	Cost d(State &s) {
 		return 0;
 	}
@@ -171,6 +146,54 @@ struct Plat2d {
 
 	unsigned int gx, gy;	// goal tile location
 	Lvl lvl;
+
+private:
+
+	// heuclidean computes the Euclidean distance of the center
+	// point of the player to the goal.  That is, if the player is level
+	// with the goal tile in the y direction or is level with it in the
+	// x direction and above it then the Euclidean distance to the
+	// nearest side is returned.  Otherwise, the minimum of the
+	// Euclidean distances from the player's center point to the four
+	// corners of the goal block is returned.
+	Cost heuclidean(State &s) {
+		static const double W = Tile::Width;
+		static const double H = Tile::Height;
+
+		const Lvl::Blkinfo &bi = lvl.majorblk(s.player.body.bbox);
+		if (bi.x == gx && bi.y == gy)
+			return 0;
+
+		const Point &loc = s.player.body.bbox.center();
+		if (bi.y == gy) {
+			if (bi.x < gy)
+				return Point::distance(loc, Point(gx * W, loc.y));
+			return Point::distance(loc, Point((gx + 1) * W, loc.y));
+		}
+
+		if (bi.x == gx && bi.y < gy)
+			return Point::distance(loc, Point(loc.x, (gy - 1) * H));
+
+		Point topleft(gx * W, (gy-1) * H);
+		double min = Point::distance(loc, topleft);
+
+		Point botleft(gx * W, gy * H);
+		double d = Point::distance(loc, botleft);
+		if (d < min)
+			min = d;
+
+		Point topright((gx+1) * W, (gy-1) * H);
+		d = Point::distance(loc, topright);
+		if (d < min)
+			min = d;
+
+		Point botright((gx+1) * W, gy * H);
+		d = Point::distance(loc, botright);
+		if (d < min)
+			min = d;
+
+		return min;		
+	}
 };
 
 // controlstr converts a vector of controls to an ASCII string.

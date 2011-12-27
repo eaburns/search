@@ -19,6 +19,8 @@ void Rectangle::draw(Image &img, Color c, double lwidth) const {
 	p->lineto(max.x, max.y);
 	p->lineto(max.x, min.y);
 	p->closepath();
+	if (lwidth < 0)
+		p->fill();
 	img.add(p);
 }
 

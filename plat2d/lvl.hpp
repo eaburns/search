@@ -7,22 +7,31 @@ struct Image;
 
 struct Lvl {
 
+	// This constructor creates an empty level.
 	Lvl(unsigned int, unsigned int);
 
+	// This constructor loads a level from a file.
 	Lvl(FILE*);
 
 	~Lvl(void);
 
+	// width returns the width of the level in number of blocks.
 	unsigned int width(void) const { return w; }
 
+	// height returns the height of the level in number of
+	// blocks.
 	unsigned int height(void) const { return h; }
 
+	// draw draws the level on an image.
 	void draw(Image&) const;
 
+	// isection returns intersection information for a bounding
+	// box moving at a given velocity through the level.
 	Isect isection(const Bbox&, const Point&) const;
 
 	struct Blk { unsigned int tile; };
 
+	// Blkinfo contains information on a specific level block.
 	struct Blkinfo {
 		Blkinfo(const Blk &b, unsigned int _x, unsigned int _y) :
 			blk(b), tile(tiles[b.tile]), x(_x), y(_y) { }
@@ -32,18 +41,23 @@ struct Lvl {
 		unsigned int x, y;
 	};
 
+	// blocked returns true if the level block at the given coordinate
+	// is collidable.
 	bool blocked(unsigned int x, unsigned int y) const {
 		return tiles[blks[ind(x, y)].tile].flags & Tile::Collide;
 	}
 
+	// at returns the block information structure for the
+	// level block at the given grid coordinate.
 	Blkinfo at(unsigned int x, unsigned int y) const {
 		return Blkinfo(blks[ind(x, y)], x, y);
 	}
 
+	// majorblk returns the block information struct for the level
+	// block that contains a majority of the rectangle.
 	Blkinfo majorblk(const Bbox &r) const {
-		double x = (r.max.x + r.min.x) / 2.0;
-		double y = (r.max.y + r.min.y) / 2.0;
-		return at(x / Tile::Width, y / Tile::Height);
+		const Point &c = r.center();
+		return at(c.x / Tile::Width, c.y / Tile::Height);
 	}
 
 private:
@@ -61,6 +75,5 @@ private:
 	}
 
 	unsigned int w, h;
-
 	Blk *blks;
 };
