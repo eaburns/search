@@ -55,10 +55,6 @@ bool test_encdec(void) {
 		return false;
 	}
 
-	FILE *f = fopen("bytes", "w");
-	fwrite(rl.c_str(), sizeof(char), rl.size(), f);
-	fclose(f);
-
 	std::string base64 = base64enc(rl);
 	std::string dec = base64dec(base64);
 	if (dec != rl) {
