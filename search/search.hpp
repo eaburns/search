@@ -148,7 +148,12 @@ public:
 
 	void pre_update(Node *n) { }
 
-	void post_update(Node *n) { heap.update(n->openind); }
+	void post_update(Node *n) {
+		if (n->openind < 0)
+			heap.push(n);
+		else
+			heap.update(n->openind);
+	}
 
 	bool empty(void) { return heap.empty(); }
 
@@ -199,12 +204,17 @@ public:
 	}
 
 	void pre_update(Node*n) {
+		if (n->openind < 0)
+			return;
 		assert ((unsigned long) Ops::prio(n) < qs.size());
 		qs[Ops::prio(n)].rm(n, Ops::tieprio(n));
 		fill--;
 	}
 
-	void post_update(Node *n) { push(n); }
+	void post_update(Node *n) {
+		assert (n->openind < 0);
+		push(n);
+	}
 
 	bool empty(void) { return fill == 0; }
 

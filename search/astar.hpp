@@ -97,16 +97,10 @@ private:
 				return;
 			}
 			SearchAlgorithm<D>::res.reopnd++;
-			if (open.mem(dup))
-				open.pre_update(dup);
-
+			open.pre_update(dup);
 			dup->f = dup->f - dup->g + k->g;
 			dup->update(*k);
-
-			if (!open.mem(dup))
-				open.push(dup);
-			else
-				open.post_update(dup);
+			open.post_update(dup);
 			nodes->destroy(k);
 		} else {
 			closed.add(k, h);
