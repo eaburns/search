@@ -101,7 +101,7 @@ struct VisNav {
 		fprintf(out, "%d\n", s.vert);
 	}
 
-	void save(const char*, std::vector<State> path = std::vector<State>()) const;
+	void save(const char*, std::vector<State> path = std::vector<State>());
 
 private:
 	double x0, y0, x1, y1;

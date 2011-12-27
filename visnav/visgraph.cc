@@ -123,12 +123,20 @@ void VisGraph::translate(double dx, double dy) {
 		verts[i].pt.translate(dx, dy);
 }
 
+unsigned int VisGraph::push(const Point &pt) {
+	unsigned int vid = verts.size();
+	verts.push_back(Vert(vid, pt));
+	for (unsigned int i = 0; i < vid; i++)
+		consideredge(i, vid);
+	return vid;
+}
+
 void VisGraph::build(void) {
-	popverts();
+	populateverts();
 	visedges();
 }
 
-void VisGraph::popverts(void) {
+void VisGraph::populateverts(void) {
 	for (unsigned int i = 0; i < polys.size(); i++) {
 		std::vector<unsigned int> vs = polys[i].reflexes();
 		unsigned int id0 = verts.size();
@@ -153,22 +161,25 @@ void VisGraph::popverts(void) {
 
 void VisGraph::visedges(void) {
 	for (unsigned int i = 0; i < verts.size() - 1; i++) {
-	for (unsigned int j = i + 1; j < verts.size(); j++) {
-		LineSeg ray(verts[i].pt, verts[j].pt);
-		double len = ray.length();
-
-		Point p0(ray.along(len * 1e-3));
-		if (i < polyno.size() && polys[polyno[i]].contains(p0))
-			continue;
-
-		Point p1(ray.along(len * (1 - 1e-3)));
-		if (j < polyno.size() && polys[polyno[j]].contains(p1))
-			continue;
-
-		if (isvisible(p0, p1))
-			addedge(i, j);
+	for (unsigned int j = i + 1; j < verts.size(); j++)
+		consideredge(i, j);
 	}
-	}
+}
+
+void VisGraph::consideredge(unsigned int i, unsigned int j) {
+	LineSeg ray(verts[i].pt, verts[j].pt);
+	double len = ray.length();
+
+	Point p0(ray.along(len * 1e-3));
+	if (i < polyno.size() && polys[polyno[i]].contains(p0))
+		return;
+
+	Point p1(ray.along(len * (1 - 1e-3)));
+	if (j < polyno.size() && polys[polyno[j]].contains(p1))
+		return;
+
+	if (isvisible(p0, p1))
+		addedge(i, j);
 }
 
 void VisGraph::addedge(unsigned int i, unsigned int j) {

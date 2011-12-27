@@ -8,8 +8,6 @@
 
 • visnav:
 
-	- implement add()
-
 	- grid2poly: detect outter bounding
 	polygon
 

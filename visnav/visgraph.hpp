@@ -37,7 +37,8 @@ struct VisGraph : public PolyMap {
 	// give x and y values.
 	void translate(double, double);
 
-	unsigned int add(double, double) { return -1; }
+	// push adds a vertex to the graph.
+	unsigned int push(const Point&);
 
 	struct Edge {
 		Edge(unsigned int s, unsigned int d, double c) :
@@ -73,11 +74,16 @@ private:
 
 	// popverts populates the vertex vector and
 	// adds edges between adjacent vertices.
-	void popverts(void);
+	void populateverts(void);
 
 	// visedges adds edges between each pair of
 	// vertices that are visible from eachother.
 	void visedges(void);
+
+	// consideredge considers adding an edge between
+	// the two vertices specified by their vertex IDs.
+	// If an edge should be added then it is.
+	void consideredge(unsigned int, unsigned int);
 
 	// addedge adds an edge between the two vertices
 	// with the given IDs.
