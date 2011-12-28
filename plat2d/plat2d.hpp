@@ -97,7 +97,8 @@ struct Plat2d {
  		// If jumping will have no effect then allow left, right and jump.
 		// This is a bit of a hack, but the 'jump' action that is allowed
 		// here will end up being a 'do nothing' and just fall action.
-		// Effectively, we prune off the left and right actions.
+		// Effectively, we prune off the jump/left and jump/right actions
+		// since they are the same as just doing left and right in this case.
 		if (!s.player.canjump())
 			return 3;
 		return Nops;
