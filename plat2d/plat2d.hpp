@@ -32,30 +32,20 @@ struct Plat2d {
 	};
 
 	struct PackedState {
-		// hash does nothing since the hash table
-		// for plat2d states doesn't store anything.
 		unsigned long hash(void) {
-			unsigned int ix = x * 1e5;
-			unsigned int iy = y * 1e5;
-			unsigned int idy = dy * 1e5;
-
-			static const unsigned int sz = sizeof(ix) +
-				sizeof(iy) + sizeof(idy) + sizeof(jframes);
+			static const unsigned int sz = sizeof(x) +
+				sizeof(y) + sizeof(dy) + sizeof(jframes);
 			unsigned char bytes[sz];
-
 			unsigned int i = 0;
-			for (unsigned int j = 0; j < sizeof(ix); j++) {
-				bytes[i++] = ix & 0xFF;
-				ix >>= 8;
-			}
-			for (unsigned int j = 0; j < sizeof(iy); j++) {
-				bytes[i++] = iy & 0xFF;
-				iy >>= 8;
-			}
-			for (unsigned int j = 0; j < sizeof(idy); j++) {
-				bytes[i++] = idy & 0xFF;
-				idy >>= 8;
-			}
+			char *p = (char*) &x;
+			for (unsigned int j = 0; j < sizeof(x); j++)
+				bytes[i++] = p[j];
+			p = (char*) &y;
+			for (unsigned int j = 0; j < sizeof(y); j++)
+				bytes[i++] = p[j];
+			p = (char*) &dy;
+			for (unsigned int j = 0; j < sizeof(dy); j++)
+				bytes[i++] = p[j];
 			bytes[i++] = jframes;
 			assert (i <= sz);
 			return hashbytes(bytes, i);

@@ -67,6 +67,9 @@ Isect Lvl::isection(const Bbox &r, const Point &v) const {
 	Isect isect;
 	Bbox mv(r);
 
+	if (v.y == 0.0)
+		goto testx;
+
 	mv.translate(0, v.y);
 	for (unsigned int x = test.x0; x <= test.x1; x++) {
 	for (unsigned int y = test.y0; y <= test.y1; y++) {
@@ -79,6 +82,7 @@ Isect Lvl::isection(const Bbox &r, const Point &v) const {
 	}
 	}
 
+testx:
 	if (v.x == 0.0)
 		return isect;
 
