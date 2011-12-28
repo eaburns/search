@@ -17,6 +17,7 @@ tiles/15md_solver: $(TILESSRC) tiles/main_mdist.cc\
 	$(CXX) $(CXXFLAGS) $(TILESSRC) tiles/main_mdist.cc utils/utils.a structs/structs.a search/search.a $(LDFLAGS) $(DEFS15) -o $@
 
 CLEAN+=tiles/15md_solver
+include tiles/main_mdist.d
 
 tiles/15pdbgen: tiles/pdbgen.d
 tiles/15pdbgen: $(TILESSRC) tiles/pdbgen.cc utils/utils.a 
