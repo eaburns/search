@@ -75,7 +75,7 @@ struct Plat2d {
 	}
 
 	Cost d(State &s) {
-		return 0;
+		return deuclidean(s);
 	}
 
 	bool isgoal(State &s) {
@@ -152,6 +152,35 @@ private:
 	Cost heuclidean(State &s) {
 		static const double W = Tile::Width;
 		static const double H = Tile::Height;
+
+		const Lvl::Blkinfo &bi = lvl.majorblk(s.player.body.bbox);
+		if (bi.x == gx && bi.y == gy)
+			return 0;
+
+		const Point &loc = s.player.body.bbox.center();
+		Point goal;
+		if (bi.y == gy)
+			goal.y = loc.y;
+		else if (bi.y < gy)
+			goal.y = (gy - 1) * H;
+		else
+			goal.y = gy * H;
+		if (bi.x == gx)
+			goal.x = loc.x;
+		else if (bi.x < gx)
+			goal.x = gx * W;
+		else
+			goal.x = (gx + 1) * W;
+
+		return Point::distance(loc, goal);		
+	}
+
+	Cost deuclidean(State &s) {
+		static const double W = Tile::Width / Player::runspeed();
+		static const double H =
+			Tile::Height / Player::jmpspeed() > Tile::Height / Body::Maxdy ?
+				Tile::Height / Player::jmpspeed() :
+				Tile::Height / Body::Maxdy;
 
 		const Lvl::Blkinfo &bi = lvl.majorblk(s.player.body.bbox);
 		if (bi.x == gx && bi.y == gy)

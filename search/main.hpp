@@ -22,6 +22,7 @@ template<class D> Result<D> search(D &d, int argc, const char *argv[]) {
 
 	typename D::State s0 = d.initialstate();
 	dfpair(stdout, "initial heuristic", "%g", (double) d.h(s0));
+	dfpair(stdout, "initial distance", "%g", (double) d.d(s0));
 	dfpair(stdout, "algorithm", argv[1]);
 
 	Result<D> res = srch->search(d, s0);
