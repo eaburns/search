@@ -158,34 +158,21 @@ private:
 			return 0;
 
 		const Point &loc = s.player.body.bbox.center();
-		if (bi.y == gy) {
-			if (bi.x < gy)
-				return Point::distance(loc, Point(gx * W, loc.y));
-			return Point::distance(loc, Point((gx + 1) * W, loc.y));
-		}
+		Point goal;
+		if (bi.y == gy)
+			goal.y = loc.y;
+		else if (bi.y < gy)
+			goal.y = (gy - 1) * H;
+		else
+			goal.y = gy * H;
+		if (bi.x == gx)
+			goal.x = loc.x;
+		else if (bi.x < gx)
+			goal.x = gx * W;
+		else
+			goal.x = (gx + 1) * W;
 
-		if (bi.x == gx && bi.y < gy)
-			return Point::distance(loc, Point(loc.x, (gy - 1) * H));
-
-		Point topleft(gx * W, (gy-1) * H);
-		double min = Point::distance(loc, topleft);
-
-		Point botleft(gx * W, gy * H);
-		double d = Point::distance(loc, botleft);
-		if (d < min)
-			min = d;
-
-		Point topright((gx+1) * W, (gy-1) * H);
-		d = Point::distance(loc, topright);
-		if (d < min)
-			min = d;
-
-		Point botright((gx+1) * W, gy * H);
-		d = Point::distance(loc, botright);
-		if (d < min)
-			min = d;
-
-		return min;		
+		return Point::distance(loc, goal);		
 	}
 };
 
