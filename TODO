@@ -1,6 +1,3 @@
-• Fix searches so that heuristics don't get computed
-	on duplicate states.
-
 • lots of benchmarks
 
 • plat2d:

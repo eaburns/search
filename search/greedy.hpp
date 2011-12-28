@@ -76,38 +76,33 @@ private:
 			Oper op = d.nthop(state, i);
 			if (op == n->pop)
 				continue;
-			Node *k = kid(d, n, state, op);
 			SearchAlgorithm<D>::res.gend++;
-
-			considerkid(d, k);
+			considerkid(d, n, state, op);
 		}
 	}
 
-	void considerkid(D &d, Node *k) {
+	void considerkid(D &d, Node *pnode, State &pstate, Oper op) {
+		Node *k = nodes->construct();
+		k->op = op;
+		k->pop = d.revop(pstate, op);
+		k->parent = pnode;
+		Undo u(pstate, op);
+		State buf, &kstate = d.apply(buf, pstate, k->g, op);
+		k->g += pnode->g;
+		d.pack(k->packed, kstate);
+
 		unsigned long h = k->packed.hash();
 		SearchNode<D> *dup = closed.find(k->packed, h);
 		if (dup) {
+			d.undo(pstate, u);
 			SearchAlgorithm<D>::res.dups++;
 			nodes->destroy(k);
 		} else {
+			k->h = speedy ? d.d(kstate) : d.h(kstate);
+			d.undo(pstate, u);
 			closed.add(k, h);
 			open.push(k);
 		}
-	}
-
-	Node *kid(D &d, Node *pnode, State &pstate, Oper op) {
-		Node *kid = nodes->construct();
-		kid->op = op;
-		kid->pop = d.revop(pstate, op);
-		kid->parent = pnode;
-		Undo u(pstate, op);
-		State buf, &kidst = d.apply(buf, pstate, kid->g, op);
-		kid->g += pnode->g;
-		kid->h = speedy ? d.d(kidst) : d.h(kidst);
-		d.pack(kid->packed, kidst);
-		d.undo(pstate, u);
-
-		return kid;
 	}
 
 	Node *init(D &d, State &s0) {
