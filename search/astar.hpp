@@ -110,7 +110,7 @@ private:
 		} else {
 			k->f = k->g + d.h(kstate);
 			d.undo(pstate, u);
-			dup->update(k->g, pnode, op, d.revop(pstate, op));
+			k->update(k->g, pnode, op, d.revop(pstate, op));
 			closed.add(k, h);
 			open.push(k);
 		}

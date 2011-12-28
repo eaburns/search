@@ -122,7 +122,7 @@ private:
 			k->f = k->g + h;
 			k->fprime = k->g + wt * h;
 			d.undo(pstate, u);
-			dup->update(k->g, pnode, op, d.revop(pstate, op));
+			k->update(k->g, pnode, op, d.revop(pstate, op));
 			closed.add(k, h);
 			open.push(k);
 		}
