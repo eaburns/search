@@ -40,6 +40,19 @@ public:
 		pushdown(i);
 	}
 
+	// pushupdate either pushes the element or updates it's
+	// position in the queue, given the element and i, it's
+	// index value.  Note that the index value must be tracked
+	// properly, i.e., i < 0 means that the element is not in
+	// the priority queue and i  >= 0 means that the element
+	// is at the given index.
+	void pushupdate(Elm e, long i) {
+		if (i  < 0)
+			push(e);
+		else
+			update(i);
+	}
+
 	bool empty(void) {
 		return heap.empty();
 	}

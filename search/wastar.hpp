@@ -97,9 +97,6 @@ private:
 
 	void considerkid(D &d, Node *pnode, State &pstate, Oper op) {
 		Node *k = nodes->construct();
-		k->op = op;
-		k->pop = d.revop(pstate, op);
-		k->parent = pnode;
 		Undo u(pstate, op);
 		State buf, &kstate = d.apply(buf, pstate, k->g, op);
 		k->g += pnode->g;
@@ -115,21 +112,17 @@ private:
 				return;
 			}
 			SearchAlgorithm<D>::res.reopnd++;
-
 			dup->fprime = dup->fprime - dup->g + k->g;
 			dup->f = dup->f - dup->g + k->g;
-			dup->update(*k);
-
-			if (dup->openind < 0)
-				open.push(dup);
-			else
-				open.update(dup->openind);
+			dup->update(k->g, pnode, op, d.revop(pstate, op));
+			open.pushupdate(dup, dup->openind);
 			nodes->destroy(k);
 		} else {
 			double h = d.h(kstate);
 			k->f = k->g + h;
 			k->fprime = k->g + wt * h;
 			d.undo(pstate, u);
+			dup->update(k->g, pnode, op, d.revop(pstate, op));
 			closed.add(k, h);
 			open.push(k);
 		}

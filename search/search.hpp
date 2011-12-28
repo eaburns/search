@@ -126,6 +126,16 @@ public:
 		op = other.op;
 		pop = other.pop;
 	}
+
+	// update updates the corresponding fields of the given node.
+	void update(const typename D::Cost &_g, SearchNode *_parent,
+			const typename D::Oper &_op,
+			const typename D::Oper &_pop) {
+		g = _g;
+		parent = _parent;
+		op = _op;
+		pop = _pop;
+	}
 };
 
 // An OpenList holds nodes and returns them ordered by some

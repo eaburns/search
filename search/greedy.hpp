@@ -83,9 +83,6 @@ private:
 
 	void considerkid(D &d, Node *pnode, State &pstate, Oper op) {
 		Node *k = nodes->construct();
-		k->op = op;
-		k->pop = d.revop(pstate, op);
-		k->parent = pnode;
 		Undo u(pstate, op);
 		State buf, &kstate = d.apply(buf, pstate, k->g, op);
 		k->g += pnode->g;
@@ -100,6 +97,7 @@ private:
 		} else {
 			k->h = speedy ? d.d(kstate) : d.h(kstate);
 			d.undo(pstate, u);
+			k->update(k->g, pnode, op, d.revop(pstate, op));
 			closed.add(k, h);
 			open.push(k);
 		}
