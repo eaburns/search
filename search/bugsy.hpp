@@ -1,7 +1,7 @@
 // Best-first Utility-Guided Search Yes! From:
-//"Best-first Utility-Guided Search," Wheeler Ruml and Minh B. Do,
-//Proceedings of the Twentieth International Joint Conference on
-//Artificial Intelligence (IJCAI-07), 2007
+// "Best-first Utility-Guided Search," Wheeler Ruml and Minh B. Do,
+// Proceedings of the Twentieth International Joint Conference on
+// Artificial Intelligence (IJCAI-07), 2007
 
 #include "../search/search.hpp"
 #include "../structs/binheap.hpp"
