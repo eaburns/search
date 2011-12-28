@@ -2,6 +2,8 @@
 
 • plat2d:
 
+	- why are there so many duplicates?
+
 	- heuristic: vis graph but
 	don't allow vertical > max
 	jump frames

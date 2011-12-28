@@ -10,19 +10,19 @@ gridnav: gridnav/scenario_solver gridnav/gridnav_solver gridnav/2poly
 
 EVERYTHING+=gridnav
 
-gridnav/scenario_solver: $(GRIDNAVOBJS) gridnav/scenario_main.o\
+gridnav/scenario_solver: $(GRIDNAVOBJS) gridnav/main_scenario.o\
 	utils/utils.a structs/structs.a search/search.a
 	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
 
-include gridnav/scenario_main.d
-CLEAN+=gridnav/scenario_solver gridnav/scenario_main.o
+include gridnav/main_scenario.d
+CLEAN+=gridnav/scenario_solver gridnav/main_scenario.o
 
-gridnav/gridnav_solver: $(GRIDNAVOBJS) gridnav/gridnav_main.o\
+gridnav/gridnav_solver: $(GRIDNAVOBJS) gridnav/main_gridnav.o\
 	utils/utils.a structs/structs.a search/search.a
 	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
 
-include gridnav/gridnav_main.d
-CLEAN+=gridnav/gridnav_solver gridnav/gridnav_main.o
+include gridnav/main_gridnav.d
+CLEAN+=gridnav/gridnav_solver gridnav/main_gridnav.o
 
 gridnav/2poly: $(GRIDNAVOBJS) gridnav/2poly.cc visnav/visgraph.a\
 	utils/utils.a structs/structs.a search/search.a
