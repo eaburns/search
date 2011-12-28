@@ -1,4 +1,4 @@
-• Fix A* so that heuristics don't get computed
+• Fix searches so that heuristics don't get computed
 	on duplicate states.
 
 • lots of benchmarks
