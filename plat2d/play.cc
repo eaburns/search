@@ -20,6 +20,8 @@ static std::vector<unsigned int> controls;
 
 SDL_Surface *screen;
 Point tr(0, 0);
+Player p(2 * Tile::Width + Player::Offx, 2 * Tile::Height + Player::Offy,
+		Player::Width, Player::Height);
 
 static void parseargs(int, const char*[]);
 static void helpmsg(int);
@@ -39,9 +41,6 @@ int main(int argc, const char *argv[]) {
 	parseargs(argc, argv);
 	Lvl *lvl = getlvl();
 	initsdl();
-
-	Player p(2 * Tile::Width + Player::Offx, 2 * Tile::Height + Player::Offy,
-		Player::Width, Player::Height);
 
 	SDL_Delay(delay);
 

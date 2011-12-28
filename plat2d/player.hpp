@@ -42,6 +42,10 @@ struct Player {
 
 	static double jmpspeed(void) { return 7.0 + Dex / 5.0; }
 
+	// canjump returns true if the jump action can
+	// actually do anything.
+	bool canjump(void) const;
+
 	Body body;
 	unsigned char jframes;
 
