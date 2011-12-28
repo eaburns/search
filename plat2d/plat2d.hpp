@@ -109,10 +109,6 @@ struct Plat2d {
 	}
 
 	Oper revop(State &s, Oper op) {
-		if (op == Player::Left)
-			return Player::Right;
-		if (op == Player::Right)
-			return Player::Left;
 		return Nop;
 	}
 
