@@ -307,6 +307,8 @@ template <class D> struct Result : public SearchStats {
 	// the given goal node.
 	void goal(D &d, SearchNode<D> *goal) {
 		cost = goal->g;
+		ops.clear();
+		path.clear();
 		for (SearchNode<D> *n = goal; n; n = n->parent) {
 			typename D::State buf, &state = d.unpack(buf, n->packed);
 			path.push_back(state);
