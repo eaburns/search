@@ -29,7 +29,7 @@ long Rand::integer(long min, long max)
 	if (min == max)
 		return min;
 	
-	return bits() % (max - min) + min;
+	return bits() % ((max+1) - min) + min;
 }
 
 double Rand::real(void) {

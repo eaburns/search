@@ -23,7 +23,7 @@ public:
 			if (b != other.b)
 				return false;
 			for (unsigned int i = 0; i < Ntiles; i++) {
-				if (ts[i] != other.ts[i])
+				if (ts[i] != other.ts[i] && i != b)
 					return false;
 			}
 			return true;

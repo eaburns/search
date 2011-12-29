@@ -52,7 +52,6 @@ template <class D> struct Astar : public SearchAlgorithm<D> {
 			expand(d, n, state);
 		}
 		SearchAlgorithm<D>::res.finish();
-
 		return SearchAlgorithm<D>::res;
 	}
 

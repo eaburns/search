@@ -41,6 +41,7 @@ template<> class PackedTiles<16> {
 	boost::uint64_t word;
 	enum { Ntiles = 16 };
 public:
+
 	void pack(Tiles::Tile ts[]) {
 		for (int i = 0; i < Ntiles; i++)
 			word = (word << 4) | ts[i];

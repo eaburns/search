@@ -48,7 +48,7 @@
 	- Robot arm
 
 	- Multiple sequence
-	alignment
+	[alignment
 
 	- Roadmap path finding
 
@@ -63,8 +63,6 @@
 	- ARA* monitoring
 
 	- DTA*
-
-	- RTA*
 
 	- LSS-LRTA*
 

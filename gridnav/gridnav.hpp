@@ -5,6 +5,7 @@
 #include <cstdio>
 #include <cmath>
 #include <cstdlib>
+#include <cstring>
 
 class GridNav {
 public:
@@ -25,8 +26,18 @@ public:
 		unsigned int loc;
 		int nops;
 		Oper ops[8];
+
 	public:
-		State(void) : nops(-1) { }
+
+		State &operator=(const State &o) {
+ 			loc = o.loc;
+			nops = -1;
+ 			return *this;
+		}
+
+		State (const State &o) : loc(o.loc), nops(-1) { }
+
+		State(void) :nops(-1) { /* memset(ops, 0, sizeof(ops)); */ }
 	};
 
 	struct PackedState {

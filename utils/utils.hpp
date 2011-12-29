@@ -1,3 +1,6 @@
+#ifndef _UTILS_HPP_
+#define _UTILS_HPP_
+
 #include <cstdio>
 #include <stdint.h>
 #include <string>
@@ -168,7 +171,7 @@ public:
 	unsigned long bits(void);
 
 	// integer returns a pseudo-random integer between min
-	// and max. (not sure if it's inclusive or exclusive)
+	// and max, inclusive.
 	long integer(long min, long max);
 
 	// real returns the a pseudo-random double between
@@ -283,3 +286,5 @@ private:
 	Djset *parent;
 	unsigned int rank;
 };
+
+#endif	// _UTILS_HPP_

@@ -39,7 +39,7 @@ template<class Ops, class Node> struct ClosedList<Ops, Node, GridNav> {
 		nodes[h] = n;
 	}
 
-	Node *find(PackedState &k) { find(k, k.loc); }
+	Node *find(PackedState &k) { return find(k, k.loc); }
 
 	Node *find(PackedState &k, unsigned long h) {
 		assert(h < len);
