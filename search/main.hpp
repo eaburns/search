@@ -5,6 +5,7 @@
 #include "greedy.hpp"
 #include "bugsy.hpp"
 #include "arastar.hpp"
+#include "rtastar.hpp"
 #include <cstddef>
 #include <cstdio>
 
@@ -52,6 +53,8 @@ template<class D> SearchAlgorithm<D> *getsearch(int argc, const char *argv[]) {
 		return new Bugsy<D>(argc, argv);
 	else if (strcmp(argv[1], "arastar") == 0)
 		return new Arastar<D>(argc, argv);
+	else if (strcmp(argv[1], "rtastar") == 0)
+		return new Rtastar<D>(argc, argv);
 
 	fatal("Unknown algorithm: %s", argv[1]);
 	return NULL;	// Unreachable

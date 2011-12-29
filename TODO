@@ -2,7 +2,8 @@
 
 • plat2d:
 
-	- why are there so many duplicates?
+	- why are there so many
+	duplicates?
 
 	- heuristic: vis graph but
 	don't allow vertical > max
@@ -10,10 +11,11 @@
 
 • visnav:
 
-	- grid2poly: detect outter bounding
-	polygon
+	- grid2poly: detect outter
+	bounding polygon
 
-	- allow a bounding outter polygon
+	- allow a bounding outter
+	polygon
 
 	- specific closed list
 
@@ -45,7 +47,8 @@
 
 	- Robot arm
 
-	- Multiple sequence alignment
+	- Multiple sequence
+	alignment
 
 	- Roadmap path finding
 
@@ -71,4 +74,5 @@
 
 	- Red/black tree
 
-	- Skip list (compare with RB tree)
+	- Skip list (compare with RB
+	tree)

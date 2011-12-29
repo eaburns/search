@@ -7,8 +7,6 @@
 #include "../structs/binheap.hpp"
 #include <boost/pool/object_pool.hpp>
 
-void fatal(const char*, ...);	// utils.hpp
-
 template <class D> struct Bugsy : public SearchAlgorithm<D> {
 	typedef typename D::State State;
 	typedef typename D::PackedState PackedState;
