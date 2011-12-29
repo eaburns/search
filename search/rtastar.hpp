@@ -48,21 +48,19 @@ template <class D> struct Rtastar : public SearchAlgorithm<D> {
 		SearchAlgorithm<D>::res.start();
 		seen.init(d);
 		Current cur(s0, D::Nop, D::Nop, 0, d.h(s0));
-		Cost *curh = see(d, cur.state, cur.f);
+		Cost *curh = storenode(d, cur.state, cur.f);
 		SearchAlgorithm<D>::res.cost = 0;
 		SearchAlgorithm<D>::res.path.push_back(cur.state);
 
 		while (!d.isgoal(cur.state) && !SearchAlgorithm<D>::limit()) {
-			Cost sndf;
-			std::vector<Current> bests = bestkids(d, cur, sndf);
+			std::vector<Current> bests = bestkids(d, cur, *curh);
 			if (bests.size() == 0)
 				break;	// deadend;
-			*curh = sndf;
 			cur = bests.at(randgen.integer(0, bests.size()-1));
 			SearchAlgorithm<D>::res.cost += cur.edgecost;
 			SearchAlgorithm<D>::res.path.push_back(cur.state);
 			SearchAlgorithm<D>::res.ops.push_back(cur.op);
-			curh = see(d, cur.state, cur.f);
+			curh = storenode(d, cur.state, cur.f);
 		}
 
 		SearchAlgorithm<D>::res.finish();
@@ -85,6 +83,8 @@ template <class D> struct Rtastar : public SearchAlgorithm<D> {
 
 private:
 
+	// bestkids returns a vector of all of the successors that have the
+	// best f value.
 	std::vector<Current> bestkids(D &d, Current &cur, Cost &sndf) {
 		sndf = D::InfCost;
 		std::vector<Current> bests;
@@ -134,23 +134,16 @@ private:
 			nodes->destroy(n);
 			return dup->h;
 		}
-		n->h = lookahead(d, cur, pop);
+		Cost alpha = D::InfCost;
+		n->h = look(d, cur, alpha, pop, 0, nlook);
 		seen.add(n, hash);
 		return n->h;
 	}
 
-	// lookahead performs minimin lookahead beneath
-	// the given node.
-	Cost lookahead(D &d, State &cur, Oper pop) {
-		Cost alpha = D::InfCost;
-		return look(d, cur, alpha, pop, 0, nlook);
-	}
-
-	// look returns the lookahead cost.  This performs a
-	// minimin depth-first search for no more than 'left'
-	// nodes.
-	Cost look(D &d, State &cur, Cost &alpha, Oper pop, Cost cost, unsigned int left) {
-		Cost f = d.h(cur) + cost;
+	// look returns the lookahead cost via a depth-limited,
+	// alpha pruned, depth-first search.
+	Cost look(D &d, State &cur, Cost &alpha, Oper pop, Cost g, unsigned int left) {
+		Cost f = d.h(cur) + g;
 		if (left == 0 || !better(f, alpha) || d.isgoal(cur)) {
 			if (better(f, alpha))
 				alpha = f;
@@ -169,7 +162,7 @@ private:
 			Oper rev = d.revop(cur, op);
 			Cost edgecost;
 			State buf, &kid = d.apply(buf, cur, edgecost, op);
-			f = look(d, kid, alpha, rev, cost + edgecost, left-1);
+			f = look(d, kid, alpha, rev, g + edgecost, left-1);
 			d.undo(cur, u);
 			if (better(f, bestf))
 				bestf = f;
@@ -178,12 +171,11 @@ private:
 		return bestf;	
 	}
 
-	// see marks the node as seen if it is not already in
-	// the seen list.  The return value is a pointer to the
-	// stored heuristic value for this node so that it
-	// may be update at a later time without requiring
-	// another hash table lookup. 
-	Cost *see(D &d, State &cur, Cost h) {
+	// storenode marks the node as seen if it is not already
+	// in the seen list and returns a pointer to the stored
+	// heuristic value.  This pointer can be used to update
+	// the value of this node without looking it up again.
+	Cost *storenode(D &d, State &cur, Cost h) {
 		Node *n = nodes->construct();
 		d.pack(n->packed, cur);
 		unsigned long hash = n->packed.hash();
