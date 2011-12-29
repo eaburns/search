@@ -11,6 +11,8 @@
 
 • visnav:
 
+	- verify solution paths
+
 	- grid2poly: detect outter
 	bounding polygon
 
@@ -20,6 +22,8 @@
 	- specific closed list
 
 • gridnav:
+
+	- verify solution paths
 
 	- make sure that the size of
 	grids doesn't overflow the
@@ -34,6 +38,8 @@
 	- use PDBs for search
 
 • pancake:
+
+	- verify solution paths
 
 	- bit-packed states
 

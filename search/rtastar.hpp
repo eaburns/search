@@ -1,5 +1,6 @@
 #include "../search/search.hpp"
 #include "../utils/utils.hpp"
+#include <algorithm>
 
 template <class D> struct Rtastar : public SearchAlgorithm<D> {
 	typedef typename D::State State;
@@ -58,12 +59,20 @@ template <class D> struct Rtastar : public SearchAlgorithm<D> {
 				break;	// deadend;
 			cur = bests.at(randgen.integer(0, bests.size()-1));
 			SearchAlgorithm<D>::res.cost += cur.edgecost;
-			SearchAlgorithm<D>::res.path.push_back(cur.state);
 			SearchAlgorithm<D>::res.ops.push_back(cur.op);
+			SearchAlgorithm<D>::res.path.push_back(cur.state);
 			curh = storenode(d, cur.state, cur.f);
 		}
 
 		SearchAlgorithm<D>::res.finish();
+
+		// Reverse the path and operators since all other
+		// search algorithms build them in reverse.
+		std::reverse(SearchAlgorithm<D>::res.ops.begin(),
+			SearchAlgorithm<D>::res.ops.end());
+		std::reverse(SearchAlgorithm<D>::res.path.begin(),
+			SearchAlgorithm<D>::res.path.end());
+		
 		return SearchAlgorithm<D>::res;
 	}
 
