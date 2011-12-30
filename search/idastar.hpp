@@ -9,7 +9,6 @@ template <class D> class Idastar : public SearchAlgorithm<D> {
 public:
 
 	typedef typename D::State State;
-	typedef typename D::Undo Undo;
 	typedef typename D::Cost Cost;
 	typedef typename D::Oper Oper;
 
@@ -64,13 +63,15 @@ private:
 				continue;
 
 			SearchAlgorithm<D>::res.gend++;
-
-			Undo u(s, op);
-			Oper rev = d.revop(s, op);
-			Cost c;
-			State buf, &kid = d.apply(buf, s, c, op);
-			bool goal = dfs(d, kid, rev, g + c);
-			d.undo(s, u);
+			bool goal = false;
+			{	// Put the transition in a new scope so that
+				// it is destructed before we test for a goal.
+				// If a goal was found then we want the
+				// transition reverted so that we may push
+				// the parent state onto the path.
+				typename D::Transition tr(d, s, op);
+				goal = dfs(d, tr.state, tr.revop, g + tr.cost);
+			}
 
 			if (goal) {
 				SearchAlgorithm<D>::res.path.push_back(s);

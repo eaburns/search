@@ -10,7 +10,6 @@
 template <class D> struct Bugsy : public SearchAlgorithm<D> {
 	typedef typename D::State State;
 	typedef typename D::PackedState PackedState;
-	typedef typename D::Undo Undo;
 	typedef typename D::Cost Cost;
 	typedef typename D::Oper Oper;
 
@@ -117,37 +116,34 @@ private:
 		}
 	}
 
-	void considerkid(D &d, Node *pnode, State &pstate, Oper op) {
-		Node *k = nodes->construct();
-		Undo u(pstate, op);
-		State buf, &kstate = d.apply(buf, pstate, k->g, op);
-		k->g += pnode->g;
-		d.pack(k->packed, kstate);
+	void considerkid(D &d, Node *parent, State &state, Oper op) {
+		Node *kid = nodes->construct();
+		typename D::Transition tr(d, state, op);
+		kid->g = parent->g + tr.cost;
+		d.pack(kid->packed, tr.state);
 
-		unsigned long h = k->packed.hash();
-		Node *dup = static_cast<Node*>(closed.find(k->packed, h));
+		unsigned long hash = kid->packed.hash();
+		Node *dup = static_cast<Node*>(closed.find(kid->packed, hash));
 		if (dup) {
-			d.undo(pstate, u);
 			SearchAlgorithm<D>::res.dups++;
-			if (k->g >= dup->g) {
-				nodes->destroy(k);
+			if (kid->g >= dup->g) {
+				nodes->destroy(kid);
 				return;
 			}
 			SearchAlgorithm<D>::res.reopnd++;
-			dup->f = dup->f - dup->g + k->g;
-			dup->update(k->g, pnode, op, d.revop(pstate, op));
+			dup->f = dup->f - dup->g + kid->g;
+			dup->update(kid->g, parent, op, tr.revop);
 			computeutil(dup);
 			open.pushupdate(dup, dup->openind);
-			nodes->destroy(k);
+			nodes->destroy(kid);
 		} else {
-			k->d = d.d(kstate);
-			k->h = d.h(kstate);
-			k->f = k->g + k->h;
-			d.undo(pstate, u);
-			k->update(k->g, pnode, op, d.revop(pstate, op));
-			computeutil(k);
-			closed.add(k, h);
-			open.push(k);
+			kid->d = d.d(tr.state);
+			kid->h = d.h(tr.state);
+			kid->f = kid->g + kid->h;
+			kid->update(kid->g, parent, op, tr.revop);
+			computeutil(kid);
+			closed.add(kid, hash);
+			open.push(kid);
 		}
 	}
 

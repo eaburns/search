@@ -5,7 +5,6 @@
 template <class D> struct Rtastar : public SearchAlgorithm<D> {
 	typedef typename D::State State;
 	typedef typename D::PackedState PackedState;
-	typedef typename D::Undo Undo;
 	typedef typename D::Cost Cost;
 	typedef typename D::Oper Oper;
 
@@ -24,12 +23,14 @@ template <class D> struct Rtastar : public SearchAlgorithm<D> {
 	};
 
 	Rtastar(int argc, const char *argv[]) :
-			SearchAlgorithm<D>(argc, argv), nlook(0),
+			SearchAlgorithm<D>(argc, argv), nlook(-1),
 			seen(30000001) {
 		for (int i = 1; i < argc; i++) {
-			if (i < argc - 1 && strcmp(argv[i], "-n") == 0)
-				nlook = strtoul(argv[++i], NULL, 10);
+			if (i < argc - 1 && strcmp(argv[i], "-d") == 0)
+				nlook = strtol(argv[++i], NULL, 10);
 		}
+		if (nlook < 0)
+			fatal("Must specify -d ≥ 0, the lookahead depth");
 		nodes = new boost::object_pool<Node>();
 	}
 
@@ -105,26 +106,21 @@ private:
 				continue;
 
 			SearchAlgorithm<D>::res.gend++;
-			Undo u(cur.state, op);
-			Cost cost;
-			Oper rev = d.revop(cur.state, op);
-			State buf, &kid = d.apply(buf, cur.state, cost, op);
-			Cost h = heuristic(d, kid, rev);
-			Cost f = h == D::InfCost ? h : h + cost;
+			typename D::Transition tr(d, cur.state, op);
+			Cost h = heuristic(d, tr.state, tr.revop);
+			Cost f = h == D::InfCost ? h : h + tr.cost;
 
 			if (bests.empty() || better(f, bests[0].f)) {
 				if (!bests.empty())
 					sndf = bests[0].f;
 				bests.clear();
-				bests.push_back(Current(kid, op, rev, cost, f));
+				bests.push_back(Current(tr.state, op, tr.revop, tr.cost, f));
 			} else if (bests[0].f == f) {
 				assert (!bests.empty());
-				bests.push_back(Current(kid, op, rev, cost, f));
+				bests.push_back(Current(tr.state, op, tr.revop, tr.cost, f));
 			} else if (better(f, sndf)) {
 				sndf = f;
 			}
-
-			d.undo(cur.state, u);
 		}
 
 		return bests;
@@ -151,9 +147,9 @@ private:
 
 	// look returns the lookahead cost via a depth-limited,
 	// alpha pruned, depth-first search.
-	Cost look(D &d, State &cur, Cost &alpha, Oper pop, Cost g, unsigned int left) {
-		Cost f = d.h(cur) + g;
-		if (left == 0 || !better(f, alpha) || d.isgoal(cur)) {
+	Cost look(D &d, State &state, Cost &alpha, Oper pop, Cost g, unsigned int left) {
+		Cost f = d.h(state) + g;
+		if (left == 0 || !better(f, alpha) || d.isgoal(state)) {
 			if (better(f, alpha))
 				alpha = f;
 			return f;
@@ -161,18 +157,14 @@ private:
 
 		SearchAlgorithm<D>::res.expd++;
 		Cost bestf = D::InfCost;
-		for (unsigned int n = 0; n < d.nops(cur); n++) {
-			Oper op = d.nthop(cur, n);
+		for (unsigned int n = 0; n < d.nops(state); n++) {
+			Oper op = d.nthop(state, n);
 			if (op == pop)
 				continue;
 
 			SearchAlgorithm<D>::res.gend++;
-			Undo u(cur, op);
-			Oper rev = d.revop(cur, op);
-			Cost edgecost;
-			State buf, &kid = d.apply(buf, cur, edgecost, op);
-			f = look(d, kid, alpha, rev, g + edgecost, left-1);
-			d.undo(cur, u);
+			typename D::Transition tr(d, state, op);
+			f = look(d, tr.state, alpha, tr.revop, g + tr.cost, left-1);
 			if (better(f, bestf))
 				bestf = f;
 		}
@@ -206,7 +198,7 @@ private:
 		return b == D::InfCost || (a != D::InfCost && a < b);
 	}
 
-	unsigned int nlook;
+	int nlook;
 	ClosedList<Node, Node, D> seen;
 	boost::object_pool<Node> *nodes;
 };

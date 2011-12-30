@@ -52,15 +52,6 @@ public:
 		Cost h;
 	};
 
-	class Undo {
-	public:
-		Undo(State &s, Oper o) : op(o), h(s.h) { }
-	private:
-		friend class Pancake;
-		Oper op;
-		Cost h;
-	};
-
 	typedef State PackedState;
 
 	Pancake(FILE*);
@@ -87,28 +78,31 @@ public:
 		return n + 1;
 	}
 
-	Oper revop(State &s, Oper op) {
-		return op;
-	}
+	struct Transition {
+		Cost cost;
+		Oper revop;
+		State &state;
 
-	void undo(State &s, Undo &u) {
-		s.h = u.h;
-		s.flip(u.op);
-	}
+		Transition(Pancake &d, State &s, Oper op) :
+				cost(1), revop(op), state(s), oldh(s.h) {
+			bool wasgap = gap(state.cakes, op);
+			state.flip(op);
 
-	State &apply(State &buf, State &s, Cost &c, Oper op) {
-		c = 1;
-		bool wasgap = gap(s.cakes, op);
-		s.flip(op);
+			bool hasgap = gap(state.cakes, op);
+			if (wasgap && !hasgap)
+				state.h--;
+			if (!wasgap && hasgap)
+				state.h++;
+		}
 
-		bool hasgap = gap(s.cakes, op);
-		if (wasgap && !hasgap)
-			s.h--;
-		if (!wasgap && hasgap)
-			s.h++;
+		~Transition(void) {
+			state.h = oldh;
+			state.flip(revop);
+		}
 
-		return s;
-	}
+	private:
+		Cost oldh;
+	};
 
 	void pack(PackedState &dst, State &s) {
 		dst = s;

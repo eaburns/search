@@ -5,7 +5,6 @@ template <class D, bool speedy = false> struct Greedy : public SearchAlgorithm<D
 
 	typedef typename D::State State;
 	typedef typename D::PackedState PackedState;
-	typedef typename D::Undo Undo;
 	typedef typename D::Cost Cost;
 	typedef typename D::Oper Oper;
 
@@ -81,25 +80,22 @@ private:
 		}
 	}
 
-	void considerkid(D &d, Node *pnode, State &pstate, Oper op) {
-		Node *k = nodes->construct();
-		Undo u(pstate, op);
-		State buf, &kstate = d.apply(buf, pstate, k->g, op);
-		k->g += pnode->g;
-		d.pack(k->packed, kstate);
+	void considerkid(D &d, Node *parent, State &state, Oper op) {
+		Node *kid = nodes->construct();
+		typename D::Transition tr(d, state, op);
+		kid->g = parent->g + tr.cost;
+		d.pack(kid->packed, tr.state);
 
-		unsigned long h = k->packed.hash();
-		SearchNode<D> *dup = closed.find(k->packed, h);
+		unsigned long hash = kid->packed.hash();
+		SearchNode<D> *dup = closed.find(kid->packed, hash);
 		if (dup) {
-			d.undo(pstate, u);
 			SearchAlgorithm<D>::res.dups++;
-			nodes->destroy(k);
+			nodes->destroy(kid);
 		} else {
-			k->h = speedy ? d.d(kstate) : d.h(kstate);
-			d.undo(pstate, u);
-			k->update(k->g, pnode, op, d.revop(pstate, op));
-			closed.add(k, h);
-			open.push(k);
+			kid->h = speedy ? d.d(tr.state) : d.h(tr.state);
+			kid->update(kid->g, parent, op, tr.revop);
+			closed.add(kid, hash);
+			open.push(kid);
 		}
 	}
 

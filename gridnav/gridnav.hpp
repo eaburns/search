@@ -21,23 +21,24 @@ public:
 	GridNav(GridMap*, unsigned int, unsigned int,
 		unsigned int, unsigned int);
 
-	class State {
-		friend class GridNav;
-		unsigned int loc;
-		int nops;
-		Oper ops[8];
-
-	public:
-
+	struct State {
 		State &operator=(const State &o) {
  			loc = o.loc;
 			nops = -1;
  			return *this;
 		}
 
+		State(void) :nops(-1) { }
+
 		State (const State &o) : loc(o.loc), nops(-1) { }
 
-		State(void) :nops(-1) { /* memset(ops, 0, sizeof(ops)); */ }
+		State(unsigned int l) : loc(l), nops(-1) { }
+
+	private:
+		friend class GridNav;
+		unsigned int loc;
+		int nops;
+		Oper ops[8];
 	};
 
 	struct PackedState {
@@ -47,10 +48,6 @@ public:
 		bool eq(const PackedState &other) const {
 			return other.loc == loc;
 		}
-	};
-
-	struct Undo {
-		Undo(State &, Oper) { }
 	};
 
 	State initialstate(void);
@@ -77,19 +74,20 @@ public:
 		return s.ops[n];
 	}
 
-	Oper revop(State &s, Oper op) {
-		return s.loc;
-	}
+	struct Transition {
+		Cost cost;
+		Oper revop;
+		State state;
 
-	void undo(State &s, Undo &u) { }
+		Transition(GridNav &d, State &s, Oper op) :
+			cost(digaonal(d, s.loc, op) ? sqrtf(2.0) : 1.0),
+			revop(s.loc), state(op) { }
 
-	State &apply(State &buf, State &s, Cost &c, Oper op) {
-		c = sqrtf(2.0);
-		if (map->x(s.loc) == map->x(op) || map->y(s.loc) == map->y(op))
-			c = 1.0;
-		buf.loc = op;
-		return buf;
-	}
+	private:
+		static bool digaonal(const GridNav &d, unsigned int l0, unsigned int l1) {
+			return d.map->x(l0) != d.map->x(l1) && d.map->y(l0) != d.map->y(l1);
+		}
+	};
 
 	void pack(PackedState &dst, State &src) {
 		dst.loc = src.loc;

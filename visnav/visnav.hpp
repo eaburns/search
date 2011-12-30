@@ -44,11 +44,6 @@ struct VisNav {
 
 	typedef State PackedState;
 
-	struct Undo {
-		Undo(State &s, Oper op) { vert = (int) op.edge->src; }
-		int vert;
-	};
-
 	State initialstate(void);
 
 	Cost h(State &s) {
@@ -75,19 +70,14 @@ struct VisNav {
 		return Oper(&g.verts[s.vert].edges[n]);
 	}
 
-	Oper revop(State &s, Oper op) {
-		return op;
-	}
+	struct Transition {
+		Cost cost;
+		Oper revop;
+		State state;
 
-	void undo(State &s, Undo &u) {
-		s.vert = u.vert;
-	}
-
-	State &apply(State &buf, State &s, Cost &c, Oper op) {
-		c = op.edge->dist;
-		s.vert = op.edge->dst;
-		return s;
-	}
+		Transition(VisNav &d, State &s, Oper op) :
+			cost(op.edge->dist), revop(op), state(op.edge->dst) { }
+	};
 
 	void pack(PackedState &dst, State &src) {
 		dst = src;

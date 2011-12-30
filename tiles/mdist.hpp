@@ -8,13 +8,7 @@ public:
 
 	typedef PackedTiles<Ntiles> PackedState;
 
-	class State {
-	protected:
-		friend class TilesMdist;
-		Tile ts[Ntiles];
-		Pos b;
-		Cost h;
-	public:
+	struct State {
 		unsigned long hash(void) {
 			return Tiles::hash(ts, b);
 		}
@@ -28,62 +22,53 @@ public:
 			}
 			return true;
 		}
-	};
-
-	class Undo {
+	private:
+		friend class TilesMdist;
+		Tile ts[Ntiles];
 		Pos b;
 		Cost h;
-		friend class TilesMdist;
-	public:
-		Undo(State &s, Oper op) {
-			h = s.h;
-			b = s.b;
-		}
 	};
 
 	TilesMdist(FILE*);
 
 	State initialstate(void);
 
-	Cost h(State &s) {
-		return s.h;
-	}
+	Cost h(State &s) { return s.h; }
 
-	Cost d(State &s) {
-		return s.h;
-	}
+	Cost d(State &s) { return s.h; }
 
-	bool isgoal(State &s) {
-		return s.h == 0;
-	}
+	bool isgoal(State &s) { return s.h == 0; }
 
-	unsigned int nops(State &s) {
-		return ops[s.b].n;
-	}
+	unsigned int nops(State &s) { return ops[s.b].n; }
 
 	Oper nthop(State &s, unsigned int n) {
 		assert (n < ops[s.b].n);
 		return ops[s.b].mvs[n];
 	}
 
-	Oper revop(State &s, Oper op) {
-		return s.b;
-	}
+	struct Transition {
+		Cost cost;
+		Oper revop;
+		State &state;
 
-	void undo(State &s, Undo &u) {
-		s.ts[s.b] = s.ts[u.b];
-		s.b = u.b;
-		s.h = u.h;
-	}
+		Transition(TilesMdist &d, State &s, Oper op) :
+				cost(1), revop(s.b), state(s), oldh(s.h) {
+			Tile t = state.ts[op];
+			state.ts[state.b] = t;
+			state.h += d.incr[t][op][state.b];
+			state.b = op;
+		}
 
-	State &apply(State &buf, State &s, Cost &c, Oper newb) {
-		c = 1;
-		Tile t = s.ts[newb];
-		s.ts[s.b] = t;
-		s.h += incr[t][newb][s.b];
-		s.b = newb;
-		return s;
-	}
+		~Transition(void) {
+			state.ts[state.b] = state.ts[revop];
+			state.b = revop;
+			state.h = oldh;
+		}
+
+	private:
+		friend class TilesMdist;
+		Cost oldh;
+	};
 
 	void pack(PackedState &dst, State &s) {
 		s.ts[s.b] = 0;

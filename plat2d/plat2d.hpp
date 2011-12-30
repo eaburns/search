@@ -64,10 +64,6 @@ struct Plat2d {
 		unsigned char jframes;
 	};
 
-	struct Undo {
-		Undo(State&, Oper) { }
-	};
-
 	State initialstate(void);
 
 	Cost h(State &s) {
@@ -98,20 +94,18 @@ struct Plat2d {
 		return Ops[n];
 	}
 
-	Oper revop(State &s, Oper op) {
-		return Nop;
-	}
+	struct Transition {
+		Cost cost;
+		Oper revop;
+		State state;
 
-	void undo(State &s, Undo &u) { }
+		Transition(Plat2d &d, State &s, Oper op) : revop(Nop), state(s) {
+			state.player.act(d.lvl, (unsigned int) op);
+			cost = Point::distance(s.player.body.bbox.min,
+				state.player.body.bbox.min);
+		}
 
-	State &apply(State &buf, State &s, Cost &c, Oper op) {
-		assert (op != Nop);
-		buf = s;
-		buf.player.act(lvl, (unsigned int) op);
-		c = Point::distance(s.player.body.bbox.min,
-			buf.player.body.bbox.min);
-		return buf;
-	}
+	};
 
 	void pack(PackedState &dst, State &src) {
 		dst.x = src.player.body.bbox.min.x;
