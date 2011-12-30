@@ -44,16 +44,6 @@ struct <DOMAIN> {
 		bool eq(PackedState &) const { return false; }
 	};
 
-	// An undo record will retain any information that
-	// is needed to revert the application of the given
-	// operator in the given state.  If the domain is
-	// not performing in-place modification of a single
-	// state then this can be pretty much nothing, but
-	// it must have the constructor.
-	struct Undo {
-		Undo(State&, Oper) {		…	}
-	};
-
 	// Get the initial state.
 	State initialstate(void);
 
@@ -85,7 +75,8 @@ struct <DOMAIN> {
 	//
 	// Because of the above trick, a search algorithm
 	// should compute nops() after each time a
-	// new state is unpacked.
+	// new state is unpacked.  Do not cache this
+	// value.
 	unsigned int nops(State &s) {
 		fatal("Unimplemented");
 		return 0;
@@ -98,30 +89,32 @@ struct <DOMAIN> {
 		return 0;
 	}
 
-	// Get the reverse of the given operator (for parent
-	// operator pruning).
-	Oper revop(State &s, Oper op) {
-		fatal("Unimplemented");
-		return 0;
-	}
+	struct Transition {
+		Cost cost;
+		Oper revop;
 
-	// Revert changes to the state using information
-	// stored in the undo record.  If the domain doesn't
-	// use in-place modification then this can be a noop.
-	void undo(State &s, Undo &u) { }
+		// The state field may or may not be a reference.
+		// The reference variant is used in domains that
+		// do in-place modification and the non-reference
+		// variant is used in domains that do out-of-place
+		// modification.
+		State state;
+		// State &state
 
-	// Apply the operator to 's' and return a reference
-	// to the new state.  If the domain uses in-place
-	// modification then 's' may be changed and returned.
-	// If the domain does not do in-place modification
-	// then the new state should be placed into 'buf'
-	// which is provided by the caller and is guaranteed
-	// to be live at least until undo is called.
-	// The action cost is returned via the Cost& parameter.
-	State &apply(State &buf, State &s, Cost&, Oper op) {
-		fatal("Unimplemented");
-		return s;
-	}
+		// Applys the operator to thet state.  Some domains
+		// may modify the input state in this constructor.
+		// Because of this, a search algorithm may not
+		// use the state passed to this constructor until
+		// after the Transition's destructor has been called!
+		Transition(DOMAIN&, State&, Oper) { }
+
+		// The destructor is expected to undo any changes
+		// that it may have made to the input state in
+		// the constructor.  If a domain uses out-of-place
+		// modification then the destructor may not be
+		// required.
+		~Transition(void) { }
+	};
 
 	// Pack the state into the destination packed state.
 	// If PackedState is the same type as State then this
