@@ -2,8 +2,12 @@
 
 • plat2d:
 
-	- why are there so many
-	duplicates?
+	- better transposition
+	breaking.  Should be easier
+	because the new Transition
+	code has access to both the
+	current and next state when
+	setting revop.
 
 	- heuristic: vis graph but
 	don't allow vertical > max
