@@ -4,10 +4,14 @@
 #include <string>
 #include <limits>
 #include <cmath>
+#include <cstdarg>
+#include <cstdio>
+#include <cstring>
+#include <cassert>
 #include <sys/types.h>
 #include <regex.h>
 
-enum { MaxN = 10000000 };
+enum { MaxN = 1000000000 };
 static const double Mintime = 1.0;	// seconds
 
 static std::string msg;
@@ -102,9 +106,115 @@ static void runbench(const Benchmark &b) {
 			break;
 	}
 
-	printf("%lu op/s (%g sec, n=%lu)\n", (unsigned long) (n / ttime),
-		ttime, n);
+	printf("%s op/s (%g sec, n=%s)\n",
+		commas("%lu", (unsigned long) (n / ttime)).c_str(),
+		ttime, commas("%lu", n).c_str());
 
 	if (msg.size() > 0)
 		puts(msg.c_str());
+}
+
+unsigned int *randuints(unsigned long n) {
+	static unsigned int *ints;
+	static unsigned long nints;
+
+	if (nints < n) {
+		if (ints)
+			delete[] ints;
+		ints = new unsigned int[n];
+		nints = n;
+		for (unsigned long i = 0;  i < n; i++)
+			ints[i] = randgen.bits();
+	}
+
+	return ints;
+}
+
+unsigned int *scratchuints(unsigned long n) {
+	static unsigned int *ints;
+	static unsigned long nints;
+
+	if (nints < n) {
+		if (ints)
+			delete[] ints;
+		ints = new unsigned int[n];
+		nints = n;
+	}
+
+	return ints;
+}
+
+double *randdoubles(unsigned long n) {
+	static double *ds;
+	static unsigned long nds;
+
+	if (nds < n) {
+		if (ds)
+			delete[] ds;
+		ds = new double[n];
+		nds = n;
+		for (unsigned long i = 0;  i < n; i++)
+			ds[i] = randgen.real();
+	}
+
+	return ds;
+}
+
+double *scratchdoubles(unsigned long n) {
+	static double *ds;
+	static unsigned long nds;
+
+	if (nds < n) {
+		if (ds)
+			delete[] ds;
+		ds = new double[n];
+		nds = n;
+	}
+
+	return ds;
+}
+
+std::string commas(const char *fmt, ...) {
+	char str[128];
+	memset(str, 'a', sizeof(str));
+
+	va_list ap;
+	va_start(ap, fmt);
+	int n = vsnprintf(str, sizeof(str), fmt, ap);
+	va_end(ap);
+
+	if (n < 0)
+		fatal("commas: Failed to write format to the buffer");
+	if ((unsigned int) n >= sizeof(str))
+		fatal("commas: Buffer size is too small");
+
+	char *end = str + n;
+	assert (*end == '\0');
+	assert (end[-1] != '\0');
+
+	char *mid = strrchr(str, '.');
+	if (!mid)
+		mid = end;
+	assert (*mid == '\0' || *mid == '.');
+
+	char out[n + (n + 1)/3 + 1];
+	memset(out, 'b', sizeof(out));
+	char *cur = out + sizeof(out) - 1;
+	assert (*cur == 'b');
+
+	for (char *p = end; p >= mid; p--, cur--)
+		*cur = *p;
+
+	unsigned int tillcomma = 3;
+	for (char *p = mid-1; p >= str; p--, cur--) {
+		*cur = *p;
+		tillcomma--;
+		if (tillcomma == 0 && p > str) {
+			*cur--;
+			*cur = ',';
+			tillcomma = 3;
+		}
+	}
+
+	return cur + 1;
 }

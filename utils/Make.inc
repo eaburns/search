@@ -37,8 +37,9 @@ utils/utils.a: $(UTILOBJS)
 	$(AR) rsc $@ $(UTILOBJS)
 CLEAN+=utils.a
 
-utils/test: utils/test_geom.cc utils/test_rdb.cc utils/test.cc\
-	utils/test_encode.cc utils/utils.a
+utils/test: utils/test_geom.cc utils/test_rdb.cc \
+	utils/test_encode.cc utils/bench_ops.cc\
+	utils/test.cc utils/utils.a
 	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
 CLEAN+=utils/test
 

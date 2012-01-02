@@ -48,8 +48,16 @@ static const Test tests[] = {
 
 enum { Ntests = sizeof(tests) / sizeof(tests[0]) };
 
+void rand_bits_bench(unsigned long, double*, double*);
+void rand_real_bench(unsigned long, double*, double*);
+void ilog2_bench(unsigned long, double*, double*);
+void log2_int_bench(unsigned long, double*, double*);
+
 static const Benchmark benches[] = {
-//	Benchmark("htable add benchmark", htable_add_bench),
+	Benchmark("randgen.bits benchmark", rand_bits_bench),
+	Benchmark("randgen.real benchmark", rand_real_bench),
+	Benchmark("ilog2 benchmark", ilog2_bench),
+	Benchmark("log2 with ints benchmark", log2_int_bench),
 };
 
 enum { Nbenches = sizeof(benches) / sizeof(benches[0]) };
