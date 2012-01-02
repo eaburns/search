@@ -182,6 +182,9 @@ double *scratchdoubles(unsigned long);
 // commas inserted every 3-tens places.  The fmt argument
 // is the printf-style format specifier for the number that
 // follows as a variadic argument.
+// 
+// BUG: commas does not format the output correctly
+// with the %g or %e forms of floats or doubles.
 std::string commas(const char *fmt, ...);
 
 // hashbytes computes a hash on an arbitrary array of bytes.

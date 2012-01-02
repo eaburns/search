@@ -48,16 +48,28 @@ static const Test tests[] = {
 
 enum { Ntests = sizeof(tests) / sizeof(tests[0]) };
 
+void malloc_16_free_bench(unsigned long, double*, double*);
+void malloc_32_free_bench(unsigned long, double*, double*);
+void malloc_128_free_bench(unsigned long, double*, double*);
 void rand_bits_bench(unsigned long, double*, double*);
 void rand_real_bench(unsigned long, double*, double*);
 void ilog2_bench(unsigned long, double*, double*);
 void log2_int_bench(unsigned long, double*, double*);
+void log2_double_bench(unsigned long, double*, double*);
+void sqrt_bench(unsigned long, double*, double*);
+void atan2_bench(unsigned long, double*, double*);
 
 static const Benchmark benches[] = {
+	Benchmark("malloc(16)/free() benchmark", malloc_16_free_bench),
+	Benchmark("malloc(32)/free() benchmark", malloc_32_free_bench),
+	Benchmark("malloc(128)/free() benchmark", malloc_128_free_bench),
 	Benchmark("randgen.bits benchmark", rand_bits_bench),
 	Benchmark("randgen.real benchmark", rand_real_bench),
 	Benchmark("ilog2 benchmark", ilog2_bench),
 	Benchmark("log2 with ints benchmark", log2_int_bench),
+	Benchmark("log2 with doubles benchmark", log2_double_bench),
+	Benchmark("sqrt benchmark", sqrt_bench),
+	Benchmark("atan2 benchmark", atan2_bench),
 };
 
 enum { Nbenches = sizeof(benches) / sizeof(benches[0]) };

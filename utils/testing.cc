@@ -73,7 +73,7 @@ static bool runtest(const Test &t) {
 	msg.clear();
 	bool ok = t.run();
 
-	printf("Running %s...", t.name);
+	printf("Running %-40s	", t.name);
 	fflush(stdout);
 
 	if (ok)
@@ -90,7 +90,7 @@ static bool runtest(const Test &t) {
 static void runbench(const Benchmark &b) {
 	msg.clear();
 
-	printf("Running %s...\t", b.name);
+	printf("Running %-40s ", b.name);
 
 	double ttime = 1.0;
 	unsigned long n = -1;
@@ -106,9 +106,9 @@ static void runbench(const Benchmark &b) {
 			break;
 	}
 
-	printf("%s op/s (%g sec, n=%s)\n",
+	printf("%15s op/s (%.1gs, n=%g)\n",
 		commas("%lu", (unsigned long) (n / ttime)).c_str(),
-		ttime, commas("%lu", n).c_str());
+		ttime, (double) n);
 
 	if (msg.size() > 0)
 		puts(msg.c_str());

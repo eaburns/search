@@ -9,6 +9,21 @@
 #include "utils.hpp"
 #include <cmath>
 
+void malloc_16_free_bench(unsigned long n, double *strt, double *end) {
+	for (unsigned long i = 0; i < n; i++)
+		free(malloc(16));
+}
+
+void malloc_32_free_bench(unsigned long n, double *strt, double *end) {
+	for (unsigned long i = 0; i < n; i++)
+		free(malloc(32));
+}
+
+void malloc_128_free_bench(unsigned long n, double *strt, double *end) {
+	for (unsigned long i = 0; i < n; i++)
+		free(malloc(128));
+}
+
 void rand_bits_bench(unsigned long n, double *strt, double *end) {
 	unsigned int *res = scratchuints(n);
 	*strt = walltime();
@@ -41,4 +56,31 @@ void log2_int_bench(unsigned long n, double *strt, double *end) {
 
 	for (unsigned long i = 0; i < n; i++)
 		res[i] = log2(is[i]);
+}
+
+void log2_double_bench(unsigned long n, double *strt, double *end) {
+	double *is = randdoubles(n);
+	double *res = scratchdoubles(n);
+	*strt = walltime();
+
+	for (unsigned long i = 0; i < n; i++)
+		res[i] = log2(is[i]);
+}
+
+void sqrt_bench(unsigned long n, double *strt, double *end) {
+	double *is = randdoubles(n);
+	double *res = scratchdoubles(n);
+	*strt = walltime();
+
+	for (unsigned long i = 0; i < n; i++)
+		res[i] = sqrt(is[i]);
+}
+
+void atan2_bench(unsigned long n, double *strt, double *end) {
+	double *is = randdoubles(n*2);
+	double *res = scratchdoubles(n);
+	*strt = walltime();
+
+	for (unsigned long i = 0; i < n; i++)
+		res[i] = atan2(is[i], is[i+n]);
 }
