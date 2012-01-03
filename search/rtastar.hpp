@@ -77,7 +77,11 @@ template <class D> struct Rtastar : public SearchAlgorithm<D> {
 		return SearchAlgorithm<D>::res;
 	}
 
-	virtual void reset(void) { seen.clear(); }
+	virtual void reset(void) {
+		seen.clear();
+		delete nodes;
+		nodes = new boost::object_pool<Node>();
+	}
 
 	virtual void output(FILE *out) {
 		SearchAlgorithm<D>::output(out);
