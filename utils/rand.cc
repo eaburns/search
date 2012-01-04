@@ -2,7 +2,7 @@
 #include <stdint.h>
 #include <ctime>
 
-Rand randgen(time(NULL));
+Rand randgen(walltime() * 1e9);
 
 // From Numerical Recipes
 
