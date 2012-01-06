@@ -2,9 +2,6 @@
 
 • plat2d:
 
-	- 2poly just emits the
-	polygons
-
 	- better transposition
 	breaking.  Should be easier
 	because the new Transition
@@ -18,13 +15,6 @@
 
 • visnav:
 
-	- rand: just emit polygons
-
-	- visgraph: implement a
-	binary that reads polygons
-	and makes a visibility graph
-	then outputs that.
-
 	- verify solution paths
 
 	- grid2poly: detect outter
@@ -36,9 +26,6 @@
 	- specific closed list
 
 • gridnav:
-
-	- 2poly just emits the
-	polygons
 
 	- verify solution paths
 

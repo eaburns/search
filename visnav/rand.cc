@@ -1,4 +1,4 @@
-#include "visgraph.hpp"
+#include "polymap.hpp"
 #include "../utils/utils.hpp"
 #include <cstring>
 #include <cstdio>
@@ -44,19 +44,15 @@ int main(int argc, char *argv[]) {
 	if (stats)
 		fprintf(stderr, "created %u polys in %gs\n", Npolys, walltime() - start);
 
-	start = walltime();
-	VisGraph graph(polys);
-	if (stats)
-		fprintf(stderr, "visability graph generated in %gs\n", walltime() - start);
-
+	PolyMap map(polys);
 	if (outfile) {
 		FILE *f = fopen(outfile, "w");
 		if (!f)
 			fatalx(errno, "Failed to open %s:", outfile);
-		graph.output(stdout);
+		map.output(stdout);
 		fclose(f);
 	} else {
-		graph.output(stdout);
+		map.output(stdout);
 	}
 
 	return 0;

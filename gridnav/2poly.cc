@@ -1,5 +1,5 @@
 #include "gridmap.hpp"
-#include "../visnav/visgraph.hpp"
+#include "../visnav/polymap.hpp"
 #include <cstdio>
 
 int main(int argc, char *argv[]) {
@@ -12,8 +12,8 @@ int main(int argc, char *argv[]) {
 		blkd[i * map.height() + j] = !map.passable(map.loc(i, j));
 	}
 
-	VisGraph vg(blkd, map.width(), map.height());
-	vg.output(stdout);
+	PolyMap polys(blkd, map.width(), map.height());
+	polys.output(stdout);
 
 	return 0;
 }

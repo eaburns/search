@@ -16,6 +16,7 @@ visnav/draw
 visnav/rand
 visnav/inst
 visnav/disp
+visnav/mkgraph
 plat2d/draw
 plat2d/play
 plat2d/2poly

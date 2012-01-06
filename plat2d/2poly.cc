@@ -1,5 +1,5 @@
 #include "plat2d.hpp"
-#include "../visnav/visgraph.hpp"
+#include "../visnav/polymap.hpp"
 #include <cstdio>
 
 int main(void) {
@@ -12,7 +12,7 @@ int main(void) {
 		blkd[i * lvl.height() + j] = lvl.blocked(i, lvl.height() - j - 1);
 	}
 
-	VisGraph gv(blkd, lvl.width(), lvl.height());
-	gv.output(stdout);
+	PolyMap polys(blkd, lvl.width(), lvl.height());
+	polys.output(stdout);
 	return 0;
 }

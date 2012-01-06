@@ -32,11 +32,18 @@ visnav/visnav_solver: $(VISNAVOBJS) visnav/main.o\
 include visnav/main.d
 CLEAN+=visnav/visnav_solver visnav/main.o
 
+visnav/mkgraph: $(VISNAVOBJS) visnav/mkgraph.o\
+	utils/utils.a structs/structs.a search/search.a
+	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
+
+include visnav/mkgraph.d
+CLEAN+=visnav/mkgraph visnav/mkgraph.o
+
 visnav/visgraph.a: visnav/polymap.o visnav/grid2poly.o visnav/visgraph.o
 	$(AR) rsc $@ $^
 
 CLEAN+=visnav/visgraph.a
 
-visnav: visnav/rand visnav/draw visnav/inst visnav/visnav_solver visnav/visgraph.a
+visnav: visnav/rand visnav/draw visnav/inst visnav/visnav_solver visnav/mkgraph visnav/visgraph.a
 
 EVERYTHING+=visnav
