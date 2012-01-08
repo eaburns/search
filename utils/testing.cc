@@ -210,7 +210,7 @@ std::string commas(const char *fmt, ...) {
 		*cur = *p;
 		tillcomma--;
 		if (tillcomma == 0 && p > str) {
-			*cur--;
+			cur--;
 			*cur = ',';
 			tillcomma = 3;
 		}
