@@ -71,12 +71,10 @@ bool htable_find_rand_test(void) {
 	Htable<Ops, Key, Ent> ht;
 	Rand r(time(NULL));
 	Ent ents[N];
-	unsigned int inds[N];
 
 	for (unsigned int i = 0; i < 100; i++) {
 		ents[i] = Ent(r.bits());
 		ht.add(ents + i);
-		inds[i] = r.bits() % N;
 	}
 
 	for (unsigned int i = 0; i < 100; i++) {

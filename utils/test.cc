@@ -1,5 +1,6 @@
 #include "utils.hpp"
 
+bool test_commas(void);
 bool test_doubleeq(void);
 bool test_doubleneq(void);
 bool test_point_angle(void);
@@ -23,6 +24,7 @@ bool test_base64dec(void);
 bool test_encdec(void);
 
 static const Test tests[] = {
+	Test("commas test", test_commas),
 	Test("doubleeq test", test_doubleeq),
 	Test("doubleneq test", test_doubleneq),
 	Test("point angle test", test_point_angle),
