@@ -7,7 +7,8 @@ struct Node;
 enum { Big = Tiles::Ntiles > sizeof(unsigned long) * 8 };
 
 #ifndef PATTERN
-#define PATTERN 1, 4, 5, 8, 9, 12, 13
+//#define PATTERN 1, 4, 5, 8, 9, 12, 13
+#define PATTERN 1,2,3
 //#define PATTERN 2, 3, 6, 7, 10, 11, 14, 15
 #endif
 
@@ -100,18 +101,19 @@ static Pdb *gen(void) {
 
 	double start = walltime();
 	unsigned int depth = 0;
-	unsigned long num = 1;
+	unsigned long num = 1, cur = 0;
 	Node *current = new Node(pattern), *next = NULL, *free = NULL;
 	unsigned char *goalcost = pdb->poscost(current->ps);
        	*goalcost = 0;
 
 	while (current || next) {
 		if (!current) {
-			printf("depth %u:\t%lu nodes\t%lu MB\n", depth + 1, num,
-				virtmem() / 1024);
+			printf("depth %u:\t%lu nodes\t%lu total\t%lu MB\n", depth + 1,
+				cur, num, virtmem() / 1024);
 			current = next;
 			next = NULL;
 			depth++;
+			cur = 0;
 		}
 
 		assert(current);
@@ -128,6 +130,7 @@ static Pdb *gen(void) {
 			}
 
 			num++;
+			cur++;
 			*c = depth + 1;
 			p->next = next;
 			next = p;

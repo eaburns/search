@@ -43,6 +43,7 @@ template<> class PackedTiles<16> {
 public:
 
 	void pack(Tiles::Tile ts[]) {
+		word = 0;
 		for (int i = 0; i < Ntiles; i++)
 			word = (word << 4) | ts[i];
 	}
