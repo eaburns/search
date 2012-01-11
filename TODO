@@ -35,7 +35,8 @@
 
 • tiles:
 
-	- verify that PDBs are correct
+	- fix PDBs: need to hold the
+	blank pos in state rep.
 
 	- PDBs on disk
 
