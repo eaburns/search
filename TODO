@@ -35,12 +35,7 @@
 
 • tiles:
 
-	- fix PDBs: need to hold the
-	blank pos in state rep.
-
-	- PDBs on disk
-
-	- use PDBs for search
+	- PDBs
 
 • pancake:
 

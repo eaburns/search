@@ -18,9 +18,3 @@ tiles/15md_solver: $(TILESSRC) tiles/main_mdist.cc\
 
 CLEAN+=tiles/15md_solver
 include tiles/main_mdist.d
-
-tiles/15pdbgen: tiles/pdbgen.d
-tiles/15pdbgen: $(TILESSRC) tiles/pdbgen.cc utils/utils.a 
-	$(CXX) $(CXXFLAGS) $(TILESSRC) tiles/pdbgen.cc utils/utils.a $(LDFLAGS) $(DEFS15) -o $@
-
-CLEAN+=tiles/15pdbgen
