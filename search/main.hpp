@@ -20,6 +20,10 @@ template<class D> SearchAlgorithm<D> *getsearch(int argc, const char *argv[]);
 
 template<class D> Result<D> search(D &d, int argc, const char *argv[]) {
 	SearchAlgorithm<D> *srch = getsearch<D>(argc, argv);
+	if (!srch && argc > 1)
+		fatal("Unknow search algorithm: %s", argv[1]);
+	if (!srch)
+		fatal("Must specify a search algorithm");
 
 	typename D::State s0 = d.initialstate();
 	dfpair(stdout, "initial heuristic", "%g", (double) d.h(s0));
