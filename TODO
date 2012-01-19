@@ -9,9 +9,9 @@
 	current and next state when
 	setting revop.
 
-	- heuristic: vis graph but
-	don't allow vertical > max
-	jump frames
+	- drawing of the solution
+	path and the set of expanded
+	nodes
 
 • visnav:
 
