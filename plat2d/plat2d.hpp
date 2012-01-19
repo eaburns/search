@@ -1,5 +1,6 @@
 #include "player.hpp"
 #include "lvl.hpp"
+#include "../visnav/visgraph.hpp"
 #include <vector>
 #include <string>
 #include <cstdio>
@@ -21,6 +22,8 @@ struct Plat2d {
 	static const int Nop = -1;
 
 	Plat2d(FILE*);
+
+	~Plat2d(void);
 
 	struct State {
 		State(void) { }
@@ -67,7 +70,7 @@ struct Plat2d {
 	State initialstate(void);
 
 	Cost h(State &s) {
-		return heuclidean(s);
+		return hvis(s);
 	}
 
 	Cost d(State &s) {
@@ -103,6 +106,13 @@ struct Plat2d {
 			state.player.act(d.lvl, (unsigned int) op);
 			cost = Point::distance(s.player.body.bbox.min,
 				state.player.body.bbox.min);
+
+			if (s.player.body.bbox.min.y == state.player.body.bbox.min.y) {
+				if (op == Player::Left)
+					revop = Player::Right;
+				else if (op == Player::Right)
+					revop = Player::Left;
+			}
 		}
 
 	};
@@ -143,7 +153,7 @@ private:
 	// nearest side is returned.  Otherwise, the minimum of the
 	// Euclidean distances from the player's center point to the four
 	// corners of the goal block is returned.
-	Cost heuclidean(State &s) {
+	Cost heuclidean(const State &s) const {
 		static const double W = Tile::Width;
 		static const double H = Tile::Height;
 
@@ -169,7 +179,7 @@ private:
 		return Point::distance(loc, goal);		
 	}
 
-	Cost deuclidean(State &s) {
+	Cost deuclidean(const State &s) const {
 		static const double W = Tile::Width / Player::runspeed();
 		static const double H =
 			Tile::Height / Player::jmpspeed() > Tile::Height / Body::Maxdy ?
@@ -197,6 +207,38 @@ private:
 
 		return Point::distance(loc, goal);		
 	}
+
+	struct Node {
+		int v;
+		long i;
+		double d;
+		int prev;
+
+		static void setind(Node *n, unsigned long ind) { n->i = ind; }
+		static bool pred(const Node *a, const Node *b) { return a->d < b->d; }
+	};
+
+	void initvg(void);
+
+	Cost hvis(const State &s) const {
+		Lvl::Blkinfo bi = lvl.majorblk(s.player.body.bbox);
+		int c = centers[bi.x * lvl.height() + bi.y];
+		const Point &loc = s.player.body.bbox.center();
+		// Length of a tile diagonal, subtracted from the visnav
+		// distance to account for the fact that the goal vertex
+		// is in the center of the goal cell, not on the side.
+		static const double diag =
+			sqrt(Tile::Width * Tile::Width + Tile::Height * Tile::Height);
+		double dvis = togoal[c].d - Point::distance(loc, vg->verts[c].pt) - diag;
+		double deuc = heuclidean(s);
+		if (dvis > deuc)
+			return dvis;
+		return deuc;
+	}
+
+	VisGraph *vg;
+	std::vector<long> centers;
+	std::vector<Node> togoal;
 };
 
 // controlstr converts a vector of controls to an ASCII string.

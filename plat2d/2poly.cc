@@ -1,5 +1,4 @@
 #include "plat2d.hpp"
-#include "../visnav/polymap.hpp"
 #include <cstdio>
 
 int main(void) {

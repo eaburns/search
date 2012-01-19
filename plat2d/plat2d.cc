@@ -1,5 +1,6 @@
 #include "plat2d.hpp"
 #include "../utils/utils.hpp"
+#include "../structs/binheap.hpp"
 
 const unsigned int Plat2d::Ops[] = {
 	Player::Left,
@@ -26,11 +27,91 @@ Plat2d::Plat2d(FILE *in) : lvl(in) {
 	}
 	if (gx >= lvl.width() || gy >= lvl.height())
 		fatal("No goal location in the level");
+
+	initvg();
+}
+
+Plat2d::~Plat2d(void) {
+	delete vg;
 }
 
 Plat2d::State Plat2d::initialstate(void) {
 	return State(2 * Tile::Width + Player::Offx, 2 * Tile::Height + Player::Offy,
 		0, Player::Width, Player::Height);
+}
+
+void Plat2d::initvg(void) {
+	double strt = walltime();
+	bool *blkd = new bool[lvl.width() * lvl.height()];
+	for (unsigned int i = 0; i < lvl.width() * lvl.height(); i++)
+		blkd[i] = false;
+	for (unsigned int i = 0; i < lvl.width(); i++) {
+	for (unsigned int j = 0; j < lvl.height(); j++)
+		blkd[i * lvl.height() + j] = lvl.blocked(i, j);
+	}
+
+	vg = new VisGraph(blkd, lvl.width(), lvl.height());
+	delete[]blkd;
+
+	for (unsigned int i = 0; i < lvl.width() * lvl.height(); i++) {
+		unsigned int x = i / lvl.height();
+		unsigned int y = i % lvl.height();
+		Point pt(x + 0.5, y + 0.5);
+		if (!vg->obstructed(pt))
+			centers.push_back(vg->add(pt));
+		else
+			centers.push_back(-1);
+	}
+	vg->scale(Tile::Width, Tile::Height);
+
+	togoal.resize(vg->verts.size());
+	for (unsigned int i = 0; i < vg->verts.size(); i++) {
+		togoal[i].d = Infinity;
+		togoal[i].i = -1;
+		togoal[i].v = i;
+		togoal[i].prev = -1;
+	}
+
+	int goal = centers[gx * lvl.height() + gy];
+	assert (goal >= 0);
+	togoal[goal].d = 0;
+
+	BinHeap<Node, Node*> open;
+	open.push(&togoal[goal]);
+
+	while (!open.empty()) {
+		const Node *n = *open.pop();
+		const std::vector<VisGraph::Edge> &es = vg->verts[n->v].edges;
+		for (unsigned int i = 0; i < es.size(); i++) {
+			const VisGraph::Edge &e = es[i];
+			double d = n->d + e.dist;
+			if (togoal[e.dst].d <= d)
+				continue;
+			togoal[e.dst].d = d;
+			togoal[e.dst].prev = n->v;
+			if (togoal[e.dst].i < 0)
+				open.push(&togoal[e.dst]);
+			else
+				open.update(togoal[e.dst].i);
+		}
+	}
+
+	Image img(900, 900);
+	vg->PolyMap::draw(img, false);
+
+	Image::Path *p = new Image::Path();
+	p->setcolor(Color(1, 0, 0));
+	int i = centers[2 * lvl.height() + 2];
+	p->moveto(vg->verts[i].pt.x, vg->verts[i].pt.y);
+	i = togoal[i].prev;
+	while (i >= 0) {
+		p->lineto(vg->verts[i].pt.x, vg->verts[i].pt.y);
+		i = togoal[i].prev;
+	}
+	img.add(p);
+	img.save("vismap.eps");
+
+	dfpair(stdout, "visibility graph time", "%g", walltime() - strt);
 }
 
 std::string controlstr(const std::vector<unsigned int> &controls) {

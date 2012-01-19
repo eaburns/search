@@ -108,7 +108,7 @@ struct Comp {
 	std::vector<bool> blkd;
 };
 
-PolyMap::PolyMap(bool blkd[], unsigned int w, unsigned int h) {
+PolyMap::PolyMap(const bool blkd[], unsigned int w, unsigned int h) {
 	Djset *forest = new Djset[w * h];
 	for (unsigned int x = 0; x < w; x++) {
 	for (unsigned int y = 0; y < h; y++) {
