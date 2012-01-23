@@ -5,7 +5,7 @@ TILESSRC:=\
 
 CLEAN+=$(TILESSRC:.cc=.o)
 
-tiles: tiles/15md_solver tiles/15pdbgen
+tiles: tiles/15md_solver
 
 EVERYTHING+=tiles
 
