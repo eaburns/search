@@ -1,5 +1,8 @@
 • lots of benchmarks
 
+• remove dependency on
+	boost-filesystem
+
 • plat2d:
 
 	- better transposition
@@ -52,7 +55,7 @@
 	- Robot arm
 
 	- Multiple sequence
-	[alignment
+	alignment
 
 	- Roadmap path finding
 
