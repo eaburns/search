@@ -2,14 +2,24 @@
 #include "../utils/utils.hpp"
 #include "../utils/image.hpp"
 #include <cerrno>
+#include <cstring>
 
 PolyMap::PolyMap(FILE *in) {
 	input(in);
 }
 
 void PolyMap::input(FILE *in) {
+	int n = 0;
+	int res = fscanf(in, "bound: %n", &n);
+	if (res == EOF && ferror(in))
+		fatalx(errno, "Failed to read the visibility map");
+	if (res != 0)
+		fatal("Malformed visibility map");
+	if (n == strlen("bound: "))
+		bound = Bound(Polygon(in));
+
 	unsigned int npoly;
-	int res = fscanf(in, " %u polygons\n", &npoly);
+	res = fscanf(in, " %u polygons\n", &npoly);
 	if (res == EOF && ferror(in))
 		fatalx(errno, "Failed to read the the visibility map");
 	if (res != 1)
@@ -20,6 +30,11 @@ void PolyMap::input(FILE *in) {
 }
 
 void PolyMap::output(FILE *out) const {
+	if (bound) {
+		fprintf(out, "bound: ");
+		bound->output(out);
+		putc('\n', out);
+	}
 	fprintf(out, "%u polygons\n", (unsigned int) polys.size());
 	for (unsigned int i = 0; i < polys.size(); i++) {
 		polys[i].output(out);
@@ -32,19 +47,28 @@ void PolyMap::draw(Image &img, double lwidth) const {
 		const Color &c = somecolors[i % Nsomecolors];
 		polys[i].draw(img, c, lwidth);
 	}
+	if (bound)
+		bound->draw(img, Color(0, 0, 0), lwidth);
 }
 
 void PolyMap::scale(double sx, double sy) {
 	for (unsigned int i = 0; i < polys.size(); i++)
-		polys[i].scale(sx, sy);		
+		polys[i].scale(sx, sy);
+	if (bound)
+		bound->scale(sx, sy);	
 }
 
 void PolyMap::translate(double dx, double dy) {
 	for (unsigned int i = 0; i < polys.size(); i++)
-		polys[i].translate(dx, dy);		
+		polys[i].translate(dx, dy);
+	if (bound)
+		bound->translate(dx, dy);
 }
 
 Point PolyMap::min(void) const {
+	if (bound)
+		return bound->bbox.min;
+
 	Point min = Point::inf();
 	for (unsigned int i = 0; i < polys.size(); i++) {
 		if (polys[i].bbox.min.x < min.x)
@@ -56,6 +80,9 @@ Point PolyMap::min(void) const {
 }
 
 Point PolyMap::max(void) const {
+	if (bound)
+		return bound->bbox.max;
+
 	Point max = Point::neginf();
 	for (unsigned int i = 0; i < polys.size(); i++) {
 		if (polys[i].bbox.max.x > max.x)
@@ -75,5 +102,8 @@ bool PolyMap::isvisible(const Point &a, const Point &b) const {
 		if (polys[i].hits(line))
 			return false;
 	}
-	return true;
+	if (!bound)
+		return true;
+
+	return bound->contains(a) && bound->contains(b) && !bound->hits(line);
 }

@@ -8,13 +8,9 @@ struct Image;
 // between pairs of visible vertices.
 struct VisGraph : public PolyMap {
 
-	VisGraph(std::vector<Polygon>&);
+	VisGraph(const PolyMap&);
 
 	VisGraph(FILE*);
-
-	// Builds a visibility graph from a bitmap of blocked
-	// grid cells.
-	VisGraph(const bool[], unsigned int, unsigned int);
 
 	// output writes the visibility graph to the
 	// given file.
@@ -75,6 +71,10 @@ private:
 	// popverts populates the vertex vector and
 	// adds edges between adjacent vertices.
 	void populateverts(void);
+
+	// addpoly adds the vertices specified by the index vector
+	//  for the given polygon to the graph.
+	void addpoly(const Polygon&, const std::vector<unsigned int>&);
 
 	// visedges adds edges between each pair of
 	// vertices that are visible from eachother.

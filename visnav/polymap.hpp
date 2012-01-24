@@ -1,6 +1,7 @@
 #include "../utils/geom.hpp"
 #include <vector>
 #include <cstdio>
+#include <boost/optional.hpp>
 
 struct Image;
 
@@ -8,6 +9,8 @@ struct Image;
 // It can be used to make visibility queries in a plane
 // with respect to ploygonal obstacles.
 struct PolyMap {
+
+	typedef boost::optional<Polygon> Bound;
 
 	PolyMap(FILE*);
 
@@ -45,6 +48,8 @@ struct PolyMap {
 	// obstructed returns true if the given point lies
 	// within one of the obstacles.
 	bool obstructed(const Point &pt) {
+		if (bound && !bound->contains(pt))
+			return true;
 		for (unsigned int i = 0; i < polys.size(); i++) {
 			if (polys[i].contains(pt))
 				return true;
@@ -60,4 +65,5 @@ struct PolyMap {
 	bool isvisible(const Point&, const Point&) const;
 
 	std::vector<Polygon> polys;
+	Bound bound;
 };

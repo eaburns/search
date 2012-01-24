@@ -4,7 +4,7 @@
 
 int main(void) {
 	PolyMap map(stdin);
-	VisGraph graph(map.polys);
+	VisGraph graph(map);
 	graph.output(stdout);
 	return 0;
 }

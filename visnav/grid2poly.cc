@@ -98,6 +98,40 @@ struct Comp {
 		return Pose(cur.x, cur.y, Pose::Down);
 	}
 
+	void invert(void) {
+		for (unsigned int x = minx; x < w; x++) {
+			int miny, maxy;
+			for (miny = 0; miny < (int) h && !blocked(x, miny); miny++)
+				;
+			for (maxy = h - 1; maxy >= 0 && !blocked(x, maxy); maxy--)
+				;
+			if (maxy < miny)
+				continue;
+			for (int y = miny; y <= maxy; y++)
+				toggle(x, y);
+		}
+		minx = w;
+		miny = h;
+		n = 0;
+		for (unsigned int x = 0; x < w; x++) {
+		for (unsigned int y = 0; y < h; y++) {
+			if (!blocked(x, y))
+				continue;
+			if (n == 0 || x < minx)
+				minx = x; 
+			n++;
+			if (x == minx && y < miny)
+				miny = y;
+		}
+		}
+	}
+
+	void toggle(unsigned int x, unsigned int y) {
+		if (x >= w || y >= h)
+			return;
+		blkd[x*h + y] = !blkd[x*h + y];
+	}
+
 	bool blocked(unsigned int x, unsigned int y) const {
 		return x < w && y < h && blkd[x * h + y];
 	}
@@ -118,13 +152,13 @@ PolyMap::PolyMap(const bool blkd[], unsigned int w, unsigned int h) {
 		if (x < w - 1 && blkd[(x+1)*h + y])
 			forest[x*h + y].join(forest[(x + 1)*h + y]);
 
-		if (y < h - 1 && blkd[x*h + y + 1] && y != h/2)
+		if (y < h - 1 && blkd[x*h + y + 1])
 			forest[x*h + y].join(forest[x*h + y + 1]);
 
-		if (y < h - 1 && x > 0 && blkd[(x - 1)*h + y + 1] && y != h/2)
+		if (y < h - 1 && x > 0 && blkd[(x - 1)*h + y + 1])
 			forest[x*h + y].join(forest[(x - 1)*h + y + 1]);
 
-		if (y < h - 1 && x < w - 1 && blkd[(x + 1) * h + y + 1] && y != h/2)
+		if (y < h - 1 && x < w - 1 && blkd[(x + 1) * h + y + 1])
 			forest[x*h + y].join(forest[(x + 1)*h + y + 1]);
 	}
 	}
@@ -143,6 +177,12 @@ PolyMap::PolyMap(const bool blkd[], unsigned int w, unsigned int h) {
 	}
 	}
 
-	for (unsigned int i = 0; i < cs.size(); i++)
+	if (cs.size() == 0)
+		fatal("No components found");
+
+	cs[0].invert();
+	bound = PolyMap::Bound(cs[0].poly());
+
+	for (unsigned int i = 1; i < cs.size(); i++)
 		polys.push_back(cs[i].poly());
 }

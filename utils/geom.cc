@@ -199,17 +199,6 @@ bool Polygon::hits(const LineSeg &l) const {
 	return false;
 }
 
-std::vector<unsigned int> Polygon::reflexes(void) const {
-	std::vector<unsigned int> rs;
-
-	for (unsigned int i = 0; i < verts.size(); i++) {
-		if (isreflex(i))
-			rs.push_back(i);
-	}
-
-	return rs;
-}
-
 double Polygon::interangle(unsigned int i) const {
 	const Point &u = i == 0 ? verts[verts.size() - 1] : verts[i-1];
 	const Point &v = verts[i];
@@ -217,10 +206,6 @@ double Polygon::interangle(unsigned int i) const {
 	Point a = v.minus(u), b = w.minus(v);
 
 	return M_PI - fmod(atan2(b.x*a.y - a.x*b.y, b.x*a.x + b.y*a.y), 2 * M_PI);
-}
-
-bool Polygon::isreflex(unsigned int i) const {
-	return interangle(i) < M_PI;
 }
 
 void Polygon::removecolinear(void) {

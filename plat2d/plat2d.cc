@@ -50,7 +50,7 @@ void Plat2d::initvg(void) {
 		blkd[i * lvl.height() + j] = lvl.blocked(i, j);
 	}
 
-	vg = new VisGraph(blkd, lvl.width(), lvl.height());
+	vg = new VisGraph(PolyMap(blkd, lvl.width(), lvl.height()));
 	delete[]blkd;
 
 	for (unsigned int i = 0; i < lvl.width() * lvl.height(); i++) {
@@ -96,20 +96,37 @@ void Plat2d::initvg(void) {
 		}
 	}
 
-	Image img(900, 900);
-	vg->PolyMap::draw(img, false);
 
+
+
+	static const unsigned int Width = 400, Height = 400;
+	Point min = vg->min();
+	Point max = vg->max();
+	VisGraph graph(*vg);
+	graph.translate(-min.x, -min.y);
+	double w = max.x - min.x;
+	double h = max.y - min.y;
+	double sx = Width / w, sy = Height / h;
+	if (sx < sy)
+		graph.scale(sx, sx);
+	else
+		graph.scale(sy, sy);
+	Image img(Width, Height);
+	graph.PolyMap::draw(img, false);
 	Image::Path *p = new Image::Path();
 	p->setcolor(Color(1, 0, 0));
 	int i = centers[2 * lvl.height() + 2];
-	p->moveto(vg->verts[i].pt.x, vg->verts[i].pt.y);
+	p->moveto(graph.verts[i].pt.x, graph.verts[i].pt.y);
 	i = togoal[i].prev;
 	while (i >= 0) {
-		p->lineto(vg->verts[i].pt.x, vg->verts[i].pt.y);
+		p->lineto(graph.verts[i].pt.x, graph.verts[i].pt.y);
 		i = togoal[i].prev;
 	}
 	img.add(p);
 	img.save("vismap.eps");
+
+
+
 
 	dfpair(stdout, "visibility graph time", "%g", walltime() - strt);
 }

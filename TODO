@@ -20,11 +20,9 @@
 
 	- verify solution paths
 
-	- grid2poly: detect outter
-	bounding polygon
-
-	- allow a bounding outter
-	polygon
+	- grid2poly: fix hull detection
+	with diagonals on the inverted
+	polygons.
 
 	- specific closed list
 

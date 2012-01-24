@@ -15,12 +15,7 @@ VisGraph::VisGraph(FILE *in) : PolyMap(in) {
 		verts.push_back(Vert(in));
 }
 
-VisGraph::VisGraph(std::vector<Polygon> &polys) : PolyMap(polys) {
-	build();
-}
-
-VisGraph::VisGraph(const bool blkd[], unsigned int w, unsigned int h) :
-		PolyMap(blkd, w, h) {
+VisGraph::VisGraph(const PolyMap &p) : PolyMap(p) {
 	build();
 }
 
@@ -138,25 +133,42 @@ void VisGraph::build(void) {
 }
 
 void VisGraph::populateverts(void) {
+	std::vector<unsigned int> vs;
 	for (unsigned int i = 0; i < polys.size(); i++) {
-		std::vector<unsigned int> vs = polys[i].reflexes();
-		unsigned int id0 = verts.size();
-
-		// add all reflex vertices for this polygon
-		for (unsigned int j = 0; j < vs.size(); j++) {
-			const Point &pt = polys[i].verts[vs[j]];
-			verts.push_back(Vert(verts.size(), pt));
+		vs.clear();
+		for (unsigned int j = 0; j < polys[j].verts.size(); j++) {
+			if (polys[j].isreflex(j))
+				vs.push_back(j);
+		}
+		addpoly(polys[i], vs);
+		for (unsigned int j = 0; j < vs.size(); j++)
 			polyno.push_back(i);
+	}
+	if (bound) {		vs.clear();
+		for (unsigned int i = 0; i < bound->verts.size(); i++) {
+			if (!bound->isreflex(i))
+				vs.push_back(i);
 		}
+		addpoly(*bound, vs);
+	}
+}
 
-		// link adjacent vertices
-		unsigned int n = polys[i].verts.size();
-		for (unsigned int i = 0; i < vs.size(); i++) {
-		for (unsigned int j = i + 1; j < vs.size(); j++) {
-			if ((vs[i] + 1) % n == vs[j] || (vs[j] + 1) % n == vs[i])
-				addedge(id0 + i, id0 + j);
-		}
-		}
+void VisGraph::addpoly(const Polygon &p, const std::vector<unsigned int> &vs) {
+	unsigned int id0 = verts.size();
+
+	// add all reflex vertices for this polygon
+	for (unsigned int j = 0; j < vs.size(); j++) {
+		const Point &pt = p.verts[vs[j]];
+		verts.push_back(Vert(verts.size(), pt));
+	}
+
+	// link adjacent vertices
+	unsigned int n = p.verts.size();
+	for (unsigned int i = 0; i < vs.size(); i++) {
+	for (unsigned int j = i + 1; j < vs.size(); j++) {
+		if ((vs[i] + 1) % n == vs[j] || (vs[j] + 1) % n == vs[i])
+			addedge(id0 + i, id0 + j);
+	}
 	}
 }
 

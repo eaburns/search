@@ -390,9 +390,6 @@ struct Polygon {
 	// the line segment and the polygon.
 	std::vector<Point> isections(const LineSeg&) const;
 
-	// reflexes returns the indices of all reflex vertices.
-	std::vector<unsigned int> reflexes(void) const;
-
 	// scale scales the polygon by the given factors
 	// in both the x and y directions.
 	void scale(double sx, double sy) {
@@ -411,13 +408,14 @@ struct Polygon {
 		initsides();
 	}
 
+	bool isreflex(unsigned int i) const { return interangle(i) < M_PI; }
+ 
 	std::vector<Point> verts;
 	std::vector<LineSeg> sides;
 	Rectangle bbox;
 
 private:
 	double interangle(unsigned int) const;
-	bool isreflex(unsigned int) const;
 	void removecolinear(void);
 	void initsides(void);
 };
