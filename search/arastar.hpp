@@ -91,9 +91,7 @@ template <class D> struct Arastar : public SearchAlgorithm<D> {
 
 		unsigned long n = 0;
 		do {
-			improve(d);
-			// No solution
-			if (SearchAlgorithm<D>::res.cost == D::InfCost)
+			if (!improve(d))
 				break;
 
 			n++;
@@ -142,16 +140,20 @@ template <class D> struct Arastar : public SearchAlgorithm<D> {
 
 private:
 
-	void improve(D &d) {
+	bool improve(D &d) {
+		bool goal = false;
 		while (!SearchAlgorithm<D>::limit() && goodnodes()) {
 			Node *n = *open.pop();
 			State buf, &state = d.unpack(buf, n->packed);
 
-			if (d.isgoal(state))
+			if (d.isgoal(state)) {
 				SearchAlgorithm<D>::res.goal(d, n);
+				goal = true;
+			}
 
 			expand(d, n, state);
 		}
+		return goal;
 	}
 
 	bool goodnodes() {
