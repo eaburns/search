@@ -137,7 +137,7 @@ void VisGraph::populateverts(void) {
 	for (unsigned int i = 0; i < polys.size(); i++) {
 		vs.clear();
 		for (unsigned int j = 0; j < polys[j].verts.size(); j++) {
-			if (polys[j].isreflex(j))
+			if (polys[i].isreflex(j))
 				vs.push_back(j);
 		}
 		addpoly(polys[i], vs);
@@ -146,7 +146,7 @@ void VisGraph::populateverts(void) {
 	}
 	if (bound) {		vs.clear();
 		for (unsigned int i = 0; i < bound->verts.size(); i++) {
-			if (!bound->isreflex(i))
+			if (bound->isreflex(i))
 				vs.push_back(i);
 		}
 		addpoly(*bound, vs);

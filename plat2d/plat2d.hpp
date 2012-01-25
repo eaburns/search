@@ -221,19 +221,18 @@ private:
 	void initvg(void);
 
 	Cost hvis(const State &s) const {
+		const Point &loc = s.player.body.bbox.center();
+		if (vg->isvisible(loc, Point(gx * Tile::Width, gy * Tile::Height)))
+			return heuclidean(s);
+
 		Lvl::Blkinfo bi = lvl.majorblk(s.player.body.bbox);
 		int c = centers[bi.x * lvl.height() + bi.y];
-		const Point &loc = s.player.body.bbox.center();
+
 		// Length of a tile diagonal, subtracted from the visnav
 		// distance to account for the fact that the goal vertex
 		// is in the center of the goal cell, not on the side.
-		static const double diag =
-			sqrt(Tile::Width * Tile::Width + Tile::Height * Tile::Height);
-		double dvis = togoal[c].d - Point::distance(loc, vg->verts[c].pt) - diag;
-		double deuc = heuclidean(s);
-		if (dvis > deuc)
-			return dvis;
-		return deuc;
+		static const double diag = sqrt(Tile::Width * Tile::Width + Tile::Height * Tile::Height);
+		return togoal[c].d - Point::distance(loc, vg->verts[c].pt) - diag;
 	}
 
 	VisGraph *vg;

@@ -98,31 +98,24 @@ struct Comp {
 		return Pose(cur.x, cur.y, Pose::Down);
 	}
 
+	// invert makes a subsequent calls to poly use the inside
+	// of the component instead of the outside.  It is sufficient
+	// to move the starting point (minx, miny) to a block on the
+	// inside, right most edge of the polygon.
 	void invert(void) {
-		for (unsigned int x = minx; x < w; x++) {
-			int miny, maxy;
-			for (miny = 0; miny < (int) h && !blocked(x, miny); miny++)
+		for (unsigned int y = miny; y < h; y++) {
+			unsigned int startx, endx, x;
+			for (startx = minx; startx < w && !blocked(startx, y); startx++)
 				;
-			for (maxy = h - 1; maxy >= 0 && !blocked(x, maxy); maxy--)
+			for (endx = w - 1; endx > startx && !blocked(endx, y); endx--)
 				;
-			if (maxy < miny)
+			for (x = endx; x > startx && blocked(x, y); x--)
+				;
+			if (x == startx)
 				continue;
-			for (int y = miny; y <= maxy; y++)
-				toggle(x, y);
-		}
-		minx = w;
-		miny = h;
-		n = 0;
-		for (unsigned int x = 0; x < w; x++) {
-		for (unsigned int y = 0; y < h; y++) {
-			if (!blocked(x, y))
-				continue;
-			if (n == 0 || x < minx)
-				minx = x; 
-			n++;
-			if (x == minx && y < miny)
-				miny = y;
-		}
+			minx = x+1;
+			miny = y;
+			break;
 		}
 	}
 
