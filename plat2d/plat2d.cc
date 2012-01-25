@@ -62,7 +62,7 @@ void Plat2d::initvg(void) {
 		else
 			centers.push_back(-1);
 	}
-	vg->scale(Tile::Width, Tile::Height);
+	vg->scale(W, H);
 
 	togoal.resize(vg->verts.size());
 	for (unsigned int i = 0; i < vg->verts.size(); i++) {

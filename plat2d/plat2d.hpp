@@ -8,6 +8,16 @@
 void fatal(const char*, ...);
 extern "C" unsigned long hashbytes(unsigned char[], unsigned int);
 
+// W is the minimum width of a tile in 'frames'.  I.e., at max
+// speed how many frames does it require to traverse the
+// width of a tile.
+static const double W = Tile::Width / Player::runspeed();
+
+// H is the minimum height of a tile in 'frames'.
+static const double H = Tile::Height / Player::jmpspeed() > Tile::Height / Body::Maxdy ?
+	Tile::Height / Player::jmpspeed() :
+	Tile::Height / Body::Maxdy;
+
 struct Plat2d {
 
 	static const unsigned int Ops[];
@@ -15,8 +25,8 @@ struct Plat2d {
 
 	enum { UnitCost = true };
 
-	typedef double Cost;
-	static const double InfCost = -1;
+	typedef int Cost;
+	static const int InfCost = -1;
 
 	typedef int Oper;
 	static const int Nop = -1;
@@ -69,13 +79,9 @@ struct Plat2d {
 
 	State initialstate(void);
 
-	Cost h(State &s) {
-		return hvis(s);
-	}
+	Cost h(State &s) { return hvis(s); }
 
-	Cost d(State &s) {
-		return deuclidean(s);
-	}
+	Cost d(State &s) { return h(s); }
 
 	bool isgoal(State &s) {
 		Lvl::Blkinfo bi = lvl.majorblk(s.player.body.bbox);
@@ -104,9 +110,7 @@ struct Plat2d {
 
 		Transition(Plat2d &d, State &s, Oper op) : revop(Nop), state(s) {
 			state.player.act(d.lvl, (unsigned int) op);
-			cost = Point::distance(s.player.body.bbox.min,
-				state.player.body.bbox.min);
-
+			cost = 1;
 			if (s.player.body.bbox.min.y == state.player.body.bbox.min.y) {
 				if (op == Player::Left)
 					revop = Player::Right;
@@ -154,38 +158,6 @@ private:
 	// Euclidean distances from the player's center point to the four
 	// corners of the goal block is returned.
 	Cost heuclidean(const State &s) const {
-		static const double W = Tile::Width;
-		static const double H = Tile::Height;
-
-		const Lvl::Blkinfo &bi = lvl.majorblk(s.player.body.bbox);
-		if (bi.x == gx && bi.y == gy)
-			return 0;
-
-		const Point &loc = s.player.body.bbox.center();
-		Point goal;
-		if (bi.y == gy)
-			goal.y = loc.y;
-		else if (bi.y < gy)
-			goal.y = (gy - 1) * H;
-		else
-			goal.y = gy * H;
-		if (bi.x == gx)
-			goal.x = loc.x;
-		else if (bi.x < gx)
-			goal.x = gx * W;
-		else
-			goal.x = (gx + 1) * W;
-
-		return Point::distance(loc, goal);		
-	}
-
-	Cost deuclidean(const State &s) const {
-		static const double W = Tile::Width / Player::runspeed();
-		static const double H =
-			Tile::Height / Player::jmpspeed() > Tile::Height / Body::Maxdy ?
-				Tile::Height / Player::jmpspeed() :
-				Tile::Height / Body::Maxdy;
-
 		const Lvl::Blkinfo &bi = lvl.majorblk(s.player.body.bbox);
 		if (bi.x == gx && bi.y == gy)
 			return 0;
@@ -221,8 +193,10 @@ private:
 	void initvg(void);
 
 	Cost hvis(const State &s) const {
-		const Point &loc = s.player.body.bbox.center();
-		if (vg->isvisible(loc, Point(gx * Tile::Width, gy * Tile::Height)))
+		Point loc = s.player.body.bbox.center();
+		loc.x /= W;
+		loc.y /= H;
+		if (vg->isvisible(loc, Point(gx * W, gy * H)))
 			return heuclidean(s);
 
 		Lvl::Blkinfo bi = lvl.majorblk(s.player.body.bbox);
@@ -231,8 +205,8 @@ private:
 		// Length of a tile diagonal, subtracted from the visnav
 		// distance to account for the fact that the goal vertex
 		// is in the center of the goal cell, not on the side.
-		static const double diag = sqrt(Tile::Width * Tile::Width + Tile::Height * Tile::Height);
-		return togoal[c].d - Point::distance(loc, vg->verts[c].pt) - diag;
+		static const double diag = sqrt(W*W + H*H);
+		return togoal[c].d - Point::distance(loc, vg->verts[c].pt) -  diag;
 	}
 
 	VisGraph *vg;
