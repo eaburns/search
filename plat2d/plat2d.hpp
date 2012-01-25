@@ -199,13 +199,17 @@ private:
 	void initvg(void);
 
 	Cost hvis(const State &s) const {
+		const Lvl::Blkinfo &bi = lvl.majorblk(s.player.body.bbox);
+		if (bi.x == gx && bi.y == gy)
+			return 0;
+
 		Point loc(s.player.body.bbox.center());
 		loc.x /= Maxx;
 		loc.y /= Maxy;
-		if (vg->isvisible(loc, Point((gx+0.5) * W, (gy-0.5) * H)))
+
+		if (vg->isvisible(loc, goalcenter))
 			return heuclidean(s);
 
-		Lvl::Blkinfo bi = lvl.majorblk(s.player.body.bbox);
 		int c = centers[bi.x * lvl.height() + bi.y];
 
 		// Length of a tile diagonal, subtracted from the visnav
@@ -214,13 +218,14 @@ private:
 		static const double diag = sqrt((W/2)*(W/2) + (H/2)*(H/2));
 		assert (Point::distance(loc, vg->verts[c].pt) <= diag + Epsilon);
 		Cost h = togoal[c].d - Point::distance(loc, vg->verts[c].pt) - diag;
-		assert (h >= 0);
+		assert (h >= -Epsilon);
 		return h < 0 ? 0 : h;
 	}
 
 	VisGraph *vg;
 	std::vector<long> centers;
 	std::vector<Node> togoal;
+	Point goalcenter;
 };
 
 // controlstr converts a vector of controls to an ASCII string.

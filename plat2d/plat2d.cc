@@ -76,6 +76,7 @@ void Plat2d::initvg(void) {
 	int goal = centers[gx * lvl.height() + gy];
 	assert (goal >= 0);
 	togoal[goal].d = 0;
+	goalcenter = vg->verts[togoal[goal].v].pt;
 
 	BinHeap<Node, Node*> open;
 	open.push(&togoal[goal]);
