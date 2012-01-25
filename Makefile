@@ -4,7 +4,7 @@ CC:=gcc
 
 AR:=ar
 
-FLAGS:=-Wall -Werror -O0 -g
+FLAGS:=-Wall -Werror -O3
 
 CXXFLAGS:=$(FLAGS)
 

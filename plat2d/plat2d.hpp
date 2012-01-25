@@ -8,15 +8,21 @@
 void fatal(const char*, ...);
 extern "C" unsigned long hashbytes(unsigned char[], unsigned int);
 
+// Maxx is the maximum travel distance in the x-direction
+// in a single frame.
+static const double Maxx = Player::runspeed();
+
+// Maxy is the maximum travel distance in the y-direction
+// in a single frame.
+static const double Maxy = Player::jmpspeed() > Body::Maxdy ? Player::jmpspeed() : Body::Maxdy;
+
 // W is the minimum width of a tile in 'frames'.  I.e., at max
 // speed how many frames does it require to traverse the
 // width of a tile.
-static const double W = Tile::Width / Player::runspeed();
+static const double W = Tile::Width / Maxx;
 
 // H is the minimum height of a tile in 'frames'.
-static const double H = Tile::Height / Player::jmpspeed() > Tile::Height / Body::Maxdy ?
-	Tile::Height / Player::jmpspeed() :
-	Tile::Height / Body::Maxdy;
+static const double H = Tile::Height /  Maxy;
 
 struct Plat2d {
 
@@ -25,8 +31,8 @@ struct Plat2d {
 
 	enum { UnitCost = true };
 
-	typedef int Cost;
-	static const int InfCost = -1;
+	typedef double Cost;
+	static const double InfCost = -1;
 
 	typedef int Oper;
 	static const int Nop = -1;
@@ -79,7 +85,7 @@ struct Plat2d {
 
 	State initialstate(void);
 
-	Cost h(State &s) { return hvis(s); }
+	Cost h(State &s) { return 0; /* return hvis(s); */ }
 
 	Cost d(State &s) { return h(s); }
 
@@ -181,10 +187,10 @@ private:
 	}
 
 	struct Node {
-		int v;
-		long i;
-		double d;
-		int prev;
+		int v;		// vertex ID
+		int prev;	// previous along path
+		long i;	// prio queue index
+		double d;	// distance to goal
 
 		static void setind(Node *n, unsigned long ind) { n->i = ind; }
 		static bool pred(const Node *a, const Node *b) { return a->d < b->d; }
@@ -193,10 +199,10 @@ private:
 	void initvg(void);
 
 	Cost hvis(const State &s) const {
-		Point loc = s.player.body.bbox.center();
-		loc.x /= W;
-		loc.y /= H;
-		if (vg->isvisible(loc, Point(gx * W, gy * H)))
+		Point loc(s.player.body.bbox.center());
+		loc.x /= Maxx;
+		loc.y /= Maxy;
+		if (vg->isvisible(loc, Point((gx+0.5) * W, (gy+0.5) * H)))
 			return heuclidean(s);
 
 		Lvl::Blkinfo bi = lvl.majorblk(s.player.body.bbox);
@@ -205,8 +211,10 @@ private:
 		// Length of a tile diagonal, subtracted from the visnav
 		// distance to account for the fact that the goal vertex
 		// is in the center of the goal cell, not on the side.
-		static const double diag = sqrt(W*W + H*H);
-		return togoal[c].d - Point::distance(loc, vg->verts[c].pt) -  diag;
+		static const double diag = sqrt((W/2)*(W/2) + (H/2)*(H/2));
+		Cost h = togoal[c].d - Point::distance(loc, vg->verts[c].pt) -  diag;
+		assert (h >= 0);
+		return h < 0 ? 0 : h;
 	}
 
 	VisGraph *vg;

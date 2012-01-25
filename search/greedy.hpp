@@ -93,6 +93,7 @@ private:
 			nodes->destroy(kid);
 		} else {
 			kid->h = speedy ? d.d(tr.state) : d.h(tr.state);
+			assert (kid->h >= 0);
 			kid->update(kid->g, parent, op, tr.revop);
 			closed.add(kid, hash);
 			open.push(kid);

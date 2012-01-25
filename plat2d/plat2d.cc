@@ -62,6 +62,7 @@ void Plat2d::initvg(void) {
 		else
 			centers.push_back(-1);
 	}
+
 	vg->scale(W, H);
 
 	togoal.resize(vg->verts.size());

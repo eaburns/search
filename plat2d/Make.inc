@@ -16,8 +16,8 @@ plat2d/plat2d_solver: $(PLAT2DOBJS) plat2d/main.o\
 	structs/structs.a search/search.a
 	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
 
-include plat2d/main.d
-CLEAN+=plat2d/plat2d_solver plat2d/main.o
+include plat2d/main.d plat2d/plat2d.d
+CLEAN+=plat2d/plat2d_solver plat2d/main.o plat2d/plat2d.o
 
 plat2d/draw: $(PLAT2DOBJS) plat2d/draw.o utils/utils.a
 	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
