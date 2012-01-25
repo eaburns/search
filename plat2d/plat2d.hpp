@@ -10,11 +10,11 @@ extern "C" unsigned long hashbytes(unsigned char[], unsigned int);
 
 // Maxx is the maximum travel distance in the x-direction
 // in a single frame.
-static const double Maxx = Player::runspeed();
+static const double Maxx = 1; // Player::runspeed();
 
 // Maxy is the maximum travel distance in the y-direction
 // in a single frame.
-static const double Maxy = Player::jmpspeed() > Body::Maxdy ? Player::jmpspeed() : Body::Maxdy;
+static const double Maxy = 1; // Player::jmpspeed() > Body::Maxdy ? Player::jmpspeed() : Body::Maxdy;
 
 // W is the minimum width of a tile in 'frames'.  I.e., at max
 // speed how many frames does it require to traverse the
@@ -29,7 +29,7 @@ struct Plat2d {
 	static const unsigned int Ops[];
 	static const unsigned int Nops;
 
-	enum { UnitCost = true };
+	enum { UnitCost = false };
 
 	typedef double Cost;
 	static const double InfCost = -1;
@@ -85,9 +85,9 @@ struct Plat2d {
 
 	State initialstate(void);
 
-	Cost h(State &s) { return 0; /* return hvis(s); */ }
+	Cost h(State &s) { return hvis(s); }
 
-	Cost d(State &s) { return h(s); }
+	Cost d(State &s) { return 0; }
 
 	bool isgoal(State &s) {
 		Lvl::Blkinfo bi = lvl.majorblk(s.player.body.bbox);
@@ -116,7 +116,7 @@ struct Plat2d {
 
 		Transition(Plat2d &d, State &s, Oper op) : revop(Nop), state(s) {
 			state.player.act(d.lvl, (unsigned int) op);
-			cost = 1;
+			cost = Point::distance(s.player.body.bbox.min, state.player.body.bbox.min);
 			if (s.player.body.bbox.min.y == state.player.body.bbox.min.y) {
 				if (op == Player::Left)
 					revop = Player::Right;
@@ -202,7 +202,7 @@ private:
 		Point loc(s.player.body.bbox.center());
 		loc.x /= Maxx;
 		loc.y /= Maxy;
-		if (vg->isvisible(loc, Point((gx+0.5) * W, (gy+0.5) * H)))
+		if (vg->isvisible(loc, Point((gx+0.5) * W, (gy-0.5) * H)))
 			return heuclidean(s);
 
 		Lvl::Blkinfo bi = lvl.majorblk(s.player.body.bbox);
@@ -212,7 +212,8 @@ private:
 		// distance to account for the fact that the goal vertex
 		// is in the center of the goal cell, not on the side.
 		static const double diag = sqrt((W/2)*(W/2) + (H/2)*(H/2));
-		Cost h = togoal[c].d - Point::distance(loc, vg->verts[c].pt) -  diag;
+		assert (Point::distance(loc, vg->verts[c].pt) <= diag + Epsilon);
+		Cost h = togoal[c].d - Point::distance(loc, vg->verts[c].pt) - diag;
 		assert (h >= 0);
 		return h < 0 ? 0 : h;
 	}
