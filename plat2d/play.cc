@@ -86,6 +86,7 @@ static void helpmsg(int res) {
 	puts("-h	display this help message");
 	puts("-e	echo the input back to the output if the input is a datafile");
 	puts("-t <num>	sets the frame time in milliseconds");
+	puts("-d <num>	set an initial delay on playing the solution");
 	exit(res);
 }
 

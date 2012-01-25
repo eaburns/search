@@ -136,7 +136,7 @@ void VisGraph::populateverts(void) {
 	std::vector<unsigned int> vs;
 	for (unsigned int i = 0; i < polys.size(); i++) {
 		vs.clear();
-		for (unsigned int j = 0; j < polys[j].verts.size(); j++) {
+		for (unsigned int j = 0; j < polys[i].verts.size(); j++) {
 			if (polys[i].isreflex(j))
 				vs.push_back(j);
 		}
