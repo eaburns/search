@@ -99,11 +99,9 @@ bool PolyMap::isvisible(const Point &a, const Point &b) const {
 	for (unsigned int i = 0; i < polys.size(); i++) {
 		if (!bbox.hits(polys[i].bbox))
 			continue;
-		if (polys[i].hits(line))
+		if (polys[i].hits(line)) {
 			return false;
+		}
 	}
-	if (!bound)
-		return true;
-
-	return bound->contains(a) && bound->contains(b) && !bound->hits(line);
+	return !bound || !bound->hits(line);
 }

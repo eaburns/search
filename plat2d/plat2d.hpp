@@ -10,11 +10,11 @@ extern "C" unsigned long hashbytes(unsigned char[], unsigned int);
 
 // Maxx is the maximum travel distance in the x-direction
 // in a single frame.
-static const double Maxx = 1; // Player::runspeed();
+static const double Maxx = Player::runspeed();
 
 // Maxy is the maximum travel distance in the y-direction
 // in a single frame.
-static const double Maxy = 1; // Player::jmpspeed() > Body::Maxdy ? Player::jmpspeed() : Body::Maxdy;
+static const double Maxy = Player::jmpspeed() > Body::Maxdy ? Player::jmpspeed() : Body::Maxdy;
 
 // W is the minimum width of a tile in 'frames'.  I.e., at max
 // speed how many frames does it require to traverse the
@@ -31,8 +31,8 @@ struct Plat2d {
 
 	enum { UnitCost = false };
 
-	typedef double Cost;
-	static const double InfCost = -1;
+	typedef int Cost;
+	static const int InfCost = -1;
 
 	typedef int Oper;
 	static const int Nop = -1;
@@ -116,7 +116,7 @@ struct Plat2d {
 
 		Transition(Plat2d &d, State &s, Oper op) : revop(Nop), state(s) {
 			state.player.act(d.lvl, (unsigned int) op);
-			cost = Point::distance(s.player.body.bbox.min, state.player.body.bbox.min);
+			cost = 1; // Point::distance(s.player.body.bbox.min, state.player.body.bbox.min);
 			if (s.player.body.bbox.min.y == state.player.body.bbox.min.y) {
 				if (op == Player::Left)
 					revop = Player::Right;
@@ -163,12 +163,7 @@ private:
 	// nearest side is returned.  Otherwise, the minimum of the
 	// Euclidean distances from the player's center point to the four
 	// corners of the goal block is returned.
-	Cost heuclidean(const State &s) const {
-		const Lvl::Blkinfo &bi = lvl.majorblk(s.player.body.bbox);
-		if (bi.x == gx && bi.y == gy)
-			return 0;
-
-		const Point &loc = s.player.body.bbox.center();
+	Cost heuclidean(const Lvl::Blkinfo &bi, const Point &loc) const {
 		Point goal;
 		if (bi.y == gy)
 			goal.y = loc.y;
@@ -207,18 +202,20 @@ private:
 		loc.x /= Maxx;
 		loc.y /= Maxy;
 
-		if (vg->isvisible(loc, goalcenter))
-			return heuclidean(s);
-
-		int c = centers[bi.x * lvl.height() + bi.y];
+		if (vg->isvisible(loc, Point(gx * W, gy * H)) ||
+			vg->isvisible(loc, Point((gx + 1) * W, gy * H)) ||
+			vg->isvisible(loc, Point((gx + 1) * W, (gy + 1) * H)) ||
+			vg->isvisible(loc, Point(gx * W, (gy + 1) * H)) ||
+			vg->isvisible(loc, goalcenter))
+			return heuclidean(bi, loc);
 
 		// Length of a tile diagonal, subtracted from the visnav
 		// distance to account for the fact that the goal vertex
 		// is in the center of the goal cell, not on the side.
 		static const double diag = sqrt((W/2)*(W/2) + (H/2)*(H/2));
-		assert (Point::distance(loc, vg->verts[c].pt) <= diag + Epsilon);
+		int c = centers[bi.x * lvl.height() + bi.y];
 		Cost h = togoal[c].d - Point::distance(loc, vg->verts[c].pt) - diag;
-		assert (h >= -Epsilon);
+		assert (h >= 0);
 		return h < 0 ? 0 : h;
 	}
 
