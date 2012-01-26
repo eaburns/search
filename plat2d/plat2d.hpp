@@ -29,7 +29,7 @@ struct Plat2d {
 	static const unsigned int Ops[];
 	static const unsigned int Nops;
 
-	enum { UnitCost = false };
+	enum { UnitCost = true };
 
 	typedef int Cost;
 	static const int InfCost = -1;
@@ -87,7 +87,7 @@ struct Plat2d {
 
 	Cost h(State &s) { return hvis(s); }
 
-	Cost d(State &s) { return 0; }
+	Cost d(State &s) { return hvis(s); }
 
 	bool isgoal(State &s) {
 		Lvl::Blkinfo bi = lvl.majorblk(s.player.body.bbox);
