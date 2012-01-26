@@ -103,5 +103,5 @@ bool PolyMap::isvisible(const Point &a, const Point &b) const {
 			return false;
 		}
 	}
-	return !bound || !bound->hits(line);
+	return !bound || (bound->contains(a) && !bound->hits(line));
 }
