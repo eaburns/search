@@ -8,6 +8,8 @@ static const double Runspeed = 2.0 + Dex / 4.0;
 
 static const double Jmpspeed = 7.0 + Dex / 5.0;
 
+enum { Maxjframes = 8 };
+
 struct Player {
 
 	enum {
@@ -23,8 +25,6 @@ struct Player {
 		Height = 29,
 		Offy = 2,
 	};
-
-	enum { Maxjframes = 8 };
 
 	Player(void) { }
 
@@ -44,7 +44,9 @@ struct Player {
 
 	// canjump returns true if the jump action can
 	// actually do anything.
-	bool canjump(void) const;
+	bool canjump(void) const {
+		return !body.fall || (jframes == 0 && body.dy <= 0) || jframes > 0;
+	}
 
 	Body body;
 	unsigned char jframes;
@@ -54,6 +56,4 @@ private:
 	double xvel(const Lvl&, unsigned int);
 
 	void chngjmp(unsigned int);
-
-	void trydoor(const Lvl&, unsigned int);
 };

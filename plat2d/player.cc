@@ -22,10 +22,6 @@ double Player::xvel(const Lvl &lvl, unsigned int a) {
 	return dx;
 }
 
-bool Player::canjump(void) const {
-	return !body.fall || (jframes == 0 && body.dy <= 0) || jframes > 0;
-}
-
 void Player::chngjmp(unsigned int a) {
 	if (!(a & Jump) && body.fall) {	// stop holding jump
 		if (body.dy < 0) {

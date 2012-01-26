@@ -210,6 +210,10 @@ private:
 		return pt;
 	}
 
+	// drawmap draws the visibility map used for the heuristic
+	// to the given file.;
+	void drawmap(const char*) const;
+
 	VisGraph *vg;
 	std::vector<long> centers;
 	std::vector<Node> togoal;
