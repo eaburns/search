@@ -179,16 +179,17 @@ private:
 
 		Point g = goalpt(bi, loc);
 		if (vg->isvisible(loc, g))
-			return Point::distance(loc, g);
+			// still admissible if we go up to the next int
+			return ceil(Point::distance(loc, g));
 
 		// Length of a tile diagonal, subtracted from the visnav
 		// distance to account for the fact that the goal vertex
 		// is in the center of the goal cell, not on the side.
 		static const double diag = sqrt((W/2)*(W/2) + (H/2)*(H/2));
 		int c = centers[bi.x * lvl.height() + bi.y];
-		Cost h = togoal[c].d - Point::distance(loc, vg->verts[c].pt) - diag;
+		double h = togoal[c].d - Point::distance(loc, vg->verts[c].pt) - diag;
 		assert (h >= 0);
-		return h < 0 ? 0 : h;
+		return ceil(h);	// still admissible if we go up to the next int
 	}
 
 	// goalpt returns a point in the goal cell that is closest
