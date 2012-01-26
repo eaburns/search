@@ -28,6 +28,11 @@ Plat2d::Plat2d(FILE *in) : lvl(in) {
 	if (gx >= lvl.width() || gy >= lvl.height())
 		fatal("No goal location in the level");
 
+	gleft = gx * W;
+	gright = (gx + 1) * W;
+	gtop = (gy - 1) * H;
+	gbottom = gy * H;
+
 	initvg();
 }
 
@@ -76,7 +81,6 @@ void Plat2d::initvg(void) {
 	int goal = centers[gx * lvl.height() + gy];
 	assert (goal >= 0);
 	togoal[goal].d = 0;
-	goalcenter = vg->verts[togoal[goal].v].pt;
 
 	BinHeap<Node, Node*> open;
 	open.push(&togoal[goal]);

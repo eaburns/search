@@ -11,13 +11,13 @@ void Player::act(const Lvl &lvl, unsigned int a) {
 double Player::xvel(const Lvl &lvl, unsigned int a) {
 	double dx = 0;
 	if(a & Left)
-		dx -= runspeed();
+		dx -= Runspeed;
 	if (a & Right)
-		dx += runspeed();
+		dx += Runspeed;
 
 	Lvl::Blkinfo bi = lvl.majorblk(body.bbox);
 	if (dx)
-		dx = (dx < 0 ? -1 : 1) * bi.tile.drag() * runspeed();
+		dx = (dx < 0 ? -1 : 1) * bi.tile.drag() * Runspeed;
 
 	return dx;
 }
@@ -36,7 +36,7 @@ void Player::chngjmp(unsigned int a) {
 		jframes = 0;
 
 	} else if (a & Jump && !body.fall) {
-		body.dy = -jmpspeed();
+		body.dy = -Jmpspeed;
 		body.fall = 1;
 		jframes = Maxjframes;
 	}

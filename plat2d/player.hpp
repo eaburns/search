@@ -2,6 +2,12 @@
 
 struct Lvl;
 
+static const double Dex = 5.0;	// Initial value from mid
+
+static const double Runspeed = 2.0 + Dex / 4.0;
+
+static const double Jmpspeed = 7.0 + Dex / 5.0;
+
 struct Player {
 
 	enum {
@@ -20,8 +26,6 @@ struct Player {
 
 	enum { Maxjframes = 8 };
 
-	static const double Dex = 5;	// Initial value from mid
-
 	Player(void) { }
 
 	Player(unsigned int x, unsigned int y, unsigned int w, unsigned int h) :
@@ -37,10 +41,6 @@ struct Player {
 
 	// bottom left
 	Point loc(void) { return body.bbox.min; }
-
-	static double runspeed(void) { return 2.0 + Dex / 4.0; }
-
-	static double jmpspeed(void) { return 7.0 + Dex / 5.0; }
 
 	// canjump returns true if the jump action can
 	// actually do anything.

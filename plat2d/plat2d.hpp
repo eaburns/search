@@ -10,11 +10,11 @@ extern "C" unsigned long hashbytes(unsigned char[], unsigned int);
 
 // Maxx is the maximum travel distance in the x-direction
 // in a single frame.
-static const double Maxx = Player::runspeed();
+static const double Maxx = Runspeed;
 
 // Maxy is the maximum travel distance in the y-direction
 // in a single frame.
-static const double Maxy = Player::jmpspeed() > Body::Maxdy ? Player::jmpspeed() : Body::Maxdy;
+static const double Maxy = Jmpspeed > Body::Maxdy ? Jmpspeed : Body::Maxdy;
 
 // W is the minimum width of a tile in 'frames'.  I.e., at max
 // speed how many frames does it require to traverse the
@@ -156,31 +156,6 @@ struct Plat2d {
 
 private:
 
-	// heuclidean computes the Euclidean distance of the center
-	// point of the player to the goal.  That is, if the player is level
-	// with the goal tile in the y direction or is level with it in the
-	// x direction and above it then the Euclidean distance to the
-	// nearest side is returned.  Otherwise, the minimum of the
-	// Euclidean distances from the player's center point to the four
-	// corners of the goal block is returned.
-	Cost heuclidean(const Lvl::Blkinfo &bi, const Point &loc) const {
-		Point goal;
-		if (bi.y == gy)
-			goal.y = loc.y;
-		else if (bi.y < gy)
-			goal.y = (gy - 1) * H;
-		else
-			goal.y = gy * H;
-		if (bi.x == gx)
-			goal.x = loc.x;
-		else if (bi.x < gx)
-			goal.x = gx * W;
-		else
-			goal.x = (gx + 1) * W;
-
-		return Point::distance(loc, goal);		
-	}
-
 	struct Node {
 		int v;		// vertex ID
 		int prev;	// previous along path
@@ -202,12 +177,9 @@ private:
 		loc.x /= Maxx;
 		loc.y /= Maxy;
 
-		if (vg->isvisible(loc, Point(gx * W, gy * H)) ||
-			vg->isvisible(loc, Point((gx + 1) * W, gy * H)) ||
-			vg->isvisible(loc, Point((gx + 1) * W, (gy + 1) * H)) ||
-			vg->isvisible(loc, Point(gx * W, (gy + 1) * H)) ||
-			vg->isvisible(loc, goalcenter))
-			return heuclidean(bi, loc);
+		Point g = goalpt(bi, loc);
+		if (vg->isvisible(loc, g))
+			return Point::distance(loc, g);
 
 		// Length of a tile diagonal, subtracted from the visnav
 		// distance to account for the fact that the goal vertex
@@ -219,10 +191,29 @@ private:
 		return h < 0 ? 0 : h;
 	}
 
+	// goalpt returns a point in the goal cell that is closest
+	// to the given location.
+	Point goalpt(const Lvl::Blkinfo &bi, const Point &loc) const {
+		Point pt;
+		if (bi.y == gy)
+			pt.y = loc.y;
+		else if (bi.y < gy)
+			pt.y = gtop;
+		else
+			pt.y = gbottom;
+		if (bi.x == gx)
+			pt.x = loc.x;
+		else if (bi.x < gx)
+			pt.x = gleft;
+		else
+			pt.x = gright;
+		return pt;
+	}
+
 	VisGraph *vg;
 	std::vector<long> centers;
 	std::vector<Node> togoal;
-	Point goalcenter;
+	double gleft, gright, gtop, gbottom;
 };
 
 // controlstr converts a vector of controls to an ASCII string.
