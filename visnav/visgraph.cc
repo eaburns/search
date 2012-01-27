@@ -62,7 +62,7 @@ void VisGraph::Vert::output(FILE *out) const {
 }
 
 void VisGraph::draw(Image &img, bool label) const {
-	static const double polywidth = 2;
+	static const double polywidth = 1;
 	PolyMap::draw(img, polywidth);
 
 	for (unsigned int i = 0; i < verts.size(); i++) {

@@ -39,11 +39,18 @@ visnav/mkgraph: $(VISNAVOBJS) visnav/mkgraph.o\
 include visnav/mkgraph.d
 CLEAN+=visnav/mkgraph visnav/mkgraph.o
 
+visnav/pbm2poly: $(VISNAVOBJS) visnav/pbm2poly.o utils/utils.a
+	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
+
+include visnav/pbm2poly.d
+CLEAN+=visnav/pbm2poly visnav/pbm2poly.o
+
 visnav/visgraph.a: visnav/polymap.o visnav/grid2poly.o visnav/visgraph.o
 	$(AR) rsc $@ $^
 
 CLEAN+=visnav/visgraph.a
 
-visnav: visnav/rand visnav/draw visnav/inst visnav/visnav_solver visnav/mkgraph visnav/visgraph.a
+visnav: visnav/rand visnav/draw visnav/inst visnav/visnav_solver visnav/mkgraph\
+	visnav/pbm2poly visnav/visgraph.a
 
 EVERYTHING+=visnav
