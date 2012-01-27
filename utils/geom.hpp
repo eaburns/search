@@ -18,7 +18,7 @@ static const double Epsilon = std::numeric_limits<double>::epsilon();
 static const double Infinity = std::numeric_limits<double>::infinity();
 
 // Threshold is the threshold to which equality is performed
-static const double Threshold = 1e-10;
+static const double Threshold = sqrt(Epsilon);
 
 // doubleeq is a double equality test that does not use ==, instead
 // it performs an approximate equality test for within

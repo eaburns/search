@@ -13,7 +13,7 @@ static struct { double a, b; bool eq; } eqtst[] = {
 	{ 1, 2, false },
 	{ 2, 3, false },
 	{ 1e90, 1.0000001e90, false },
-	{ M_PI, M_PI + Threshold + Epsilon, false },
+	{ M_PI, M_PI + Threshold + 2 * Epsilon, false },
 };
 
 bool test_doubleeq(void) {
@@ -421,11 +421,18 @@ bool test_poly_minisect(void) {
 
 bool test_poly_hits(void) {
 	struct { Polygon p; LineSeg l; bool hit; } tst[] = {
+
 		{ Polygon(4, 7.0, 11.0, 7.0, 12.0, 19.0, 12.0, 19.0, 11.0),
 			LineSeg(Point(13, 10), Point(20, 23)),
 			true },
+
 		{ Polygon(8, 5.0,46.0, 5.0,47.0, 6.0,47.0, 6.0,48.0, 7.0,48.0, 7.0,47.0, 8.0,47.0, 8.0,46.0),
 			LineSeg(Point(5.000000008304548, 36.000000099654578), Point(5.999999900000001, 47.999998800000000)),
+			true },
+
+		{ Polygon(4, 10.0, 10.0, 20.0, 10.0, 20.0, 20.0, 10.0, 20.0),
+			LineSeg(Point(16.711217312473440, 19.910276876720729),
+					Point(16.711216292250189, 21.910276876720470)),
 			true },
 	};
 	bool ok = true;

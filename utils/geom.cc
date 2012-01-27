@@ -201,7 +201,8 @@ Point Polygon::minisect(const LineSeg &l) const {
 
 bool Polygon::hits(const LineSeg &l) const {
 	for (unsigned int i = 0; i < sides.size(); i++) {
-		Point p = l.isection(sides[i]);
+		const LineSeg &side = sides[i];
+		Point p = l.isection(side);
 		if (isisect(p))
 			return true;
 	}
