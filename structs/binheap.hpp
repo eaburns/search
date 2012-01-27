@@ -75,7 +75,7 @@ public:
 		if (heap.size() <= 0)
 			return;
 
-		for (unsigned long i = heap.size() / 2; i >= 0; i--) {
+		for (unsigned long i = heap.size() / 2; ; i--) {
 			pushdown(i);
 			if (i == 0)
 				break;

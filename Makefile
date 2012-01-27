@@ -32,10 +32,10 @@ everything: $(EVERYTHING)
 tests: $(TESTS)
 
 %.d: %.cc
-	./dep.sh $(CXX) $(shell dirname $*) $(CXXFLAGS) $*.cc > $@
+	./dep.sh g++ $(shell dirname $*) $(CXXFLAGS) $*.cc > $@
 
 %.d: %.c
-	./dep.sh $(CC) $(shell dirname $*) $(CFLAGS) $*.c > $@
+	./dep.sh gcc $(shell dirname $*) $(CFLAGS) $*.c > $@
 
 clean:
 	rm -f $(CLEAN) $(BINS) $(TMPLS:.hpp=.hpp.gch)

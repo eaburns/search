@@ -166,7 +166,7 @@ private:
 			}
 			virtual void write(FILE*) const;
 			virtual Loc move(Loc) const;
-			friend class Image::Path;
+			friend struct Image::Path;
 		protected:
 			double x, y, r, t, dt;
 		};
@@ -176,7 +176,7 @@ private:
 					Arc(_x, _y, _r, _t, -_dt) {
 				t = Image::nautical2math(t);
 			}
-			friend class Image::Path;
+			friend struct Image::Path;
 		};
 
 		void addseg(Segment *s) {

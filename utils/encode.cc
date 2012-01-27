@@ -172,7 +172,7 @@ std::string base64dec(const std::string &data) {
 
 	// Decoding table.  Initialized onec on call to base64dec.
 	static char tab[255];
-	if (tab['B'] != 1) {
+	if (tab[(int)'B'] != 1) {
 		for (unsigned int i = 0; i < 64; i++)
 			tab[(int) base64tab[i]] = i;
 	}
