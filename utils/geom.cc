@@ -147,16 +147,25 @@ void Polygon::draw(Image &img, Color c, double lwidth) const {
 	img.add(p);
 }
 
-bool Polygon::contains(const Point &p) const {
+bool Polygon::contains(const Point &pt) const {
 	bool even = true, isect = false;
-	Line ray(p, Point(p.x + 1, p.y));
+	Line ray(pt, Point(pt.x + 1, pt.y));
 
 	for (unsigned int i = 0; i < sides.size(); i++) {
-		Point hit = ray.isection(sides[i]);
-		if (isisect(hit) && hit.x > p.x && sides[i].contains(hit)) {
-			isect = true;
-			even = !even;
-		}
+		const LineSeg &side = sides[i];
+		if (side.maxes.x < pt.x || side.maxes.y < pt.y || side.mins.y > pt.y)
+			continue;
+		Point hit = ray.isection(side);
+
+		if (!isisect(hit) || hit.x <= pt.x || !side.contains(hit))
+			continue;
+		else if (side.p0 == hit && side.p1.y >= hit.y)
+			continue;
+		else if (side.p1 == hit && side.p0.y >= hit.y)
+			continue;
+
+		isect = true;
+		even = !even;
 	}
 
 	return isect && !even;
@@ -225,7 +234,7 @@ void Polygon::initsides(void) {
 }
 
 static bool isisect(const Point &p) {
-	return !std::isinf(p.x) && !std::isnan(p.x) && !std::isinf(p.y) && !std::isnan(p.y);
+	return !std::isinf(p.x) && !std::isinf(p.y);
 }
 
 static unsigned int minx(const std::vector<Point> &pts) {
