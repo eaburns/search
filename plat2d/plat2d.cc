@@ -30,8 +30,8 @@ Plat2d::Plat2d(FILE *in) : lvl(in) {
 
 	gleft = gx * W;
 	gright = (gx + 1) * W;
-	gtop = (gy - 1) * H;
-	gbottom = gy * H;
+	gtop = gy * H;
+	gbottom = (gy + 1) * H;
 
 	initvg();
 }
