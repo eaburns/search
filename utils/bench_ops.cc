@@ -84,3 +84,43 @@ void atan2_bench(unsigned long n, double *strt, double *end) {
 	for (unsigned long i = 0; i < n; i++)
 		res[i] = atan2(is[i], is[i+n]);
 }
+
+void sin_bench(unsigned long n, double *strt, double *end) {
+	double *is = randdoubles(n);
+	double *res = scratchdoubles(n);
+
+	for (unsigned long i = 0; i < n; i++)
+		is[i] *= M_PI * 2;
+
+	*strt = walltime();
+
+	for (unsigned long i = 0; i < n; i++)
+		res[i] = sin(is[i]);
+}
+
+void cos_bench(unsigned long n, double *strt, double *end) {
+	double *is = randdoubles(n);
+	double *res = scratchdoubles(n);
+
+	for (unsigned long i = 0; i < n; i++)
+		is[i] *= M_PI * 2;
+
+	*strt = walltime();
+
+	for (unsigned long i = 0; i < n; i++)
+		res[i] = cos(is[i]);
+}
+
+void pow_bench(unsigned long n, double *strt, double *end) {
+	double *is = randdoubles(n*2);
+	double *res = scratchdoubles(n);
+
+	for (unsigned long i = n; i < n * 2; i++)
+		is[i] *= randgen.real() * 64;
+
+	*strt = walltime();
+
+	for (unsigned long i = 0; i < n; i++)
+		res[i] = pow(is[i], is[i+n]);
+}
+

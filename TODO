@@ -1,9 +1,13 @@
 • lots of benchmarks
 
+• fix segfault in fatal
+
 • remove dependency on
 	boost-filesystem
 
 • plat2d:
+
+	- random start locations
 
 	- better transposition
 	breaking.  Should be easier
@@ -26,6 +30,8 @@
 	Then make 2 PolyMaps
 		1) PolyMap
 		2) BoundedPolyMap
+
+	- cheaper lineseg hits test
 
 • gridnav:
 

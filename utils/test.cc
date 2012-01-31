@@ -60,6 +60,9 @@ void log2_int_bench(unsigned long, double*, double*);
 void log2_double_bench(unsigned long, double*, double*);
 void sqrt_bench(unsigned long, double*, double*);
 void atan2_bench(unsigned long, double*, double*);
+void sin_bench(unsigned long, double*, double*);
+void cos_bench(unsigned long, double*, double*);
+void pow_bench(unsigned long, double*, double*);
 
 static const Benchmark benches[] = {
 	Benchmark("malloc(16)/free() benchmark", malloc_16_free_bench),
@@ -72,6 +75,9 @@ static const Benchmark benches[] = {
 	Benchmark("log2 with doubles benchmark", log2_double_bench),
 	Benchmark("sqrt benchmark", sqrt_bench),
 	Benchmark("atan2 benchmark", atan2_bench),
+	Benchmark("sin benchmark", sin_bench),
+	Benchmark("cos benchmark", cos_bench),
+	Benchmark("pow benchmark", pow_bench),
 };
 
 enum { Nbenches = sizeof(benches) / sizeof(benches[0]) };
