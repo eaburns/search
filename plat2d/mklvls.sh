@@ -10,4 +10,5 @@ for i in `seq 0 9`; do
 	path=$($pathfor $root width=$w height=$w num=$i)
 	echo "$lvlgen $w $h 1 -w > $path"
 	$lvlgen $w $h 1 -w > $path
+	sleep 1
 done

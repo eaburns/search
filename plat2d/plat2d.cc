@@ -78,12 +78,12 @@ void Plat2d::initvg(void) {
 		togoal[i].prev = -1;
 	}
 
-	int goal = centers[gx * lvl.height() + gy];
-	assert (goal >= 0);
-	togoal[goal].d = 0;
+	gcenter = centers[gx * lvl.height() + gy];
+	assert (gcenter >= 0);
+	togoal[gcenter].d = 0;
 
 	BinHeap<Node, Node*> open;
-	open.push(&togoal[goal]);
+	open.push(&togoal[gcenter]);
 
 	while (!open.empty()) {
 		const Node *n = *open.pop();

@@ -177,8 +177,9 @@ private:
 		loc.x /= Maxx;
 		loc.y /= Maxy;
 
+		int c = centers[bi.x * lvl.height() + bi.y];
 		Point g = goalpt(bi, loc);
-		if (vg->isvisible(loc, g))
+		if (togoal[c].prev == gcenter || vg->isvisible(loc, g))
 			// still admissible if we go up to the next int
 			return ceil(Point::distance(loc, g));
 
@@ -186,10 +187,9 @@ private:
 		// distance to account for the fact that the goal vertex
 		// is in the center of the goal cell, not on the side.
 		static const double diag = sqrt((W/2)*(W/2) + (H/2)*(H/2));
-		int c = centers[bi.x * lvl.height() + bi.y];
 		double h = togoal[c].d - Point::distance(loc, vg->verts[c].pt) - diag;
-		assert (h >= 0);
-		return ceil(h);	// still admissible if we go up to the next int
+		assert (h >= -Threshold);
+		return h <= 0 ? 1 : ceil(h);	// still admissible if we go up to the next int
 	}
 
 	// goalpt returns a point in the goal cell that is closest
@@ -218,6 +218,7 @@ private:
 	VisGraph *vg;
 	std::vector<long> centers;
 	std::vector<Node> togoal;
+	int gcenter;	// vertex ID of the goal center
 	double gleft, gright, gtop, gbottom;
 };
 
