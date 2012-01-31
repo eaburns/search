@@ -21,11 +21,11 @@ Lvl::~Lvl(void) {
 
 void Lvl::read(FILE *f)
 {
-	unsigned int d;
-	int ret = fscanf(f, " %u %u %u",&d, &w, &h);
+	unsigned int d, ignore;
+	int ret = fscanf(f, " %u %u %u %u",&d, &w, &h, &ignore);
 	if (ret == EOF && ferror(f))
 		fatal("Failed to read the level");
-	if (ret != 3)
+	if (ret != 4)
 		fatal("Malformed level header");
 	if (d != 1)
 		fatal("Only levels with a depth of 1 are supported");

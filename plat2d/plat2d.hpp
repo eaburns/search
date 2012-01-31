@@ -29,10 +29,10 @@ struct Plat2d {
 	static const unsigned int Ops[];
 	static const unsigned int Nops;
 
-	enum { UnitCost = true };
+	enum { UnitCost = false };
 
-	typedef int Cost;
-	static const int InfCost = -1;
+	typedef double Cost;
+	static const double InfCost = -1;
 
 	typedef int Oper;
 	static const int Nop = -1;
@@ -116,7 +116,7 @@ struct Plat2d {
 
 		Transition(Plat2d &d, State &s, Oper op) : revop(Nop), state(s) {
 			state.player.act(d.lvl, (unsigned int) op);
-			cost = 1; // Point::distance(s.player.body.bbox.min, state.player.body.bbox.min);
+			cost = 1 + Threshold * Point::distance(s.player.body.bbox.min, state.player.body.bbox.min);
 			if (s.player.body.bbox.min.y == state.player.body.bbox.min.y) {
 				if (op == Player::Left)
 					revop = Player::Right;
