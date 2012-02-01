@@ -176,99 +176,6 @@ private:
 	}
 };
 
-struct LineSeg : public Line {
-	LineSeg(void) { }
-
-	LineSeg(Point _p0, Point _p1) : Line(_p0, _p1), p0(_p0), p1(_p1) {
-		if (p1.x < p0.x) {
-			mins.x = p1.x;
-			maxes.x = p0.x;
-		} else {
-			mins.x = p0.x;
-			maxes.x = p1.x;
-		}
-		if (p1.y < p0.y) {
-			mins.y = p1.y;
-			maxes.y = p0.y;
-		} else {
-			mins.y = p0.y;
-			maxes.y = p1.y;
-		}
-	}
-
-	void draw(Image &img, Color c = Image::black, double w = 1) const {
-		img.add(new Image::Line(p0.x, p0.y, p1.x, p1.y, w, c));
-	}
-
-	// length returns the length of the line segment.
-	double length(void) const {
-		return Point::distance(p0, p1);
-	}
-
-	// midpt returns the point directly in the middle of the
-	// line segment.
-	Point midpt(void) const {
-		return Point((p0.x + p1.x) / 2, (p0.y + p1.y) / 2);
-	}
-
-	// along returns the point that is the given distance along
-	// the line segment from the starting point.  The distance
-	// can be greater than the length of the segment.
-	Point along(double dist) const {
-		double theta = Point::angle(p1.minus(p0));
-		return Point(p0.x + dist * cos(theta), p0.y + dist * sin(theta));
-	}
-
-	// containt returns true if the line contains the given point.
-	bool contains(const Point &p) const {
-		if (doubleeq(m, 0.0))
-			return doubleeq(mins.y, p.y) &&
-				between(mins.x, maxes.x, p.x);
-		return between(mins.x, maxes.x, p.x) &&
-			between(mins.y, maxes.y, p.y);
-	}
-
-	// isection returns the point at which the two line segments
-	// intersect.  If they do not intersect then Point::inf() is
-	// returned.  If the Line (infinite line) corresponding to
-	// the two lines is the same then the return value is
-	// also Point::inf().
-	Point isection(const LineSeg &l) const {
-		if (isvertical() || l.isvertical())
-			return vertisect(*this, l);
-
-		Point p = Line::isection(l);
-		if (!contains(p) || !l.contains(p))
-			return Point::inf();
-		return p;
-	}
-
-	// isvertical returns true if the line is a vertical line.
-	bool isvertical(void) const { return doubleeq(p0.x, p1.x); }
-
-	Point p0, p1;
-	Point mins, maxes;
-
-private:
-
-	// Deal with vertical line segments
-	static Point vertisect(const LineSeg &a, const LineSeg &b) {
-		if (a.isvertical() && b.isvertical())
-			return Point::inf();
-
-		const LineSeg *v = &a, *l = &b;
-		if (b.isvertical()) {
-			v = &b;
-			l = &a;
-		}
-		Point p(v->p0.x, l->m * v->p0.x + l->b);
-		if (!a.contains(p) || !b.contains(p))
-			return Point::inf();
-
-		return p;
-	}
-};
-
 struct Rectangle {
 	Rectangle(void) : min(Point::inf()), max(Point::neginf()) { }
 
@@ -350,6 +257,95 @@ protected:
 	}
 };
 
+
+struct LineSeg : public Line {
+	LineSeg(void) { }
+
+	LineSeg(Point _p0, Point _p1) :
+		Line(_p0, _p1), p0(_p0), p1(_p1), bbox(p0.x, p0.y, p1.x, p1.y)
+		{ }
+
+	void draw(Image &img, Color c = Image::black, double w = 1) const {
+		img.add(new Image::Line(p0.x, p0.y, p1.x, p1.y, w, c));
+	}
+
+	// length returns the length of the line segment.
+	double length(void) const {
+		return Point::distance(p0, p1);
+	}
+
+	// midpt returns the point directly in the middle of the
+	// line segment.
+	Point midpt(void) const {
+		return Point((p0.x + p1.x) / 2, (p0.y + p1.y) / 2);
+	}
+
+	// along returns the point that is the given distance along
+	// the line segment from the starting point.  The distance
+	// can be greater than the length of the segment.
+	Point along(double dist) const {
+		double theta = Point::angle(p1.minus(p0));
+		return Point(p0.x + dist * cos(theta), p0.y + dist * sin(theta));
+	}
+
+	// containt returns true if the line contains the given point.
+	bool contains(const Point &p) const {
+		if (doubleeq(m, 0.0))
+			return doubleeq(bbox.min.y, p.y) &&
+				between(bbox.min.x, bbox.max.x, p.x);
+		return between(bbox.min.x, bbox.max.x, p.x) &&
+			between(bbox.min.y, bbox.max.y, p.y);
+	}
+
+	// isection returns the point at which the two line segments
+	// intersect.  If they do not intersect then Point::inf() is
+	// returned.  If the Line (infinite line) corresponding to
+	// the two lines is the same then the return value is
+	// also Point::inf().
+	Point isection(const LineSeg &l) const {
+		if (isvertical() || l.isvertical())
+			return vertisect(*this, l);
+
+		Point p = Line::isection(l);
+		if (!contains(p) || !l.contains(p))
+			return Point::inf();
+		return p;
+	}
+
+	// hits returns true if the two line segments intersect.
+	bool hits(const LineSeg &l) const {	
+		if (!bbox.hits(l.bbox))
+			return false;
+		Point is = isection(l);
+		return !std::isinf(is.x) && !std::isinf(is.y);
+	}
+
+	// isvertical returns true if the line is a vertical line.
+	bool isvertical(void) const { return doubleeq(p0.x, p1.x); }
+
+	Point p0, p1;
+	Rectangle bbox;
+
+private:
+
+	// Deal with vertical line segments
+	static Point vertisect(const LineSeg &a, const LineSeg &b) {
+		if (a.isvertical() && b.isvertical())
+			return Point::inf();
+
+		const LineSeg *v = &a, *l = &b;
+		if (b.isvertical()) {
+			v = &b;
+			l = &a;
+		}
+		Point p(v->p0.x, l->m * v->p0.x + l->b);
+		if (!a.contains(p) || !b.contains(p))
+			return Point::inf();
+
+		return p;
+	}
+};
+
 struct Polygon {
 
 	// random generates a random polygon for which no side
@@ -380,7 +376,16 @@ struct Polygon {
 
 	// hits returns true if the line segment intersects
 	// one of the sides of the polygon.
-	bool hits(const LineSeg &) const;
+	bool hits(const LineSeg &l) const {
+		if (!bbox.hits(l.bbox))
+			return false;
+		for (unsigned int i = 0; i < sides.size(); i++) {
+			const LineSeg &side = sides[i];
+			if (l.hits(side))
+				return true;
+		}
+		return false;
+	}
 
 	// minisect returns the first intersection point between
 	// the line segment and the polygon.

@@ -31,8 +31,6 @@
 		1) PolyMap
 		2) BoundedPolyMap
 
-	- cheaper lineseg hits test
-
 • gridnav:
 
 	- verify solution paths

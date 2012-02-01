@@ -95,13 +95,11 @@ Point PolyMap::max(void) const {
 
 bool PolyMap::isvisible(const Point &a, const Point &b) const {
 	const LineSeg line(a, b);
-	Rectangle bbox(a, b);
 	for (unsigned int i = 0; i < polys.size(); i++) {
-		if (!bbox.hits(polys[i].bbox))
+		if (!line.bbox.hits(polys[i].bbox))
 			continue;
-		if (polys[i].hits(line)) {
+		if (polys[i].hits(line))
 			return false;
-		}
 	}
 	if (!bound)
 		return true;

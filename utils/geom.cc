@@ -153,7 +153,7 @@ bool Polygon::contains(const Point &pt) const {
 
 	for (unsigned int i = 0; i < sides.size(); i++) {
 		const LineSeg &side = sides[i];
-		if (side.maxes.x < pt.x || side.maxes.y < pt.y || side.mins.y > pt.y)
+		if (side.bbox.max.x < pt.x || side.bbox.max.y < pt.y || side.bbox.min.y > pt.y)
 			continue;
 		Point hit = ray.isection(side);
 
@@ -197,16 +197,6 @@ Point Polygon::minisect(const LineSeg &l) const {
 	}
 
 	return min;
-}
-
-bool Polygon::hits(const LineSeg &l) const {
-	for (unsigned int i = 0; i < sides.size(); i++) {
-		const LineSeg &side = sides[i];
-		Point p = l.isection(side);
-		if (isisect(p))
-			return true;
-	}
-	return false;
 }
 
 double Polygon::interangle(unsigned int i) const {
