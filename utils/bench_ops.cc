@@ -3,8 +3,7 @@
 // Take care when writing these benchmarks that the calls
 // to the functions being benchmarked don't actually get
 // optimized away.  One way to avoid this is to assign their
-// result to some static memory.  See the scratchuints
-// function, for example.
+// result to some static memory.
 
 #include "utils.hpp"
 #include <cmath>
@@ -25,7 +24,7 @@ void malloc_128_free_bench(unsigned long n, double *strt, double *end) {
 }
 
 void rand_bits_bench(unsigned long n, double *strt, double *end) {
-	unsigned int *res = scratchuints(n);
+	unsigned int *res = randuints(n);
 	*strt = walltime();
 
 	for (unsigned long i = 0; i < n; i++)
@@ -33,7 +32,7 @@ void rand_bits_bench(unsigned long n, double *strt, double *end) {
 }
 
 void rand_real_bench(unsigned long n, double *strt, double *end) {
-	double *res = scratchdoubles(n);
+	double *res = randdoubles(n);
 	*strt = walltime();
 
 	for (unsigned long i = 0; i < n; i++)
@@ -42,52 +41,46 @@ void rand_real_bench(unsigned long n, double *strt, double *end) {
 
 void ilog2_bench(unsigned long n, double *strt, double *end) {
 	unsigned int *is = randuints(n);
-	unsigned int *res = scratchuints(n);
 	*strt = walltime();
 
 	for (unsigned long i = 0; i < n; i++)
-		res[i] = ilog2(is[i]);
+		is[i] = ilog2(is[i]);
 }
 
 void log2_int_bench(unsigned long n, double *strt, double *end) {
 	unsigned int *is = randuints(n);
-	unsigned int *res = scratchuints(n);
 	*strt = walltime();
 
 	for (unsigned long i = 0; i < n; i++)
-		res[i] = log2(is[i]);
+		is[i] = log2(is[i]);
 }
 
 void log2_double_bench(unsigned long n, double *strt, double *end) {
 	double *is = randdoubles(n);
-	double *res = scratchdoubles(n);
 	*strt = walltime();
 
 	for (unsigned long i = 0; i < n; i++)
-		res[i] = log2(is[i]);
+		is[i] = log2(is[i]);
 }
 
 void sqrt_bench(unsigned long n, double *strt, double *end) {
 	double *is = randdoubles(n);
-	double *res = scratchdoubles(n);
 	*strt = walltime();
 
 	for (unsigned long i = 0; i < n; i++)
-		res[i] = sqrt(is[i]);
+		is[i] = sqrt(is[i]);
 }
 
 void atan2_bench(unsigned long n, double *strt, double *end) {
-	double *is = randdoubles(n*2);
-	double *res = scratchdoubles(n);
+	double *is = randdoubles(n);
 	*strt = walltime();
 
 	for (unsigned long i = 0; i < n; i++)
-		res[i] = atan2(is[i], is[i+n]);
+		is[i] = atan2(is[i], is[i+1]);
 }
 
 void sin_bench(unsigned long n, double *strt, double *end) {
 	double *is = randdoubles(n);
-	double *res = scratchdoubles(n);
 
 	for (unsigned long i = 0; i < n; i++)
 		is[i] *= M_PI * 2;
@@ -95,12 +88,11 @@ void sin_bench(unsigned long n, double *strt, double *end) {
 	*strt = walltime();
 
 	for (unsigned long i = 0; i < n; i++)
-		res[i] = sin(is[i]);
+		is[i] = sin(is[i]);
 }
 
 void cos_bench(unsigned long n, double *strt, double *end) {
 	double *is = randdoubles(n);
-	double *res = scratchdoubles(n);
 
 	for (unsigned long i = 0; i < n; i++)
 		is[i] *= M_PI * 2;
@@ -108,19 +100,18 @@ void cos_bench(unsigned long n, double *strt, double *end) {
 	*strt = walltime();
 
 	for (unsigned long i = 0; i < n; i++)
-		res[i] = cos(is[i]);
+		is[i] = cos(is[i]);
 }
 
 void pow_bench(unsigned long n, double *strt, double *end) {
-	double *is = randdoubles(n*2);
-	double *res = scratchdoubles(n);
+	double *is = randdoubles(n);
 
-	for (unsigned long i = n; i < n * 2; i++)
+	for (unsigned long i = n; i < n; i++)
 		is[i] *= randgen.real() * 64;
 
 	*strt = walltime();
 
 	for (unsigned long i = 0; i < n; i++)
-		res[i] = pow(is[i], is[i+n]);
+		is[i] = pow(is[i], is[i+1]);
 }
 

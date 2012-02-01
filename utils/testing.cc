@@ -11,7 +11,7 @@
 #include <sys/types.h>
 #include <regex.h>
 
-enum { MaxN = 1000000000 };
+enum { MaxN = 100000000 };
 static const double Mintime = 1.0;	// seconds
 
 static std::string msg;
@@ -130,20 +130,6 @@ unsigned int *randuints(unsigned long n) {
 	return ints;
 }
 
-unsigned int *scratchuints(unsigned long n) {
-	static unsigned int *ints;
-	static unsigned long nints;
-
-	if (nints < n) {
-		if (ints)
-			delete[] ints;
-		ints = new unsigned int[n];
-		nints = n;
-	}
-
-	return ints;
-}
-
 double *randdoubles(unsigned long n) {
 	static double *ds;
 	static unsigned long nds;
@@ -155,20 +141,6 @@ double *randdoubles(unsigned long n) {
 		nds = n;
 		for (unsigned long i = 0;  i < n; i++)
 			ds[i] = randgen.real();
-	}
-
-	return ds;
-}
-
-double *scratchdoubles(unsigned long n) {
-	static double *ds;
-	static unsigned long nds;
-
-	if (nds < n) {
-		if (ds)
-			delete[] ds;
-		ds = new double[n];
-		nds = n;
 	}
 
 	return ds;

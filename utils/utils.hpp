@@ -162,21 +162,9 @@ void testpr(const char *fmt, ...);
 // or benchmarking functions.
 unsigned int *randuints(unsigned long);
 
-// scratchuints returns an array of the given number of unsigned
-// ints that can be used for scratch purposes.  The memory is not
-// initialized in any specific way, however, it is cached so that
-// subsequent calls to scratchints for the same or a smaller
-// size won't allocate.This function is intended for use in testing
-// or benchmarking functions.
-unsigned int *scratchuints(unsigned long);
-
 // randdoubles returns an array of random double values.  This is
 // the double equivalent of randints.
 double *randdoubles(unsigned long);
-
-// scratchdoubles returns an array of uninitialized doubles.  This
-// is the double equivalent of scratchints.
-double *scratchdoubles(unsigned long);
 
 // commas returns the string format of a number with
 // commas inserted every 3-tens places.  The fmt argument
