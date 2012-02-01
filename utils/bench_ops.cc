@@ -68,7 +68,7 @@ void log2_double_bench(unsigned long n, double *strt, double *end) {
 }
 
 void sqrt_bench(unsigned long n, double *strt, double *end) {
-	double *is = randdoubles(n);
+	double *is = randdoubles(n + 1);
 	*strt = walltime();
 
 	for (unsigned long i = 0; i < n; i++)
@@ -108,10 +108,22 @@ void cos_bench(unsigned long n, double *strt, double *end) {
 }
 
 void pow_bench(unsigned long n, double *strt, double *end) {
-	double *is = randdoubles(n);
+	double *is = randdoubles(n + 1);
 
 	for (unsigned long i = n; i < n; i++)
 		is[i] *= randgen.real() * 64;
+
+	*strt = walltime();
+
+	for (unsigned long i = 0; i < n; i++)
+		dvol = pow(is[i], is[i+1]);
+}
+
+void pow_ints_bench(unsigned long n, double *strt, double *end) {
+	unsigned int *is = randuints(n + 1);
+
+	for (unsigned long i = n; i < n; i++)
+		is[i] &= 0x3F;
 
 	*strt = walltime();
 
