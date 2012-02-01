@@ -11,7 +11,7 @@
 #include <sys/types.h>
 #include <regex.h>
 
-enum { MaxN = 100000000 };
+enum { MaxN = 10000000 };
 static const double Mintime = 1.0;	// seconds
 
 static std::string msg;
@@ -94,7 +94,7 @@ static void runbench(const Benchmark &b) {
 
 	double ttime = 1.0;
 	unsigned long n = -1;
-	for (n = 10; n < MaxN; n *= 10) {
+	for (n = 10; n <= MaxN; n *= 10) {
 		double strt = walltime(), end = 0.0;
 		b.run(n, &strt, &end);
 
@@ -106,44 +106,15 @@ static void runbench(const Benchmark &b) {
 			break;
 	}
 
+	if (n > MaxN)
+		n = MaxN;
+
 	printf("%15s op/s (%.1gs, n=%g)\n",
 		commas("%lu", (unsigned long) (n / ttime)).c_str(),
 		ttime, (double) n);
 
 	if (msg.size() > 0)
 		puts(msg.c_str());
-}
-
-unsigned int *randuints(unsigned long n) {
-	static unsigned int *ints;
-	static unsigned long nints;
-
-	if (nints < n) {
-		if (ints)
-			delete[] ints;
-		ints = new unsigned int[n];
-		nints = n;
-		for (unsigned long i = 0;  i < n; i++)
-			ints[i] = randgen.bits();
-	}
-
-	return ints;
-}
-
-double *randdoubles(unsigned long n) {
-	static double *ds;
-	static unsigned long nds;
-
-	if (nds < n) {
-		if (ds)
-			delete[] ds;
-		ds = new double[n];
-		nds = n;
-		for (unsigned long i = 0;  i < n; i++)
-			ds[i] = randgen.real();
-	}
-
-	return ds;
 }
 
 std::string commas(const char *fmt, ...) {

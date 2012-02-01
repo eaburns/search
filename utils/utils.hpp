@@ -155,17 +155,6 @@ void runbenches(const Benchmark[], int, const char *regexp);
 // to standard output.
 void testpr(const char *fmt, ...);
 
-// randuints returns an array of the given number of random
-// unsigned integers.  The array is cached so that multiple calls
-// to randuints with the same or smaller size will not
-// re-compute.  This function is intended for use in testing
-// or benchmarking functions.
-unsigned int *randuints(unsigned long);
-
-// randdoubles returns an array of random double values.  This is
-// the double equivalent of randints.
-double *randdoubles(unsigned long);
-
 // commas returns the string format of a number with
 // commas inserted every 3-tens places.  The fmt argument
 // is the printf-style format specifier for the number that

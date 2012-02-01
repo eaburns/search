@@ -63,6 +63,8 @@ void atan2_bench(unsigned long, double*, double*);
 void sin_bench(unsigned long, double*, double*);
 void cos_bench(unsigned long, double*, double*);
 void pow_bench(unsigned long, double*, double*);
+void ceil_bench(unsigned long, double*, double*);
+void floor_bench(unsigned long, double*, double*);
 
 static const Benchmark benches[] = {
 	Benchmark("malloc(16)/free() benchmark", malloc_16_free_bench),
@@ -78,6 +80,8 @@ static const Benchmark benches[] = {
 	Benchmark("sin benchmark", sin_bench),
 	Benchmark("cos benchmark", cos_bench),
 	Benchmark("pow benchmark", pow_bench),
+	Benchmark("ceil benchmark", ceil_bench),
+	Benchmark("floor benchmark", floor_bench),
 };
 
 enum { Nbenches = sizeof(benches) / sizeof(benches[0]) };
@@ -91,4 +95,36 @@ int main(int argc, const char *argv[]) {
 	runbenches(benches, Nbenches, regexp);
 
 	return ok ? 0 : 1;
+}
+
+unsigned int *randuints(unsigned long n) {
+	static unsigned int *ints;
+	static unsigned long nints;
+
+	if (nints < n) {
+		if (ints)
+			delete[] ints;
+		ints = new unsigned int[n];
+		nints = n;
+	}
+	for (unsigned long i = 0;  i < n; i++)
+		ints[i] = randgen.bits();
+
+	return ints;
+}
+
+double *randdoubles(unsigned long n) {
+	static double *ds;
+	static unsigned long nds;
+
+	if (nds < n) {
+		if (ds)
+			delete[] ds;
+		ds = new double[n];
+		nds = n;
+	}
+	for (unsigned long i = 0;  i < n; i++)
+		ds[i] = randgen.real();
+
+	return ds;
 }

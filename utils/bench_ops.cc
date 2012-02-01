@@ -8,6 +8,12 @@
 #include "utils.hpp"
 #include <cmath>
 
+volatile unsigned int ivol;
+volatile double dvol;
+
+extern unsigned int *randuints(unsigned long);
+extern double *randdoubles(unsigned long);
+
 void malloc_16_free_bench(unsigned long n, double *strt, double *end) {
 	for (unsigned long i = 0; i < n; i++)
 		free(malloc(16));
@@ -24,19 +30,17 @@ void malloc_128_free_bench(unsigned long n, double *strt, double *end) {
 }
 
 void rand_bits_bench(unsigned long n, double *strt, double *end) {
-	unsigned int *res = randuints(n);
 	*strt = walltime();
 
 	for (unsigned long i = 0; i < n; i++)
-		res[i] = randgen.bits();
+		ivol = randgen.bits();
 }
 
 void rand_real_bench(unsigned long n, double *strt, double *end) {
-	double *res = randdoubles(n);
 	*strt = walltime();
 
 	for (unsigned long i = 0; i < n; i++)
-		res[i] = randgen.real();
+		dvol = randgen.real();
 }
 
 void ilog2_bench(unsigned long n, double *strt, double *end) {
@@ -44,7 +48,7 @@ void ilog2_bench(unsigned long n, double *strt, double *end) {
 	*strt = walltime();
 
 	for (unsigned long i = 0; i < n; i++)
-		is[i] = ilog2(is[i]);
+		ivol = ilog2(is[i]);
 }
 
 void log2_int_bench(unsigned long n, double *strt, double *end) {
@@ -52,7 +56,7 @@ void log2_int_bench(unsigned long n, double *strt, double *end) {
 	*strt = walltime();
 
 	for (unsigned long i = 0; i < n; i++)
-		is[i] = log2(is[i]);
+		ivol= log2(is[i]);
 }
 
 void log2_double_bench(unsigned long n, double *strt, double *end) {
@@ -60,7 +64,7 @@ void log2_double_bench(unsigned long n, double *strt, double *end) {
 	*strt = walltime();
 
 	for (unsigned long i = 0; i < n; i++)
-		is[i] = log2(is[i]);
+		dvol = log2(is[i]);
 }
 
 void sqrt_bench(unsigned long n, double *strt, double *end) {
@@ -68,7 +72,7 @@ void sqrt_bench(unsigned long n, double *strt, double *end) {
 	*strt = walltime();
 
 	for (unsigned long i = 0; i < n; i++)
-		is[i] = sqrt(is[i]);
+		dvol = sqrt(is[i]);
 }
 
 void atan2_bench(unsigned long n, double *strt, double *end) {
@@ -76,7 +80,7 @@ void atan2_bench(unsigned long n, double *strt, double *end) {
 	*strt = walltime();
 
 	for (unsigned long i = 0; i < n; i++)
-		is[i] = atan2(is[i], is[i+1]);
+		dvol = atan2(is[i], is[i+1]);
 }
 
 void sin_bench(unsigned long n, double *strt, double *end) {
@@ -88,7 +92,7 @@ void sin_bench(unsigned long n, double *strt, double *end) {
 	*strt = walltime();
 
 	for (unsigned long i = 0; i < n; i++)
-		is[i] = sin(is[i]);
+		dvol = sin(is[i]);
 }
 
 void cos_bench(unsigned long n, double *strt, double *end) {
@@ -100,7 +104,7 @@ void cos_bench(unsigned long n, double *strt, double *end) {
 	*strt = walltime();
 
 	for (unsigned long i = 0; i < n; i++)
-		is[i] = cos(is[i]);
+		dvol = cos(is[i]);
 }
 
 void pow_bench(unsigned long n, double *strt, double *end) {
@@ -112,6 +116,29 @@ void pow_bench(unsigned long n, double *strt, double *end) {
 	*strt = walltime();
 
 	for (unsigned long i = 0; i < n; i++)
-		is[i] = pow(is[i], is[i+1]);
+		dvol = pow(is[i], is[i+1]);
 }
 
+void ceil_bench(unsigned long n, double *strt, double *end) {
+	double *is = randdoubles(n);
+
+	for (unsigned long i = 0; i < n; i++)
+		is[i] *= 1000;
+
+	*strt = walltime();
+
+	for (unsigned long i = 0; i < n; i++)
+		dvol = ceil(is[i]);
+}
+
+void floor_bench(unsigned long n, double *strt, double *end) {
+	double *is = randdoubles(n);
+
+	for (unsigned long i = 0; i < n; i++)
+		is[i] *= 1000;
+
+	*strt = walltime();
+
+	for (unsigned long i = 0; i < n; i++)
+		dvol = floor(is[i]);
+}
