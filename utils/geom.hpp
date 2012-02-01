@@ -79,6 +79,8 @@ struct Point {
 
 	Point(double _x, double _y) : x(_x), y(_y) { }
 
+	bool isinf(void) { return std::isinf(x) || std::isinf(y); }
+
 	bool operator==(const Point &p) const {
 		return doubleeq(x, p.x) && doubleeq(y, p.y);
 	}
@@ -317,7 +319,7 @@ struct LineSeg : public Line {
 		if (!bbox.hits(l.bbox))
 			return false;
 		Point is = isection(l);
-		return !std::isinf(is.x) && !std::isinf(is.y);
+		return !is.isinf();
 	}
 
 	// isvertical returns true if the line is a vertical line.

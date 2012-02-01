@@ -4,7 +4,6 @@
 #include <cstdarg>
 #include <cerrno>
 
-static bool isisect(const Point&);
 static unsigned int minx(const std::vector<Point>&);
 static void xsortedpts(std::vector<Point>&, double, double, double);
 static bool cmpx(const Point&, const Point&);
@@ -157,7 +156,7 @@ bool Polygon::contains(const Point &pt) const {
 			continue;
 		Point hit = ray.isection(side);
 
-		if (!isisect(hit) || hit.x <= pt.x || !side.contains(hit))
+		if (hit.isinf() || hit.x <= pt.x || !side.contains(hit))
 			continue;
 		else if (side.p0 == hit && side.p1.y >= hit.y)
 			continue;
@@ -176,7 +175,7 @@ std::vector<Point> Polygon::isections(const LineSeg &l) const {
 
 	for (unsigned int i = 0; i < sides.size(); i++) {
 		Point p = l.isection(sides[i]);
-		if (isisect(p))
+		if (!p.isinf())
 			is.push_back(p);
 	}
 
@@ -190,7 +189,7 @@ Point Polygon::minisect(const LineSeg &l) const {
 	for (unsigned int i = 0; i < sides.size(); i++) {
 		Point p = l.isection(sides[i]);
 		double d = Point::distance(p, l.p0);
-		if (isisect(p) && d < mindist) {
+		if (!p.isinf() && d < mindist) {
 			mindist = d;
 			min = p;
 		}
@@ -222,10 +221,6 @@ void Polygon::initsides(void) {
 	for (unsigned int i = 1; i < verts.size(); i++)
 		sides.push_back(LineSeg(verts[i-1], verts[i]));
 	sides.push_back(LineSeg(verts[verts.size() - 1], verts[0]));
-}
-
-static bool isisect(const Point &p) {
-	return !std::isinf(p.x) && !std::isinf(p.y);
 }
 
 static unsigned int minx(const std::vector<Point> &pts) {
