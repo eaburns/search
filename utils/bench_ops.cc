@@ -110,7 +110,7 @@ void cos_bench(unsigned long n, double *strt, double *end) {
 void pow_bench(unsigned long n, double *strt, double *end) {
 	double *is = randdoubles(n + 1);
 
-	for (unsigned long i = n; i < n; i++)
+	for (unsigned long i = 0; i < n + 1; i++)
 		is[i] *= randgen.real() * 64;
 
 	*strt = walltime();
@@ -122,13 +122,25 @@ void pow_bench(unsigned long n, double *strt, double *end) {
 void pow_ints_bench(unsigned long n, double *strt, double *end) {
 	unsigned int *is = randuints(n + 1);
 
-	for (unsigned long i = n; i < n; i++)
+	for (unsigned long i = 0; i < n + 1; i++)
 		is[i] &= 0x3F;
 
 	*strt = walltime();
 
 	for (unsigned long i = 0; i < n; i++)
-		dvol = pow(is[i], is[i+1]);
+		ivol = pow(is[i], is[i+1]);
+}
+
+void ipow_bench(unsigned long n, double *strt, double *end) {
+	unsigned int *is = randuints(n + 1);
+
+	for (unsigned long i = 0; i < n + 1; i++)
+		is[i] &= 0x3F;
+
+	*strt = walltime();
+
+	for (unsigned long i = 0; i < n; i++)
+		ivol = ipow(is[i], is[i+1]);
 }
 
 void ceil_bench(unsigned long n, double *strt, double *end) {

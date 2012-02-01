@@ -249,6 +249,13 @@ private:
 // ilog2 returns the interger logorithm base 2.
 unsigned int ilog2(boost::uint32_t);
 
+static inline unsigned long ipow(unsigned int b, unsigned int e) {
+	unsigned long r = 1;
+	for (unsigned int i = 0; i < e; i++)
+		r *= b;
+	return r;
+}
+
 // The Djset type is a disjoint forrest implementation of disjoint
 // sets.
 struct Djset {

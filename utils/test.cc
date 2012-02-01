@@ -64,6 +64,7 @@ void sin_bench(unsigned long, double*, double*);
 void cos_bench(unsigned long, double*, double*);
 void pow_bench(unsigned long, double*, double*);
 void pow_ints_bench(unsigned long, double*, double*);
+void ipow_bench(unsigned long, double*, double*);
 void ceil_bench(unsigned long, double*, double*);
 void floor_bench(unsigned long, double*, double*);
 
@@ -82,6 +83,7 @@ static const Benchmark benches[] = {
 	Benchmark("cos benchmark", cos_bench),
 	Benchmark("pow benchmark", pow_bench),
 	Benchmark("pow ints benchmark", pow_ints_bench),
+	Benchmark("ipow benchmark", ipow_bench),
 	Benchmark("ceil benchmark", ceil_bench),
 	Benchmark("floor benchmark", floor_bench),
 };
