@@ -23,7 +23,7 @@ include $(UTILOBJS:.o=.d)
 
 CLEAN+=$(UTILOBJS)
 
-utils: utils/utils.a utils/test utils/pathfor utils/withattrs utils/geomtest
+utils: utils/utils.a utils/test utils/pathfor utils/withattrs
 
 EVERYTHING+=utils
 
@@ -50,7 +50,3 @@ CLEAN+=utils/pathfor
 utils/withattrs: utils/withattrs.cc utils/utils.a
 	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
 CLEAN+=utils/withattrs
-
-utils/geomtest: utils/geomtest.cc visnav/visgraph.a utils/utils.a
-	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
-CLEAN+=utils/geomtest
