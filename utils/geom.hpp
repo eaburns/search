@@ -127,57 +127,6 @@ struct Point {
 	double x, y;
 };
 
-// The Line struct represents an infinite line in Euclidean space.
-struct Line {
-	Line(void) { }
-
-	// Line(Point,Point) creates a line defined by the two points.
-	Line(Point p0, Point p1) {
-		double dx = p1.x - p0.x;
-		double dy = p1.y - p0.y;
-		if (fabs(dx) < std::numeric_limits<double>::epsilon()) {
-			m = std::numeric_limits<double>::infinity();
-			b = p1.x;
- 		} else {
-			m = dy / dx;
-			b = p0.y - m * p0.x;
-		}
-	}
-
-	// isection returns the point of intersection between two lines.
-	// If the lines are parallel then Point::inf is returned.
-	Point isection(const Line &l) const {
-		if (std::isinf(m) || std::isinf(l.m))
-			return vertisect(*this, l);
-
-		if (doubleeq(m, l.m))
-			return Point::inf();
-
-		double x = (l.b - b) / (m - l.m);
-		return Point(x, m * x + b);
-	}
-
-	// isabove returns true if the point is above the given line.
-	bool isabove(const Point &p) const { return (m * p.x + b) < p.y; }
-
-	// In case of a vertical line: m == ∞ and b = x
-	double m, b;
-
-private:
-	static Point vertisect(const Line &a, const Line &b) {
-		if (std::isinf(a.m) && std::isinf(b.m))
-			return Point::inf();
-
-		const Line *v = &a, *l = &b;
-		if (std::isinf(b.m)) {
-			v = &b;
-			l = &a;
-		}
-
-		return Point(v->b, l->m * v->b + l->b);
-	}
-};
-
 struct Rectangle {
 	Rectangle(void) : min(Point::inf()), max(Point::neginf()) { }
 
@@ -259,6 +208,56 @@ protected:
 	}
 };
 
+// The Line struct represents an infinite line in Euclidean space.
+struct Line {
+	Line(void) { }
+
+	// Line(Point,Point) creates a line defined by the two points.
+	Line(Point p0, Point p1) {
+		double dx = p1.x - p0.x;
+		double dy = p1.y - p0.y;
+		if (fabs(dx) < std::numeric_limits<double>::epsilon()) {
+			m = std::numeric_limits<double>::infinity();
+			b = p1.x;
+ 		} else {
+			m = dy / dx;
+			b = p0.y - m * p0.x;
+		}
+	}
+
+	// isection returns the point of intersection between two lines.
+	// If the lines are parallel then Point::inf is returned.
+	Point isection(const Line &l) const {
+		if (std::isinf(m) || std::isinf(l.m))
+			return vertisect(*this, l);
+
+		if (doubleeq(m, l.m))
+			return Point::inf();
+
+		double x = (l.b - b) / (m - l.m);
+		return Point(x, m * x + b);
+	}
+
+	// isabove returns true if the point is above the given line.
+	bool isabove(const Point &p) const { return (m * p.x + b) < p.y; }
+
+	// In case of a vertical line: m == ∞ and b = x
+	double m, b;
+
+private:
+	static Point vertisect(const Line &a, const Line &b) {
+		if (std::isinf(a.m) && std::isinf(b.m))
+			return Point::inf();
+
+		const Line *v = &a, *l = &b;
+		if (std::isinf(b.m)) {
+			v = &b;
+			l = &a;
+		}
+
+		return Point(v->b, l->m * v->b + l->b);
+	}
+};
 
 struct LineSeg : public Line {
 	LineSeg(void) { }
@@ -348,6 +347,106 @@ private:
 	}
 };
 
+struct QuadEq {
+	QuadEq(void) { }
+
+	QuadEq(double _a, double _b, double _c) : a(_a), b(_b), c(_c) { }
+
+	double discriminant(void) const { return b*b - 4*a*c; }
+
+	unsigned int solutions(double s[]) const {
+		double d = discriminant();
+		 if (d < 0) {
+			return 0;
+		} else if (d == 0) {
+			s[0] = -b / (2*a);
+			return 1;
+		}
+		double sqrtd = sqrt(d);
+		s[0] = (-b + sqrtd) / (2*a);
+		s[1] = (-b - sqrtd) / (2*a);
+		return 2;
+	}
+
+	double a, b, c;
+};
+
+struct Arc {
+
+	// Arc constructs a new arc with the given center
+	// radius, initial angle and final angle.  Angles are
+	// given in radians.
+	Arc(const Point &_c, double _r, double _t0, double _t1) :
+		c(_c), 
+		p0(c.x + cos(_t0) * r, c.y + sin(_t0) * r),
+		p1(c.x + cos(_t1) * r, c.y + sin(_t1) * r),
+		r(_r), t0(_t0), t1(_t1),
+		bbox(c.x - r, c.y - r, c.x + r, c.y + r)
+		{ }
+
+	// isections returns the number of isections and returns
+	// (via the second argument) the points that intersected.
+	// The maximum number of intersections is 2 so the Point
+	// array must be at least 2 elements.
+	unsigned int isections(const LineSeg &l, Point is[]) const {
+		if (!bbox.hits(l.bbox))
+			return 0;
+	
+		Q q(*this, l);
+		double u[2];
+		unsigned int n = q.solutions(u);
+		assert (n <= 2);
+ 
+		unsigned int i = 0;
+		for (unsigned int j = 0; j < n; j++) {
+			is[i].x = l.p0.x + u[j] * q.dx;
+			is[i].y = l.p0.y + u[j] * q.dy;
+			double t = Point::angle(Point(is[i].x - c.x, is[i].y - c.y));
+			if (l.contains(is[i]) && between(t0, t1, t))
+				i++;
+		}
+
+		return i;
+	}
+
+	// hits returns true if the linesegment hits the arc
+	bool hits(const LineSeg &l) const {
+		Point is[2];
+		return isections(l, is) > 0;
+	}
+
+	// draw draws the arc to the given image.
+	void draw(Image &img, Color color = Image::black, double lwidth = 1) const {
+		Image::Path *p = new Image::Path();
+		p->arc(c.x, c.y, r, t0 * (180 / M_PI), (t1 - t0) * (180 / M_PI));
+		p->setlinewidth(lwidth);
+		p->setcolor(color);
+		img.add(p);
+
+		img.add(new Image::Circle(p0.x, p0.y, 2, Color(0, 1, 0)));
+		img.add(new Image::Circle(p1.x, p1.y, 2, Color(0, 0, 1)));
+	}
+
+	Point c, p0, p1;
+	double r, t0, t1;
+	Rectangle bbox;
+
+private:
+	struct Q : public QuadEq {
+		Q(const Arc &arc, const LineSeg &l) {
+			double cx = arc.c.x, cy = arc.c.y;
+			double rr = arc.r*arc.r;
+			double x1 = l.p0.x, y1 = l.p0.y;
+			dx = l.p1.x - x1, dy = l.p1.y - y1;
+			a = dx*dx + dy*dy;
+			b = 2 * (dx*(x1 - cx) + dy*(y1 - cy));
+			c = cx*cx + cy*cy + x1*x1 + y1*y1 - 2*(cx * x1 + cy * y1) - rr;
+		}
+
+		double dx, dy;
+	};
+};
+
 struct Polygon {
 
 	// random generates a random polygon for which no side
@@ -384,6 +483,19 @@ struct Polygon {
 		for (unsigned int i = 0; i < sides.size(); i++) {
 			const LineSeg &side = sides[i];
 			if (l.hits(side))
+				return true;
+		}
+		return false;
+	}
+
+	// hits returns true if the arc intersects one of the
+	// sides of the polygon.
+	bool hits(const Arc &a) const {
+		if (!bbox.hits(a.bbox))
+			return false;
+		for (unsigned int i = 0; i < sides.size(); i++) {
+			const LineSeg &side = sides[i];
+			if (a.hits(side))
 				return true;
 		}
 		return false;

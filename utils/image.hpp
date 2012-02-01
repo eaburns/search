@@ -91,7 +91,7 @@ struct Image {
 		void setcolor(Color c) { addseg(new SetColor(c)); }
 
 		// Swings in the counter-clock-wise direction
-		// from t degrees for dt degrees.m
+		// from t degrees for dt degrees.
 		void arc(double x, double y, double r, double t, double dt) {
 			addseg(new Arc(x, y, r, t, dt));
 		}
