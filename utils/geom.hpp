@@ -124,6 +124,14 @@ struct Point {
 		y += dy;
 	}
 
+	// rotates the point by t radians around the origin.
+	void rotate(double t) {
+		double ct = cos(t), st = sin(t);
+		double x0 = x;
+		x = x0 * ct - y * st;
+		y = x0 * st + y * ct;
+	}
+
 	double x, y;
 };
 
@@ -377,12 +385,28 @@ struct Arc {
 	// radius, initial angle and final angle.  Angles are
 	// given in radians.
 	Arc(const Point &_c, double _r, double _t0, double _t1) :
-		c(_c), 
-		p0(c.x + cos(_t0) * r, c.y + sin(_t0) * r),
-		p1(c.x + cos(_t1) * r, c.y + sin(_t1) * r),
-		r(_r), t0(_t0), t1(_t1),
+		c(_c), r(_r), t0(_t0), t1(_t1),
 		bbox(c.x - r, c.y - r, c.x + r, c.y + r)
 		{ }
+
+	// rotate rotates the arc by the given number of
+	// degrees about the starting point.
+	void rotate(double t) {
+		Point p = start();
+		c.translate(-p.x, -p.y);
+		c.rotate(t);
+		c.translate(p.x, p.y);
+		bbox = Rectangle(c.x - r, c.y - r, c.x + r, c.y + r);
+		t0 += t;
+		t1 += t;
+	}
+
+	// translate translates the arc by the given amount in
+	// both the x and y directions.
+	void translate(double dx, double dy) {
+		c.translate(dx, dy);
+		bbox = Rectangle(c.x - r, c.y - r, c.x + r, c.y + r);
+	}
 
 	// isections returns the number of isections and returns
 	// (via the second argument) the points that intersected.
@@ -422,12 +446,23 @@ struct Arc {
 		p->setlinewidth(lwidth);
 		p->setcolor(color);
 		img.add(p);
+		Point p0 = start(), p1 = end();
 
 		img.add(new Image::Circle(p0.x, p0.y, 2, Color(0, 1, 0)));
 		img.add(new Image::Circle(p1.x, p1.y, 2, Color(0, 0, 1)));
 	}
 
-	Point c, p0, p1;
+	// start returns the starting point of the arc.
+	Point start(void) const {
+		return Point(c.x + cos(t0) * r, c.y + sin(t0) * r);
+	}
+
+	// end returns the ending point of the arc.
+	Point end(void) const {
+		return Point(c.x + cos(t1) * r, c.y + sin(t1) * r);
+	}
+
+	Point c;
 	double r, t0, t1;
 	Rectangle bbox;
 
