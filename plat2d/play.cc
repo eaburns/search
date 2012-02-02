@@ -19,7 +19,7 @@ static int nextctrl = -1;
 static std::vector<unsigned int> controls;
 
 SDL_Surface *screen;
-Point tr(0, 0);
+Geom::Point tr(0, 0);
 Player p(2 * Tile::Width + Player::Offx, 2 * Tile::Height + Player::Offy,
 		Player::Width, Player::Height);
 
@@ -30,7 +30,7 @@ static void handlepair(const char*, const char*, void*);
 static void initsdl(void);
 static unsigned int keys(void);
 static unsigned int sdlkeys(void);
-static void scroll(const Point&, const Point&);
+static void scroll(const Geom::Point&, const Geom::Point&);
 static void draw(const Lvl&, const Player&);
 static void drawlvl(const Lvl&);
 static void drawplayer(const Player&);
@@ -48,7 +48,7 @@ int main(int argc, const char *argv[]) {
 		unsigned int next = SDL_GetTicks() + frametime;
 
 		draw(*lvl, p);
-		Point l0(p.loc());
+		Geom::Point l0(p.loc());
 		p.act(*lvl, keys());
 		scroll(l0, p.loc());
 
@@ -183,8 +183,8 @@ static unsigned int sdlkeys(void) {
 }
 #endif
 
-static void scroll(const Point &l0, const Point &l1) {
-	Point delta(l1.x - l0.x, l1.y - l0.y);
+static void scroll(const Geom::Point &l0, const Geom::Point &l1) {
+	Geom::Point delta(l1.x - l0.x, l1.y - l0.y);
 
 	if ((delta.x > 0 && l1.x + tr.x > Width * 0.75) ||
 		(delta.x < 0 && l1.x + tr.x < Width * 0.25))

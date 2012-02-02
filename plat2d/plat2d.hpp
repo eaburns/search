@@ -72,9 +72,9 @@ struct Plat2d {
 
 		bool eq(PackedState &o) const {
 			return jframes == o.jframes &&
-				doubleeq(x, o.x) &&
-				doubleeq(y, o.y) &&
-				doubleeq(dy, o.dy);
+				Geom::doubleeq(x, o.x) &&
+				Geom::doubleeq(y, o.y) &&
+				Geom::doubleeq(dy, o.dy);
 		}
 
 		double x, y, dy;
@@ -173,29 +173,29 @@ private:
 		if (bi.x == gx && bi.y == gy)
 			return 0;
 
-		Point loc(s.player.body.bbox.center());
+		Geom::Point loc(s.player.body.bbox.center());
 		loc.x /= Maxx;
 		loc.y /= Maxy;
 
 		int c = centers[bi.x * lvl.height() + bi.y];
-		Point g = goalpt(bi, loc);
+		Geom::Point g = goalpt(bi, loc);
 		if (togoal[c].prev == gcenter || vg->isvisible(loc, g))
 			// still admissible if we go up to the next int
-			return ceil(Point::distance(loc, g));
+			return ceil(Geom::Point::distance(loc, g));
 
 		// Length of a tile diagonal, subtracted from the visnav
 		// distance to account for the fact that the goal vertex
 		// is in the center of the goal cell, not on the side.
 		static const double diag = sqrt((W/2)*(W/2) + (H/2)*(H/2));
-		double h = togoal[c].d - Point::distance(loc, vg->verts[c].pt) - diag;
-		assert (h >= -Threshold);
+		double h = togoal[c].d - Geom::Point::distance(loc, vg->verts[c].pt) - diag;
+		assert (h >= -Geom::Threshold);
 		return h <= 0 ? 1 : ceil(h);	// still admissible if we go up to the next int
 	}
 
 	// goalpt returns a point in the goal cell that is closest
 	// to the given location.
-	Point goalpt(const Lvl::Blkinfo &bi, const Point &loc) const {
-		Point pt;
+	Geom::Point goalpt(const Lvl::Blkinfo &bi, const Geom::Point &loc) const {
+		Geom::Point pt;
 		if (bi.y == gy)
 			pt.y = loc.y;
 		else if (bi.y < gy)

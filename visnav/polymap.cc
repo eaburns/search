@@ -16,7 +16,7 @@ void PolyMap::input(FILE *in) {
 	if (res != 0)
 		fatal("Malformed visibility map");
 	if (n == strlen("bound: "))
-		bound = Bound(Polygon(in));
+		bound = Bound(Geom::Polygon(in));
 
 	unsigned int npoly;
 	res = fscanf(in, " %u polygons\n", &npoly);
@@ -26,7 +26,7 @@ void PolyMap::input(FILE *in) {
 		fatal("Malformed visibility map");
 
 	for (unsigned int i = 0; i < npoly; i++)
-		polys.push_back(Polygon(in));
+		polys.push_back(Geom::Polygon(in));
 }
 
 void PolyMap::output(FILE *out) const {
@@ -65,11 +65,11 @@ void PolyMap::translate(double dx, double dy) {
 		bound->translate(dx, dy);
 }
 
-Point PolyMap::min(void) const {
+Geom::Point PolyMap::min(void) const {
 	if (bound)
 		return bound->bbox.min;
 
-	Point min = Point::inf();
+	Geom::Point min = Geom::Point::inf();
 	for (unsigned int i = 0; i < polys.size(); i++) {
 		if (polys[i].bbox.min.x < min.x)
 			min.x = polys[i].bbox.min.x;
@@ -79,11 +79,11 @@ Point PolyMap::min(void) const {
 	return min;
 }
 
-Point PolyMap::max(void) const {
+Geom::Point PolyMap::max(void) const {
 	if (bound)
 		return bound->bbox.max;
 
-	Point max = Point::neginf();
+	Geom::Point max = Geom::Point::neginf();
 	for (unsigned int i = 0; i < polys.size(); i++) {
 		if (polys[i].bbox.max.x > max.x)
 			max.x = polys[i].bbox.max.x;
@@ -93,8 +93,8 @@ Point PolyMap::max(void) const {
 	return max;
 }
 
-bool PolyMap::isvisible(const Point &a, const Point &b) const {
-	const LineSeg line(a, b);
+bool PolyMap::isvisible(const Geom::Point &a, const Geom::Point &b) const {
+	const Geom::LineSeg line(a, b);
 	for (unsigned int i = 0; i < polys.size(); i++) {
 		if (!line.bbox.hits(polys[i].bbox))
 			continue;
@@ -104,6 +104,6 @@ bool PolyMap::isvisible(const Point &a, const Point &b) const {
 	if (!bound)
 		return true;
 
- 	const Polygon &bnd = *bound;
+ 	const Geom::Polygon &bnd = *bound;
 	return bnd.contains(a) && !bnd.hits(line);
 }

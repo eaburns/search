@@ -69,15 +69,15 @@ void VisGraph::draw(Image &img, bool label) const {
 	for (unsigned int j = 0; j < verts[i].edges.size(); j++) {
 		static const Color gray(0.75, 0.75, 0.75);
 		static const double lwidth = 0.2;
-		const Point &a = verts[i].pt;
-		const Point &b = verts[verts[i].edges[j].dst].pt;
+		const Geom::Point &a = verts[i].pt;
+		const Geom::Point &b = verts[verts[i].edges[j].dst].pt;
 		img.add(new Image::Line(a.x, a.y, b.x, b.y, lwidth, gray));
 	}
 	}
 
 	for (unsigned int i = 0; i < verts.size(); i++) {
 		static const double radius = 1;
-		const Point &p = verts[i].pt;
+		const Geom::Point &p = verts[i].pt;
 		p.draw(img, Image::black, radius);
 
 		if (!label)
@@ -104,11 +104,11 @@ void VisGraph::scale(double sx, double sy) {
 		verts[i].pt.scale(sx, sy);
 
 	for (unsigned int i = 0; i < verts.size(); i++) {
-		const Point &src = verts[i].pt;
+		const Geom::Point &src = verts[i].pt;
 		for (unsigned int j = 0; j < verts[i].edges.size(); j++) {
 			unsigned int dstid = verts[i].edges[j].dst;
-			const Point &dst = verts[dstid].pt;
-			verts[i].edges[j].dist =Point::distance(src, dst);
+			const Geom::Point &dst = verts[dstid].pt;
+			verts[i].edges[j].dist =Geom::Point::distance(src, dst);
 		}
 	}
 }
@@ -119,7 +119,7 @@ void VisGraph::translate(double dx, double dy) {
 		verts[i].pt.translate(dx, dy);
 }
 
-unsigned int VisGraph::add(const Point &pt) {
+unsigned int VisGraph::add(const Geom::Point &pt) {
 	unsigned int vid = verts.size();
 	verts.push_back(Vert(vid, pt));
 	for (unsigned int i = 0; i < vid; i++)
@@ -153,12 +153,12 @@ void VisGraph::populateverts(void) {
 	}
 }
 
-void VisGraph::addpoly(const Polygon &p, const std::vector<unsigned int> &vs) {
+void VisGraph::addpoly(const Geom::Polygon &p, const std::vector<unsigned int> &vs) {
 	unsigned int id0 = verts.size();
 
 	// add all reflex vertices for this polygon
 	for (unsigned int j = 0; j < vs.size(); j++) {
-		const Point &pt = p.verts[vs[j]];
+		const Geom::Point &pt = p.verts[vs[j]];
 		verts.push_back(Vert(verts.size(), pt));
 	}
 
@@ -180,14 +180,14 @@ void VisGraph::visedges(void) {
 }
 
 void VisGraph::consideredge(unsigned int i, unsigned int j) {
-	LineSeg ray(verts[i].pt, verts[j].pt);
+	Geom::LineSeg ray(verts[i].pt, verts[j].pt);
 	double len = ray.length();
 
-	Point p0(ray.along(len * 1e-3));
+	Geom::Point p0(ray.along(len * 1e-3));
 	if (i < polyno.size() && polys[polyno[i]].contains(p0))
 		return;
 
-	Point p1(ray.along(len * (1 - 1e-3)));
+	Geom::Point p1(ray.along(len * (1 - 1e-3)));
 	if (j < polyno.size() && polys[polyno[j]].contains(p1))
 		return;
 
@@ -196,7 +196,7 @@ void VisGraph::consideredge(unsigned int i, unsigned int j) {
 }
 
 void VisGraph::addedge(unsigned int i, unsigned int j) {
-	double dist = Point::distance(verts[i].pt, verts[j].pt);
+	double dist = Geom::Point::distance(verts[i].pt, verts[j].pt);
 	verts[i].edges.push_back(Edge(i, j, dist));
 	verts[j].edges.push_back(Edge(j, i, dist));
 }

@@ -53,8 +53,8 @@ int main(int argc, char *argv[]) {
 	if (labels)
 		graph.dumpvertlocs(stderr);
 
-	Point min = graph.min();
-	Point max = graph.max();
+	Geom::Point min = graph.min();
+	Geom::Point max = graph.max();
 	graph.translate(-min.x, -min.y);
 	double w = max.x - min.x;
 	double h = max.y - min.y;

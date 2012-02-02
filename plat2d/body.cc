@@ -7,12 +7,12 @@ static double tillwhole(double, double);
 void Body::move(const Lvl &lvl, double dx) {
 	double xmul = dx > 0 ? 1 : -1;
 	double ymul = dy > 0 ? 1 : -1;
-	Point v(dx, dy);
-	Point left(fabs(v.x), fabs(v.y));
+	Geom::Point v(dx, dy);
+	Geom::Point left(fabs(v.x), fabs(v.y));
 	Isect fallis;
 
 	while (left.x > 0.0 || left.y > 0.0) {
-		Point d(step(v));
+		Geom::Point d(step(v));
 		left.x -= fabs(d.x);
 		left.y -= fabs(d.y);
 
@@ -30,9 +30,9 @@ void Body::move(const Lvl &lvl, double dx) {
 	dofall(lvl, fallis);
 }
 
-Point Body::step(const Point &v) {
-	Point loc(bbox.min);
-	Point d(tillwhole(loc.x, v.x), tillwhole(loc.y, v.y));
+Geom::Point Body::step(const Geom::Point &v) {
+	Geom::Point loc(bbox.min);
+	Geom::Point d(tillwhole(loc.x, v.x), tillwhole(loc.y, v.y));
 
 	if (d.x == 0.0 && v.x != 0.0)
 		d.x = v.x < 0 ? -1.0 : 1.0;

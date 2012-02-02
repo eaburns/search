@@ -34,7 +34,7 @@ struct VisGraph : public PolyMap {
 	void translate(double, double);
 
 	// add adds a vertex to the graph.
-	unsigned int add(const Point&);
+	unsigned int add(const Geom::Point&);
 
 	struct Edge {
 		Edge(unsigned int s, unsigned int d, double c) :
@@ -49,14 +49,14 @@ struct VisGraph : public PolyMap {
 	};
 
 	struct Vert {
-		Vert(unsigned int i, const Point &p) : id(i), pt(p) { }
+		Vert(unsigned int i, const Geom::Point &p) : id(i), pt(p) { }
 
 		Vert(FILE*);
 
 		void output(FILE*) const;
 
 		unsigned int id;
- 		Point pt;
+ 		Geom::Point pt;
 		std::vector<Edge> edges;
 	};
 
@@ -74,7 +74,7 @@ private:
 
 	// addpoly adds the vertices specified by the index vector
 	//  for the given polygon to the graph.
-	void addpoly(const Polygon&, const std::vector<unsigned int>&);
+	void addpoly(const Geom::Polygon&, const std::vector<unsigned int>&);
 
 	// visedges adds edges between each pair of
 	// vertices that are visible from eachother.

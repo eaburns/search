@@ -2,6 +2,8 @@
 #include "geom.hpp"
 #include <cstdarg>
 
+using namespace Geom;
+
 static void drawisects(const Polygon&, const LineSeg&);
 static bool samepts(std::vector<Point>&, unsigned int n, ...);
 

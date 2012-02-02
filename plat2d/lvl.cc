@@ -45,7 +45,7 @@ void Lvl::read(FILE *f)
 }
 
 struct Hitzone {
-	Hitzone(Bbox a, const Point &v) {
+	Hitzone(Bbox a, const Geom::Point &v) {
 		Bbox b(a);
 		b.translate(v.x, v.y);
 
@@ -62,7 +62,7 @@ struct Hitzone {
 	unsigned int x0, y0, x1, y1;
 };
 
-Isect Lvl::isection(const Bbox &r, const Point &v) const {
+Isect Lvl::isection(const Bbox &r, const Geom::Point &v) const {
 	Hitzone test(r, v);
 	Isect isect;
 	Bbox mv(r);

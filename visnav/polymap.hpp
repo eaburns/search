@@ -10,11 +10,11 @@ struct Image;
 // with respect to ploygonal obstacles.
 struct PolyMap {
 
-	typedef boost::optional<Polygon> Bound;
+	typedef boost::optional<Geom::Polygon> Bound;
 
 	PolyMap(FILE*);
 
-	PolyMap(std::vector<Polygon> ps) : polys(ps) { }
+	PolyMap(std::vector<Geom::Polygon> ps) : polys(ps) { }
 
 	// Constructs a polygon map from a bitmap of obstacles.
 	PolyMap(const bool[], unsigned int, unsigned int);
@@ -39,15 +39,15 @@ struct PolyMap {
 
 	// min returns the minimum x and y coordinate
 	// in the map;
-	Point min(void) const;
+	Geom::Point min(void) const;
 
 	// max returns the maximum x and y coordinate
 	// in the map.
-	Point max(void) const;
+	Geom::Point max(void) const;
 
 	// obstructed returns true if the given point lies
 	// within one of the obstacles.
-	bool obstructed(const Point &pt) {
+	bool obstructed(const Geom::Point &pt) {
 		if (bound && !bound->contains(pt))
 			return true;
 		for (unsigned int i = 0; i < polys.size(); i++) {
@@ -62,8 +62,8 @@ struct PolyMap {
 	// 
 	// This function assumes that both points are not
 	// obstructed.
-	bool isvisible(const Point&, const Point&) const;
+	bool isvisible(const Geom::Point&, const Geom::Point&) const;
 
-	std::vector<Polygon> polys;
+	std::vector<Geom::Polygon> polys;
 	Bound bound;
 };

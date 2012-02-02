@@ -5,8 +5,8 @@ const VisNav::Oper VisNav::Nop;
 
 VisNav::VisNav(const VisGraph &_g, double _x0, double _y0, double _x1, double _y1) :
 		x0(_x0), y0(_y0), x1(_x1), y1(_y1), g(_g) {
-	start = g.add(Point(x0, y0));
-	finish = g.add(Point(x1, y1));
+	start = g.add(Geom::Point(x0, y0));
+	finish = g.add(Geom::Point(x1, y1));
 }
 
 VisNav::State VisNav::initialstate(void) {
@@ -21,8 +21,8 @@ enum {
 void VisNav::save(const char *file, std::vector<State> path) {
 	Image img(Width, Height);
 
-	Point min = g.min();
-	Point max = g.max();
+	Geom::Point min = g.min();
+	Geom::Point max = g.max();
 	g.translate(-min.x, -min.y);
 	double w = max.x - min.x;
 	double h = max.y - min.y;

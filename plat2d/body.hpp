@@ -10,9 +10,9 @@ struct Line1d {
 	Line1d(double _a, double _b) : a(_a), b(_b) { }
 
 	double isection(const Line1d &o) const {
-		if (between(o.a, o.b, b))
+		if (Geom::between(o.a, o.b, b))
 			return b - o.a;
-		else if (between(a, b, o.b))
+		else if (Geom::between(a, b, o.b))
 			return o.b - a;
 		return -1.0;
 	}
@@ -33,12 +33,12 @@ struct Isect {
 	double dx, dy;
 };
 
-struct Bbox : public Rectangle {
+struct Bbox : public Geom::Rectangle {
 
 	Bbox(void) { }
 
 	Bbox(unsigned int x0, unsigned int y0, unsigned int x1,
-			unsigned int y1) : Rectangle(x0, y0, x1, y1) { }
+			unsigned int y1) : Geom::Rectangle(x0, y0, x1, y1) { }
 
 	Isect isection(const Bbox &o) const {
 		double ix = projx().isection(o.projx());
@@ -66,7 +66,7 @@ struct Body {
 	Body(const Body &o) : bbox(o.bbox), dy(o.dy), fall(o.fall) { }
 
 	bool operator==(const Body &o) const {
-		return fall == o.fall && bbox == o.bbox && doubleeq(dy, o.dy);
+		return fall == o.fall && bbox == o.bbox && Geom::doubleeq(dy, o.dy);
 	}
 
 	void output(FILE *out) const {
@@ -82,7 +82,7 @@ struct Body {
 
 private:
 
-	Point step(const Point&);
+	Geom::Point step(const Geom::Point&);
 
 	void dofall(const Lvl&, const Isect&);
 };

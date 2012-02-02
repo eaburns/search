@@ -61,7 +61,7 @@ void Plat2d::initvg(void) {
 	for (unsigned int i = 0; i < lvl.width() * lvl.height(); i++) {
 		unsigned int x = i / lvl.height();
 		unsigned int y = i % lvl.height();
-		Point pt(x + 0.5, y + 0.5);
+		Geom::Point pt(x + 0.5, y + 0.5);
 		if (!vg->obstructed(pt))
 			centers.push_back(vg->add(pt));
 		else
@@ -72,7 +72,7 @@ void Plat2d::initvg(void) {
 
 	togoal.resize(vg->verts.size());
 	for (unsigned int i = 0; i < vg->verts.size(); i++) {
-		togoal[i].d = Infinity;
+		togoal[i].d = Geom::Infinity;
 		togoal[i].i = -1;
 		togoal[i].v = i;
 		togoal[i].prev = -1;
@@ -109,7 +109,7 @@ void Plat2d::drawmap(const char *file) const {
 	static const unsigned int Width = 400, Height = 400;
 
 	VisGraph graph(*vg);
-	Point min = graph.min(), max = graph.max();
+	Geom::Point min = graph.min(), max = graph.max();
 	graph.translate(-min.x, -min.y);
 	double w = max.x - min.x, h = max.y - min.y;
 	double s = Height / h;
