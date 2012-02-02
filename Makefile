@@ -26,6 +26,7 @@ include pancake/Make.inc
 include gridnav/Make.inc
 include visnav/Make.inc
 include plat2d/Make.inc
+include graphics/Make.inc
 
 everything: $(EVERYTHING)
 

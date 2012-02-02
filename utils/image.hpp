@@ -54,10 +54,8 @@ struct Image {
 	void writeeps(FILE*, bool usletter = false, int marginpt = -1) const;
 
 	struct Drawable {
-		Drawable(const Color &_c) : c(_c) { }
-		virtual void writeeps(FILE*) const;
-		virtual const char *name(void) const = 0;
-		Color c;
+		Drawable(void) { }
+		virtual void writeeps(FILE*) const = 0;
 	};
 
 	struct Text : public Drawable {
@@ -65,85 +63,75 @@ struct Image {
 		enum Position { Left, Right, Centered };
 
 		Text(const char *_text, const Geom2d::Point &p) :
-			Drawable(black), loc(p), sz(12), pos(Centered),
-			font("Times-Roman"), text(_text)
+			loc(p), sz(12), pos(Centered), font("Times-Roman"),
+			text(_text), c(black)
 			{ }
 
 		Text(const char *_text, double x, double y) :
-			Drawable(black), loc(x, y), sz(12), pos(Centered),
-			font("Times-Roman"), text(_text)
+			loc(x, y), sz(12), pos(Centered), font("Times-Roman"),
+			text(_text), c(black)
 			{ }
 
 		virtual void writeeps(FILE*) const;
-
-		virtual const char *name(void)const { return "Text"; }
 
 		Geom2d::Point loc;
 		double sz;
 		enum Position pos;
 		std::string font, text;
+		Color c;
 	};
 
 	struct Point : public Drawable, public Geom2d::Point {
 
-		// Point constructs a new point at the given location with
-		// the given color and radius.  If the radius is positive then
-		// the point filled and if the radius is non-positive then the
-		// point is not outlined an the radius is used as the absolute
-		// value of the specified radius.
-		Point(const Geom2d::Point &p, const Color &c, double _r) : 
-			Drawable(c), Geom2d::Point(p), r(_r)
+		Point(const Geom2d::Point &p, const Color &_c, double _r, double _w) : 
+			Geom2d::Point(p), r(_r), w(_w), c(_c)
 			{ }
 
 		virtual void writeeps(FILE*) const;
 
-		virtual const char *name(void) const { return "Point"; }
-
-		double r;
+		double r, w;
+		Color c;
 	};
 
 	struct Line : public Drawable, public Geom2d::LineSeg {
 
 		Line(const Geom2d::Point &p0, const Geom2d::Point &p1,
-				const Color &c, double _w) :
-			Drawable(c), Geom2d::LineSeg(p0, p1), w(_w)
+				const Color &_c, double _w) :
+			Geom2d::LineSeg(p0, p1), w(_w), c(_c)
 			{ }
 
-		Line(const Geom2d::LineSeg &l, const Color &c, double _w) :
-			Drawable(c), Geom2d::LineSeg(l), w(_w)
+		Line(const Geom2d::LineSeg &l, const Color &_c, double _w) :
+			Geom2d::LineSeg(l), w(_w), c(_c)
 			{ }
 
 		virtual void writeeps(FILE*) const;
 
-		virtual const char *name(void) const { return "Line"; }
-
 		double w;
+		Color c;
 	};
 	
 	struct Arc : public Drawable, public Geom2d::Arc {
 
-		Arc(const Geom2d::Arc &a, const Color &c, double _w) :
-			Drawable(c), Geom2d::Arc(a), w(_w)
+		Arc(const Geom2d::Arc &a, const Color &_c, double _w) :
+			Geom2d::Arc(a), w(_w), c(_c)
 			{ }
 
 		virtual void writeeps(FILE*) const;
 
-		virtual const char *name(void) const { return "Arc"; }
-
 		double w;
+		Color c;
 	};
 
 	struct Polygon : public Drawable, public Geom2d::Polygon  {
 
-		Polygon(const Geom2d::Polygon &p, const Color &c, double _w) :
-			Drawable(c), Geom2d::Polygon(p), w(_w)
+		Polygon(const Geom2d::Polygon &p, const Color &_c, double _w) :
+			Geom2d::Polygon(p), w(_w), c(_c)
 			{ }
 
 		virtual void writeeps(FILE*) const;
 
-		virtual const char *name(void) const { return "Polygon"; }
-
 		double w;
+		Color c;
 	};
 
 	void add(Drawable *d) { comps.push_back(d); }

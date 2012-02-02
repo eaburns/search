@@ -128,13 +128,9 @@ std::string Image::encode_epsdata(void) const {
 	return dst;
 }
 
-void Image::Drawable::writeeps(FILE *out) const {
-	fprintf(out, "%% %s\n", name());
-	fprintf(out, "%g %g %g setrgbcolor\n", c.getred(), c.getgreen(), c.getblue());
-}
-
 void Image::Text::writeeps(FILE *out) const {
-	Drawable::writeeps(out);
+	fputs("% Text\n", out);
+	fprintf(out, "%g %g %g setrgbcolor\n", c.getred(), c.getgreen(), c.getblue());
 	fprintf(out, "/%s findfont %g scalefont setfont\n", font.c_str(), sz);
 	fprintf(out, "%g %g moveto\n", loc.x, loc.y);
 	fprintf(out, "(%s) ", text.c_str());
@@ -154,19 +150,22 @@ void Image::Text::writeeps(FILE *out) const {
 }
 
 void Image::Point::writeeps(FILE *out) const {
-	Drawable::writeeps(out);
-	const char *finish = "stroke";
-	if (r > 0) {
-		finish = "fill";
+	fputs("% Point\n", out);
+	fprintf(out, "%g %g %g setrgbcolor\n", c.getred(), c.getgreen(), c.getblue());
+	const char *finish = "stroke\n";
+	if (w >= 0) {
+		finish = "fill\n";
 		fputs("0.1 setlinewidth\n", out);
 	} else {
-		fprintf(out, "%g setlinewidth\n", r);
+		fprintf(out, "%g setlinewidth\n", w);
 	}
-	fprintf(out, "newpath %g %g %g 0 360 arc %s\n", x, y, fabs(r), finish);
+	fprintf(out, "newpath %g %g %g 0 360 arc\n", x, y, r);
+	fputs(finish, out);
 }
 
 void Image::Line::writeeps(FILE *out) const {
-	Drawable::writeeps(out);
+	fputs("% Line\n", out);
+	fprintf(out, "%g %g %g setrgbcolor\n", c.getred(), c.getgreen(), c.getblue());
 	fprintf(out, "%g setlinewidth\n", w);
 	fputs("newpath\n", out);
 	fprintf(out, "%g %g moveto\n", p0.x, p0.y);
@@ -175,7 +174,8 @@ void Image::Line::writeeps(FILE *out) const {
 }
 
 void Image::Arc::writeeps(FILE *out) const {
-	Drawable::writeeps(out);
+	fputs("% Arc\n", out);
+	fprintf(out, "%g %g %g setrgbcolor\n", c.getred(), c.getgreen(), c.getblue());
 	fprintf(out, "%g setlinewidth\n", w);
 	fputs("newpath\n", out);
 	Geom2d::Point p(start());
@@ -187,7 +187,8 @@ void Image::Arc::writeeps(FILE *out) const {
 }
 
 void Image::Polygon::writeeps(FILE *out) const {
-	Drawable::writeeps(out);
+	fputs("% Polygon\n", out);
+	fprintf(out, "%g %g %g setrgbcolor\n", c.getred(), c.getgreen(), c.getblue());
 	const char *finish = "stroke\n";
 	if (w <= 0) {
 		finish = "fill\n";

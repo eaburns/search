@@ -77,7 +77,7 @@ void VisGraph::draw(Image &img, bool label) const {
 
 	for (unsigned int i = 0; i < verts.size(); i++) {
 		static const double r = 1;
-		img.add(new Image::Point(verts[i].pt, Image::black, r));
+		img.add(new Image::Point(verts[i].pt, Image::black, r, 0));
 
 		if (!label)
 			continue;
