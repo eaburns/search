@@ -9,12 +9,9 @@ struct Ui {
 	// run runs the Ui at the given frame rate.
 	void run(unsigned long);
 
-	// scene is called once per frame to get the current scene.
-	// The viewport is scaled so that the lower left corner is
-	// (0,0) and the upper-right corner is (width, height).  The
-	// scene must be scaled/moved to fit within this coordinate
-	// system.
-	virtual void scene(Scene &);
+	// frame is called once per-frame to update
+	// the scene.
+	virtual void frame(void);
 
 	// key is called everytime a key is pressed or released.
 	// The first argument is the key code (from SDL).
@@ -37,12 +34,14 @@ struct Ui {
 	// was an up-click.
 	virtual void click(int, int, int, bool);
 
+protected:
+
+	SDL_Surface *screen;
+	Scene scene;
+
 private:
 
 	// handleevents handles events and returns
 	// true if it is time to quit.
 	bool handleevents(void);
-
-	unsigned int width, height;
-	SDL_Surface *screen;
 };

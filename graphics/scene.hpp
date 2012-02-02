@@ -7,6 +7,15 @@ struct Scene {
 
 	void render(void) const;
 
+	// clear clears the components of the scene.
+	void clear(void) {
+		while (!comps.empty()) {
+			Renderable *r = comps.back();
+			comps.pop_back();
+			delete r;
+		}
+	}
+
 	// save saves the scene to the given file.
 	void save(const char *file) const;
 

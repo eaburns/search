@@ -5,20 +5,20 @@
 #include <GL/gl.h>
 #include <GL/glu.h>
 
-Ui::Ui(unsigned int w, unsigned int h) : width(w), height(h) {
+Ui::Ui(unsigned int w, unsigned int h) : scene(w, h) {
 	if (SDL_Init(SDL_INIT_EVERYTHING) != 0)
 		fatal("failed to initialiaze SDL: %s", SDL_GetError());
 
 	int flags = SDL_HWSURFACE | SDL_GL_DOUBLEBUFFER | SDL_OPENGL;
 	unsigned int color = 32;
-	screen = SDL_SetVideoMode(width, height, color, flags);
+	screen = SDL_SetVideoMode(scene.width, scene.height, color, flags);
 	if (!screen)
 		fatal("failed to create a window: %s", SDL_GetError());
 
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_POINT_SMOOTH);
 	glTranslated(-1.0, -1.0, 0.0);
-	glScaled(2.0 / width, 2.0 / height, 0.0);
+	glScaled(2.0 / scene.width, 2.0 / scene.height, 0.0);
 	glClearColor(1.0, 1.0, 1.0, 0.0);
 }
 
@@ -28,9 +28,8 @@ void Ui::run(unsigned long rate) {
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		Scene s(width, height);
-		scene(s);
-		s.render();
+		frame();
+		scene.render();
 		glFlush();
 		SDL_GL_SwapBuffers();
 
@@ -75,13 +74,14 @@ bool Ui::handleevents(void) {
 	return false;
 }
 
-void Ui::scene(Scene &s) {
+void Ui::frame(void) {
+	scene.clear();
 	Geom2d::Polygon p = Geom2d::Polygon::random(10, 0, 0, 1);
-	p.scale(s.width / 2, s.height / 2);
-	p.translate(s.width / 2, s.height / 2);
-	s.add(new Scene::Polygon(p, Image::red, 1));
-	s.add(new Scene::Point(Geom2d::Point(0.0, 0.0), Image::blue, 5, 1));
-	s.add(new Scene::Point(Geom2d::Point(s.width, s.height), Image::green, 5, 1));
+	p.scale(scene.width / 2, scene.height / 2);
+	p.translate(scene.width / 2, scene.height / 2);
+	scene.add(new Scene::Polygon(p, Image::red, 1));
+	scene.add(new Scene::Point(Geom2d::Point(0.0, 0.0), Image::blue, 5, 1));
+	scene.add(new Scene::Point(Geom2d::Point(scene.width, scene.height), Image::green, 5, 1));
 }
 
 void Ui::key(int key, bool down) {
