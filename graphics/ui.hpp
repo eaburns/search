@@ -10,6 +10,10 @@ struct Ui {
 	void run(unsigned long);
 
 	// scene is called once per frame to get the current scene.
+	// The viewport is scaled so that the lower left corner is
+	// (0,0) and the upper-right corner is (width, height).  The
+	// scene must be scaled/moved to fit within this coordinate
+	// system.
 	virtual void scene(Scene &);
 
 	// key is called everytime a key is pressed or released.

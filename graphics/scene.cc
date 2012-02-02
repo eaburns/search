@@ -14,6 +14,14 @@ void Scene::save(const char *file) const {
 }
 
 void Scene::Point::render(void) const {
+	glColor3d(c.getred(), c.getgreen(), c.getblue());
+	if (w > 0)
+		glLineWidth(w);
+	glPointSize(Image::Point::r);
+
+	glBegin(GL_POINTS);
+	glVertex2d(x, y);
+	glEnd();
 }
 
 void Scene::Line::render(void) const {
@@ -30,16 +38,16 @@ void Scene::Arc::render(void) const {
 }
 
 void Scene::Polygon::render(void) const {
-	glColor3f(c.getred(), c.getgreen(), c.getblue());
+	glColor3d(c.getred(), c.getgreen(), c.getblue());
 	if (w > 0) {
 		glLineWidth(w);
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		glBegin(GL_LINE_STRIP);
 	} else {
-		glLineWidth(0.01);
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		glPolygonMode(GL_FRONT, GL_FILL);
+		glBegin(GL_POLYGON);
 	}
-	glBegin(GL_POLYGON);
 	for (unsigned int i = 0; i < verts.size(); i++)
 		glVertex2d(verts[i].x, verts[i].y);
+	glVertex2d(verts[0].x, verts[0].y);
 	glEnd();
 }

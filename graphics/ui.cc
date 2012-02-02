@@ -5,8 +5,7 @@
 #include <GL/gl.h>
 #include <GL/glu.h>
 
-Ui::Ui(unsigned int w, unsigned int h) :
-		width(w), height(h) {
+Ui::Ui(unsigned int w, unsigned int h) : width(w), height(h) {
 	if (SDL_Init(SDL_INIT_EVERYTHING) != 0)
 		fatal("failed to initialiaze SDL: %s", SDL_GetError());
 
@@ -17,7 +16,10 @@ Ui::Ui(unsigned int w, unsigned int h) :
 		fatal("failed to create a window: %s", SDL_GetError());
 
 	glEnable(GL_DEPTH_TEST);
-	glTranslatef(-1.0, -1.0, 0.0);
+	glEnable(GL_POINT_SMOOTH);
+	glTranslated(-1.0, -1.0, 0.0);
+	glScaled(2.0 / width, 2.0 / height, 0.0);
+	glClearColor(1.0, 1.0, 1.0, 0.0);
 }
 
 void Ui::run(unsigned long rate) {
@@ -74,8 +76,12 @@ bool Ui::handleevents(void) {
 }
 
 void Ui::scene(Scene &s) {
-	Geom2d::Polygon p = Geom2d::Polygon::random(10, 1, 1, 1);
+	Geom2d::Polygon p = Geom2d::Polygon::random(10, 0, 0, 1);
+	p.scale(s.width / 2, s.height / 2);
+	p.translate(s.width / 2, s.height / 2);
 	s.add(new Scene::Polygon(p, Image::red, 1));
+	s.add(new Scene::Point(Geom2d::Point(0.0, 0.0), Image::blue, 5, 1));
+	s.add(new Scene::Point(Geom2d::Point(s.width, s.height), Image::green, 5, 1));
 }
 
 void Ui::key(int key, bool down) {
