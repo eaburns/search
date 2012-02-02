@@ -1,16 +1,16 @@
 #ifndef _GEOM_HPP_
 #define _GEOM_HPP_
 
-#include "image.hpp"
 #include <iterator>
 #include <vector>
 #include <limits>
 #include <cmath>
 #include <cstdio>
+#include <cassert>
 
 extern void fatal(const char*, ...);	// from utils.hpp
 
-namespace Geom {
+namespace Geom2d {
 	
 	// Epsilon is the smallest double value that can be added
 	// to 1 to make it no longer equal to 1.
@@ -89,10 +89,6 @@ namespace Geom {
 	
 		bool operator!=(const Point &p) const { return !(*this == p); }
 	
-		void draw(Image &img, Color c = Image::black, double r = 1) const {
-			img.add(new Image::Circle(x, y, r,  c, -1));
-		}
-	
 		// angle returns the angle to the point off of the positive x axis.
 		// The value is between 0 and 2π.
 		double angle(void) const {
@@ -168,11 +164,6 @@ namespace Geom {
 		bool operator==(const Rectangle &o) const {
 			return min == o.min && max == o.max;
 		}
-	
-		// draw draws the rectangle to the image.  If the line width
-		// is negative then the bounding box is filled, otherwise it
-		// is outlined with a line of the given width.
-		void draw(Image&, Color c = Image::black, double lwidth = 1) const;
 	
 		// contains returns true if the rectangle contains
 		// the given point.
@@ -275,10 +266,6 @@ namespace Geom {
 		LineSeg(Point _p0, Point _p1) :
 			Line(_p0, _p1), p0(_p0), p1(_p1), bbox(p0.x, p0.y, p1.x, p1.y)
 			{ }
-	
-		void draw(Image &img, Color c = Image::black, double w = 1) const {
-			img.add(new Image::Line(p0.x, p0.y, p1.x, p1.y, w, c));
-		}
 	
 		// length returns the length of the line segment.
 		double length(void) const {
@@ -441,19 +428,6 @@ namespace Geom {
 			return isections(l, is) > 0;
 		}
 	
-		// draw draws the arc to the given image.
-		void draw(Image &img, Color color = Image::black, double lwidth = 1) const {
-			Image::Path *p = new Image::Path();
-			p->arc(c.x, c.y, r, t0 * (180 / M_PI), (t1 - t0) * (180 / M_PI));
-			p->setlinewidth(lwidth);
-			p->setcolor(color);
-			img.add(p);
-			Point p0 = start(), p1 = end();
-	
-			img.add(new Image::Circle(p0.x, p0.y, 2, Color(0, 1, 0)));
-			img.add(new Image::Circle(p1.x, p1.y, 2, Color(0, 0, 1)));
-		}
-	
 		// start returns the starting point of the arc.
 		Point start(void) const {
 			return Point(c.x + cos(t0) * r, c.y + sin(t0) * r);
@@ -494,6 +468,11 @@ namespace Geom {
 		// giftwrap returns the polygon for the outter-hull of the
 		// given set of points.
 		static Polygon giftwrap(const std::vector<Point>&);
+
+		// triangle returns a triangle polygon centered at the given
+		// point with the specified height, width and rotated at the
+		// given angle.
+		static Polygon triangle(const Point&, double h, double w, double r);
 	
 		Polygon(const std::vector<Point>&);
 	
@@ -503,10 +482,6 @@ namespace Geom {
 	
 		// output writes the polygon to the given file.
 		void output(FILE*) const;
-	
-		// draw draws the polygon to the given image.
-		// If the lwidth is <0 then the polygon is filled.
-		void draw(Image&, Color c = Image::black, double lwidth = 1) const;
 	
 		// contains returns true if the polygon contains
 		// the given point.

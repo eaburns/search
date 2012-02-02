@@ -17,10 +17,10 @@ struct Comp {
 		blkd[x*h + y] = true;
 	}
 
-	Geom::Polygon poly(void) {
-		std::vector<Geom::Point> pts;
+	Geom2d::Polygon poly(void) {
+		std::vector<Geom2d::Point> pts;
 		Pose cur(minx, miny, Pose::Up);
-		pts.push_back(Geom::Point(minx, miny));
+		pts.push_back(Geom2d::Point(minx, miny));
 
 		for ( ; ; ) {
 			Pose next = clockwise(cur);
@@ -34,25 +34,25 @@ struct Comp {
 				break;
 			switch (cur.dir) {
 			case Pose::Up:
-				pts.push_back(Geom::Point(cur.x, cur.y+1));
+				pts.push_back(Geom2d::Point(cur.x, cur.y+1));
 				break;
 
 			case Pose::Down:
-				pts.push_back(Geom::Point(cur.x+1, cur.y));
+				pts.push_back(Geom2d::Point(cur.x+1, cur.y));
 				break;
 
 			case Pose::Right:
-				pts.push_back(Geom::Point(cur.x+1, cur.y+1));
+				pts.push_back(Geom2d::Point(cur.x+1, cur.y+1));
 				break;
 
 			case Pose::Left:
-				pts.push_back(Geom::Point(cur.x, cur.y));
+				pts.push_back(Geom2d::Point(cur.x, cur.y));
 				break;
 			}
 			cur = next;
 		}
 
-		return Geom::Polygon(pts);
+		return Geom2d::Polygon(pts);
 	}
 
 	struct Pose {

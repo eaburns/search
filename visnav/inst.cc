@@ -25,13 +25,13 @@ int main(int argc, char *argv[]) {
 	do {
 		x0 = randgen.real();
 		y0 = randgen.real();
-	} while (g.obstructed(Geom::Point(x0, y0)));
+	} while (g.obstructed(Geom2d::Point(x0, y0)));
 
 	double x1, y1;
 	do {
 		x1 = randgen.real();
 		y1 = randgen.real();
-	} while (g.obstructed(Geom::Point(x1, y1)));
+	} while (g.obstructed(Geom2d::Point(x1, y1)));
 
 	g.output(stdout);
 	printf("%g %g %g %g\n", x0, y0, x1, y1);

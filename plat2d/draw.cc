@@ -18,7 +18,7 @@ int main(int argc, char *argv[]) {
 		outfile);
 
 	lvl.draw(img);
-	img.save(outfile, true);
+	img.saveeps(outfile, true);
 
 	return 0;
 }

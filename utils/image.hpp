@@ -7,6 +7,7 @@
 #include <vector>
 #include <string>
 #include <boost/optional.hpp>
+#include "geom2d.hpp"
 
 struct Color {
 	Color(void) : r(1), g(1), b(1) { }
@@ -42,255 +43,129 @@ extern const unsigned int Nsomecolors;
 struct Image {
 	static const Color red, green, blue, white, black;
 
-	Image(unsigned int, unsigned int, const char *title = "<untitled>");
+	Image(unsigned int w, unsigned int h, const char *t = "<untitled>") :
+		width(w), height(h), title(t), pixels(NULL)
+		{ }
 
 	~Image(void);
 
-	void set(unsigned int x, unsigned int y, Color c) {
-		if (!data)
-			data = new Color[w * h];
-		data[y * w + x] = c;
-	}
+	void saveeps(const char *, bool usletter = false, int marginpt = -1) const;
 
-	void save(const char *, bool usletter = false, int marginpt = -1) const;
+	void writeeps(FILE*, bool usletter = false, int marginpt = -1) const;
 
-	void output(FILE*, bool usletter = false, int marginpt = -1) const;
-
-	unsigned int width() const { return w; }
-
-	unsigned int height() const { return h; }
-
-	struct Component {
-		virtual void write(FILE*) const = 0;
+	struct Drawable {
+		Drawable(const Color &_c) : c(_c) { }
+		virtual void writeeps(FILE*) const;
+		virtual const char *name(void) const = 0;
+		Color c;
 	};
 
-	struct Path : public Component {
+	struct Text : public Drawable {
 
-		Path(void) : _closepath(false), _fill(false) { }
+		enum Position { Left, Right, Centered };
 
-		~Path(void);
+		Text(const char *_text, const Geom2d::Point &p) :
+			Drawable(black), loc(p), sz(12), pos(Centered),
+			font("Times-Roman"), text(_text)
+			{ }
 
-		void closepath(void) { _closepath = true; }
+		Text(const char *_text, double x, double y) :
+			Drawable(black), loc(x, y), sz(12), pos(Centered),
+			font("Times-Roman"), text(_text)
+			{ }
 
-		void fill(void) { _fill = true; }
+		virtual void writeeps(FILE*) const;
 
-		void moveto(double x, double y) { addseg(new MoveTo(x, y)); }
+		virtual const char *name(void)const { return "Text"; }
 
-		void lineto(double x, double y) { addseg(new LineTo(x, y)); }
-
-		enum JoinStyle {
-			Miter = 0,
-			Round = 1,
-			Bevel = 2,
-		};
-
-		void setlinejoin(JoinStyle s) { addseg(new LineJoin(s)); }
-
-		void setlinewidth(double x) { addseg(new SetLineWidth(x)); }
-
-		void setcolor(Color c) { addseg(new SetColor(c)); }
-
-		// Swings in the counter-clock-wise direction
-		// from t degrees for dt degrees.
-		void arc(double x, double y, double r, double t, double dt) {
-			addseg(new Arc(x, y, r, t, dt));
-		}
-
-		void nauticalarc(double x, double y, double r, double t, double dt) {
-			addseg(new NauticalArc(x, y, r, t, dt));
-		}
-
-		void line(double x0, double y0, double x1, double y1);
-
-		void nauticalcurve(double xc, double yc, double r, double t, double dt);
-
-		void curve(double xc, double yc, double r, double t, double dt);
-
-		typedef boost::optional< std::pair<double,double> > Loc;
- 
-		Loc curloc(void) const { return cur; }
-
-		virtual void write(FILE*) const;
-
-private:
-		struct Segment {
-			virtual void write(FILE*) const = 0;
-			virtual Loc move(Loc l) const {	return l; }
-		};
-
-		struct LineJoin :Segment {
-			LineJoin(JoinStyle _type) :  type(_type) { }
-			virtual void write(FILE*) const;
-		private:
-			JoinStyle type;
-		};
-
-
-		struct MoveTo : Segment {
-			MoveTo(double _x, double _y) : x(_x), y(_y) { }
-			virtual void write(FILE*) const;
-			virtual Loc move(Loc) const;
-		private:
-			double x, y;
-		};
-
-		struct LineTo : Segment {
-			LineTo(double _x, double _y) : x(_x), y(_y) { }
-			virtual void write(FILE*) const;
-			virtual Loc move(Loc) const;
-		private:
-			double x, y;
-		};
-
-		struct SetLineWidth : Segment {
-			SetLineWidth(double _w) : w(_w) { }
-			virtual void write(FILE*) const;
-		private:
-			double w;
-		};
-
-		struct SetColor : Segment {
-			SetColor(Color _c) : c(_c) { }
-			virtual void write(FILE*) const;
-		private:
-			Color c;
-		};
-
-		struct Arc : Segment {
-			Arc(double _x, double _y, double _r, double _t, double _dt) :
-					x(_x), y(_y), r(_r), t(_t), dt(_dt) {
-				if(dt > 360)
-					dt = 360;
-				else if(dt < -360)
-					dt = - 360;
-			}
-			virtual void write(FILE*) const;
-			virtual Loc move(Loc) const;
-			friend struct Image::Path;
-		protected:
-			double x, y, r, t, dt;
-		};
-
-		struct NauticalArc : Arc {
-			NauticalArc(double _x, double _y, double _r, double _t, double _dt) :
-					Arc(_x, _y, _r, _t, -_dt) {
-				t = Image::nautical2math(t);
-			}
-			friend struct Image::Path;
-		};
-
-		void addseg(Segment *s) {
-			cur = s->move(cur);
-			segs.push_back(s);
-		}
-
-		Loc cur;
-		std::vector<Segment*> segs;
-		bool _closepath, _fill;
-
-	};
-
-	struct Line : public Path {
-		Line(double x0, double y0, double x1, double y1,
-				double width = 1, Color c = black) {
-			setlinewidth(width);
-			setcolor(c);
-			moveto(x0, y0);
-			lineto(x1, y1);
-		}
-	};
-
-	struct Text : public Component {
-		enum { Left, Right, Centered };
-
-		Text(const char *_text, unsigned int _x, unsigned int _y,
-			double _sz = 12, Color _c = Image::black, int _pos = Centered,
-			std::string _font = std::string("Times-Roman")) :
-				x(_x), y(_y), sz(_sz), c(_c), pos(_pos), font(_font), text(_text) { }
-
-		void setsize(double size) { sz = size; }
- 
-		void setcolor(Color color) { c = color; }
-
-		void setfont(std::string f) { font = f; }
-
-		void setpos(int p) { pos = p; }
-
-		virtual void write(FILE*) const;
-
-	private:
-		unsigned int x, y;
+		Geom2d::Point loc;
 		double sz;
-		Color c;
-		int pos;
-		std::string font;
-		std::string text;
+		enum Position pos;
+		std::string font, text;
 	};
 
-	struct Triangle : public Component {
-		// Centered at (x,y) with height ht and width w
-		// (an angle) rotated to point to at angle rot
-		//
-		// Negative line width means to fill in the triangle.
-		Triangle(double _x, double _y, double _ht, double _w = 45,
-				double _rot = 90, Color _c = Image::black,
-				double _linewidth = 1) : x(_x), y(_y), w(_w), ht(_ht),
-			rot(_rot), linewidth(_linewidth), c(_c) { }
-		virtual void write(FILE*) const;
-	private:
-		double x, y, w, ht, rot;
-		double linewidth;
-		Color c;
+	struct Point : public Drawable, public Geom2d::Point {
+
+		// Point constructs a new point at the given location with
+		// the given color and radius.  If the radius is positive then
+		// the point filled and if the radius is non-positive then the
+		// point is not outlined an the radius is used as the absolute
+		// value of the specified radius.
+		Point(const Geom2d::Point &p, const Color &c, double _r) : 
+			Drawable(c), Geom2d::Point(p), r(_r)
+			{ }
+
+		virtual void writeeps(FILE*) const;
+
+		virtual const char *name(void) const { return "Point"; }
+
+		double r;
 	};
 
-	// Non-positive lwidth will fill
-	struct Circle : public Component {
-		Circle(double _x, double _y, double _r, Color _c = Image::black,
-			double _lwidth = -1) : x(_x), y(_y), r(_r), c(_c), lwidth(_lwidth) { }
-		virtual void write(FILE*) const;
-	private:
-		double x, y, r;
-		Color c;
-		double lwidth;
+	struct Line : public Drawable, public Geom2d::LineSeg {
+
+		Line(const Geom2d::Point &p0, const Geom2d::Point &p1,
+				const Color &c, double _w) :
+			Drawable(c), Geom2d::LineSeg(p0, p1), w(_w)
+			{ }
+
+		Line(const Geom2d::LineSeg &l, const Color &c, double _w) :
+			Drawable(c), Geom2d::LineSeg(l), w(_w)
+			{ }
+
+		virtual void writeeps(FILE*) const;
+
+		virtual const char *name(void) const { return "Line"; }
+
+		double w;
+	};
+	
+	struct Arc : public Drawable, public Geom2d::Arc {
+
+		Arc(const Geom2d::Arc &a, const Color &c, double _w) :
+			Drawable(c), Geom2d::Arc(a), w(_w)
+			{ }
+
+		virtual void writeeps(FILE*) const;
+
+		virtual const char *name(void) const { return "Arc"; }
+
+		double w;
 	};
 
-	struct Rect : public Component {
-		Rect(double _x, double _y, double _w, double _h,
-			Color _c = Image::black, double _lwidth = -1.0) :
-			x(_x), y(_y), w(_w), h(_h), c(_c), lwidth(_lwidth) { }
-		virtual void write(FILE*) const;
-	private:
-		double x, y, w, h;
-		Color c;
-		double lwidth;
+	struct Polygon : public Drawable, public Geom2d::Polygon  {
+
+		Polygon(const Geom2d::Polygon &p, const Color &c, double _w) :
+			Drawable(c), Geom2d::Polygon(p), w(_w)
+			{ }
+
+		virtual void writeeps(FILE*) const;
+
+		virtual const char *name(void) const { return "Polygon"; }
+
+		double w;
 	};
 
-	void add(const Component *comp) {
-		comps.push_back(comp);
+	void add(Drawable *d) { comps.push_back(d); }
+
+	void setpixel(unsigned int x, unsigned int y, Color c) {
+		if (!pixels)
+			pixels = new Color[width * height];
+		pixels[y * width + x] = c;
 	}
 
-	static double nautical2math(double t) {
-		if (t < 90)
-			return 90 - t;
-		else if (t < 180)
-			return 360 - fmod(t, 90);
-		else if (t < 270)
-			return 270 - fmod(t, 90);
-		return 180 - fmod(t, 90);
-	}
+	unsigned int width, height;
+	std::string title;
+	std::vector<Drawable*> comps;
+	Color *pixels;
 
 private:
 
 	/* 72/2 pt == ½ in */
-	void outputhdr_usletter(FILE*, unsigned int marginpt = 72/2) const;
-	void outputhdr(FILE*, unsigned int marginpt = 0) const;
-	void outputdata(FILE*) const;
-	std::string encodedata(void) const;
-
-	unsigned int w, h;
-	std::string title;
-	Color *data;
-	std::vector<const Component *> comps;
+	void write_epshdrletter(FILE*, unsigned int marginpt = 72/2) const;
+	void write_epshdr(FILE*, unsigned int marginpt = 0) const;
+	void write_epsdata(FILE*) const;
+	std::string encode_epsdata(void) const;
 };
 
 #endif	// _IMAGE_HPP_

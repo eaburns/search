@@ -1,29 +1,14 @@
-#include "geom.hpp"
+#include "geom2d.hpp"
 #include "utils.hpp"
 #include <algorithm>
 #include <cstdarg>
 #include <cerrno>
 
-namespace Geom {
+namespace Geom2d {
 	
 	static unsigned int minx(const std::vector<Point>&);
 	static void xsortedpts(std::vector<Point>&, double, double, double);
 	static bool cmpx(const Point&, const Point&);
-	
-	void Rectangle::draw(Image &img, Color c, double lwidth) const {
-		Image::Path *p = new Image::Path();
-		p->setlinejoin(Image::Path::Miter);
-		p->setlinewidth(lwidth < 0 ? 0.1 : lwidth);
-		p->setcolor(c);
-		p->moveto(min.x, min.y);
-		p->lineto(min.x, max.y);
-		p->lineto(max.x, max.y);
-		p->lineto(max.x, min.y);
-		p->closepath();
-		if (lwidth < 0)
-			p->fill();
-		img.add(p);
-	}
 	
 	// vertices are given clock-wise around the polygon.
 	Polygon::Polygon(const std::vector<Point> &vs) : verts(vs), bbox(verts) {
@@ -127,25 +112,27 @@ namespace Geom {
 	
 		return Polygon(hull);
 	}
+
+	Polygon Polygon::triangle(const Point &c, double h, double w, double r) {
+		double side = h / cos(w / 2);
+		double xtop = h / 2;
+		double xbot = -h / 2;
+		double y1 = side * sin(w / 2);
+		double y2 = -side * sin(w / 2);
+		double cr = cos(r), sr = sin(r);
+	
+		std::vector<Point> pts;
+		pts.push_back(Point(xtop * cr + c.x, xtop * sr + c.y));
+		pts.push_back(Point(xbot * cr - y1 * sr + c.x, xbot * sr + y1 * cr + c.y));
+		pts.push_back(Point(xbot * cr - y2 * sr + c.x, xbot * sr + y2 * cr + c.y));
+
+		return Polygon(pts);
+	}
 	
 	void Polygon::output(FILE *out) const {
 		fprintf(out, "%lu", (unsigned long) verts.size());
 		for (unsigned int i = 0; i < verts.size(); i++)
 			fprintf(out, " %g %g", verts[i].x, verts[i].y);
-	}
-	
-	void Polygon::draw(Image &img, Color c, double lwidth) const {
-		Image::Path *p = new Image::Path();
-		p->setlinejoin(Image::Path::Round);
-		p->setlinewidth(lwidth < 0 ? 0.1 : lwidth);
-		p->setcolor(c);
-		p->moveto(verts[0].x, verts[0].y);
-		for (unsigned int i = 1; i < verts.size(); i++)
-			p->lineto(verts[i].x, verts[i].y);
-		p->closepath();
-		if (lwidth < 0)
-			p->fill();
-		img.add(p);
 	}
 	
 	bool Polygon::contains(const Point &pt) const {

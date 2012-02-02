@@ -1,10 +1,9 @@
 #include "utils.hpp"
-#include "geom.hpp"
+#include "geom2d.hpp"
 #include <cstdarg>
 
-using namespace Geom;
+using namespace Geom2d;
 
-static void drawisects(const Polygon&, const LineSeg&);
 static bool samepts(std::vector<Point>&, unsigned int n, ...);
 
 static struct { double a, b; bool eq; } eqtst[] = {
@@ -358,7 +357,6 @@ bool test_poly_isects(void) {
 	is = sq.isections(l);
 	if (!samepts(is, 1, 100.0, 50.0)) {
 		testpr("Unexpected collisions for 50,50 → 150,50: ");
-		drawisects(sq, l);
 		ok = false;
 	}
 
@@ -366,7 +364,6 @@ bool test_poly_isects(void) {
 	is = sq.isections(l);
 	if (!samepts(is, 2, 0.0, 50.0, 100.0, 50.0)) {
 		testpr("Unexpected collisions for -50,50 → 150,50: ");
-		drawisects(sq, l);
 		ok = false;
 	}
 
@@ -374,7 +371,6 @@ bool test_poly_isects(void) {
 	is = sq.isections(l);
 	if (!samepts(is, 0)) {
 		testpr("Unexpected collisions for 150,50 → 250,50: ");
-		drawisects(sq, l);
 		ok = false;
 	}
 
@@ -390,7 +386,6 @@ bool test_poly_minisect(void) {
 	Point m = sq.minisect(l);
 	if (doubleneq(m.x, 100) || doubleneq(m.y, 50)) {
 		testpr("Unexpected min intersection for 50,50 → 150,50: ");
-		drawisects(sq, l);
 		ok = false;
 	}
 
@@ -398,7 +393,6 @@ bool test_poly_minisect(void) {
 	m = sq.minisect(l);
 	if (doubleneq(m.x, 0) || doubleneq(m.y, 50)) {
 		testpr("Unexpected min intersection for -50,50 → 150,50: ");
-		drawisects(sq, l);
 		ok = false;
 	}
 
@@ -406,7 +400,6 @@ bool test_poly_minisect(void) {
 	m = sq.minisect(l);
 	if (doubleneq(m.x, 100) || doubleneq(m.y, 50)) {
 		testpr("Unexpected min intersection for 150,50 → -50,50: ");
-		drawisects(sq, l);
 		ok = false;
 	}
 
@@ -414,7 +407,6 @@ bool test_poly_minisect(void) {
 	m = sq.minisect(l);
 	if (!std::isinf(m.x) || !std::isinf(m.y)) {
 		testpr("Unexpected min intersection for 150,50 → 250,50: ");
-		drawisects(sq, l);
 		ok = false;
 	}
 
@@ -441,7 +433,6 @@ bool test_poly_hits(void) {
 	for (unsigned int i = 0 ; i < sizeof(tst) / sizeof(tst[0]); i++) {
 		if (tst[i].p.hits(tst[i].l) != tst[i].hit) {
 			testpr("Unexpected hit value\n");
-			drawisects(tst[i].p, tst[i].l);
 			ok = false;
 		}
 	}
@@ -449,32 +440,6 @@ bool test_poly_hits(void) {
 }
 
 enum { Bufsz = 128 };
-
-static void drawisects(const Polygon &poly, const LineSeg &line) {
-	static unsigned int n = 0;
-	double w = poly.bbox.max.x - poly.bbox.min.x;
-	double h = poly.bbox.max.y - poly.bbox.min.y;
-
-	Image img(w, h, "failure.eps");
-
-	poly.draw(img, Image::green);
-	line.draw(img, Image::red);
-
-	std::vector<Point> is = poly.isections(line);
-	for (unsigned int i = 0; i < is.size(); i++) {
-		if (std::isnormal(is[i].x) && std::isnormal(is[i].x))
-			is[i].draw(img, Image::black, 4);
-	}
-
-	Point min = poly.minisect(line);
-	if (std::isnormal(min.x) && std::isnormal(min.y))
-		min.draw(img, Image::red, 2);
-
-	char buf[Bufsz];
-	snprintf(buf, Bufsz, "failure%u.eps", n++);
-	testpr("saved in %s\n", buf);
-	img.save(buf, true);
-}
 
 static bool samepts(std::vector<Point> &pts, unsigned int n, ...) {
 	va_list ap;

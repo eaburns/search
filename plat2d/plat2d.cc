@@ -61,7 +61,7 @@ void Plat2d::initvg(void) {
 	for (unsigned int i = 0; i < lvl.width() * lvl.height(); i++) {
 		unsigned int x = i / lvl.height();
 		unsigned int y = i % lvl.height();
-		Geom::Point pt(x + 0.5, y + 0.5);
+		Geom2d::Point pt(x + 0.5, y + 0.5);
 		if (!vg->obstructed(pt))
 			centers.push_back(vg->add(pt));
 		else
@@ -72,7 +72,7 @@ void Plat2d::initvg(void) {
 
 	togoal.resize(vg->verts.size());
 	for (unsigned int i = 0; i < vg->verts.size(); i++) {
-		togoal[i].d = Geom::Infinity;
+		togoal[i].d = Geom2d::Infinity;
 		togoal[i].i = -1;
 		togoal[i].v = i;
 		togoal[i].prev = -1;
@@ -109,7 +109,7 @@ void Plat2d::drawmap(const char *file) const {
 	static const unsigned int Width = 400, Height = 400;
 
 	VisGraph graph(*vg);
-	Geom::Point min = graph.min(), max = graph.max();
+	Geom2d::Point min = graph.min(), max = graph.max();
 	graph.translate(-min.x, -min.y);
 	double w = max.x - min.x, h = max.y - min.y;
 	double s = Height / h;
@@ -120,18 +120,17 @@ void Plat2d::drawmap(const char *file) const {
 	Image img(w * s, h * s);
 	graph.PolyMap::draw(img, false);
 
-	Image::Path *p = new Image::Path();
-	p->setcolor(Color(1, 0, 0));
 	int i = centers[2 * lvl.height() + 2];
-	p->moveto(graph.verts[i].pt.x, graph.verts[i].pt.y);
 	i = togoal[i].prev;
+	Geom2d::Point p0 = graph.verts[i].pt;
 	while (i >= 0) {
-		p->lineto(graph.verts[i].pt.x, graph.verts[i].pt.y);
+		const Geom2d::Point &p1 = graph.verts[i].pt;
+		img.add(new Image::Line(p0, p1, Image::red, 1));
+		p0 = p1;
 		i = togoal[i].prev;
 	}
-	img.add(p);
 
-	img.save(file);
+	img.saveeps(file);
 }
 
 std::string controlstr(const std::vector<unsigned int> &controls) {

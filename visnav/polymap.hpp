@@ -1,4 +1,4 @@
-#include "../utils/geom.hpp"
+#include "../utils/geom2d.hpp"
 #include <vector>
 #include <cstdio>
 #include <boost/optional.hpp>
@@ -10,11 +10,11 @@ struct Image;
 // with respect to ploygonal obstacles.
 struct PolyMap {
 
-	typedef boost::optional<Geom::Polygon> Bound;
+	typedef boost::optional<Geom2d::Polygon> Bound;
 
 	PolyMap(FILE*);
 
-	PolyMap(std::vector<Geom::Polygon> ps) : polys(ps) { }
+	PolyMap(std::vector<Geom2d::Polygon> ps) : polys(ps) { }
 
 	// Constructs a polygon map from a bitmap of obstacles.
 	PolyMap(const bool[], unsigned int, unsigned int);
@@ -39,15 +39,15 @@ struct PolyMap {
 
 	// min returns the minimum x and y coordinate
 	// in the map;
-	Geom::Point min(void) const;
+	Geom2d::Point min(void) const;
 
 	// max returns the maximum x and y coordinate
 	// in the map.
-	Geom::Point max(void) const;
+	Geom2d::Point max(void) const;
 
 	// obstructed returns true if the given point lies
 	// within one of the obstacles.
-	bool obstructed(const Geom::Point &pt) {
+	bool obstructed(const Geom2d::Point &pt) {
 		if (bound && !bound->contains(pt))
 			return true;
 		for (unsigned int i = 0; i < polys.size(); i++) {
@@ -62,8 +62,8 @@ struct PolyMap {
 	// 
 	// This function assumes that both points are not
 	// obstructed.
-	bool isvisible(const Geom::Point&, const Geom::Point&) const;
+	bool isvisible(const Geom2d::Point&, const Geom2d::Point&) const;
 
-	std::vector<Geom::Polygon> polys;
+	std::vector<Geom2d::Polygon> polys;
 	Bound bound;
 };

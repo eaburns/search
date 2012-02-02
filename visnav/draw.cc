@@ -53,8 +53,8 @@ int main(int argc, char *argv[]) {
 	if (labels)
 		graph.dumpvertlocs(stderr);
 
-	Geom::Point min = graph.min();
-	Geom::Point max = graph.max();
+	Geom2d::Point min = graph.min();
+	Geom2d::Point max = graph.max();
 	graph.translate(-min.x, -min.y);
 	double w = max.x - min.x;
 	double h = max.y - min.y;
@@ -66,7 +66,7 @@ int main(int argc, char *argv[]) {
 
 	Image img(Width, Height);
 	graph.draw(img, labels);
-	img.save(outfile, true, 72.0/2.0);
+	img.saveeps(outfile, true, 72.0/2.0);
 
 	if (infile)
 		fclose(in);

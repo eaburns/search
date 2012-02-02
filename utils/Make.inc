@@ -14,7 +14,7 @@ UTILOBJS:=\
 	utils/rand.o\
 	utils/encode.o\
 	utils/image.o\
-	utils/geom.o\
+	utils/geom2d.o\
 	utils/rank.o\
 	utils/math.o\
 	utils/mem.o\

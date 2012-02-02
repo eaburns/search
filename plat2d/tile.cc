@@ -4,7 +4,7 @@
 void Tile::draw(Image &img, unsigned int x, unsigned int y, Color c) {
 	for (unsigned int j = y; j < y + Tile::Height; j++) {
 	for (unsigned int i = x; i < x + Tile::Width; i++)
-		img.set(i, j, c);
+		img.setpixel(i, j, c);
 	}
 }
 

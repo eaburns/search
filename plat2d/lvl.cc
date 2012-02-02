@@ -45,7 +45,7 @@ void Lvl::read(FILE *f)
 }
 
 struct Hitzone {
-	Hitzone(Bbox a, const Geom::Point &v) {
+	Hitzone(Bbox a, const Geom2d::Point &v) {
 		Bbox b(a);
 		b.translate(v.x, v.y);
 
@@ -62,7 +62,7 @@ struct Hitzone {
 	unsigned int x0, y0, x1, y1;
 };
 
-Isect Lvl::isection(const Bbox &r, const Geom::Point &v) const {
+Isect Lvl::isection(const Bbox &r, const Geom2d::Point &v) const {
 	Hitzone test(r, v);
 	Isect isect;
 	Bbox mv(r);
@@ -121,11 +121,12 @@ void Lvl::draw(Image &img) const {
 		if (tiles[t].flags & (Tile::Up | Tile::Down)) {
 			xpos += 0.5 * Tile::Width;
 			ypos += 0.5 * Tile::Height;
-			double rot = 90;
+			double rot = M_PI / 2;
 			if (tiles[t].flags & Tile::Down)
-				rot = 270;
-			img.add(new Image::Triangle(xpos, ypos, Tile::Width,
-				45.0, rot, Image::black));
+				rot = 3 * M_PI / 2;
+			Geom2d::Point c = Geom2d::Point(xpos, ypos);
+			Geom2d::Polygon t = Geom2d::Polygon::triangle(c, Tile::Width, M_PI/4, rot);
+			img.add(new Image::Polygon(t, Image::black, 1));
 		}
 	}
 	}

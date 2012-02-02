@@ -4,7 +4,7 @@
 #include <cstdio>
 #include <cerrno>
 
-static void randpolys(std::vector<Geom::Polygon>&);
+static void randpolys(std::vector<Geom2d::Polygon>&);
 static double rnddbl(double, double);
 static void helpmsg(int);
 
@@ -38,7 +38,7 @@ int main(int argc, char *argv[]) {
 	if (stats)
 		fprintf(stderr, "seed: %lu\n", randgen.seed());
 
-	std::vector<Geom::Polygon> polys;
+	std::vector<Geom2d::Polygon> polys;
 	double start = walltime();
 	randpolys(polys);
 	if (stats)
@@ -58,7 +58,7 @@ int main(int argc, char *argv[]) {
 	return 0;
 }
 
-static void randpolys(std::vector<Geom::Polygon> &polys) {
+static void randpolys(std::vector<Geom2d::Polygon> &polys) {
 	for (unsigned int i = 0; i < Npolys; i++) {
 redo:
 		double r = rnddbl(Minrad, Maxrad);
@@ -69,7 +69,7 @@ redo:
 		assert (y >= 0.0);
 		assert (r >= 0.0);
 
-		Geom::Polygon p = Geom::Polygon::random(randgen.integer(3, Maxverts), x, y, r);
+		Geom2d::Polygon p = Geom2d::Polygon::random(randgen.integer(3, Maxverts), x, y, r);
 			
 		for (unsigned int i = 0; i < polys.size(); i++) {
 			if (polys[i].bbox.hits(p.bbox))

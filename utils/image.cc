@@ -23,42 +23,38 @@ const Color somecolors[] = {
 
 const unsigned int Nsomecolors = sizeof(somecolors) / sizeof(somecolors[0]);
 
-Image::Image(unsigned int width, unsigned int height, const char *t) :
-		w(width), h(height), title(t), data(NULL) {
-}
-
 Image::~Image(void) {
 	while (!comps.empty()) {
 		delete comps.back();
 		comps.pop_back();
 	}
-	if (data)
-		delete[] data;
+	if (pixels)
+		delete[] pixels;
 }
 
-void Image::save(const char *path, bool usletter, int marginpt) const {
+void Image::saveeps(const char *path, bool usletter, int marginpt) const {
 	FILE *f = fopen(path, "w");
 	if (!f)
 		fatalx(errno, "Failed to open %s for writing\n", path);
-	output(f, usletter, marginpt);
+	writeeps(f, usletter, marginpt);
 	fclose(f);
 }
 
-void Image::output(FILE *out, bool usletter, int marginpt) const {
+void Image::writeeps(FILE *out, bool usletter, int marginpt) const {
 	if (marginpt < 0)
 		marginpt = usletter ? 72/2 : 0;	/* 72/2 pt == ½ in */
 
 	if (usletter)
-		outputhdr_usletter(out, marginpt);
+		write_epshdrletter(out, marginpt);
 	else
-		outputhdr(out, marginpt);
+		write_epshdr(out, marginpt);
 
-	if (data)
-		outputdata(out);
+	if (pixels)
+		write_epsdata(out);
 
 	for (unsigned int i = 0; i < comps.size(); i++) {
 		fputc('\n', out);
-		comps[i]->write(out);
+		comps[i]->writeeps(out);
 	}
 	fprintf(out, "showpage\n");
 }
@@ -68,7 +64,7 @@ enum {
 	Heightpt = 792,	/* pts = 11 in */
 };
 
-void Image::outputhdr_usletter(FILE *out, unsigned int marginpt) const {
+void Image::write_epshdrletter(FILE *out, unsigned int marginpt) const {
 	fprintf(out, "%%!PS-Adobe-3.0\n");
 	fprintf(out, "%%%%Creator: UNH-AI C++ Search Framework\n");
 	fprintf(out, "%%%%Title: %s\n", title.c_str());
@@ -76,55 +72,54 @@ void Image::outputhdr_usletter(FILE *out, unsigned int marginpt) const {
 	fprintf(out, "%%%%EndComments\n");
 
 	double maxw = Widthpt - marginpt * 2, maxh = Heightpt - marginpt * 2;
-	double scalex = maxw / w, scaley = maxh / h;
-	double transx = marginpt, transy = (Heightpt - h * scalex) / 2;
+	double scalex = maxw / width, scaley = maxh / height;
+	double transx = marginpt, transy = (Heightpt - height * scalex) / 2;
 
 	double scale = scalex;
 	if (scaley < scalex) {
 		scale = scaley;
 		transy = marginpt;
-		transx = (Widthpt - w * scaley) / 2;
+		transx = (Widthpt - width * scaley) / 2;
 	}
 
 	fprintf(out, "%g %g translate\n", transx, transy);
 	fprintf(out, "%g %g scale\n", scale, scale);
 }
 
-void Image::outputhdr(FILE *out, unsigned int marginpt) const {
-	fprintf(out, "%%!PS-Adobe-3.0\n");
-	fprintf(out, "%%%%Creator: UNH-AI C++ Search Framework\n");
+void Image::write_epshdr(FILE *out, unsigned int marginpt) const {
+	fputs("%%!PS-Adobe-3.0\n", out);
+	fputs("%%%%Creator: UNH-AI C++ Search Framework\n", out);
 	fprintf(out, "%%%%Title: %s\n", title.c_str());
-	fprintf(out, "%%%%BoundingBox: 0 0 %u %u\n", w + 2 * marginpt, h + 2 * marginpt);
-	fprintf(out, "%%%%EndComments\n");
+	fprintf(out, "%%%%BoundingBox: 0 0 %u %u\n",
+		width + 2 * marginpt, height + 2 * marginpt);
+	fputs("%%%%EndComments\n", out);
 	fprintf(out, "%u %u translate\n", marginpt, marginpt);
 }
 
-
-void Image::outputdata(FILE *out) const {
-	fprintf(out, "\n%% Image data\n");
-	fprintf(out, "gsave\n");
-	fprintf(out, "%u %u scale	%% scale pixels to points\n", w, h);
-	fprintf(out, "%u %u 8 [%u 0 0 %u 0 0]	", w, h, w, h);
-	fprintf(out, "%% width height colordepth transform\n");
-	fprintf(out, "/datasource currentfile ");
-	fprintf(out, "/ASCII85Decode filter /RunLengthDecode filter def\n");
-	fprintf(out, "/datastring %u string def	", w * 3);
-	fprintf(out, "%% %u = width * color components\n", w * 3);
-	fprintf(out, "{datasource datastring readstring pop}\n");
-	fprintf(out, "false	%% false == single data source (rgb)\n");
-	fprintf(out, "3	%% number of color components\n");
-	fprintf(out, "colorimage\n");
-	std::string encoded = encodedata();
-	fprintf(out, "%s\n", encoded.c_str());
-	fprintf(out, "grestore\n");
+void Image::write_epsdata(FILE *out) const {
+	fputs("\n%% Image data\n", out);
+	fputs("gsave\n", out);
+	fprintf(out, "%u %u scale	%% scale pixels to points\n", width, height);
+	fprintf(out, "%u %u 8 [%u 0 0 %u 0 0]	", width, height, width, height);
+	fputs("%% width height colordepth transform\n", out);
+	fputs("/datasource currentfile ", out);
+	fputs("/ASCII85Decode filter /RunLengthDecode filter def\n", out);
+	fprintf(out, "/datastring %u string def	", width * 3);
+	fprintf(out, "%% %u = width * color components\n", width * 3);
+	fputs("{datasource datastring readstring pop}\n", out);
+	fputs("false	%% false == single data source (rgb)\n", out);
+	fputs("3	%% number of color components\n", out);
+	fputs("colorimage\n", out);
+	fprintf(out, "%s\n", encode_epsdata().c_str());
+	fputs("grestore\n", out);
 }
 
-std::string Image::encodedata(void) const {
+std::string Image::encode_epsdata(void) const {
 	std::string cs;
-	for (unsigned int i = 0; i < w * h; i++) {
-		cs.push_back(data[i].getred255());
-		cs.push_back(data[i].getgreen255());
-		cs.push_back(data[i].getblue255());
+	for (unsigned int i = 0; i < width * height; i++) {
+		cs.push_back(pixels[i].getred255());
+		cs.push_back(pixels[i].getgreen255());
+		cs.push_back(pixels[i].getblue255());
 	}
 	std::string rlenc = runlenenc(cs);
 	std::string dst = ascii85enc(rlenc);
@@ -133,184 +128,78 @@ std::string Image::encodedata(void) const {
 	return dst;
 }
 
-Image::Path::~Path(void) {
-	while (!segs.empty()) {
-		delete segs.back();
-		segs.pop_back();
-	}
-}
-
-void Image::Path::write(FILE *out) const {
-	fprintf(out, "%% Path\n");
-	fprintf(out, "newpath\n");
-	for (unsigned int i = 0; i < segs.size(); i++)
-		segs[i]->write(out);
-	if (_closepath)
-		fprintf(out, "closepath\n");
-	if (!_fill)
-		fprintf(out, "stroke\n");
-	else
-		fprintf(out, "fill\n");
-}
-
-void Image::Path::LineJoin::write(FILE *out) const {
-	fprintf(out, "%d setlinejoin\n", type);
-}
-
-void Image::Path::MoveTo::write(FILE *out) const {
-	fprintf(out, "%g %g moveto\n", x, y);
-}
-
-Image::Path::Loc Image::Path::MoveTo::move(Loc p) const {
-	return Loc(std::pair<double,double>(x, y));
-}
-
-void Image::Path::LineTo::write(FILE *out) const {
-	fprintf(out, "%g %g lineto\n", x, y);
-}
-
-Image::Path::Loc Image::Path::LineTo::move(Loc p) const {
-	return Loc(std::pair<double,double>(x, y));
-}
-
-void Image::Path::SetLineWidth::write(FILE *out) const {
-	fprintf(out, "%g setlinewidth\n", w);
-}
-
-void Image::Path::SetColor::write(FILE *out) const {
-	fprintf(out, "%g %g %g setrgbcolor\n", c.getred(),
-		c.getgreen(), c.getblue());
-}
-
-void Image::Path::Arc::write(FILE *out) const {
-	const char *fun = "arc";
-	if (dt < 0)
-		fun = "arcn";
-	fprintf(out, "%g %g %g %g %g %s\n", x, y, r, t, t + dt, fun);
-}
-
-Image::Path::Loc Image::Path::Arc::move(Loc p) const {
-	double x1 = x + r * cos((t + dt) * M_PI / 180);
-	double y1 = y + r * sin((t + dt) * M_PI / 180);
-	return Loc(std::pair<double,double>(x1, y1));
-}
-
-static bool dbleq(double a, double b) {
-	static const double Epsilon = 0.01;
-	return fabs(a - b) < Epsilon;
-}
-
-void Image::Path::line(double x0, double y0, double x1, double y1) {
-	if (!cur || !dbleq(cur->first, x0) || !dbleq(cur->second, y0))
-		addseg(new MoveTo(x0, y0));
-	addseg(new LineTo(x1, y1));
-}
-
-void Image::Path::nauticalcurve(double xc, double yc, double r, double t, double dt) {
-	NauticalArc *a = new NauticalArc(xc, yc, r, t, dt);
-
-	double x0 = xc + a->r * cos(a->t * M_PI / 180);
-	double y0 = yc + a->r * sin(a->t * M_PI / 180);
-
-	if (!cur || !dbleq(cur->first, x0) || !dbleq(cur->second, y0))
-		addseg(new MoveTo(x0, y0));
-	addseg(a);
-}
-
-void Image::Path::curve(double xc, double yc, double r, double t, double dt) {
-	Arc *a = new Arc(xc, yc, r, t, dt);
-
-	double x0 = xc + a->r * cos(a->t * M_PI / 180);
-	double y0 = yc + a->r * sin(a->t * M_PI / 180);
-
-	if (!cur || !dbleq(cur->first, x0) || !dbleq(cur->second, y0))
-		addseg(new MoveTo(x0, y0));
-
-	addseg(a);
-}
-
-void Image::Text::write(FILE *out) const {
-	fprintf(out, "%% Text\n");
-	fprintf(out, "/%s findfont %g scalefont setfont\n", font.c_str(), sz);
-	fprintf(out, "%u %u moveto\n", x, y);
+void Image::Drawable::writeeps(FILE *out) const {
+	fprintf(out, "%% %s\n", name());
 	fprintf(out, "%g %g %g setrgbcolor\n", c.getred(), c.getgreen(), c.getblue());
+}
+
+void Image::Text::writeeps(FILE *out) const {
+	Drawable::writeeps(out);
+	fprintf(out, "/%s findfont %g scalefont setfont\n", font.c_str(), sz);
+	fprintf(out, "%g %g moveto\n", loc.x, loc.y);
 	fprintf(out, "(%s) ", text.c_str());
 	switch (pos) {
 	case Left:
-		fprintf(out, "show\n");
+		fputs("show\n", out);
 		break;
 	case Right:
-		fprintf(out, "dup stringwidth pop neg 0 rmoveto show\n");
+		fputs("dup stringwidth pop neg 0 rmoveto show\n", out);
 		break;
 	case Centered:
-		fprintf(out, "dup stringwidth pop 2 div neg 0 rmoveto show\n");
+		fputs("dup stringwidth pop 2 div neg 0 rmoveto show\n", out);
 		break;
 	default:
 		fatal("Unknown text position: %d\n", pos);
 	}
 }
 
-void Image::Triangle::write(FILE *out) const {
-	double wrad = w * M_PI / 180;
-	double rotrad = rot * M_PI / 180;
-	double side = ht / cos(wrad / 2);
-	double xtop = ht / 2;
-	double xbot = -ht / 2;
-	double y1 = side * sin(wrad / 2);
-	double y2 = -side * sin(wrad / 2);
-
-	double x0r = xtop * cos(rotrad);
-	double y0r = xtop * sin(rotrad);
-	double x1r = xbot * cos(rotrad) - y1 * sin(rotrad);
-	double y1r = xbot * sin(rotrad) + y1 * cos(rotrad);
-	double x2r = xbot * cos(rotrad) - y2 * sin(rotrad);
-	double y2r = xbot * sin(rotrad) + y2 * cos(rotrad);
-
-	fprintf(out, "%% Triangle\n");
-	fprintf(out, "newpath\n");
-	fprintf(out, "%g %g %g setrgbcolor\n", c.getred(), c.getgreen(), c.getblue());
-	if (linewidth >= 0)
-		fprintf(out, "%g setlinewidth\n", linewidth);
-	else
-		fprintf(out, "0.1 setlinewidth\n");
-	fprintf(out, "%g %g moveto\n", x0r + x, y0r + y);
-	fprintf(out, "%g %g lineto\n", x1r + x, y1r + y);
-	fprintf(out, "%g %g lineto\n", x2r + x, y2r + y);
-	fprintf(out, "closepath\n");
-	if (linewidth < 0)
-		fprintf(out, "fill\n");
-	else
-		fprintf(out, "stroke\n");
+void Image::Point::writeeps(FILE *out) const {
+	Drawable::writeeps(out);
+	const char *finish = "stroke";
+	if (r > 0) {
+		finish = "fill";
+		fputs("0.1 setlinewidth\n", out);
+	} else {
+		fprintf(out, "%g setlinewidth\n", r);
+	}
+	fprintf(out, "newpath %g %g %g 0 360 arc %s\n", x, y, fabs(r), finish);
 }
 
-void Image::Circle::write(FILE *out) const {
-	fprintf(out, "%% Circle\n");
-	const char *finish = "stroke";
-	if (lwidth <= 0) {
-		finish = "fill";
-		fprintf(out, "0.1 setlinewidth\n");
-	} else {
-		fprintf(out, "%g setlinewidth\n", lwidth);
-	}
-	fprintf(out, "%g %g %g setrgbcolor\n", c.getred(), c.getgreen(), c.getblue());
-	fprintf(out, "newpath %g %g %g 0 360 arc %s\n", x, y, r, finish);
-}
-
-void Image::Rect::write(FILE *out) const {
-	fprintf(out, "%% Rect\n");
-	const char *finish = "stroke";
-	if (lwidth <= 0) {
-		finish = "fill";
-		fprintf(out, "0.1 setlinewidth\n");
-	} else {
-		fprintf(out, "%g setlinewidth\n", lwidth);
-	}
-	fprintf(out, "%g %g %g setrgbcolor\n", c.getred(), c.getgreen(), c.getblue());
-	fputs("0 setlinejoin\n", out);
+void Image::Line::writeeps(FILE *out) const {
+	Drawable::writeeps(out);
+	fprintf(out, "%g setlinewidth\n", w);
 	fputs("newpath\n", out);
-	fprintf(out, "%g %g moveto\n", x, y);
-	fprintf(out, "%g %g lineto\n", x + w, y);
-	fprintf(out, "%g %g lineto\n", x + w, y + h);
-	fprintf(out, "%g %g lineto\n", x, y + h);
-	fprintf(out, "closepath\n%s\n", finish);
+	fprintf(out, "%g %g moveto\n", p0.x, p0.y);
+	fprintf(out, "%g %g lineto\n", p1.x, p1.y);
+	fputs("stroke\n", out);
+}
+
+void Image::Arc::writeeps(FILE *out) const {
+	Drawable::writeeps(out);
+	fprintf(out, "%g setlinewidth\n", w);
+	fputs("newpath\n", out);
+	Geom2d::Point p(start());
+	fprintf(out, "%g %g moveto\n", p.x, p.y);
+	double d0 = t0 * (180 / M_PI), d1 = t1 * (180 / M_PI);
+	fprintf(out, "%g %g %g %g %g arc\n",
+		Geom2d::Arc::c.x, Geom2d::Arc::c.y, r, d0, d1);
+	fputs("stroke\n", out);
+}
+
+void Image::Polygon::writeeps(FILE *out) const {
+	Drawable::writeeps(out);
+	const char *finish = "stroke\n";
+	if (w <= 0) {
+		finish = "fill\n";
+		fputs("0.1 setlinewidth\n", out);
+	} else {
+		fprintf(out, "%g setlinewidth\n", w);
+	}
+	fprintf(out, "%% %g",w);
+	fputs("newpath\n", out);
+	fprintf(out, "%g %g moveto\n", verts[0].x, verts[0].y);
+	for (unsigned int i = 1; i < verts.size(); i++)
+		fprintf(out, "%g %g lineto\n", verts[i].x, verts[i].y);
+	fputs("closepath\n", out);
+	fputs(finish, out);
 }
