@@ -3,7 +3,6 @@
 #include "../utils/utils.hpp"
 #include <SDL/SDL.h>
 #include <unistd.h>	// sleep()
-#include <vector>
 #include <cstdlib>
 #include <cerrno>
 
@@ -26,7 +25,7 @@ Player p(2 * Tile::Width + Player::Offx, 2 * Tile::Height + Player::Offy,
 static void parseargs(int, const char*[]);
 static void helpmsg(int);
 static Lvl *getlvl(void);
-static void handlepair(const char*, const char*, void*);
+static void dfline(std::vector<const char*>&, void*);
 static void initsdl(void);
 static unsigned int keys(void);
 static unsigned int sdlkeys(void);
@@ -101,7 +100,7 @@ static Lvl *getlvl(void) {
 
 	char *path = NULL;
 	nextctrl = 0;
-	dfreadpairs(stdin, handlepair, &path, echo);
+	dfread(stdin, dfline, &path, echo);
 	if (!path)
 		fatal("No level key found");
 
@@ -114,14 +113,13 @@ static Lvl *getlvl(void) {
 	return lvl;
 }
 
-static void handlepair(const char *key, const char *val, void *_pathp) {
-	if (strcmp(key, "level") == 0) {
+static void dfline(std::vector<const char*> &cols, void *_pathp) {
+	if (strcmp(cols[1], "level") == 0) {
 		char **pathp = (char**) _pathp;
-		unsigned int sz = sizeof(val[0]) * (strlen(val) + 1);
-		*pathp = (char*) malloc(sz);
-		memcpy(*pathp, val, sz);
-	} else if (strcmp(key, "controls") == 0) {
-		controls = controlvec(val);
+		*pathp = (char*) malloc(strlen(cols[2]) + 1);
+		memcpy(*pathp, cols[2], strlen(cols[2]) + 1);
+	} else if (strcmp(cols[1], "controls") == 0) {
+		controls = controlvec(cols[2]);
 	}
 }
 

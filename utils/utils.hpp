@@ -64,12 +64,16 @@ void dffooter(FILE *);
 // if the proc/ filesystem is readable.
 void dfprocstatus(FILE*);
 
-typedef void(*Pairhandler)(const char*, const char*, void*);
+typedef void(*Dfhandler)(std::vector<const char*>&, void*);
 
-// dfreadpairs reads pairs from the given datafile and calls
-// the handler for each pair.  If echo is true then the lines that
-// are read are echoed back out standard output.
-void dfreadpairs(FILE*, Pairhandler, void *priv = NULL, bool echo = false);
+// dfread reads #pair, #altcols and #altrow lines from the
+// given datafile and calls the handler for each.  The vector
+// passed to the handler fast the type of line as the 0th
+// element (#pair, #altcols or #altrow) and has the remaining
+// tokes of the line as its remaining aruments.  If echo is
+// true then the lines that are read are echoed back out
+// standard output.
+void dfread(FILE*, Dfhandler, void *priv = NULL, bool echo = false);
 
 // The RdbAttrs struct holds attributes for the RDB database.
 // It behaves as a FIFO queue of attributes.

@@ -18,7 +18,8 @@ static const char *end4 = "#end data file format 4\n";
 static void dfpair_sz(FILE*, unsigned int, const char*, const char*, va_list);
 static void machineid(FILE*);
 static void tryprocstatus(FILE*);
-static char *getquoted(unsigned int, char*);
+static bool hasprefix(const char*, const char*);
+static char *gettoken(unsigned int, char*);
 static bool nextline(std::string&, FILE*, bool);
 
 void dfpair(FILE *f, const char *key, const char *fmt, ...) {
@@ -193,11 +194,12 @@ static void tryprocstatus(FILE *out)
 	fclose(in);
 }
 
-void dfreadpairs(FILE *in, Pairhandler seepair, void *priv, bool echo) {
+void dfread(FILE *in, Dfhandler seeline, void *priv, bool echo) {
 	std::string linebuf;
 	unsigned int lineno = 1;
 	unsigned int sz = 0;
 	char *line = NULL;
+	std::vector<const char*> toks;
 
 	while (nextline(linebuf, in, echo)) {
 		if (sz < linebuf.size() + 1) {
@@ -208,33 +210,71 @@ void dfreadpairs(FILE *in, Pairhandler seepair, void *priv, bool echo) {
 		} else {
 			strcpy(line, linebuf.c_str());
 		}
-		if (strstr(line, "#pair") == line) {
-			char *key = getquoted(lineno, line + strlen("#pair"));
-			char *vl = getquoted(lineno, key + strlen(key) + 1);
-			seepair(key, vl, priv);
+
+		toks.clear();
+		if (hasprefix(line, "#pair"))
+			toks.push_back("#pair");
+
+		else if (hasprefix(line, "#altcols"))
+			toks.push_back("#altcols");
+
+		else if (hasprefix(line, "#altrow"))
+			toks.push_back("#altrow");
+
+		if (toks.size() > 0) {
+			const char *end = line + strlen(line);
+			char *left = line + strlen(toks[0]);
+			while (left < end) {
+				char *vl = gettoken(lineno, left);
+				if (!vl)
+					break;
+				toks.push_back(vl);
+				left = vl + strlen(vl) + 1;
+			}
+			seeline(toks, priv);
 		}
 		lineno++;
 	}
 
 	free(line);
+	return;
 }
 
-// Modifies the given string
-static char *getquoted(unsigned int lineno, char *str) {
+// hasprefix returns true if the string has the given prefix
+static bool hasprefix(const char *str, const char *prefix) {
+	unsigned int plen = strlen(prefix);
+	if (strlen(str) < plen)
+		return false;
+	for (unsigned int i = 0; i < plen; i++)
+		if (str[i] != prefix[i])
+			return false;
+	return true;
+}
+
+// gettoken returns the first whitespace delimited or quoted
+// token from the string.  This routine  modifies the given
+// string, returns NULL if end of line is encountered before a
+// token.
+static char *gettoken(unsigned int lineno, char *str) {
 	unsigned int i;
 	for (i = 0; i < strlen(str) && isspace(str[i]); i++)
 		;
-	if ( i >= strlen(str))
-		fatal("line %u: Expceted a quote, got end of line\n", lineno);
-	if (str[i] != '"')
-		fatal("line %u: Expected a quote, got [%s]\n", lineno, str + i);
+	if (i >= strlen(str))
+		return NULL;
 
-	char *strt = str + i + 1;
-	for (i = 0; i < strlen(strt) && strt[i] != '"'; i++)
+	if (str[i] == '"') {
+		char *strt = str + i + 1;
+		for (i = 0; i < strlen(strt) && strt[i] != '"'; i++)
+			;
+		if (i == strlen(strt) || strt[i] != '"')
+			fatal("line %u: No closing quote\n", lineno);
+		strt[i] = '\0';
+		return strt;
+	}
+
+	char *strt = str + i;
+	for (i = 0; i < strlen(strt) && !isspace(strt[i]); i++)
 		;
-
-	if (i == strlen(strt) || strt[i] != '"')
-		fatal("line %u: No closing quote\n", lineno);
 	strt[i] = '\0';
 
 	return strt;	
