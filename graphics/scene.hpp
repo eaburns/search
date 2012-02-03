@@ -48,12 +48,15 @@ struct Scene {
 
 	struct Arc : public Renderable, public Image::Arc {
 
-		Arc(const Geom2d::Arc &a, const Color &c, double w = 1) :
-			Image::Arc(a, c, w) { }
+		Arc(const Geom2d::Arc &a, const Color &c, double w = 1);
 
 		virtual void writeeps(FILE *out) const { Image::Arc::writeeps(out); }
 
 		virtual void render(void) const;
+	private:
+		enum { Narcpts = 10 };
+
+		Geom2d::Point pts[Narcpts];
 	};
 
 	struct Polygon : public Renderable, public Image::Polygon {

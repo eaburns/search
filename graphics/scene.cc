@@ -34,7 +34,26 @@ void Scene::Line::render(void) const {
 	glEnd();
 }
 
+Scene::Arc::Arc(const Geom2d::Arc &a, const Color &c, double w) : Image::Arc(a, c, w) {
+	double dt = (t1 - t0) / (Narcpts - 1);
+	double t = t0;
+	for (unsigned int i = 0; i < Narcpts; i++) {
+		pts[i].x = Geom2d::Arc::c.x + cos(t) * r;
+		pts[i].y = Geom2d::Arc::c.y + sin(t) * r;
+		t += dt;
+	}
+	assert (pts[0] == start());
+	assert (pts[Narcpts-1] == end());
+}
+
 void Scene::Arc::render(void) const {
+	glColor3f(c.getred(), c.getgreen(), c.getblue());
+	if (w > 0)
+		glLineWidth(w);
+	glBegin(GL_LINE_STRIP);
+	for (unsigned int i = 0; i < Narcpts; i++)
+		glVertex2d(pts[i].x, pts[i].y);
+	glEnd();
 }
 
 void Scene::Polygon::render(void) const {

@@ -76,12 +76,20 @@ bool Ui::handleevents(void) {
 
 void Ui::frame(void) {
 	scene.clear();
+	Geom2d::Point center(scene.width / 2, scene.height / 2);
+
+	unsigned int color = 0;
+
 	Geom2d::Polygon p = Geom2d::Polygon::random(10, 0, 0, 1);
 	p.scale(scene.width / 2, scene.height / 2);
 	p.translate(scene.width / 2, scene.height / 2);
-	scene.add(new Scene::Polygon(p, Image::red, 1));
-	scene.add(new Scene::Point(Geom2d::Point(0.0, 0.0), Image::blue, 5, 1));
-	scene.add(new Scene::Point(Geom2d::Point(scene.width, scene.height), Image::green, 5, 1));
+	scene.add(new Scene::Polygon(p, somecolors[color++ % Nsomecolors], 1));
+
+	Geom2d::Arc a = Geom2d::Arc(center, scene.width / 10, 0, M_PI);
+	scene.add(new Scene::Arc(a, somecolors[color++ % Nsomecolors], 1));
+
+	scene.add(new Scene::Point(Geom2d::Point(0.0, 0.0), Image::blue, 10, 1));
+	scene.add(new Scene::Point(Geom2d::Point(scene.width, scene.height), Image::green, 10, 1));
 }
 
 void Ui::key(int key, bool down) {
