@@ -119,13 +119,13 @@ void GridMap::load_sturtevant(FILE *in) {
 	const struct Terrain{
 		char flags[CHAR_MAX];
 		Terrain() {
-			flags['.'] = Passable;
-			flags['G'] = Passable;
-			flags['@'] = OutOfBounds;
-			flags['O'] = OutOfBounds;
-	 		flags['T'] = Tree;
-			flags['S'] = Swamp;
-			flags['W'] = Water;
+			flags[(int) '.'] = Passable;
+			flags[(int) 'G'] = Passable;
+			flags[(int) '@'] = OutOfBounds;
+			flags[(int) 'O'] = OutOfBounds;
+	 		flags[(int) 'T'] = Tree;
+			flags[(int) 'S'] = Swamp;
+			flags[(int) 'W'] = Water;
 		}
 	} terrain;
 

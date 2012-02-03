@@ -13,7 +13,7 @@ public:
 	enum { UnitCost = false };
 
 	typedef float Cost;
-	static const float InfCost = -1.0;
+	enum { InfCost = -1 };
 
 	typedef int Oper;	// Index into the ops arrays.
 	enum { Nop = -1 };

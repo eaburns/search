@@ -1,5 +1,7 @@
-CXX:=g++
+#CXX:=clang++ -fno-color-diagnostics
+#CC:=clang -fno-color-diagnostics
 
+CXX:=g++
 CC:=gcc
 
 AR:=ar

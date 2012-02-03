@@ -6,7 +6,7 @@ struct VisNav {
 	enum { UnitCost = false };
 
 	typedef double Cost;
-	static const double InfCost = -1;
+	enum { InfCost = -1 };
 
 	struct Oper {
 		Oper(void) : edge(NULL) { }
@@ -37,8 +37,8 @@ struct VisNav {
 		bool eq(const State &o) { return vert == o.vert; }
 
 	private: 
-		friend class Undo;
-		friend class VisNav;
+		friend struct Undo;
+		friend struct VisNav;
 		int vert;
 	};
 

@@ -253,7 +253,7 @@ private:
 		}
 
 		Node *pop(void) {
-			for ( ; max >= 0 && bkts[max].empty(); max--) {
+			for ( ; bkts[max].empty(); max--) {
 				if (max == 0)
 					break;
 			}

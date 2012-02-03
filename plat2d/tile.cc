@@ -21,13 +21,13 @@ int Tile::read(FILE *f)
 }
 
 Tiles::Tiles(void) {
-	tiles[' '] = Tile(' ', 0);
-	tiles['#'] = Tile('#', Tile::Collide | Tile::Opaque);
-	tiles['w'] = Tile('w', Tile::Water);
-	tiles['d'] = Tile('d', Tile::Down);
-	tiles['D'] = Tile('D', Tile::Down | Tile::Water);
-	tiles['u'] = Tile('u', Tile::Up);
-	tiles['U'] = Tile('U', Tile::Up | Tile::Water);
+	tiles[(int) ' '] = Tile(' ', 0);
+	tiles[(int) '#'] = Tile('#', Tile::Collide | Tile::Opaque);
+	tiles[(int) 'w'] = Tile('w', Tile::Water);
+	tiles[(int) 'd'] = Tile('d', Tile::Down);
+	tiles[(int) 'D'] = Tile('D', Tile::Down | Tile::Water);
+	tiles[(int) 'u'] = Tile('u', Tile::Up);
+	tiles[(int) 'U'] = Tile('U', Tile::Up | Tile::Water);
 }
 
 const Tiles tiles;
