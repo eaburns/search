@@ -110,17 +110,11 @@ private:
 	friend bool binheap_push_test(void);
 	friend bool binheap_pop_test(void);
 
-	long parent(long i) {
-		return (i - 1) / 2;
-	}
+	long parent(long i) { return (i - 1) / 2; }
 
-	long left(long i) {
-		return 2 * i + 1;
-	}
+	long left(long i) { return 2 * i + 1; }
 
-	long right(long i) {
-		return 2 * i + 2;
-	}
+	long right(long i) { return 2 * i + 2; }
 
 	long pullup(long i) {
 		if (i == 0)
