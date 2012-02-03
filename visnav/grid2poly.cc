@@ -1,4 +1,5 @@
 #include "../utils/utils.hpp"
+#include "../structs/djset.hpp"
 #include "polymap.hpp"
 #include <vector>
 

@@ -1,7 +1,6 @@
 #include <boost/cstdint.hpp>
 
-unsigned int ilog2(boost::uint32_t v)
-{
+unsigned int ilog2(boost::uint32_t v) {
 	if (!v)
 		return 0;
 
@@ -28,4 +27,11 @@ unsigned int ilog2(boost::uint32_t v)
 		v >>= 1;
 	}
 	return lg + 1;
+}
+
+unsigned long ipow(unsigned int b, unsigned int e) {
+	unsigned long r = 1;
+	for (unsigned int i = 0; i < e; i++)
+		r *= b;
+	return r;
 }
