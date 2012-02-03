@@ -5,9 +5,6 @@
 • remove dependency on
 	boost-filesystem
 
-• ARA* prune high f when re-pop
-	open
-
 • plat2d:
 
 	- random start locations
