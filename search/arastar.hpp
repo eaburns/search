@@ -38,7 +38,7 @@ template <class D> struct Arastar : public SearchAlgorithm<D> {
 			incons.push_back(n);
 		}
 	
-		const std::vector<Node*> &nodes(void) { return incons; }
+		std::vector<Node*> &nodes(void) { return incons; }
 	
 		void clear(void) {
 			mem.clear();
@@ -81,7 +81,7 @@ template <class D> struct Arastar : public SearchAlgorithm<D> {
 		incons.init(d);
 
 		dfrowhdr(stdout, "sol", 6, "num", "nodes expanded",
-			"nodes generated", "solution bound", "solution cost",
+			"nodes generated", "weight", "solution bound", "solution cost",
 			"wall time");
 
 
@@ -91,19 +91,19 @@ template <class D> struct Arastar : public SearchAlgorithm<D> {
 
 		unsigned long n = 0;
 		do {
-			if (!improve(d))
-				break;
-
-			n++;
-			double epsprime = findbound();
-			if (epsprime < wt)
-				wt = epsprime;
-
-			dfrow(stdout, "sol", "uuuggg", n,
-				SearchAlgorithm<D>::res.expd,
-				SearchAlgorithm<D>::res.gend, wt,
-				(double) SearchAlgorithm<D>::res.cost,
-				walltime() - SearchAlgorithm<D>::res.wallstrt);
+			if (improve(d)) {
+				n++;
+				double epsprime = findbound();
+				if (wt < epsprime)
+					epsprime = wt;
+	
+				dfrow(stdout, "sol", "uuugggg", n,
+					SearchAlgorithm<D>::res.expd,
+					SearchAlgorithm<D>::res.gend,
+					wt, epsprime,
+					(double) SearchAlgorithm<D>::res.cost,
+					walltime() - SearchAlgorithm<D>::res.wallstrt);
+			}
 
 			if (wt <= 1.0)
 				break;
@@ -165,31 +165,48 @@ private:
 	// Find the tightest bound for the current incumbent.
 	double findbound(void) {
 		assert (SearchAlgorithm<D>::res.cost != D::InfCost);
+		double cost = SearchAlgorithm<D>::res.cost;
 		double min = std::numeric_limits<double>::infinity();
 
-		for (unsigned int i = 0; i < incons.nodes().size(); i++) {
-			Node *n = incons.nodes()[i];
+		std::vector<Node*> &inodes = incons.nodes();
+		for (long i = 0; i < (long) inodes.size(); i++) {
+			Node *n = inodes[i];
 			double f = n->g + n->h;
+			if (f >= cost) {
+				inodes[i] = inodes[inodes.size()-1];
+				inodes.pop_back();
+				i--;
+				continue;
+			}
 			if (f < min)
 				min = f;
 		}
-		for (unsigned int i = 0; i < open.size(); i++) {
-			Node *n = open.at(i);
+
+		std::vector<Node*> &onodes = open.data();
+		for (long i = 0; i < (long) onodes.size(); i++) {
+			Node *n = onodes[i];
 			double f = n->g + n->h;
+			if (f >= cost) {
+				onodes[i] = onodes[onodes.size()-1];
+				onodes.pop_back();
+				i--;
+				continue;
+			}
 			if (f < min)
 				min = f;
 		}
-		return (double) SearchAlgorithm<D>::res.cost / min;
+		return cost / min;
 	}
 
 	// Update the open list: update f' values and add INCONS
 	// and re-heapify.
 	void updateopen(void) {
-		for (unsigned int i = 0; i < incons.nodes().size(); i++) {
-			Node *n = incons.nodes()[i];
+		std::vector<Node*> &nodes = incons.nodes();
+		for (unsigned long i = 0; i < nodes.size(); i++) {
+			Node *n = nodes[i];
 			n->fprime = n->g + wt * n->h;
 		}
-		for (unsigned int i = 0; i < open.size(); i++) {
+		for (long i = 0; i < open.size(); i++) {
 			Node *n = open.at(i);
 			n->fprime = n->g + wt * n->h;
 		}

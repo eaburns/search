@@ -7,11 +7,15 @@
 template <class Ops, class Elm> class BinHeap {
 public:
 
+	// push pushes a new element into the heap in
+	// O(lg n) time.
 	void push(Elm e) {
 		heap.push_back(e);
 		pullup(heap.size() - 1);
 	}
 
+	// pop pops the front element from the heap and
+	// returns it in O(lg n) time.
 	boost::optional<Elm> pop(void) {
 		if (heap.size() == 0)
 			return boost::optional<Elm>();
@@ -29,12 +33,18 @@ public:
 		return boost::optional<Elm>(res);
 	}
 
+	// front returns the front element of the heap if it is
+	// not empty and an empty option if the heap is empty.
+	// O(1) time.
 	boost::optional<Elm> front(void) {
 		if (heap.size() == 0)
 			return boost::optional<Elm>();
 		return boost::optional<Elm>(heap[0]);
 	}
 
+	// update updates the element in the heap at the given
+	// index.  This should be called whenever the priority
+	// of an element changes.  O(lg n) time.
 	void update(long i) {
 		i = pullup(i);
 		pushdown(i);
@@ -45,7 +55,7 @@ public:
 	// index value.  Note that the index value must be tracked
 	// properly, i.e., i < 0 means that the element is not in
 	// the priority queue and i  >= 0 means that the element
-	// is at the given index.
+	// is at the given index. O(lg n) time.
 	void pushupdate(Elm e, long i) {
 		if (i  < 0)
 			push(e);
@@ -53,35 +63,44 @@ public:
 			update(i);
 	}
 
-	bool empty(void) {
-		return heap.empty();
-	}
+	// empty returns true if the heap is empty and
+	// false otherwise.
+	bool empty(void) { return heap.empty(); }
 
-	void clear(void) {
-		heap.clear();
-	}
+	// clear clears all of the elements from the heap
+	// leaving it empty.
+	void clear(void) { heap.clear(); }
 
-	unsigned long size(void) {
-		return heap.size();
-	}
+ 	// size returns the number of entries in the heap.
+	long size(void) { return heap.size(); }
 
-	Elm at(unsigned long i) {
-		assert (i < heap.size());
+	// at returns the element of the heap at the given
+	// index.
+	Elm at(long i) {
+		assert (i < size());
 		return heap[i];
 	}
 
-	// Reinitialize the heap property
+	// data returns the raw vector used to back the
+	// heap.  If you mess with this then you must
+	// reinit the heap afterwards to ensure that the
+	// heap property still holds.
+	std::vector<Elm> &data(void) { return heap; }
+
+	// reinit reinitialize the heap property in O(n) time.
 	void reinit(void) {
 		if (heap.size() <= 0)
 			return;
 
-		for (unsigned long i = heap.size() / 2; ; i--) {
+		for (long i = heap.size() / 2; ; i--) {
 			pushdown(i);
 			if (i == 0)
 				break;
 		}
 	}
 
+	// append appends the vector of elements to the heap
+	// and ensures that the heap property holds after.
 	void append(const std::vector<Elm> &elms) {
 		heap.insert(heap.end(), elms.begin(), elms.end());
 		reinit();
@@ -91,19 +110,19 @@ private:
 	friend bool binheap_push_test(void);
 	friend bool binheap_pop_test(void);
 
-	unsigned long parent(unsigned long i) {
+	long parent(long i) {
 		return (i - 1) / 2;
 	}
 
-	unsigned long left(unsigned long i) {
+	long left(long i) {
 		return 2 * i + 1;
 	}
 
-	unsigned long right(unsigned long i) {
+	long right(long i) {
 		return 2 * i + 2;
 	}
 
-	unsigned long pullup(unsigned long i) {
+	long pullup(long i) {
 		if (i == 0)
 			return i;
 		long p = parent(i);
@@ -114,13 +133,13 @@ private:
 		return i;
 	}
 
-	long pushdown(unsigned long i) {
-		unsigned long l = left(i), r = right(i);
+	long pushdown(long i) {
+		long l = left(i), r = right(i);
 
-		unsigned long sml = i;
-		if (l < heap.size() && Ops::pred(heap[l], heap[i]))
+		long sml = i;
+		if (l < size() && Ops::pred(heap[l], heap[i]))
 			sml = l;
-		if (r < heap.size() && Ops::pred(heap[r], heap[sml]))
+		if (r < size() && Ops::pred(heap[r], heap[sml]))
 			sml = r;
 
 		if (sml != i) {
@@ -131,7 +150,7 @@ private:
 		return i;
 	}
 
-	void swap(unsigned long i, unsigned long j) {
+	void swap(long i, long j) {
 		Ops::setind(heap[i], j);
 		Ops::setind(heap[j], i);
 		Elm tmp = heap[i];
