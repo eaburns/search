@@ -23,6 +23,7 @@ public:
 	}
 
 	Tiles::Pos unpack_md(unsigned int md[][Ntiles], Tiles::Tile ts[], Tiles::Cost *h) {
+		*h = 0;
 		fatal("Tiles::unpack_md is unimplemented");
 		return 0;
 	}
