@@ -1,5 +1,4 @@
 #include "../utils/utils.hpp"
-#include <cstdlib>
 #include <cstdarg>
 #include <cstdio>
 #include <ctime>
@@ -18,7 +17,6 @@ const char *end4 = "#end data file format 4\n";
 static void dfpair_sz(FILE*, unsigned int, const char*, const char*, va_list);
 static void machineid(FILE*);
 static void tryprocstatus(FILE*);
-static char *gettoken(unsigned int, char*);
 
 void dfpair(FILE *f, const char *key, const char *fmt, ...) {
 	char buf[Bufsz];
@@ -194,28 +192,17 @@ static void tryprocstatus(FILE *out)
 
 void dfread(FILE *in, Dfhandler seeline, void *priv, bool echo) {
 	unsigned int lineno = 1;
-	unsigned int sz = 0;
-	char *linebuf = NULL;
 	std::vector<const char*> toks;
 	boost::optional<std::string> line = readline(in, echo);
 
 	while (line) {
-		if (sz < line->size() + 1) {
-			if (linebuf)
-				free(linebuf);
-			linebuf = strdup(line->c_str());
-			sz = line->size() + 1;
-		} else {
-			strcpy(linebuf, line->c_str());
-		}
-
+		char *linebuf = strdup(line->c_str());
 		toks.clear();
+
 		if (hasprefix(linebuf, "#pair"))
 			toks.push_back("#pair");
-
 		else if (hasprefix(linebuf, "#altcols"))
 			toks.push_back("#altcols");
-
 		else if (hasprefix(linebuf, "#altrow"))
 			toks.push_back("#altrow");
 
@@ -223,7 +210,7 @@ void dfread(FILE *in, Dfhandler seeline, void *priv, bool echo) {
 			const char *end = linebuf + strlen(linebuf);
 			char *left = linebuf + strlen(toks[0]);
 			while (left < end) {
-				char *vl = gettoken(lineno, left);
+				char *vl = gettoken(left, lineno);
 				if (!vl)
 					break;
 				toks.push_back(vl);
@@ -231,39 +218,9 @@ void dfread(FILE *in, Dfhandler seeline, void *priv, bool echo) {
 			}
 			seeline(toks, priv);
 		}
+
+		free(linebuf);
 		lineno++;
 		line = readline(in, echo);
 	}
-
-	free(linebuf);
-	return;
-}
-
-// gettoken returns the first whitespace delimited or quoted
-// token from the string.  This routine  modifies the given
-// string, returns NULL if end of line is encountered before a
-// token.
-static char *gettoken(unsigned int lineno, char *str) {
-	unsigned int i;
-	for (i = 0; i < strlen(str) && isspace(str[i]); i++)
-		;
-	if (i >= strlen(str))
-		return NULL;
-
-	if (str[i] == '"') {
-		char *strt = str + i + 1;
-		for (i = 0; i < strlen(strt) && strt[i] != '"'; i++)
-			;
-		if (i == strlen(strt) || strt[i] != '"')
-			fatal("line %u: No closing quote\n", lineno);
-		strt[i] = '\0';
-		return strt;
-	}
-
-	char *strt = str + i;
-	for (i = 0; i < strlen(strt) && !isspace(strt[i]); i++)
-		;
-	strt[i] = '\0';
-
-	return strt;	
 }

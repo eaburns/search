@@ -2,7 +2,6 @@
 #define _UTILS_HPP_
 
 #include <cstdio>
-#include <stdint.h>
 #include <string>
 #include <vector>
 #include <deque>
@@ -36,6 +35,13 @@ boost::optional<std::string> readline(FILE*, bool echo = false);
 // hasprefix returns true if the first string has the second
 // string as a prefix.
 bool hasprefix(const char*, const char*);
+
+// gettoken returns the first whitespace delimited or quoted
+// token from the string.  This routine  modifies the given
+// string, returns NULL if end of line is encountered before a
+// token.  If lineno > 0 then it is printed in the case that a
+// quote match fails.
+char *gettoken(char*, unsigned int lineno = 0);
 
 // walltime returns the current wall-cloce time in seconds
 double walltime(void);
