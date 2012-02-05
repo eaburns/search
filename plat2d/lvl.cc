@@ -45,7 +45,7 @@ void Lvl::read(FILE *f)
 }
 
 struct Hitzone {
-	Hitzone(Bbox a, const Geom2d::Point &v) {
+	Hitzone(Bbox a, const Geom2d::Pt &v) {
 		Bbox b(a);
 		b.translate(v.x, v.y);
 
@@ -62,7 +62,7 @@ struct Hitzone {
 	unsigned int x0, y0, x1, y1;
 };
 
-Isect Lvl::isection(const Bbox &r, const Geom2d::Point &v) const {
+Isect Lvl::isect(const Bbox &r, const Geom2d::Pt &v) const {
 	Hitzone test(r, v);
 	Isect isect;
 	Bbox mv(r);
@@ -74,7 +74,7 @@ Isect Lvl::isection(const Bbox &r, const Geom2d::Point &v) const {
 	for (unsigned int x = test.x0; x <= test.x1; x++) {
 	for (unsigned int y = test.y0; y <= test.y1; y++) {
 		unsigned int t = blks[ind(x, y)].tile;
-		Isect is(tiles[t].isection(x, y, mv));
+		Isect is(tiles[t].isect(x, y, mv));
 		if (is.is && is.dy > isect.dy) {
 			isect.is = true;
 			isect.dy = is.dy;
@@ -92,7 +92,7 @@ testx:
 	for (unsigned int x = test.x0; x <= test.x1; x++) {
 	for (unsigned int y = test.y0; y <= test.y1; y++) {
 		unsigned int t = blks[ind(x, y)].tile;
-		Isect is(tiles[t].isection(x, y, mv));
+		Isect is(tiles[t].isect(x, y, mv));
 		if (is.is && is.dx > isect.dx) {
 			isect.is = true;
 			isect.dx = is.dx;
@@ -124,9 +124,9 @@ void Lvl::draw(Image &img) const {
 			double rot = M_PI / 2;
 			if (tiles[t].flags & Tile::Down)
 				rot = 3 * M_PI / 2;
-			Geom2d::Point c = Geom2d::Point(xpos, ypos);
-			Geom2d::Polygon t = Geom2d::Polygon::triangle(c, Tile::Width, M_PI/4, rot);
-			img.add(new Image::Polygon(t, Image::black, 1));
+			Geom2d::Pt c = Geom2d::Pt(xpos, ypos);
+			Geom2d::Poly t = Geom2d::Poly::triangle(c, Tile::Width, M_PI/4, rot);
+			img.add(new Image::Poly(t, Image::black, 1));
 		}
 	}
 	}

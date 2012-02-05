@@ -4,7 +4,7 @@
 
 using namespace Geom2d;
 
-static bool samepts(std::vector<Point>&, unsigned int n, ...);
+static bool samepts(std::vector<Pt>&, unsigned int n, ...);
 
 static struct { double a, b; bool eq; } eqtst[] = {
 	{ 1, 1, true },
@@ -61,7 +61,7 @@ bool test_point_angle(void) {
 	bool ok = true;
 
 	for (unsigned int i = 0; i < sizeof(tst) / sizeof(tst[0]); i++) {
-		Point p(tst[i].x, tst[i].y);
+		Pt p(tst[i].x, tst[i].y);
 		double t = p.angle();
 		if (doubleeq(t, tst[i].theta))
 			continue;
@@ -92,11 +92,11 @@ bool test_line_isect(void) {
 	bool ok = true;
 
 	for (unsigned int i = 0; i < sizeof(tst) / sizeof(tst[0]); i++) {
-		Line l0(Point(tst[i].x00, tst[i].y00), Point(tst[i].x01, tst[i].y01));
-		Line l1(Point(tst[i].x10, tst[i].y10), Point(tst[i].x11, tst[i].y11));
-		Point expect(tst[i].xi, tst[i].yi);
-		Point isect0 = l0.isection(l1);
-		Point isect1 = l1.isection(l0);
+		Line l0(Pt(tst[i].x00, tst[i].y00), Pt(tst[i].x01, tst[i].y01));
+		Line l1(Pt(tst[i].x10, tst[i].y10), Pt(tst[i].x11, tst[i].y11));
+		Pt expect(tst[i].xi, tst[i].yi);
+		Pt isect0 = l0.isect(l1);
+		Pt isect1 = l1.isect(l0);
 		if (isect0 != isect1) {
 			testpr("%g,%g → %g,%g; %g,%g → %g,%g: isect order differed\n",
 				tst[i].x00, tst[i].y00, tst[i].x01, tst[i].y01,
@@ -127,8 +127,8 @@ bool test_line_isabove(void) {
 	bool ok = true;
 
 	for (unsigned int i = 0; i < sizeof(tst) / sizeof(tst[0]); i++) {
-		Line l(Point(tst[i].x0, tst[i].y0), Point(tst[i].x1, tst[i].y1));
-		Point pt(tst[i].x, tst[i].y);
+		Line l(Pt(tst[i].x0, tst[i].y0), Pt(tst[i].x1, tst[i].y1));
+		Pt pt(tst[i].x, tst[i].y);
 		bool above = l.isabove(pt);
 		if (above == tst[i].above)
 			continue;
@@ -157,7 +157,7 @@ bool test_lineseg_length(void) {
 	bool ok = true;
 
 	for (unsigned int i = 0; i < sizeof(tst) / sizeof(tst[0]); i++) {
-		LineSeg l(Point(tst[i].x0, tst[i].y0), Point(tst[i].x1, tst[i].y1));
+		LineSg l(Pt(tst[i].x0, tst[i].y0), Pt(tst[i].x1, tst[i].y1));
 		double len = l.length();
 		if (doubleeq(len, tst[i].len))
 			continue;
@@ -183,9 +183,9 @@ bool test_lineseg_midpt(void) {
 	bool ok = true;
 
 	for (unsigned int i = 0; i < sizeof(tst) / sizeof(tst[0]); i++) {
-		LineSeg l(Point(tst[i].x0, tst[i].y0), Point(tst[i].x1, tst[i].y1));
-		Point mid(l.midpt());
-		if (mid == Point(tst[i].x, tst[i].y))
+		LineSg l(Pt(tst[i].x0, tst[i].y0), Pt(tst[i].x1, tst[i].y1));
+		Pt mid(l.midpt());
+		if (mid == Pt(tst[i].x, tst[i].y))
 			continue;
 		testpr("%d: %g,%g → %g,%g expected length: %g,%g, got %g,%g\n",
 			i, tst[i].x0, tst[i].y0, tst[i].x1, tst[i].y1,
@@ -215,9 +215,9 @@ bool test_lineseg_along(void) {
 	bool ok = true;
 
 	for (unsigned int i = 0; i < sizeof(tst) / sizeof(tst[0]); i++) {
-		LineSeg l(Point(tst[i].x0, tst[i].y0), Point(tst[i].x1, tst[i].y1));
-		Point expect(tst[i].x, tst[i].y);
-		Point pt(l.along(tst[i].dist));
+		LineSg l(Pt(tst[i].x0, tst[i].y0), Pt(tst[i].x1, tst[i].y1));
+		Pt expect(tst[i].x, tst[i].y);
+		Pt pt(l.along(tst[i].dist));
 		if (pt == expect)
 			continue;
 		testpr("%d: %g,%g → %g,%g; %g along, expected %g,%g got %g,%g\n",
@@ -249,8 +249,8 @@ bool test_lineseg_contains(void) {
 	bool ok = true;
 
 	for (unsigned int i = 0; i < sizeof(tst) / sizeof(tst[0]); i++) {
-		LineSeg l(Point(tst[i].x0, tst[i].y0), Point(tst[i].x1, tst[i].y1));
-		if (l.contains(Point(tst[i].x, tst[i].y)) == tst[i].cont)
+		LineSg l(Pt(tst[i].x0, tst[i].y0), Pt(tst[i].x1, tst[i].y1));
+		if (l.contains(Pt(tst[i].x, tst[i].y)) == tst[i].cont)
 			continue;
 		testpr("%d: %g,%g → %g,%g;  %g,%g expected %d\n",
 			i, tst[i].x0, tst[i].y0, tst[i].x1, tst[i].y1,
@@ -276,7 +276,7 @@ bool test_lineseg_isect(void) {
 		// other intersections
 		{ -1, -1, 1, 1,	-1, 1, 1, -1,	0, 0 },
 		{ 0, 2, 2, 0,	0, 0, 2, 2,	1, 1 },
-		// end-on-end (same Line, so Point::inf())
+		// end-on-end (same Line, so Pt::inf())
 		{ 0, 0, 1, 0,	-1, 0, 0, 0,	Infinity, Infinity },
 		// intersections that may have failed at one point
 		// or another.
@@ -285,11 +285,11 @@ bool test_lineseg_isect(void) {
 
 	bool ok = true;
 	for (unsigned int i = 0; i < sizeof(tst) / sizeof(tst[0]); i++) {
-		Line l0(Point(tst[i].x00, tst[i].y00), Point(tst[i].x01, tst[i].y01));
-		Line l1(Point(tst[i].x10, tst[i].y10), Point(tst[i].x11, tst[i].y11));
-		Point expect(tst[i].xi, tst[i].yi);
-		Point isect0 = l0.isection(l1);
-		Point isect1 = l1.isection(l0);
+		Line l0(Pt(tst[i].x00, tst[i].y00), Pt(tst[i].x01, tst[i].y01));
+		Line l1(Pt(tst[i].x10, tst[i].y10), Pt(tst[i].x11, tst[i].y11));
+		Pt expect(tst[i].xi, tst[i].yi);
+		Pt isect0 = l0.isect(l1);
+		Pt isect1 = l1.isect(l0);
 		if (isect0 != isect1) {
 			testpr("%g,%g → %g,%g; %g,%g → %g,%g: isect order differed:\n",
 				tst[i].x00, tst[i].y00, tst[i].x01, tst[i].y01,
@@ -313,32 +313,32 @@ bool test_lineseg_isect(void) {
 bool test_poly_contains(void) {
 	bool ok = true;
 
-	Polygon sq(4,
+	Poly sq(4,
 		0.0, 0.0,
 		1.0, 0.0,
 		1.0, 1.0,
 		0.0, 1.0);
 
-	Point p(0.5, 0.5);
+	Pt p(0.5, 0.5);
 	if (!sq.contains(p)) {
 		testpr("Expected ½,½ to be contained\n");
 		ok = false;
 	}
 
-	p = Point(2, 2);
+	p = Pt(2, 2);
 	if (sq.contains(p)) {
 		testpr("Expected 2,2 not to be contained\n");
 		ok = false;
 	}
 
-	Polygon poly(7, 0.0, 45.0318,
+	Poly poly(7, 0.0, 45.0318,
 				52.0712, 56.7999, 
 				59.1066, 109.825,
 				61.2547, 87.3769,
 				75.451, 112.008,
 				85.8799, 15.2566,
 				22.9319, 0.0);
-	p = LineSeg(Point(0, 45.0318), Point(85.8799, 15.2566)).midpt();
+	p = LineSg(Pt(0, 45.0318), Pt(85.8799, 15.2566)).midpt();
 	if (!poly.contains(p)) {
 		testpr("Expected %g,%g to be contained\n", p.x, p.y);
 		ok = false;
@@ -350,25 +350,25 @@ bool test_poly_contains(void) {
 bool test_poly_isects(void) {
 	bool ok = true;
 
-	std::vector<Point> is;
-	Polygon sq(4, 0.0, 0.0, 100.0, 0.0, 100.0, 100.0, 0.0, 100.0);
+	std::vector<Pt> is;
+	Poly sq(4, 0.0, 0.0, 100.0, 0.0, 100.0, 100.0, 0.0, 100.0);
 
-	LineSeg l(Point(50, 50), Point(150, 50));
-	is = sq.isections(l);
+	LineSg l(Pt(50, 50), Pt(150, 50));
+	is = sq.isects(l);
 	if (!samepts(is, 1, 100.0, 50.0)) {
 		testpr("Unexpected collisions for 50,50 → 150,50: ");
 		ok = false;
 	}
 
-	l = LineSeg(Point(-50, 50), Point(150, 50));
-	is = sq.isections(l);
+	l = LineSg(Pt(-50, 50), Pt(150, 50));
+	is = sq.isects(l);
 	if (!samepts(is, 2, 0.0, 50.0, 100.0, 50.0)) {
 		testpr("Unexpected collisions for -50,50 → 150,50: ");
 		ok = false;
 	}
 
-	l = LineSeg(Point(150, 50), Point(250, 50));
-	is = sq.isections(l);
+	l = LineSg(Pt(150, 50), Pt(250, 50));
+	is = sq.isects(l);
 	if (!samepts(is, 0)) {
 		testpr("Unexpected collisions for 150,50 → 250,50: ");
 		ok = false;
@@ -380,30 +380,30 @@ bool test_poly_isects(void) {
 bool test_poly_minisect(void) {
 	bool ok = true;
 
-	Polygon sq(4, 0.0, 0.0, 100.0, 0.0, 100.0, 100.0, 0.0, 100.0);
+	Poly sq(4, 0.0, 0.0, 100.0, 0.0, 100.0, 100.0, 0.0, 100.0);
 
-	LineSeg l(Point(50, 50), Point(150, 50));
-	Point m = sq.minisect(l);
+	LineSg l(Pt(50, 50), Pt(150, 50));
+	Pt m = sq.minisect(l);
 	if (doubleneq(m.x, 100) || doubleneq(m.y, 50)) {
 		testpr("Unexpected min intersection for 50,50 → 150,50: ");
 		ok = false;
 	}
 
-	l = LineSeg(Point(-50, 50), Point(150, 50));
+	l = LineSg(Pt(-50, 50), Pt(150, 50));
 	m = sq.minisect(l);
 	if (doubleneq(m.x, 0) || doubleneq(m.y, 50)) {
 		testpr("Unexpected min intersection for -50,50 → 150,50: ");
 		ok = false;
 	}
 
-	l = LineSeg(Point(150, 50), Point(-50, 50));
+	l = LineSg(Pt(150, 50), Pt(-50, 50));
 	m = sq.minisect(l);
 	if (doubleneq(m.x, 100) || doubleneq(m.y, 50)) {
 		testpr("Unexpected min intersection for 150,50 → -50,50: ");
 		ok = false;
 	}
 
-	l = LineSeg(Point(150, 50), Point(250, 50));
+	l = LineSg(Pt(150, 50), Pt(250, 50));
 	m = sq.minisect(l);
 	if (!std::isinf(m.x) || !std::isinf(m.y)) {
 		testpr("Unexpected min intersection for 150,50 → 250,50: ");
@@ -414,19 +414,19 @@ bool test_poly_minisect(void) {
 }
 
 bool test_poly_hits(void) {
-	struct { Polygon p; LineSeg l; bool hit; } tst[] = {
+	struct { Poly p; LineSg l; bool hit; } tst[] = {
 
-		{ Polygon(4, 7.0, 11.0, 7.0, 12.0, 19.0, 12.0, 19.0, 11.0),
-			LineSeg(Point(13, 10), Point(20, 23)),
+		{ Poly(4, 7.0, 11.0, 7.0, 12.0, 19.0, 12.0, 19.0, 11.0),
+			LineSg(Pt(13, 10), Pt(20, 23)),
 			true },
 
-		{ Polygon(8, 5.0,46.0, 5.0,47.0, 6.0,47.0, 6.0,48.0, 7.0,48.0, 7.0,47.0, 8.0,47.0, 8.0,46.0),
-			LineSeg(Point(5.000000008304548, 36.000000099654578), Point(5.999999900000001, 47.999998800000000)),
+		{ Poly(8, 5.0,46.0, 5.0,47.0, 6.0,47.0, 6.0,48.0, 7.0,48.0, 7.0,47.0, 8.0,47.0, 8.0,46.0),
+			LineSg(Pt(5.000000008304548, 36.000000099654578), Pt(5.999999900000001, 47.999998800000000)),
 			true },
 
-		{ Polygon(4, 10.0, 10.0, 20.0, 10.0, 20.0, 20.0, 10.0, 20.0),
-			LineSeg(Point(16.711217312473440, 19.910276876720729),
-					Point(16.711216292250189, 21.910276876720470)),
+		{ Poly(4, 10.0, 10.0, 20.0, 10.0, 20.0, 20.0, 10.0, 20.0),
+			LineSg(Pt(16.711217312473440, 19.910276876720729),
+					Pt(16.711216292250189, 21.910276876720470)),
 			true },
 	};
 	bool ok = true;
@@ -441,7 +441,7 @@ bool test_poly_hits(void) {
 
 enum { Bufsz = 128 };
 
-static bool samepts(std::vector<Point> &pts, unsigned int n, ...) {
+static bool samepts(std::vector<Pt> &pts, unsigned int n, ...) {
 	va_list ap;
 
 	if (pts.size() != n)

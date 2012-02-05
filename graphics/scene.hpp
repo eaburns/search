@@ -25,20 +25,20 @@ struct Scene {
 
 	void add(Renderable *v) { comps.push_back(v); }
 
-	struct Point : public Renderable, public Image::Point {
+	struct Pt : public Renderable, public Image::Pt {
 
-		Point(const Geom2d::Point &p, const Color &c, double r = 1, double w = 1) :
-			Image::Point(p, c, r, w)
+		Pt(const Geom2d::Pt &p, const Color &c, double r = 1, double w = 1) :
+			Image::Pt(p, c, r, w)
 			{ }
 
-		virtual void writeeps(FILE *out) const { Image::Point::writeeps(out); }
+		virtual void writeeps(FILE *out) const { Image::Pt::writeeps(out); }
 
 		virtual void render(void) const;
 	};
 
 	struct Line : public Renderable, public Image::Line {
 
-		Line(const Geom2d::LineSeg &l, const Color &c, double w = 1) :
+		Line(const Geom2d::LineSg &l, const Color &c, double w = 1) :
 			Image::Line(l, c, w) { }
 
 		virtual void writeeps(FILE *out) const { Image::Line::writeeps(out); }
@@ -56,15 +56,15 @@ struct Scene {
 	private:
 		enum { Narcpts = 10 };
 
-		Geom2d::Point pts[Narcpts];
+		Geom2d::Pt pts[Narcpts];
 	};
 
-	struct Polygon : public Renderable, public Image::Polygon {
+	struct Poly : public Renderable, public Image::Poly {
 
-		Polygon(const Geom2d::Polygon &p, const Color &c, double w = 1) :
-			Image::Polygon(p, c, w) { }
+		Poly(const Geom2d::Poly &p, const Color &c, double w = 1) :
+			Image::Poly(p, c, w) { }
 
-		virtual void writeeps(FILE *out) const { Image::Polygon::writeeps(out); }
+		virtual void writeeps(FILE *out) const { Image::Poly::writeeps(out); }
 
 		virtual void render(void) const;
 	};

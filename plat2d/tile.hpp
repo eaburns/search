@@ -33,10 +33,10 @@ struct Tile {
 
 	Tile(char _c, unsigned int f) : c(_c), flags(f) { }
 
-	Isect isection(unsigned int x, unsigned int y, const Bbox & r) const {
+	Isect isect(unsigned int x, unsigned int y, const Bbox & r) const {
 		if (!(flags & Collide))
 			return Isect();	
-		return r.isection(bbox(x, y));
+		return r.isect(bbox(x, y));
 	}
 
 	double gravity(void) const {

@@ -16,7 +16,7 @@ void PolyMap::input(FILE *in) {
 	if (res != 0)
 		fatal("Malformed visibility map");
 	if (n == strlen("bound: "))
-		bound = Bound(Geom2d::Polygon(in));
+		bound = Bound(Geom2d::Poly(in));
 
 	unsigned int npoly;
 	res = fscanf(in, " %u polygons\n", &npoly);
@@ -26,7 +26,7 @@ void PolyMap::input(FILE *in) {
 		fatal("Malformed visibility map");
 
 	for (unsigned int i = 0; i < npoly; i++)
-		polys.push_back(Geom2d::Polygon(in));
+		polys.push_back(Geom2d::Poly(in));
 }
 
 void PolyMap::output(FILE *out) const {
@@ -45,10 +45,10 @@ void PolyMap::output(FILE *out) const {
 void PolyMap::draw(Image &img, double w) const {
 	for (unsigned int i = 0; i < polys.size(); i++) {
 		const Color &c = somecolors[i % Nsomecolors];
-		img.add(new Image::Polygon(polys[i], c, w));
+		img.add(new Image::Poly(polys[i], c, w));
 	}
 	if (bound)
-		img.add(new Image::Polygon(*bound, Image::black, w));
+		img.add(new Image::Poly(*bound, Image::black, w));
 }
 
 void PolyMap::scale(double sx, double sy) {
@@ -65,11 +65,11 @@ void PolyMap::translate(double dx, double dy) {
 		bound->translate(dx, dy);
 }
 
-Geom2d::Point PolyMap::min(void) const {
+Geom2d::Pt PolyMap::min(void) const {
 	if (bound)
 		return bound->bbox.min;
 
-	Geom2d::Point min = Geom2d::Point::inf();
+	Geom2d::Pt min = Geom2d::Pt::inf();
 	for (unsigned int i = 0; i < polys.size(); i++) {
 		if (polys[i].bbox.min.x < min.x)
 			min.x = polys[i].bbox.min.x;
@@ -79,11 +79,11 @@ Geom2d::Point PolyMap::min(void) const {
 	return min;
 }
 
-Geom2d::Point PolyMap::max(void) const {
+Geom2d::Pt PolyMap::max(void) const {
 	if (bound)
 		return bound->bbox.max;
 
-	Geom2d::Point max = Geom2d::Point::neginf();
+	Geom2d::Pt max = Geom2d::Pt::neginf();
 	for (unsigned int i = 0; i < polys.size(); i++) {
 		if (polys[i].bbox.max.x > max.x)
 			max.x = polys[i].bbox.max.x;
@@ -93,8 +93,8 @@ Geom2d::Point PolyMap::max(void) const {
 	return max;
 }
 
-bool PolyMap::isvisible(const Geom2d::Point &a, const Geom2d::Point &b) const {
-	const Geom2d::LineSeg line(a, b);
+bool PolyMap::isvisible(const Geom2d::Pt &a, const Geom2d::Pt &b) const {
+	const Geom2d::LineSg line(a, b);
 	for (unsigned int i = 0; i < polys.size(); i++) {
 		if (!line.bbox.hits(polys[i].bbox))
 			continue;
@@ -104,6 +104,6 @@ bool PolyMap::isvisible(const Geom2d::Point &a, const Geom2d::Point &b) const {
 	if (!bound)
 		return true;
 
- 	const Geom2d::Polygon &bnd = *bound;
+ 	const Geom2d::Poly &bnd = *bound;
 	return bnd.contains(a) && !bnd.hits(line);
 }

@@ -9,7 +9,7 @@ struct Lvl;
 struct Line1d {
 	Line1d(double _a, double _b) : a(_a), b(_b) { }
 
-	double isection(const Line1d &o) const {
+	double isect(const Line1d &o) const {
 		if (Geom2d::between(o.a, o.b, b))
 			return b - o.a;
 		else if (Geom2d::between(a, b, o.b))
@@ -33,17 +33,17 @@ struct Isect {
 	double dx, dy;
 };
 
-struct Bbox : public Geom2d::Rectangle {
+struct Bbox : public Geom2d::Bbox {
 
 	Bbox(void) { }
 
 	Bbox(unsigned int x0, unsigned int y0, unsigned int x1,
-			unsigned int y1) : Geom2d::Rectangle(x0, y0, x1, y1) { }
+			unsigned int y1) : Geom2d::Bbox(x0, y0, x1, y1) { }
 
-	Isect isection(const Bbox &o) const {
-		double ix = projx().isection(o.projx());
+	Isect isect(const Bbox &o) const {
+		double ix = projx().isect(o.projx());
 		if(ix > 0.0) {
-			double iy = projy().isection(o.projy());
+			double iy = projy().isect(o.projy());
 			if(iy > 0.0)
 				return Isect(ix, iy);
 		}
@@ -82,7 +82,7 @@ struct Body {
 
 private:
 
-	Geom2d::Point step(const Geom2d::Point&);
+	Geom2d::Pt step(const Geom2d::Pt&);
 
 	void dofall(const Lvl&, const Isect&);
 };

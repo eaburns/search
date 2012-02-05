@@ -149,8 +149,8 @@ void Image::Text::writeeps(FILE *out) const {
 	}
 }
 
-void Image::Point::writeeps(FILE *out) const {
-	fputs("% Point\n", out);
+void Image::Pt::writeeps(FILE *out) const {
+	fputs("% Pt\n", out);
 	fprintf(out, "%g %g %g setrgbcolor\n", c.getred(), c.getgreen(), c.getblue());
 	const char *finish = "stroke\n";
 	if (w >= 0) {
@@ -178,7 +178,7 @@ void Image::Arc::writeeps(FILE *out) const {
 	fprintf(out, "%g %g %g setrgbcolor\n", c.getred(), c.getgreen(), c.getblue());
 	fprintf(out, "%g setlinewidth\n", w);
 	fputs("newpath\n", out);
-	Geom2d::Point p(start());
+	Geom2d::Pt p(start());
 	fprintf(out, "%g %g moveto\n", p.x, p.y);
 	double d0 = t0 * (180 / M_PI), d1 = t1 * (180 / M_PI);
 	fprintf(out, "%g %g %g %g %g arc\n",
@@ -186,8 +186,8 @@ void Image::Arc::writeeps(FILE *out) const {
 	fputs("stroke\n", out);
 }
 
-void Image::Polygon::writeeps(FILE *out) const {
-	fputs("% Polygon\n", out);
+void Image::Poly::writeeps(FILE *out) const {
+	fputs("% Poly\n", out);
 	fprintf(out, "%g %g %g setrgbcolor\n", c.getred(), c.getgreen(), c.getblue());
 	const char *finish = "stroke\n";
 	if (w <= 0) {

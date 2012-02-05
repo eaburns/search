@@ -1,5 +1,5 @@
-#ifndef _GEOM_HPP_
-#define _GEOM_HPP_
+#ifndef _GEOM2D_HPP_
+#define _GEOM2D_HPP_
 
 #include <iterator>
 #include <vector>
@@ -41,53 +41,53 @@ namespace Geom2d {
 	 	return x >= min - sqrt(Epsilon) && x <= max + sqrt(Epsilon);
 	}
 	
-	// The Point structure represents a point in 2D space.
-	struct Point {
+	// The Pt structure represents a point in 2D space.
+	struct Pt {
 	
 		// dot returns the dot product of the two points.
-		static double dot(const Point &a, const Point &b) { return a.dot(b); }
+		static double dot(const Pt &a, const Pt &b) { return a.dot(b); }
 	
 		// sub returns the value of the component-wise subtraction
 		// of b from a.
-		static Point sub(const Point &a, const Point &b) { return a.minus(b); }
+		static Pt sub(const Pt &a, const Pt &b) { return a.minus(b); }
 	
 		// distance returns the Euclidean distance of two points.
-		static double distance(const Point &a, const Point &b) {
-			Point diff = b.minus(a);
+		static double distance(const Pt &a, const Pt &b) {
+			Pt diff = b.minus(a);
 			return sqrt(dot(diff, diff));
 		}
 	
 		// inf returns a point with infinite values for both x and y.
-		static Point inf(void) { return Point(Infinity, Infinity); }
+		static Pt inf(void) { return Pt(Infinity, Infinity); }
 	
 		// neginf returns a point with negative infinity values for
 		// both x and y.
-		static Point neginf(void) { return Point(-Infinity, -Infinity); }
+		static Pt neginf(void) { return Pt(-Infinity, -Infinity); }
 	
 		// angle returns the angle to the point off of the positive x axis.
 		// The value is between 0 and 2π.
-		static double angle(const Point &a) {	return a.angle(); }
+		static double angle(const Pt &a) {	return a.angle(); }
 	
 		// cwangle returns the clock-wise angle between the lines from
 		// u to v and v to w.
-		static double cwangle(const Point &u, const Point &v, const Point &w) {
-			Point a = v.minus(u), b = w.minus(v);
+		static double cwangle(const Pt &u, const Pt &v, const Pt &w) {
+			Pt a = v.minus(u), b = w.minus(v);
 			return -atan2(a.x*b.y - a.y*b.x, a.x*b.x+a.y*b.y);
 		}
 	
-		Point(void) { }
+		Pt(void) { }
 	
-		Point(const Point &o) : x(o.x), y(o.y) { }
+		Pt(const Pt &o) : x(o.x), y(o.y) { }
 	
-		Point(double _x, double _y) : x(_x), y(_y) { }
+		Pt(double _x, double _y) : x(_x), y(_y) { }
 	
 		bool isinf(void) { return std::isinf(x) || std::isinf(y); }
 	
-		bool operator==(const Point &p) const {
+		bool operator==(const Pt &p) const {
 			return doubleeq(x, p.x) && doubleeq(y, p.y);
 		}
 	
-		bool operator!=(const Point &p) const { return !(*this == p); }
+		bool operator!=(const Pt &p) const { return !(*this == p); }
 	
 		// angle returns the angle to the point off of the positive x axis.
 		// The value is between 0 and 2π.
@@ -99,14 +99,14 @@ namespace Geom2d {
 		}
 	
 		// dot returns the dot product of this point with point b.
-		double dot(const Point &b) const {
+		double dot(const Pt &b) const {
 			return x * b.x + y * b.y;
 		}
 	
 		// minus returns the point resulting from component-wise
 		// subtraction of b from the current point.
-		Point minus(const Point &b) const {
-			return Point(x - b.x, y - b.y);
+		Pt minus(const Pt &b) const {
+			return Pt(x - b.x, y - b.y);
 		}
 	
 		// scale scales the point by the given x and y
@@ -133,23 +133,23 @@ namespace Geom2d {
 		double x, y;
 	};
 	
-	struct Rectangle {
-		Rectangle(void) : min(Point::inf()), max(Point::neginf()) { }
+	struct Bbox {
+		Bbox(void) : min(Pt::inf()), max(Pt::neginf()) { }
 	
-		Rectangle(double x0, double y0, double x1, double y1) :
+		Bbox(double x0, double y0, double x1, double y1) :
 			min(x0, y0), max(x1, y1) { normalize(); }
 	
-		Rectangle(const Point &_min, const Point &_max) :
+		Bbox(const Pt &_min, const Pt &_max) :
 				min(_min), max(_max) { normalize(); }
 	
 		// This constructor gets the bounding box for the
 		// given set of points
-		Rectangle(std::vector<Point> &pts) {
-			min = Point::inf();
-			max = Point::neginf();
+		Bbox(std::vector<Pt> &pts) {
+			min = Pt::inf();
+			max = Pt::neginf();
 	
 			for (unsigned int i = 0; i < pts.size(); i++) {
-				Point &p = pts[i];
+				Pt &p = pts[i];
 				if (p.x > max.x)
 					max.x = p.x;
 				if (p.x < min.x)
@@ -161,18 +161,18 @@ namespace Geom2d {
 			}
 		}
 	
-		bool operator==(const Rectangle &o) const {
+		bool operator==(const Bbox &o) const {
 			return min == o.min && max == o.max;
 		}
 	
 		// contains returns true if the rectangle contains
 		// the given point.
-		bool contains(const Point &p) const {
+		bool contains(const Pt &p) const {
 			return between(min.x, max.x, p.x) && between(min.y, max.y, p.y);
 		}
 	
 		// hits returns true if the rectangles intersect
-		bool hits(const Rectangle &b) const {
+		bool hits(const Bbox &b) const {
 			return !(min.x > b.max.x || b.min.x > max.x
 				|| min.y > b.max.y || b.min.y > max.y);
 		}
@@ -185,13 +185,13 @@ namespace Geom2d {
 		}
 	
 		// center returns the center point of the rectangle.
-		Point center(void) const {
+		Pt center(void) const {
 			double dx = max.x - min.x;
 			double dy = max.y - min.y;
-			return Point(min.x + dx/2, min.y + dy/2);
+			return Pt(min.x + dx/2, min.y + dy/2);
 		}
 	
-		Point min, max;
+		Pt min, max;
 	
 	protected:
 	
@@ -213,12 +213,12 @@ namespace Geom2d {
 	struct Line {
 		Line(void) { }
 	
-		// Line(Point,Point) creates a line defined by the two points.
-		Line(Point p0, Point p1) {
+		// Line(Pt,Pt) creates a line defined by the two points.
+		Line(const Pt &p0, const Pt &p1) {
 			double dx = p1.x - p0.x;
 			double dy = p1.y - p0.y;
-			if (fabs(dx) < std::numeric_limits<double>::epsilon()) {
-				m = std::numeric_limits<double>::infinity();
+			if (fabs(dx) < Epsilon) {
+				m = Infinity;
 				b = p1.x;
 	 		} else {
 				m = dy / dx;
@@ -226,29 +226,29 @@ namespace Geom2d {
 			}
 		}
 	
-		// isection returns the point of intersection between two lines.
-		// If the lines are parallel then Point::inf is returned.
-		Point isection(const Line &l) const {
+		// isect returns the point of intersection between two lines.
+		// If the lines are parallel then Pt::inf is returned.
+		Pt isect(const Line &l) const {
 			if (std::isinf(m) || std::isinf(l.m))
 				return vertisect(*this, l);
 	
 			if (doubleeq(m, l.m))
-				return Point::inf();
+				return Pt::inf();
 	
 			double x = (l.b - b) / (m - l.m);
-			return Point(x, m * x + b);
+			return Pt(x, m * x + b);
 		}
 	
 		// isabove returns true if the point is above the given line.
-		bool isabove(const Point &p) const { return (m * p.x + b) < p.y; }
+		bool isabove(const Pt &p) const { return (m * p.x + b) < p.y; }
 	
 		// In case of a vertical line: m == ∞ and b = x
 		double m, b;
 	
 	private:
-		static Point vertisect(const Line &a, const Line &b) {
+		static Pt vertisect(const Line &a, const Line &b) {
 			if (std::isinf(a.m) && std::isinf(b.m))
-				return Point::inf();
+				return Pt::inf();
 	
 			const Line *v = &a, *l = &b;
 			if (std::isinf(b.m)) {
@@ -256,38 +256,38 @@ namespace Geom2d {
 				l = &a;
 			}
 	
-			return Point(v->b, l->m * v->b + l->b);
+			return Pt(v->b, l->m * v->b + l->b);
 		}
 	};
 	
-	struct LineSeg : public Line {
-		LineSeg(void) { }
+	struct LineSg : public Line {
+		LineSg(void) { }
 	
-		LineSeg(Point _p0, Point _p1) :
+		LineSg(const Pt &_p0, const Pt &_p1) :
 			Line(_p0, _p1), p0(_p0), p1(_p1), bbox(p0.x, p0.y, p1.x, p1.y)
 			{ }
 	
 		// length returns the length of the line segment.
 		double length(void) const {
-			return Point::distance(p0, p1);
+			return Pt::distance(p0, p1);
 		}
 	
 		// midpt returns the point directly in the middle of the
 		// line segment.
-		Point midpt(void) const {
-			return Point((p0.x + p1.x) / 2, (p0.y + p1.y) / 2);
+		Pt midpt(void) const {
+			return Pt((p0.x + p1.x) / 2, (p0.y + p1.y) / 2);
 		}
 	
 		// along returns the point that is the given distance along
 		// the line segment from the starting point.  The distance
 		// can be greater than the length of the segment.
-		Point along(double dist) const {
-			double theta = Point::angle(p1.minus(p0));
-			return Point(p0.x + dist * cos(theta), p0.y + dist * sin(theta));
+		Pt along(double dist) const {
+			double theta = Pt::angle(p1.minus(p0));
+			return Pt(p0.x + dist * cos(theta), p0.y + dist * sin(theta));
 		}
 	
 		// containt returns true if the line contains the given point.
-		bool contains(const Point &p) const {
+		bool contains(const Pt &p) const {
 			if (doubleeq(m, 0.0))
 				return doubleeq(bbox.min.y, p.y) &&
 					between(bbox.min.x, bbox.max.x, p.x);
@@ -295,50 +295,50 @@ namespace Geom2d {
 				between(bbox.min.y, bbox.max.y, p.y);
 		}
 	
-		// isection returns the point at which the two line segments
-		// intersect.  If they do not intersect then Point::inf() is
+		// isect returns the point at which the two line segments
+		// intersect.  If they do not intersect then Pt::inf() is
 		// returned.  If the Line (infinite line) corresponding to
 		// the two lines is the same then the return value is
-		// also Point::inf().
-		Point isection(const LineSeg &l) const {
+		// also Pt::inf().
+		Pt isect(const LineSg &l) const {
 			if (isvertical() || l.isvertical())
 				return vertisect(*this, l);
 	
-			Point p = Line::isection(l);
+			Pt p = Line::isect(l);
 			if (!contains(p) || !l.contains(p))
-				return Point::inf();
+				return Pt::inf();
 			return p;
 		}
 	
 		// hits returns true if the two line segments intersect.
-		bool hits(const LineSeg &l) const {	
+		bool hits(const LineSg &l) const {	
 			if (!bbox.hits(l.bbox))
 				return false;
-			Point is = isection(l);
+			Pt is = isect(l);
 			return !is.isinf();
 		}
 	
 		// isvertical returns true if the line is a vertical line.
 		bool isvertical(void) const { return doubleeq(p0.x, p1.x); }
 	
-		Point p0, p1;
-		Rectangle bbox;
+		Pt p0, p1;
+		Bbox bbox;
 	
 	private:
 	
 		// Deal with vertical line segments
-		static Point vertisect(const LineSeg &a, const LineSeg &b) {
+		static Pt vertisect(const LineSg &a, const LineSg &b) {
 			if (a.isvertical() && b.isvertical())
-				return Point::inf();
+				return Pt::inf();
 	
-			const LineSeg *v = &a, *l = &b;
+			const LineSg *v = &a, *l = &b;
 			if (b.isvertical()) {
 				v = &b;
 				l = &a;
 			}
-			Point p(v->p0.x, l->m * v->p0.x + l->b);
+			Pt p(v->p0.x, l->m * v->p0.x + l->b);
 			if (!a.contains(p) || !b.contains(p))
-				return Point::inf();
+				return Pt::inf();
 	
 			return p;
 		}
@@ -373,7 +373,7 @@ namespace Geom2d {
 		// Arc constructs a new arc with the given center
 		// radius, initial angle and final angle.  Angles are
 		// given in radians.
-		Arc(const Point &_c, double _r, double _t0, double _t1) :
+		Arc(const Pt &_c, double _r, double _t0, double _t1) :
 			c(_c), r(_r), t0(_t0), t1(_t1),
 			bbox(c.x - r, c.y - r, c.x + r, c.y + r)
 			{ }
@@ -381,11 +381,11 @@ namespace Geom2d {
 		// rotate rotates the arc by the given number of
 		// degrees about the starting point.
 		void rotate(double t) {
-			Point p = start();
+			Pt p = start();
 			c.translate(-p.x, -p.y);
 			c.rotate(t);
 			c.translate(p.x, p.y);
-			bbox = Rectangle(c.x - r, c.y - r, c.x + r, c.y + r);
+			bbox = Bbox(c.x - r, c.y - r, c.x + r, c.y + r);
 			t0 += t;
 			t1 += t;
 		}
@@ -394,14 +394,14 @@ namespace Geom2d {
 		// both the x and y directions.
 		void translate(double dx, double dy) {
 			c.translate(dx, dy);
-			bbox = Rectangle(c.x - r, c.y - r, c.x + r, c.y + r);
+			bbox = Bbox(c.x - r, c.y - r, c.x + r, c.y + r);
 		}
 	
-		// isections returns the number of isections and returns
+		// isects returns the number of isects and returns
 		// (via the second argument) the points that intersected.
-		// The maximum number of intersections is 2 so the Point
+		// The maximum number of intersections is 2 so the Pt
 		// array must be at least 2 elements.
-		unsigned int isections(const LineSeg &l, Point is[]) const {
+		unsigned int isects(const LineSg &l, Pt is[]) const {
 			if (!bbox.hits(l.bbox))
 				return 0;
 		
@@ -414,7 +414,7 @@ namespace Geom2d {
 			for (unsigned int j = 0; j < n; j++) {
 				is[i].x = l.p0.x + u[j] * q.dx;
 				is[i].y = l.p0.y + u[j] * q.dy;
-				double t = Point::angle(Point(is[i].x - c.x, is[i].y - c.y));
+				double t = Pt::angle(Pt(is[i].x - c.x, is[i].y - c.y));
 				if (l.contains(is[i]) && between(t0, t1, t))
 					i++;
 			}
@@ -423,28 +423,28 @@ namespace Geom2d {
 		}
 	
 		// hits returns true if the linesegment hits the arc
-		bool hits(const LineSeg &l) const {
-			Point is[2];
-			return isections(l, is) > 0;
+		bool hits(const LineSg &l) const {
+			Pt is[2];
+			return isects(l, is) > 0;
 		}
 	
 		// start returns the starting point of the arc.
-		Point start(void) const {
-			return Point(c.x + cos(t0) * r, c.y + sin(t0) * r);
+		Pt start(void) const {
+			return Pt(c.x + cos(t0) * r, c.y + sin(t0) * r);
 		}
 	
 		// end returns the ending point of the arc.
-		Point end(void) const {
-			return Point(c.x + cos(t1) * r, c.y + sin(t1) * r);
+		Pt end(void) const {
+			return Pt(c.x + cos(t1) * r, c.y + sin(t1) * r);
 		}
 	
-		Point c;
+		Pt c;
 		double r, t0, t1;
-		Rectangle bbox;
+		Bbox bbox;
 	
 	private:
 		struct Q : public QuadEq {
-			Q(const Arc &arc, const LineSeg &l) {
+			Q(const Arc &arc, const LineSg &l) {
 				double cx = arc.c.x, cy = arc.c.y;
 				double rr = arc.r*arc.r;
 				double x1 = l.p0.x, y1 = l.p0.y;
@@ -458,42 +458,42 @@ namespace Geom2d {
 		};
 	};
 	
-	struct Polygon {
+	struct Poly {
 	
 		// random generates a random polygon for which no side
 		// crosses the line between the vertices with the minimum
 		// and maximum x value.
-		static Polygon random(unsigned int n, double xc, double yc, double r);
+		static Poly random(unsigned int n, double xc, double yc, double r);
 	
 		// giftwrap returns the polygon for the outter-hull of the
 		// given set of points.
-		static Polygon giftwrap(const std::vector<Point>&);
+		static Poly giftwrap(const std::vector<Pt>&);
 
 		// triangle returns a triangle polygon centered at the given
 		// point with the specified height, width and rotated at the
 		// given angle.
-		static Polygon triangle(const Point&, double h, double w, double r);
+		static Poly triangle(const Pt&, double h, double w, double r);
 	
-		Polygon(const std::vector<Point>&);
+		Poly(const std::vector<Pt>&);
 	
-		Polygon(unsigned int, ...);
+		Poly(unsigned int, ...);
 	
-		Polygon(FILE*);
+		Poly(FILE*);
 	
 		// output writes the polygon to the given file.
 		void output(FILE*) const;
 	
 		// contains returns true if the polygon contains
 		// the given point.
-		bool contains(const Point&) const;
+		bool contains(const Pt&) const;
 	
 		// hits returns true if the line segment intersects
 		// one of the sides of the polygon.
-		bool hits(const LineSeg &l) const {
+		bool hits(const LineSg &l) const {
 			if (!bbox.hits(l.bbox))
 				return false;
 			for (unsigned int i = 0; i < sides.size(); i++) {
-				const LineSeg &side = sides[i];
+				const LineSg &side = sides[i];
 				if (l.hits(side))
 					return true;
 			}
@@ -506,7 +506,7 @@ namespace Geom2d {
 			if (!bbox.hits(a.bbox))
 				return false;
 			for (unsigned int i = 0; i < sides.size(); i++) {
-				const LineSeg &side = sides[i];
+				const LineSg &side = sides[i];
 				if (a.hits(side))
 					return true;
 			}
@@ -515,18 +515,18 @@ namespace Geom2d {
 	
 		// minisect returns the first intersection point between
 		// the line segment and the polygon.
-		Point minisect(const LineSeg&) const;
+		Pt minisect(const LineSg&) const;
 	
-		// isections returns a list of all intersections between
+		// isects returns a list of all intersections between
 		// the line segment and the polygon.
-		std::vector<Point> isections(const LineSeg&) const;
+		std::vector<Pt> isects(const LineSg&) const;
 	
 		// scale scales the polygon by the given factors
 		// in both the x and y directions.
 		void scale(double sx, double sy) {
 			for (unsigned long i = 0; i < verts.size(); i++)
 				verts[i].scale(sx, sy);
-			bbox = Rectangle(verts);
+			bbox = Bbox(verts);
 			initsides();
 		}
 	
@@ -541,9 +541,9 @@ namespace Geom2d {
 	
 		bool isreflex(unsigned int i) const { return interangle(i) < M_PI; }
 	 
-		std::vector<Point> verts;
-		std::vector<LineSeg> sides;
-		Rectangle bbox;
+		std::vector<Pt> verts;
+		std::vector<LineSg> sides;
+		Bbox bbox;
 	
 	private:
 		double interangle(unsigned int) const;
@@ -552,4 +552,4 @@ namespace Geom2d {
 	};
 };
 
-#endif	// _GEOM_HPP_
+#endif	// _GEOM2D_HPP_

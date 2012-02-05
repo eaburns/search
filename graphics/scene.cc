@@ -13,11 +13,11 @@ void Scene::save(const char *file) const {
 	img.saveeps(file);
 }
 
-void Scene::Point::render(void) const {
+void Scene::Pt::render(void) const {
 	glColor3d(c.getred(), c.getgreen(), c.getblue());
 	if (w > 0)
 		glLineWidth(w);
-	glPointSize(Image::Point::r);
+	glPointSize(Image::Pt::r);
 
 	glBegin(GL_POINTS);
 	glVertex2d(x, y);
@@ -56,7 +56,7 @@ void Scene::Arc::render(void) const {
 	glEnd();
 }
 
-void Scene::Polygon::render(void) const {
+void Scene::Poly::render(void) const {
 	glColor3d(c.getred(), c.getgreen(), c.getblue());
 	if (w > 0) {
 		glLineWidth(w);

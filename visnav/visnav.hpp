@@ -47,7 +47,7 @@ struct VisNav {
 	State initialstate(void);
 
 	Cost h(State &s) {
-		const Geom2d::Point &pt = g.verts[s.vert].pt;
+		const Geom2d::Pt &pt = g.verts[s.vert].pt;
 		double dx = x1 - pt.x;
 		double dy = y1 - pt.y;
 		return sqrt(dx * dx + dy * dy);

@@ -62,7 +62,7 @@ struct Image {
 
 		enum Position { Left, Right, Centered };
 
-		Text(const char *_text, const Geom2d::Point &p) :
+		Text(const char *_text, const Geom2d::Pt &p) :
 			loc(p), sz(12), pos(Centered), font("Times-Roman"),
 			text(_text), c(black)
 			{ }
@@ -74,17 +74,17 @@ struct Image {
 
 		virtual void writeeps(FILE*) const;
 
-		Geom2d::Point loc;
+		Geom2d::Pt loc;
 		double sz;
 		enum Position pos;
 		std::string font, text;
 		Color c;
 	};
 
-	struct Point : public Drawable, public Geom2d::Point {
+	struct Pt : public Drawable, public Geom2d::Pt {
 
-		Point(const Geom2d::Point &p, const Color &_c, double _r, double _w) : 
-			Geom2d::Point(p), r(_r), w(_w), c(_c)
+		Pt(const Geom2d::Pt &p, const Color &_c, double _r, double _w) : 
+			Geom2d::Pt(p), r(_r), w(_w), c(_c)
 			{ }
 
 		virtual void writeeps(FILE*) const;
@@ -93,15 +93,15 @@ struct Image {
 		Color c;
 	};
 
-	struct Line : public Drawable, public Geom2d::LineSeg {
+	struct Line : public Drawable, public Geom2d::LineSg {
 
-		Line(const Geom2d::Point &p0, const Geom2d::Point &p1,
+		Line(const Geom2d::Pt &p0, const Geom2d::Pt &p1,
 				const Color &_c, double _w) :
-			Geom2d::LineSeg(p0, p1), w(_w), c(_c)
+			Geom2d::LineSg(p0, p1), w(_w), c(_c)
 			{ }
 
-		Line(const Geom2d::LineSeg &l, const Color &_c, double _w) :
-			Geom2d::LineSeg(l), w(_w), c(_c)
+		Line(const Geom2d::LineSg &l, const Color &_c, double _w) :
+			Geom2d::LineSg(l), w(_w), c(_c)
 			{ }
 
 		virtual void writeeps(FILE*) const;
@@ -122,10 +122,10 @@ struct Image {
 		Color c;
 	};
 
-	struct Polygon : public Drawable, public Geom2d::Polygon  {
+	struct Poly : public Drawable, public Geom2d::Poly  {
 
-		Polygon(const Geom2d::Polygon &p, const Color &_c, double _w) :
-			Geom2d::Polygon(p), w(_w), c(_c)
+		Poly(const Geom2d::Poly &p, const Color &_c, double _w) :
+			Geom2d::Poly(p), w(_w), c(_c)
 			{ }
 
 		virtual void writeeps(FILE*) const;
