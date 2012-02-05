@@ -137,10 +137,13 @@ namespace Geom2d {
 		Bbox(void) : min(Pt::inf()), max(Pt::neginf()) { }
 	
 		Bbox(double x0, double y0, double x1, double y1) :
-			min(x0, y0), max(x1, y1) { normalize(); }
+				min(x0, y0), max(x1, y1) {
+			normalize();
+		}
 	
-		Bbox(const Pt &_min, const Pt &_max) :
-				min(_min), max(_max) { normalize(); }
+		Bbox(const Pt &p0, const Pt &p1) : min(p0), max(p1) {
+			normalize();
+		}
 	
 		// This constructor gets the bounding box for the
 		// given set of points
@@ -231,15 +234,13 @@ namespace Geom2d {
 		Pt isect(const Line &o) const {
 			if (doubleeq(m, o.m) || (std::isinf(m) && std::isinf(o.m)))
 				return Pt::inf();
-
-			if (!std::isinf(m) && !std::isinf(o.m)) {
-				double x = (o.b - b) / (m - o.m);
-				return Pt(x, m * x + b);
-			}
-
-			if (std::isinf(o.m))
+			else if (std::isinf(o.m))
 				return Pt(o.b, m *o.b + b);
-			return Pt(b, o.m * b + o.b);
+			else if (std::isinf(m))
+				return Pt(b, o.m * b + o.b);
+
+			double x = (o.b - b) / (m - o.m);
+			return Pt(x, m * x + b);
 		}
 	
 		// isabove returns true if the point is above the given line.
@@ -302,14 +303,13 @@ namespace Geom2d {
 
 			if (!contains(p) || !o.contains(p))
 				return Pt::inf();
+
 			return p;
 		}
 	
 		// hits returns true if the two line segments intersect.
-		bool hits(const LineSg &l) const {	
-			if (!bbox.hits(l.bbox))
-				return false;
-			return !isect(l).isinf();
+		bool hits(const LineSg &l) const {
+			return bbox.hits(l.bbox) && !isect(l).isinf();
 		}
 	
 		// isvertical returns true if the line is a vertical line.
