@@ -12,8 +12,8 @@
 
 enum { Bufsz = 256 };
 
-static const char *start4 = "#start data file format 4\n";
-static const char *end4 = "#end data file format 4\n";
+const char *start4 = "#start data file format 4\n";
+const char *end4 = "#end data file format 4\n";
 
 static void dfpair_sz(FILE*, unsigned int, const char*, const char*, va_list);
 static void machineid(FILE*);

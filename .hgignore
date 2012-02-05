@@ -10,6 +10,7 @@ structs/test
 utils/test
 utils/pathfor
 utils/withattrs
+utils/dfcmplt
 tiles/*pdbgen
 gridnav/2poly
 visnav/draw
