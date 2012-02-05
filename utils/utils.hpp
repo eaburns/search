@@ -8,6 +8,7 @@
 #include <deque>
 #include <map>
 #include <boost/cstdint.hpp>
+#include <boost/optional.hpp>
 
 // warn prints the formatted warning message.
 void warn(const char *, ...);
@@ -23,6 +24,18 @@ void fatal(const char*, ...);
 // fatalx prints a formatted error message along with the error
 // string for the errno and exits with failure status.
 void fatalx(int, const char*, ...);
+
+// readline reads a line from the given file stream and returns it
+// without the trailing newline. Returns an empty option on
+// end of file and calls fatal on error.  If echo is true then the line
+// is echoed to standard output.
+//
+// BUG(eaburns): Doesn't handle \r in any way
+boost::optional<std::string> readline(FILE*, bool echo = false);
+
+// hasprefix returns true if the first string has the second
+// string as a prefix.
+bool hasprefix(const char*, const char*);
 
 // walltime returns the current wall-cloce time in seconds
 double walltime(void);

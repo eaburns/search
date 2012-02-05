@@ -18,12 +18,15 @@ UTILOBJS:=\
 	utils/rank.o\
 	utils/math.o\
 	utils/mem.o\
+	utils/io.o\
+	utils/str.o\
 
 include $(UTILOBJS:.o=.d)
 
 CLEAN+=$(UTILOBJS)
 
-utils: utils/utils.a utils/test utils/pathfor utils/withattrs
+utils: utils/utils.a utils/test utils/pathfor utils/withattrs\
+	utils/dfcmplt
 
 EVERYTHING+=utils
 
@@ -50,3 +53,7 @@ CLEAN+=utils/pathfor
 utils/withattrs: utils/withattrs.cc utils/utils.a
 	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
 CLEAN+=utils/withattrs
+
+utils/dfcmplt: utils/dfcmplt.cc utils/utils.a
+	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
+CLEAN+=utils/dfcmplt

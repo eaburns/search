@@ -18,9 +18,7 @@ static const char *end4 = "#end data file format 4\n";
 static void dfpair_sz(FILE*, unsigned int, const char*, const char*, va_list);
 static void machineid(FILE*);
 static void tryprocstatus(FILE*);
-static bool hasprefix(const char*, const char*);
 static char *gettoken(unsigned int, char*);
-static bool nextline(std::string&, FILE*, bool);
 
 void dfpair(FILE *f, const char *key, const char *fmt, ...) {
 	char buf[Bufsz];
@@ -195,35 +193,35 @@ static void tryprocstatus(FILE *out)
 }
 
 void dfread(FILE *in, Dfhandler seeline, void *priv, bool echo) {
-	std::string linebuf;
 	unsigned int lineno = 1;
 	unsigned int sz = 0;
-	char *line = NULL;
+	char *linebuf = NULL;
 	std::vector<const char*> toks;
+	boost::optional<std::string> line = readline(in, echo);
 
-	while (nextline(linebuf, in, echo)) {
-		if (sz < linebuf.size() + 1) {
-			if (line)
-				free(line);
-			line = strdup(linebuf.c_str());
-			sz = linebuf.size() + 1;		
+	while (line) {
+		if (sz < line->size() + 1) {
+			if (linebuf)
+				free(linebuf);
+			linebuf = strdup(line->c_str());
+			sz = line->size() + 1;
 		} else {
-			strcpy(line, linebuf.c_str());
+			strcpy(linebuf, line->c_str());
 		}
 
 		toks.clear();
-		if (hasprefix(line, "#pair"))
+		if (hasprefix(linebuf, "#pair"))
 			toks.push_back("#pair");
 
-		else if (hasprefix(line, "#altcols"))
+		else if (hasprefix(linebuf, "#altcols"))
 			toks.push_back("#altcols");
 
-		else if (hasprefix(line, "#altrow"))
+		else if (hasprefix(linebuf, "#altrow"))
 			toks.push_back("#altrow");
 
 		if (toks.size() > 0) {
-			const char *end = line + strlen(line);
-			char *left = line + strlen(toks[0]);
+			const char *end = linebuf + strlen(linebuf);
+			char *left = linebuf + strlen(toks[0]);
 			while (left < end) {
 				char *vl = gettoken(lineno, left);
 				if (!vl)
@@ -234,21 +232,11 @@ void dfread(FILE *in, Dfhandler seeline, void *priv, bool echo) {
 			seeline(toks, priv);
 		}
 		lineno++;
+		line = readline(in, echo);
 	}
 
-	free(line);
+	free(linebuf);
 	return;
-}
-
-// hasprefix returns true if the string has the given prefix
-static bool hasprefix(const char *str, const char *prefix) {
-	unsigned int plen = strlen(prefix);
-	if (strlen(str) < plen)
-		return false;
-	for (unsigned int i = 0; i < plen; i++)
-		if (str[i] != prefix[i])
-			return false;
-	return true;
 }
 
 // gettoken returns the first whitespace delimited or quoted
@@ -278,25 +266,4 @@ static char *gettoken(unsigned int lineno, char *str) {
 	strt[i] = '\0';
 
 	return strt;	
-}
-
-static bool nextline(std::string &line, FILE *in, bool echo) {
-	line.clear();
-
-	int c = fgetc(in);
-	while (c != '\n' && c != EOF) {
-		line.push_back(c);
-		c = fgetc(in);
-	}
-
-	if (line.size() == 0 && feof(in))
-		return false;
-
-	if (line[line.size()] == '\n')
-		line[line.size()] = '\0';
-
-	if (echo)
-		puts(line.c_str());
-
-	return true;
 }
