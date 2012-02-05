@@ -228,15 +228,18 @@ namespace Geom2d {
 	
 		// isect returns the point of intersection between two lines.
 		// If the lines are parallel then Pt::inf is returned.
-		Pt isect(const Line &l) const {
-			if (std::isinf(m) || std::isinf(l.m))
-				return vertisect(*this, l);
-	
-			if (doubleeq(m, l.m))
+		Pt isect(const Line &o) const {
+			if (doubleeq(m, o.m) || (std::isinf(m) && std::isinf(o.m)))
 				return Pt::inf();
-	
-			double x = (l.b - b) / (m - l.m);
-			return Pt(x, m * x + b);
+
+			if (!std::isinf(m) && !std::isinf(o.m)) {
+				double x = (o.b - b) / (m - o.m);
+				return Pt(x, m * x + b);
+			}
+
+			if (std::isinf(o.m))
+				return Pt(o.b, m *o.b + b);
+			return Pt(b, o.m * b + o.b);
 		}
 	
 		// isabove returns true if the point is above the given line.
@@ -244,20 +247,6 @@ namespace Geom2d {
 	
 		// In case of a vertical line: m == ∞ and b = x
 		double m, b;
-	
-	private:
-		static Pt vertisect(const Line &a, const Line &b) {
-			if (std::isinf(a.m) && std::isinf(b.m))
-				return Pt::inf();
-	
-			const Line *v = &a, *l = &b;
-			if (std::isinf(b.m)) {
-				v = &b;
-				l = &a;
-			}
-	
-			return Pt(v->b, l->m * v->b + l->b);
-		}
 	};
 	
 	struct LineSg : public Line {
@@ -300,12 +289,18 @@ namespace Geom2d {
 		// returned.  If the Line (infinite line) corresponding to
 		// the two lines is the same then the return value is
 		// also Pt::inf().
-		Pt isect(const LineSg &l) const {
-			if (isvertical() || l.isvertical())
-				return vertisect(*this, l);
-	
-			Pt p = Line::isect(l);
-			if (!contains(p) || !l.contains(p))
+		Pt isect(const LineSg &o) const {
+			Pt p;
+			if (isvertical() && o.isvertical())
+				return Pt::inf();
+			else if (o.isvertical())
+				p = Pt(o.p0.x, m * o.p0.x + b);
+			else if (isvertical())
+				p = Pt(p0.x, o.m * p0.x + o.b);
+			else
+				p = Line::isect(o);
+
+			if (!contains(p) || !o.contains(p))
 				return Pt::inf();
 			return p;
 		}
@@ -314,8 +309,7 @@ namespace Geom2d {
 		bool hits(const LineSg &l) const {	
 			if (!bbox.hits(l.bbox))
 				return false;
-			Pt is = isect(l);
-			return !is.isinf();
+			return !isect(l).isinf();
 		}
 	
 		// isvertical returns true if the line is a vertical line.
@@ -323,25 +317,6 @@ namespace Geom2d {
 	
 		Pt p0, p1;
 		Bbox bbox;
-	
-	private:
-	
-		// Deal with vertical line segments
-		static Pt vertisect(const LineSg &a, const LineSg &b) {
-			if (a.isvertical() && b.isvertical())
-				return Pt::inf();
-	
-			const LineSg *v = &a, *l = &b;
-			if (b.isvertical()) {
-				v = &b;
-				l = &a;
-			}
-			Pt p(v->p0.x, l->m * v->p0.x + l->b);
-			if (!a.contains(p) || !b.contains(p))
-				return Pt::inf();
-	
-			return p;
-		}
 	};
 	
 	struct QuadEq {
