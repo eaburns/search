@@ -301,10 +301,10 @@ namespace Geom2d {
 			else
 				p = Line::isect(o);
 
-			if (!contains(p) || !o.contains(p))
-				return Pt::inf();
-
-			return p;
+			if (between(bbox.min.x, bbox.max.x, p.x) &&
+				between(o.bbox.min.x, o.bbox.max.x, p.x))
+				return p;
+			return Pt::inf();
 		}
 	
 		// hits returns true if the two line segments intersect.
