@@ -145,7 +145,7 @@ namespace Geom2d {
 				continue;
 			Pt hit = ray.isect(side);
 	
-			if (hit.isinf() || hit.x <= pt.x || !side.contains(hit))
+			if (hit.isinf() || hit.x <= pt.x || !side.within(hit))
 				continue;
 			else if (side.p0 == hit && side.p1.y >= hit.y)
 				continue;

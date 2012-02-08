@@ -229,38 +229,6 @@ bool test_lineseg_along(void) {
 	return ok;
 }
 
-bool test_lineseg_contains(void) {
-	struct { double x0, y0, x1, y1, x, y; bool cont; } tst[] = {
-		{ 0, 0, 1, 0,	0, 0,	true },
-		{ 0, 0, 1, 0,	1, 0,	true },
-		{ -1, 0, 0, 0,	0, 0,	true },
-		{ -1, 0, 0, 0,	-1, 0,	true },
-		{ -1, 0, 1, 0,	0, 0,	true },
-		{ 0, -1, 0, 1,	0, 0,	true },
-		{ -1, -1, 1, 1,	0, 0,	true },
-		{ 1, -1, -1, 1,	0, 0,	true },
-		{ 0, 0, 5, 0,	M_PI, 0,	true },
-		{ 0, 0, 5, 0,	6, 0,	false },
-		{ -1, 0, 1, 0,	0, 1,	false },
-		{ 0, -1, 0, 1,	1, 0,	false },
-		{ 0, 0, 5, 0,	M_PI, 1,	false },
-	
-	};
-	bool ok = true;
-
-	for (unsigned int i = 0; i < sizeof(tst) / sizeof(tst[0]); i++) {
-		LineSg l(Pt(tst[i].x0, tst[i].y0), Pt(tst[i].x1, tst[i].y1));
-		if (l.contains(Pt(tst[i].x, tst[i].y)) == tst[i].cont)
-			continue;
-		testpr("%d: %g,%g → %g,%g;  %g,%g expected %d\n",
-			i, tst[i].x0, tst[i].y0, tst[i].x1, tst[i].y1,
-			tst[i].x, tst[i].y, tst[i].cont);
-		ok = false;
-	}
-
-	return ok;
-}
-
 bool test_lineseg_isect(void) {
 	struct { double x00, y00, x01, y01, x10, y10, x11, y11, xi, yi; } tst[] = {
 		// same line

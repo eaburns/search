@@ -51,6 +51,18 @@
 
 • geom:
 
+	- fix LineSg::contains
+	This is buggy for vertical
+	and horizontal lines.
+
+		LineSg::onseg()
+		tests if a hit to the
+		Line is within the
+		segment.  Find the
+		greatest delta (x or y)
+		and test between
+		for that.
+
 	- fix polygon tests
 
 • More domains:

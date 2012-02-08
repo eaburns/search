@@ -9,7 +9,6 @@ bool test_line_isabove(void);
 bool test_lineseg_midpt(void);
 bool test_lineseg_along(void);
 bool test_lineseg_length(void);
-bool test_lineseg_contains(void);
 bool test_lineseg_isect(void);
 bool test_poly_contains(void);
 bool test_poly_isects(void);
@@ -33,7 +32,6 @@ static const Test tests[] = {
 	Test("lineseg midpt test", test_lineseg_midpt),
 	Test("lineseg along test", test_lineseg_along),
 	Test("lineseg length test", test_lineseg_length),
-	Test("lineseg contains test", test_lineseg_contains),
 	Test("lineseg isect test", test_lineseg_isect),
 	Test("poly contains test", test_poly_contains),
 	Test("poly isects test", test_poly_isects),

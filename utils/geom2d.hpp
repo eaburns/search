@@ -275,14 +275,13 @@ namespace Geom2d {
 			double theta = Pt::angle(p1.minus(p0));
 			return Pt(p0.x + dist * cos(theta), p0.y + dist * sin(theta));
 		}
-	
-		// containt returns true if the line contains the given point.
-		bool contains(const Pt &p) const {
-			if (doubleeq(m, 0.0))
-				return doubleeq(bbox.min.y, p.y) &&
-					between(bbox.min.x, bbox.max.x, p.x);
-			return between(bbox.min.x, bbox.max.x, p.x) &&
-				between(bbox.min.y, bbox.max.y, p.y);
+
+		// within returns true if a point (already known to be on
+		// the Line) is also within the line segment.
+		bool within(const Pt &p) const {
+			if (bbox.max.x - bbox.min.x > bbox.max.y - bbox.min.y)
+				return between(bbox.min.x, bbox.max.x, p.x);
+			return between(bbox.min.y, bbox.max.y, p.y);
 		}
 	
 		// isect returns the point at which the two line segments
@@ -390,7 +389,7 @@ namespace Geom2d {
 				is[i].x = l.p0.x + u[j] * q.dx;
 				is[i].y = l.p0.y + u[j] * q.dy;
 				double t = Pt::angle(Pt(is[i].x - c.x, is[i].y - c.y));
-				if (l.contains(is[i]) && between(t0, t1, t))
+				if (l.within(is[i]) && between(t0, t1, t))
 					i++;
 			}
 	
