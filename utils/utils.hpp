@@ -32,6 +32,15 @@ void fatalx(int, const char*, ...);
 // BUG(eaburns): Doesn't handle \r in any way
 boost::optional<std::string> readline(FILE*, bool echo = false);
 
+// readdir returns all of the entries of the given directory
+// excluding '.' and '..'.
+// If concat is true then the directory is concatinated with the
+// entry name, otherwise only the entry is returned.
+std::vector<std::string> readdir(std::string, bool concat = true);
+
+// fileexists returns true if the given file exists.
+bool fileexists(const std::string &);
+
 // hasprefix returns true if the first string has the second
 // string as a prefix.
 bool hasprefix(const char*, const char*);
