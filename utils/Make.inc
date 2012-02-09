@@ -42,7 +42,8 @@ CLEAN+=utils.a
 
 utils/test: utils/test_geom.cc utils/test_rdb.cc \
 	utils/test_encode.cc utils/bench_ops.cc\
-	utils/test_misc.cc utils/test.cc utils/utils.a
+	utils/test_misc.cc utils/test_io.cc\
+	utils/test.cc utils/utils.a
 	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
 CLEAN+=utils/test
 

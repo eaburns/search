@@ -6,6 +6,8 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+static void rmslash(std::string);
+
 boost::optional<std::string> readline(FILE *in, bool echo) {
 	std::string line;
 
@@ -62,4 +64,54 @@ bool fileexists(const std::string &path) {
 		fatalx(errno, "failed to stat %s", path.c_str());
 	}
 	return true;
+}
+
+bool isdir(const std::string &path) {
+	struct stat sb;
+	if (stat(path.c_str(), &sb) == -1) {
+		if (errno == ENOENT)
+			return false;
+		fatalx(errno, "failed to stat %s", path.c_str());
+	}
+	return S_ISDIR(sb.st_mode);
+}
+
+void ensuredir(const std::string &p) {
+	std::string dir = dirname(p);
+	if (dir == "." || dir == "/" || isdir(dir))
+		return;
+
+	ensuredir(dirname(dir));
+
+	if (mkdir(dir.c_str(), 0) == -1)
+		fatalx(errno, "failed to make directory %s\n", dir.c_str());
+}
+
+std::string basename(const std::string &p) {
+	rmslash(p);
+	const char *str = p.c_str();
+	const char *slash = strrchr(str, '/');
+	if (!slash)
+		return p;
+	return slash + 1;
+}
+
+std::string dirname(const std::string &p) {
+	rmslash(p);
+	if (p == "/")
+		return p;
+	const char *str = p.c_str();
+	const char *slash = strrchr(str, '/');
+	if (!slash)
+		return ".";
+	std::string res;
+	for (const char *c = str; c < slash; c++)
+		res.push_back(*c);
+	return res;
+}
+
+// rmslash removes the trailing slash at the end of a path.
+static void rmslash(std::string s) {
+	while (s.length() > 1 && s[s.length() - 1] == '/')
+		s.resize(s.length() - 1);
 }

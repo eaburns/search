@@ -39,7 +39,25 @@ boost::optional<std::string> readline(FILE*, bool echo = false);
 std::vector<std::string> readdir(std::string, bool concat = true);
 
 // fileexists returns true if the given file exists.
-bool fileexists(const std::string &);
+bool fileexists(const std::string&);
+
+// isdir returns true if the given path is a directory.
+// If the path does not exist then false is returned,
+// other errors are fatal.
+bool isdir(const std::string&);
+
+// ensuredir ensures that the directory for the given
+// path exists.
+void ensuredir(const std::string&);
+
+// basename returns the basename of the given path.
+// The basename is the inner-most path entry.
+std::string basename(const std::string&);
+
+// dirname returns the directory containing the given
+// path.  That is everything execpt for the basename.
+// The result has no trailing '/'
+std::string dirname(const std::string&);
 
 // hasprefix returns true if the first string has the second
 // string as a prefix.

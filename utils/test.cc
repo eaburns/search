@@ -21,6 +21,8 @@ bool test_rdbpathfor_existing(void);
 bool test_base64enc(void);
 bool test_base64dec(void);
 bool test_encdec(void);
+bool test_basename(void);
+bool test_dirname(void);
 
 static const Test tests[] = {
 	Test("commas test", test_commas),
@@ -44,6 +46,8 @@ static const Test tests[] = {
 	Test("base64enc test", test_base64enc),
 	Test("base64dec test", test_base64dec),
 	Test("encode/decode test", test_encdec),
+	Test("basename test", test_basename),
+	Test("dirname test", test_dirname),
 };
 
 enum { Ntests = sizeof(tests) / sizeof(tests[0]) };
