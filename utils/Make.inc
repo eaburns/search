@@ -18,7 +18,7 @@ UTILOBJS:=\
 	utils/rank.o\
 	utils/math.o\
 	utils/mem.o\
-	utils/io.o\
+	utils/fs.o\
 	utils/str.o\
 
 include $(UTILOBJS:.o=.d)
@@ -42,7 +42,7 @@ CLEAN+=utils.a
 
 utils/test: utils/test_geom.cc utils/test_rdb.cc \
 	utils/test_encode.cc utils/bench_ops.cc\
-	utils/test_misc.cc utils/test_io.cc\
+	utils/test_misc.cc utils/test_fs.cc\
 	utils/test.cc utils/utils.a
 	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
 CLEAN+=utils/test

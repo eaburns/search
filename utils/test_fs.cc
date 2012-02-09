@@ -5,19 +5,22 @@ struct Strings {
 };
 
 static Strings strs[] = {
-	{ "", ".", "" },
-	{ "/", "/", "" },
-	{ "///", "/", "" },
+  	{ "", ".", "." },
+	{ "/", "/", "." },
+	{ "///", "//", "." },
+	{ ".", ".", "." },
 	{ "/hello", "/", "hello" },
-	{ "/hello/", "/", "hello" },
-	{ "/hello//", "/", "hello" },
-	{ "///hello", "/", "hello" },
+	{ "/hello/", "/hello", "." },
+	{ "/hello//", "/hello/", "." },
+	{ "///hello/", "///hello", "." },
 	{ "/hello/there", "/hello", "there" },
-	{ "/hello///there", "/hello", "there" },
+	{ "/hello/.", "/hello", "." },
+	{ "hello", ".", "hello" },
 	{ "hello/there", "hello", "there" },
-	{ "hello///there", "hello", "there" },
-	{ "hello///there///", "hello", "there" },
-};
+	{ "hello///there", "hello//", "there" },
+	{ "hello///there///", "hello///there//", "." },
+	{ "hello/.", "hello", "." },
+	{ "././.", "./.", "." },};
 
 bool test_basename(void) {
 	bool ok = true;

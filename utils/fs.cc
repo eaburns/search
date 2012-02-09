@@ -2,11 +2,13 @@
 #include <dirent.h>
 #include <cstring>
 #include <cerrno>
+#include <cstdarg>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <unistd.h>
+#include <unistd.h> 
 
-static void rmslash(std::string);
+static const char *sepstr = "/";
+static const char sepchar = sepstr[0];
 
 boost::optional<std::string> readline(FILE *in, bool echo) {
 	std::string line;
@@ -33,8 +35,8 @@ boost::optional<std::string> readline(FILE *in, bool echo) {
 }
 
 std::vector<std::string> readdir(std::string path, bool concat) {
-	if (path[path.length() - 1] != '/')
-		path.push_back('/');
+	if (path[path.length() - 1] != sepchar)
+		path.push_back(sepchar);
 	DIR *dir =opendir(path.c_str());
 	if (!dir)
 		fatalx(errno, "failed to open directory %s", path.c_str());
@@ -78,7 +80,7 @@ bool isdir(const std::string &path) {
 
 void ensuredir(const std::string &p) {
 	std::string dir = dirname(p);
-	if (dir == "." || dir == "/" || isdir(dir))
+	if (dir == "." || dir == sepstr || isdir(dir))
 		return;
 
 	ensuredir(dirname(dir));
@@ -88,30 +90,63 @@ void ensuredir(const std::string &p) {
 }
 
 std::string basename(const std::string &p) {
-	rmslash(p);
+	if (p.size() == 0 || p == ".")
+		return ".";
+
 	const char *str = p.c_str();
-	const char *slash = strrchr(str, '/');
+	const char *slash = strrchr(str, sepchar);
 	if (!slash)
 		return p;
+
+	if (strlen(slash + 1) == 0)
+		return ".";
+
 	return slash + 1;
 }
 
 std::string dirname(const std::string &p) {
-	rmslash(p);
-	if (p == "/")
-		return p;
+	if (p.size() == 0 || p == ".")
+		return ".";
+
+	if (p == sepstr)
+		return sepstr;
+
 	const char *str = p.c_str();
-	const char *slash = strrchr(str, '/');
+	const char *slash = strrchr(str, sepchar);
 	if (!slash)
 		return ".";
+
 	std::string res;
-	for (const char *c = str; c < slash; c++)
+	for (const char *c = str; c <= slash; c++)
 		res.push_back(*c);
+
+	if (res.length() > 1 && res[res.length()-1] == sepchar)
+		res.resize(res.length()-1);
+
 	return res;
 }
 
-// rmslash removes the trailing slash at the end of a path.
-static void rmslash(std::string s) {
-	while (s.length() > 1 && s[s.length() - 1] == '/')
-		s.resize(s.length() - 1);
+std::string pathcat(const std::string &dir, const std::string &base) {
+	if (dir[dir.length()-1] == sepchar)
+		return dir + base;
+	std::string s(dir);
+	s.push_back(sepchar);
+	s += base;
+	return s;
+}
+
+std::string pathcatn(unsigned int n, ...) {
+	std::string path;
+	va_list ap;
+
+	va_start(ap, n);
+	for (unsigned int i = 0; i < n; i++) {
+		const char *ent = va_arg(ap, const char *);
+		if (path[path.length()-1] != sepchar)
+			path.push_back(sepchar);
+		path += ent;
+	}
+	va_end(ap);
+
+	return path;
 }

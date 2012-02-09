@@ -51,13 +51,22 @@ bool isdir(const std::string&);
 void ensuredir(const std::string&);
 
 // basename returns the basename of the given path.
-// The basename is the inner-most path entry.
+// The basename is the entry to the right of the right-most
+// path seperator.
 std::string basename(const std::string&);
 
 // dirname returns the directory containing the given
-// path.  That is everything execpt for the basename.
-// The result has no trailing '/'
+// path, i.e., everything to the left of the right-most
+// path seperator.
 std::string dirname(const std::string&);
+
+// pathcat returns the concatination of two path entries.
+std::string pathcat(const std::string&, const std::string&);
+
+// pathcatn returns the concatination of a bunch of path
+// entries specified by first argument.  The remaining
+// arguments are assumed to be const char *'s.
+std::string pathcatn(unsigned int, ...);
 
 // hasprefix returns true if the first string has the second
 // string as a prefix.
