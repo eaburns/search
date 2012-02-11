@@ -21,8 +21,11 @@ const Domain doms[] = {
 };
 
 const std::string algs[] = {
-	"astar",
 	"idastar",
+	"astar",
+	"greedy",
+	"wastar -wt 1",
+	"arastar -wt0 1 -dwt 1",
 };
 
 enum {
