@@ -85,7 +85,7 @@ void ensuredir(const std::string &p) {
 
 	ensuredir(dirname(dir));
 
-	if (mkdir(dir.c_str(), 0) == -1)
+	if (mkdir(dir.c_str(), 0777) == -1)
 		fatalx(errno, "failed to make directory %s\n", dir.c_str());
 }
 

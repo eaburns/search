@@ -151,6 +151,7 @@ static void mkbench(const Domain &dom, const std::string &alg,
 		vartime += diff * diff;
 	}
 
+	ensuredir(opath);
 	FILE *o = fopen(opath.c_str(), "w");
 	if (!o)
 		fatalx(errno, "failed to open %s for writing", opath.c_str());

@@ -38,7 +38,7 @@ CLEAN+=.utils_test
 
 utils/utils.a: $(UTILOBJS)
 	$(AR) rsc $@ $(UTILOBJS)
-CLEAN+=utils.a
+CLEAN+=utils/utils.a
 
 utils/test: utils/test_geom.cc utils/test_rdb.cc \
 	utils/test_encode.cc utils/bench_ops.cc\
