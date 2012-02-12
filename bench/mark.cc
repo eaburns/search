@@ -126,8 +126,8 @@ static bool chkbench(const Domain &dom, const Algorithm &alg,
 	Result bench = readresult(f);
 	fclose(f);
 
-	// Must pass 1 of 3 runs within 110% of the mean time
-	double lim = bench.time * 1.1;
+	// Must pass 1 of 3 runs within the limit
+	double lim = bench.time + bench.stdev * 2;
 	unsigned int ok = 0;
 	for (unsigned int i = 0; i < 3 && ok < 1; i++) {
 		Result r = run(dom, alg, inst);

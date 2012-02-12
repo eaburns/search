@@ -33,15 +33,15 @@ public:
 
 	State initialstate(void);
 
-	Cost h(State &s) { return s.h; }
+	Cost h(State &s) const { return s.h; }
 
-	Cost d(State &s) { return s.h; }
+	Cost d(State &s) const { return s.h; }
 
-	bool isgoal(State &s) { return s.h == 0; }
+	bool isgoal(State &s) const { return s.h == 0; }
 
-	unsigned int nops(State &s) { return ops[s.b].n; }
+	unsigned int nops(State &s) const { return ops[s.b].n; }
 
-	Oper nthop(State &s, unsigned int n) {
+	Oper nthop(State &s, unsigned int n) const {
 		assert (n < ops[s.b].n);
 		return ops[s.b].mvs[n];
 	}
@@ -70,17 +70,17 @@ public:
 		Cost oldh;
 	};
 
-	void pack(PackedState &dst, State &s) {
+	void pack(PackedState &dst, State &s) const {
 		s.ts[s.b] = 0;
 		dst.pack(s.ts);
 	}
 
-	State &unpack(State &buf, PackedState &pkd) {
+	State &unpack(State &buf, PackedState &pkd) const {
 		buf.b = pkd.unpack_md(md, buf.ts, &buf.h);
 		return buf;
 	}
 
-	void dumpstate(FILE *out, State &s) {
+	void dumpstate(FILE *out, State &s) const {
 		s.ts[s.b] = 0;
 		Tiles::dumptiles(out, s.ts);
 	}
