@@ -126,19 +126,23 @@ static bool chkbench(const Domain &dom, const Algorithm &alg,
 	Result bench = readresult(f);
 	fclose(f);
 
-	Result r = run(dom, alg, inst);
-	if (r.len != bench.len) {
-		printf("	expected %u solution length\n", bench.len);
-		return false;
+	// Must pass 1 of 3 runs within 2σ of the mean time
+	double rng = 2*bench.stdev;
+	unsigned int ok = 0;
+	for (unsigned int i = 0; i < 3 && ok < 1; i++) {
+		Result r = run(dom, alg, inst);
+		if (r.len != bench.len) {
+			printf("	expected %u solution length\n", bench.len);
+			continue;
+		}
+		if (r.time > bench.time + rng) {
+			printf("	expected %g seconds + %g\n", bench.time, rng);
+			continue;
+		}
+		ok++;
 	}
 
-	double rng = 3*bench.stdev;
-	if (r.time < bench.time - rng || r.time > bench.time + rng) {
-		printf("	expected %g seconds ± %g\n", bench.time, rng);
-		return false;
-	}
-
-	return true;
+	return ok >= 1;
 }
 
 // mkbench makes a new benchmark file.
@@ -167,6 +171,10 @@ static void mkbench(const Domain &dom, const Algorithm &alg,
 		double diff = r[i].time - meantime;
 		vartime += diff * diff;
 	}
+	vartime /= N;
+	double stdev = sqrt(vartime);
+
+	printf("	%g avg. seconds, %g stdev\n", meantime, stdev);
 
 	ensuredir(opath);
 	FILE *o = fopen(opath.c_str(), "w");
@@ -179,7 +187,7 @@ static void mkbench(const Domain &dom, const Algorithm &alg,
 	dfpair(o, "instance", "%s", inst.c_str());
 	dfpair(o, "num runs", "%u", (unsigned int) N);
 	dfpair(o, "mean wall time", "%g", meantime);
-	dfpair(o, "stdev wall time", "%g", sqrt(vartime));
+	dfpair(o, "stdev wall time", "%g", stdev);
 	dfpair(o, "final sol length", "%u", (unsigned int) r[0].len);
 	fclose(o);
 }

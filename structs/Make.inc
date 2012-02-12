@@ -9,7 +9,7 @@ EVERYTHING+=structs
 
 TESTS+=.structs_test
 
-.structs_test: ./structs/test
+.structs_test: structs/binheap.hpp ./structs/test
 	./structs/test ".*test" && touch $@
 
 CLEAN+=.structs_test
