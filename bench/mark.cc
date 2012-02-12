@@ -9,24 +9,28 @@
 #include <sys/utsname.h>
 
 struct Domain {
-	Domain(const std::string &n, const std::string &f) :
-		name(n), fmt(f) { }
-
-	std::string name;
-	std::string fmt;
+	std::string name, fmt;
 };
 
 const Domain doms[] = {
-	Domain("tiles", "./tiles/15md_solver %s < %s"),
+	{ "tiles", "./tiles/15md_solver %s < %s" },
+	{ "pancake", "./pancake/50pancake_solver %s < %s" },
+	{ "gridnav", "./gridnav/gridnav_solver %s < %s" },
+	{ "plat2d", "./plat2d/plat2d_solver %s -lvl %s" },
 };
 
-const std::string algs[] = {
-	"idastar",
-	"astar",
-	"greedy",
-	"wastar -wt 1",
-	"arastar -wt0 1 -dwt 1",
+struct Algorithm {
+	std::string name, cmd;
 };
+
+const Algorithm algs[] = {
+	{ "astar", "astar" },
+	{ "greedy", "greedy" },
+	{ "wastar", "wastar -wt 1" },
+};
+
+// Separate since it doesn't work well on all domains.
+const Algorithm idastar = { "idastar", "idastar" };
 
 enum {
 	Ndoms = sizeof(doms) / sizeof(doms[0]),
@@ -45,14 +49,14 @@ struct Result {
 
 char mname[256];
 
-static bool bench(const Domain&, const std::string&);
+static bool bench(const Domain&, const Algorithm&);
 static std::string instpath(const Domain&, const std::string&);
-static std::string benchpath(const Domain&, const std::string &,const std::string&);
-static bool chkbench(const Domain&, const std::string&, const std::string&);
-static void mkbench(const Domain&, const std::string&, const std::string&);
+static std::string benchpath(const Domain&, const Algorithm&,const std::string&);
+static bool chkbench(const Domain&, const Algorithm&, const std::string&);
+static void mkbench(const Domain&, const Algorithm&, const std::string&);
 static Result readresult(FILE*);
 static void dfline(std::vector<const char *>&, void*);
-static Result run(const Domain&, const std::string&, const std::string&);
+static Result run(const Domain&, const Algorithm&, const std::string&);
 
 int main() {
 	if (gethostname(mname, sizeof(mname)) == -1)
@@ -62,8 +66,13 @@ int main() {
 	for (unsigned int i = 0; i < Ndoms; i++) {
 		printf("domain: %s\n", doms[i].name.c_str());
 		for (unsigned int j = 0; j < Nalgs; j++) {
-			printf("algorithm: %s\n", algs[j].c_str());
+			printf("algorithm: %s\n", algs[j].name.c_str());
 			if (!bench(doms[i], algs[j]))
+				return 1;
+		}
+		if (doms[i].name == "tiles" || doms[i].name == "pancake") {
+			printf("algorithm: %s\n", idastar.name.c_str());
+			if (!bench(doms[i], idastar))
 				return 1;
 		}
 	}
@@ -74,7 +83,7 @@ int main() {
 // bench benchmarks the given domain and algorithm,
 // returning true if the benchmark matched previous
 // results.
-static bool bench(const Domain &dom, const std::string &alg) {
+static bool bench(const Domain &dom, const Algorithm &alg) {
 	const std::string dir = "bench/insts/" + dom.name;
 	std::vector<std::string> insts = readdir(dir, false);
 
@@ -100,15 +109,15 @@ static std::string instpath(const Domain &dom, const std::string &inst) {
 	return "bench/insts/" + dom.name + "/" + inst;
 }
 
-static std::string benchpath(const Domain &dom, const std::string &alg,
+static std::string benchpath(const Domain &dom, const Algorithm &alg,
 		const std::string &inst) {
 	return "bench/data/" + std::string(mname) + "_" +
-		dom.name + "_" + alg + "_" + inst;
+		dom.name + "_" + alg.name + "_" + inst;
 }
 
 // chkbench returns true if the current behavior is
 // consistent with the benchmark.
-static bool chkbench(const Domain &dom, const std::string &alg,
+static bool chkbench(const Domain &dom, const Algorithm &alg,
 		const std::string &inst) {
 	const std::string ipath = benchpath(dom, alg, inst);
 	FILE *f = fopen(ipath.c_str(), "r");
@@ -122,8 +131,10 @@ static bool chkbench(const Domain &dom, const std::string &alg,
 		printf("	expected %u solution length\n", bench.len);
 		return false;
 	}
-	if (r.time < bench.time - bench.stdev || r.time > bench.time + bench.stdev) {
-		printf("	expected %g seconds ± %g\n", bench.time, bench.stdev);
+
+	double rng = 3*bench.stdev;
+	if (r.time < bench.time - rng || r.time > bench.time + rng) {
+		printf("	expected %g seconds ± %g\n", bench.time, rng);
 		return false;
 	}
 
@@ -131,11 +142,14 @@ static bool chkbench(const Domain &dom, const std::string &alg,
 }
 
 // mkbench makes a new benchmark file.
-static void mkbench(const Domain &dom, const std::string &alg,
+static void mkbench(const Domain &dom, const Algorithm &alg,
 		const std::string &inst) {
 	static const unsigned int N = 5;
 	const std::string opath = benchpath(dom, alg, inst);
 	printf("	making %s\n", opath.c_str());
+
+	printf("	warmup run:	");
+	run(dom, alg, inst);
 
 	Result r[N];
 	double meantime = 0;
@@ -149,7 +163,7 @@ static void mkbench(const Domain &dom, const std::string &alg,
 	for (unsigned int i = 1; i < N; i++) {
 		if (r[i].len != r[0].len)
 			fatal("different lengths when solving %s %s %s",
-				dom.name.c_str(), alg.c_str(), inst.c_str());
+				dom.name.c_str(), alg.name.c_str(), inst.c_str());
 		double diff = r[i].time - meantime;
 		vartime += diff * diff;
 	}
@@ -161,7 +175,7 @@ static void mkbench(const Domain &dom, const std::string &alg,
 
 	dfpair(o, "machine name", "%s", mname);
 	dfpair(o, "domain", "%s", dom.name.c_str());
-	dfpair(o, "algorithm", "%s", alg.c_str());
+	dfpair(o, "algorithm", "%s", alg.name.c_str());
 	dfpair(o, "instance", "%s", inst.c_str());
 	dfpair(o, "num runs", "%u", (unsigned int) N);
 	dfpair(o, "mean wall time", "%g", meantime);
@@ -195,12 +209,12 @@ static void dfline(std::vector<const char *> &toks, void *_res) {
 
 // run runs the solver on the given instance using the
 // given algorithm, returning the Result.
-static Result run(const Domain &dom, const std::string &alg,
+static Result run(const Domain &dom, const Algorithm &alg,
 		const std::string &inst) {
 	char cmd[1024];
 	const std::string ipath = instpath(dom, inst);
 	unsigned int res = snprintf(cmd, sizeof(cmd), dom.fmt.c_str(),
-		alg.c_str(), ipath.c_str());
+		alg.cmd.c_str(), ipath.c_str());
 	if (res >= sizeof(cmd))
 		fatal("mark.cc run(): buffer is too small");
 
