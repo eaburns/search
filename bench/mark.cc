@@ -127,7 +127,7 @@ static bool chkbench(const Domain &dom, const Algorithm &alg,
 	fclose(f);
 
 	// Must pass 1 of 3 runs within the limit
-	double lim = bench.time + bench.stdev * 2;
+	double lim = bench.time + bench.time * 1.01;
 	unsigned int ok = 0;
 	for (unsigned int i = 0; i < 3 && ok < 1; i++) {
 		Result r = run(dom, alg, inst);
