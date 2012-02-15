@@ -118,7 +118,7 @@ void Plat2d::drawmap(const char *file) const {
 	graph.scale(s, s);
 
 	Image img(w * s, h * s);
-	graph.PolyMap::draw(img, false);
+	graph.PolyMap::draw(img, 1);
 
 	int i = centers[2 * lvl.height() + 2];
 	i = togoal[i].prev;
