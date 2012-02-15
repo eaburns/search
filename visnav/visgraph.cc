@@ -8,11 +8,10 @@ VisGraph::VisGraph(FILE *in) : map(in) {
 	int res = fscanf(in, " %u vertices\n", &nverts);
 	if (res == EOF && ferror(in))
 		fatalx(errno, "Failed to read the visibility graph");
-	if (res != 1)
-		fatal("Malformed visibility graph");
-
-	for (unsigned int i = 0; i < nverts; i++)
-		verts.push_back(Vert(in));
+	if (res != EOF) {
+		for (unsigned int i = 0; i < nverts; i++)
+			verts.push_back(Vert(in));
+	}
 }
 
 VisGraph::VisGraph(const PolyMap &p) : map(p) {
