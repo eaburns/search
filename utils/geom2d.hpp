@@ -1,14 +1,11 @@
 #ifndef _GEOM2D_HPP_
 #define _GEOM2D_HPP_
 
-#include <iterator>
 #include <vector>
 #include <limits>
 #include <cmath>
 #include <cstdio>
 #include <cassert>
-
-extern void fatal(const char*, ...);	// from utils.hpp
 
 namespace Geom2d {
 	
