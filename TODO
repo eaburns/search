@@ -26,11 +26,6 @@
 
 	- specific closed list
 
-	- VisGraph contains PolyMap
-	Then make 2 PolyMaps
-		1) PolyMap
-		2) BoundedPolyMap
-
 • gridnav:
 
 	- verify solution paths
