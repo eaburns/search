@@ -62,7 +62,7 @@ void Plat2d::initvg(void) {
 		unsigned int x = i / lvl.height();
 		unsigned int y = i % lvl.height();
 		Geom2d::Pt pt(x + 0.5, y + 0.5);
-		if (!vg->obstructed(pt))
+		if (!vg->map.obstructed(pt))
 			centers.push_back(vg->add(pt));
 		else
 			centers.push_back(-1);
@@ -109,7 +109,7 @@ void Plat2d::drawmap(const char *file) const {
 	static const unsigned int Width = 400, Height = 400;
 
 	VisGraph graph(*vg);
-	Geom2d::Pt min = graph.min(), max = graph.max();
+	Geom2d::Pt min = graph.map.min(), max = graph.map.max();
 	graph.translate(-min.x, -min.y);
 	double w = max.x - min.x, h = max.y - min.y;
 	double s = Height / h;
@@ -118,7 +118,7 @@ void Plat2d::drawmap(const char *file) const {
 	graph.scale(s, s);
 
 	Image img(w * s, h * s);
-	graph.PolyMap::draw(img, 1);
+	graph.map.draw(img, 1);
 
 	int i = centers[2 * lvl.height() + 2];
 	i = togoal[i].prev;

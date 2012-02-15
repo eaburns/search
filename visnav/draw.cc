@@ -53,8 +53,8 @@ int main(int argc, char *argv[]) {
 	if (labels)
 		graph.dumpvertlocs(stderr);
 
-	Geom2d::Pt min = graph.min();
-	Geom2d::Pt max = graph.max();
+	Geom2d::Pt min = graph.map.min();
+	Geom2d::Pt max = graph.map.max();
 	graph.translate(-min.x, -min.y);
 	double w = max.x - min.x;
 	double h = max.y - min.y;

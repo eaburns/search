@@ -179,7 +179,7 @@ private:
 
 		int c = centers[bi.x * lvl.height() + bi.y];
 		Geom2d::Pt g = goalpt(bi, loc);
-		if (togoal[c].prev == gcenter || vg->isvisible(loc, g))
+		if (togoal[c].prev == gcenter || vg->map.isvisible(loc, g))
 			// still admissible if we go up to the next int
 			return ceil(Geom2d::Pt::distance(loc, g));
 

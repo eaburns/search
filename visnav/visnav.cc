@@ -21,8 +21,8 @@ enum {
 void VisNav::save(const char *file, std::vector<State> path) {
 	Image img(Width, Height);
 
-	Geom2d::Pt min = g.min();
-	Geom2d::Pt max = g.max();
+	Geom2d::Pt min = g.map.min();
+	Geom2d::Pt max = g.map.max();
 	g.translate(-min.x, -min.y);
 	double w = max.x - min.x;
 	double h = max.y - min.y;

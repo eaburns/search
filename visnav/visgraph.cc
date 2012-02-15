@@ -3,7 +3,7 @@
 #include "../utils/utils.hpp"
 #include <cerrno>
 
-VisGraph::VisGraph(FILE *in) : PolyMap(in) {
+VisGraph::VisGraph(FILE *in) : map(in) {
 	unsigned int nverts;
 	int res = fscanf(in, " %u vertices\n", &nverts);
 	if (res == EOF && ferror(in))
@@ -15,12 +15,12 @@ VisGraph::VisGraph(FILE *in) : PolyMap(in) {
 		verts.push_back(Vert(in));
 }
 
-VisGraph::VisGraph(const PolyMap &p) : PolyMap(p) {
+VisGraph::VisGraph(const PolyMap &p) : map(p) {
 	build();
 }
 
 void VisGraph::output(FILE *out) const {
-	PolyMap::output(out);
+	map.output(out);
 
 	fprintf(out, "%u vertices\n", (unsigned int) verts.size());
 	for (unsigned int i = 0; i < verts.size(); i++) {
@@ -63,7 +63,7 @@ void VisGraph::Vert::output(FILE *out) const {
 
 void VisGraph::draw(Image &img, bool label) const {
 	static const double polywidth = 1;
-	PolyMap::draw(img, polywidth);
+	map.draw(img, polywidth);
 
 	for (unsigned int i = 0; i < verts.size(); i++) {
 	for (unsigned int j = 0; j < verts[i].edges.size(); j++) {
@@ -99,7 +99,7 @@ void VisGraph::dumpvertlocs(FILE *out) const {
 }
 
 void VisGraph::scale(double sx, double sy) {
-	PolyMap::scale(sx, sy);
+	map.scale(sx, sy);
 	for (unsigned int i = 0; i < verts.size(); i++)
 		verts[i].pt.scale(sx, sy);
 
@@ -114,7 +114,7 @@ void VisGraph::scale(double sx, double sy) {
 }
 
 void VisGraph::translate(double dx, double dy) {
-	PolyMap::translate(dx, dy);
+	map.translate(dx, dy);
 	for (unsigned int i = 0; i < verts.size(); i++)
 		verts[i].pt.translate(dx, dy);
 }
@@ -134,22 +134,23 @@ void VisGraph::build(void) {
 
 void VisGraph::populateverts(void) {
 	std::vector<unsigned int> vs;
-	for (unsigned int i = 0; i < polys.size(); i++) {
+	for (unsigned int i = 0; i < map.polys.size(); i++) {
 		vs.clear();
-		for (unsigned int j = 0; j < polys[i].verts.size(); j++) {
-			if (polys[i].isreflex(j))
+		for (unsigned int j = 0; j < map.polys[i].verts.size(); j++) {
+			if (map.polys[i].isreflex(j))
 				vs.push_back(j);
 		}
-		addpoly(polys[i], vs);
+		addpoly(map.polys[i], vs);
 		for (unsigned int j = 0; j < vs.size(); j++)
 			polyno.push_back(i);
 	}
-	if (bound) {		vs.clear();
-		for (unsigned int i = 0; i < bound->verts.size(); i++) {
-			if (bound->isreflex(i))
+	if (map.bound) {
+		vs.clear();
+		for (unsigned int i = 0; i < map.bound->verts.size(); i++) {
+			if (map.bound->isreflex(i))
 				vs.push_back(i);
 		}
-		addpoly(*bound, vs);
+		addpoly(*map.bound, vs);
 	}
 }
 
@@ -184,14 +185,14 @@ void VisGraph::consideredge(unsigned int i, unsigned int j) {
 	double len = ray.length();
 
 	Geom2d::Pt p0(ray.along(len * 1e-3));
-	if (i < polyno.size() && polys[polyno[i]].contains(p0))
+	if (i < polyno.size() && map.polys[polyno[i]].contains(p0))
 		return;
 
 	Geom2d::Pt p1(ray.along(len * (1 - 1e-3)));
-	if (j < polyno.size() && polys[polyno[j]].contains(p1))
+	if (j < polyno.size() && map.polys[polyno[j]].contains(p1))
 		return;
 
-	if (isvisible(p0, p1))
+	if (map.isvisible(p0, p1))
 		addedge(i, j);
 }
 

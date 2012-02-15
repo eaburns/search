@@ -6,7 +6,7 @@ struct Image;
 
 // A VisGraph is a visibility map along with edges
 // between pairs of visible vertices.
-struct VisGraph : public PolyMap {
+struct VisGraph {
 
 	VisGraph(const PolyMap&);
 
@@ -61,6 +61,7 @@ struct VisGraph : public PolyMap {
 	};
 
 	std::vector<Vert> verts;
+	PolyMap map;
 
 private:
 
