@@ -48,7 +48,10 @@ struct Result {
 };
 
 char mname[256];
+const char *dname, *aname;
 
+static void parseargs(int, const char*[]);
+static void helpmsg(int);
 static bool bench(const Domain&, const Algorithm&);
 static std::string instpath(const Domain&, const std::string&);
 static std::string benchpath(const Domain&, const Algorithm&,const std::string&);
@@ -58,14 +61,22 @@ static Result readresult(FILE*);
 static void dfline(std::vector<const char *>&, void*);
 static Result run(const Domain&, const Algorithm&, const std::string&);
 
-int main() {
+int main(int argc, const char *argv[]) {
+	parseargs(argc, argv);
+
 	if (gethostname(mname, sizeof(mname)) == -1)
 		fatalx(errno, "failed to get the machine name");
 
 	printf("machine: %s\n", mname);
 	for (unsigned int i = 0; i < Ndoms; i++) {
+		if (dname && doms[i].name != dname)
+			continue;
+
 		printf("domain: %s\n", doms[i].name.c_str());
 		for (unsigned int j = 0; j < Nalgs; j++) {
+			if (aname && algs[j].name != aname)
+				continue;
+
 			printf("algorithm: %s\n", algs[j].name.c_str());
 			if (!bench(doms[i], algs[j]))
 				return 1;
@@ -78,6 +89,25 @@ int main() {
 	}
 
 	return 0;
+}
+
+static void parseargs(int argc, const char *argv[]) {
+	for (int i = 1; i < argc; i++) {
+		if (i < argc - 1 && strcmp(argv[i], "-d") == 0)
+			dname = argv[++i];
+		else if (i < argc - 1 && strcmp(argv[i], "-a") == 0)
+			aname = argv[++i];
+		else if (strcmp(argv[i], "-h") == 0)
+			helpmsg(0);
+	}
+}
+
+static void helpmsg(int res) {
+	puts("Usage: mark [-h] [-d <domain>] [-a <algorithm>]");
+	puts("-h	display this help message");
+	puts("-d <domain>	specify the domain to benchmark");
+	puts("-a <algorithm>	specify the algorithm to benchmark");
+	exit(res);
 }
 
 // bench benchmarks the given domain and algorithm,
