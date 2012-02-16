@@ -5,9 +5,10 @@
 #include <cerrno>
 #include <cstring>
 #include <cstdarg>
+#include <cmath>
 #include <string>
 
-GridMap::GridMap(std::string &fname) : map(NULL), flags(NULL), file(fname) {
+GridMap::GridMap(std::string &fname) : map(NULL),  file(fname), nmoves(0), flags(NULL) {
 	FILE *f = fopen(file.c_str(), "r");
 	if (!f)
 		fatalx(errno, "Unable to open %s for reading\n", file.c_str());
@@ -20,22 +21,6 @@ GridMap::~GridMap(void) {
 		delete[] map;
 	if (flags)
 		delete[] flags;
-}
-
-void GridMap::output(FILE *out) const {
-	switch (mtype) {
-	case Octile: fprintf(out, "type octile\n"); break;
-	case FourWay: fprintf(out, "type four-way\n"); break;
-	case EightWay: fprintf(out, "type eight-way\n"); break;
-	}
-	fprintf(out, "height %u\n", h);
-	fprintf(out, "width %u\n", w);
-	fprintf(out, "map\n");
-	for (unsigned int y = 0; y < h; y++) {
-		for (unsigned int x = 0; x < w; x++)
-			fputc(map[loc(x, y)], out);
-		fputc('\n', out);
-	}
 }
 
 void GridMap::readfail(const char *fmt, ...) {
@@ -99,16 +84,15 @@ void GridMap::load_ruml(FILE *in) {
 		if (fgetc(in) != '\n')
 			readfail("Expected a new line");
 	}
-
 	if (fscanf(in, " Unit\n") != 0)
 		readfail("Failed to scan Unit footer");
 
 	int c = fgetc(in);
 	ungetc(c, in);
 	if (c == 'E' && fscanf(in, "Eight-way") == 0)
-		mtype = EightWay;
+		eightway();
 	else if (c == 'F' && fscanf(in, "Four-way") == 0)
-		mtype = FourWay;
+		fourway();
 	else
 		readfail("Invalid movement type");
 }
@@ -140,8 +124,6 @@ void GridMap::load_sturtevant(FILE *in) {
 	if (strcmp(typ, "octile") != 0)
 		readfail("Unsupported map type [%s]", typ);
 
-	mtype = Octile;
-
 	if (fscanf(in, "height %u\nwidth %u\nmap\n", &h, &w) != 2)
 		readfail("Failed to read the map header");
 
@@ -159,4 +141,50 @@ void GridMap::load_sturtevant(FILE *in) {
 	flags = new unsigned char[sz];
 	for (unsigned int i = 0; i < w * h; i++)
 		flags[i] = terrain.flags[(int) map[i]];
+
+	octile();
+}
+
+GridMap::Move::Move(const GridMap &m, int _dx, int _dy, unsigned int _n, ...) :
+			dx(_dx), dy(_dy), delta(dx + m.w * dy), cost(1.0), n(_n + 1) {
+	if (n >= sizeof(chk) / sizeof(chk[0]))
+		fatal("Cannot create a move with %d checks\n", n);
+
+	if (dx != 0 && dy != 0)
+		cost = sqrt(2.0);
+
+	va_list ap;
+	va_start(ap, _n);
+	chk[0].dx = dx;
+	chk[0].dy = dy;
+	chk[0].delta = delta;
+	for (unsigned int i = 1; i < n; i++) {
+		chk[i].dx = va_arg(ap, int);
+		chk[i].dy = va_arg(ap, int);
+		chk[i].delta = chk[i].dx + m.w * chk[i].dy;
+	}
+	va_end(ap);
+}
+
+void GridMap::octile(void) {
+	moves[nmoves++] = Move(*this, 1,1, 2, 1,0, 0,1);
+	moves[nmoves++] = Move(*this, -1,1, 2, -1,0, 0,1);
+	moves[nmoves++] = Move(*this, 1,-1, 2, 0,-1, 1,0);
+	moves[nmoves++] = Move(*this, -1,-1, 2, 0,-1, -1,0);
+	fourway();
+}
+
+void GridMap::eightway(void) {
+	moves[nmoves++] = Move(*this, 1,1, 0);
+	moves[nmoves++] = Move(*this, -1,1, 0);
+	moves[nmoves++] = Move(*this, 1,-1, 0);
+	moves[nmoves++] = Move(*this, -1,-1, 0);
+	fourway();
+}
+
+void GridMap::fourway(void) {
+	moves[nmoves++] = Move(*this, 1,0, 0);
+	moves[nmoves++] = Move(*this, 0,1, 0);
+	moves[nmoves++] = Move(*this, -1,0, 0);
+	moves[nmoves++] = Move(*this, 0,-1, 0);
 }

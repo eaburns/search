@@ -68,7 +68,7 @@ void Scenario::outputhdr(FILE *out) {
 
 GridMap *Scenario::getmap(std::string mapfile) {
 	std::string path = maproot + mapfile; 
-	if (!lastmap || lastmap->filename() != path) {
+	if (!lastmap || lastmap->file != path) {
 		if (lastmap)
 			delete lastmap;
 		lastmap = new GridMap(path);

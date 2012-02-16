@@ -1,6 +1,7 @@
 #ifndef _GRIDMAP_HPP_
 #define _GRIDMAP_HPP_
 
+#include <vector>
 #include <climits>
 #include <cstdio>
 #include <string>
@@ -11,152 +12,48 @@ class GridMap {
 public:
 	GridMap(std::string &file);
 
-	GridMap(FILE *f) { load(f); }
+	GridMap(FILE *f) : nmoves(0) { load(f); }
 
 	~GridMap(void);
 
-	unsigned int width(void) const { return w; }
+	unsigned int xcoord(unsigned int loc) const { return loc % w; }
 
-	unsigned int height(void) const { return h; }
-
-	unsigned int size(void) const { return sz; }
-
-	unsigned int x(unsigned int loc) const { return loc % w; }
-
-	unsigned int y(unsigned int loc) const { return loc / w; }
-
-	bool passable(unsigned int loc) const { return flags[loc] & Passable; }
+	unsigned int ycoord(unsigned int loc) const { return loc / w; }
 
 	unsigned int loc(unsigned int x, unsigned int y) const { return y * w + x; }
 
-	unsigned int up(unsigned int l) const { return l - w; }
+	bool passable(unsigned int loc) const { return flags[loc] & Passable; }
 
-	unsigned int down(unsigned int l) const { return l + w; }
+	struct Move {
+		Move(void) : n(0) { }
 
-	unsigned int left(unsigned int l) const { return l - 1; }
+		Move(const GridMap&, int, int, unsigned int, ...);
 
-	unsigned int right(unsigned int l) const { return l + 1; }
-
-	unsigned int ops(unsigned int l, int ops[]) {
-		switch (mtype) {
-		case Octile: return octileops(l, ops);
-		case EightWay: return eightwayops(l, ops);
-		case FourWay: return fourwayops(l, ops);
-		}
-		fatal("Invalid movement type: %d", mtype);
-		return 0;	// Unreachable
-	}
-
-	void output(FILE*) const;
-
-	std::string &filename(void) { return file; }
-
-	enum {
-		Octile,
-		EightWay,
-		FourWay,
+		int dx, dy, delta;
+		float cost;
+		unsigned int n;
+		struct { int dx, dy, delta; } chk[3];
 	};
 
-	int movetype(void) { return mtype; }
+	bool ok(unsigned int loc, const Move &m) const {
+		int x = xcoord(loc), y = ycoord(loc);
+		for (unsigned int i = 0; i < m.n; i++) {
+			int dx = m.chk[i].dx, dy = m.chk[i].dy;
+			if (x + dx < 0 || x + dx >= (int) w || y + dy < 0 || y + dy >= (int) h ||
+					!terrainok(loc, loc + m.chk[i].delta))
+				return false;
+		}
+		return true;
+	}
+
+	unsigned int w, h, sz;
+	unsigned char *map;
+	std::string file;
+
+	unsigned int nmoves;
+	Move moves[8];
 
 private:
-
-	unsigned int octileops(unsigned int l, int ops[]) {
-		unsigned int n = 0;
-
-		bool leftok = x(l) > 0 && terrainok(l, left(l));
-		if (leftok)
-			ops[n++] = left(l);
-
-		bool rightok = x(l) < w - 1 && terrainok(l, right(l));
-		if (rightok)
-			ops[n++] = right(l);
-
-		bool upok = y(l) > 0 && terrainok(l, up(l));
-		if (upok) {
-			ops[n++] = up(l);
-			if (leftok && terrainok(l, up(left(l))))
-				ops[n++] = up(left(l));
-			if (rightok && terrainok(l, up(right(l))))
-				ops[n++] = up(right(l));
-		}
-
-		bool downok = y(l) < h - 1 && terrainok(l, down(l));
-		if (downok) {
-			ops[n++] = down(l);
-			if (leftok && terrainok(l, down(left(l))))
-				ops[n++] = down(left(l));
-			if (rightok && terrainok(l, down(right(l))))
-				ops[n++] = down(right(l));
-		}
-
-		return n;
-	}
-
-	unsigned int eightwayops(unsigned int l, int ops[]) {
-		unsigned int n = 0;
-
-		if (x(l) > 0 && terrainok(l, left(l)))
-			ops[n++] = left(l);
-		if (x(l) < w - 1 && terrainok(l, right(l)))
-			ops[n++] = right(l);
-
-		if (y(l) > 0) {
-			if (terrainok(l, up(l)))
-				ops[n++] = up(l);
-			if (x(l) > 0 && terrainok(l, up(left(l))))
-				ops[n++] = up(left(l));
-			if (x(l) < w - 1 && terrainok(l, up(right(l))))
-				ops[n++] = up(right(l));
-		}
-
-		if (y(l) < h - 1) {
-			if (terrainok(l, down(l)))
-				ops[n++] = down(l);
-			if (x(l) > 0 && terrainok(l, down(left(l))))
-				ops[n++] = down(left(l));
-			if (x(l) < w - 1 && terrainok(l, down(right(l))))
-				ops[n++] = down(right(l));
-		}
-
-		return n;
-	}
-
-	unsigned int fourwayops(unsigned int l, int ops[]) {
-		unsigned int n = 0;
-		if (x(l) > 0 && terrainok(l, left(l)))
-			ops[n++] = left(l);
-		if (x(l) < w - 1 && terrainok(l, right(l)))
-			ops[n++] = right(l);
-		if (y(l) > 0 && terrainok(l, up(l)))
-			ops[n++] = up(l);
-		if (y(l) < h - 1 && terrainok(l, down(l)))
-			ops[n++] = down(l);
-		return n;
-	}
-
-	// Tests whether the terrain flags allow this move.
-	bool terrainok(unsigned int l0, unsigned int l1) const {
-		char f0 = flags[l0];
-		char f1 = flags[l1];
-
-		if (f1 & (OutOfBounds | Tree))
-			return false;
-
-		if (f0 & Water)
-			return f1 & Water;
-
-		return f1 & (Passable | Swamp);
-	}
-
-	void readfail(const char*, ...);
-
-	void load(FILE*);
-
-	void load_ruml(FILE*);
-
-	void load_sturtevant(FILE*);
-
 	enum {
 		Passable = 1 << 0,
 		OutOfBounds = 1 << 1,
@@ -165,11 +62,25 @@ private:
 		Water = 1 << 4,
 	};
 
-	int mtype;
-	unsigned int w, h, sz;
-	unsigned char *map;
+	// Tests whether the terrain flags allow this move.
+        bool terrainok(unsigned int l0, unsigned int l1) const {
+                char f0 = flags[l0], f1 = flags[l1];
+                if (f1 & (OutOfBounds | Tree))
+                        return false;
+                else if (f0 & Water)
+                        return f1 & Water;
+                return f1 & (Passable | Swamp);
+        }
+
 	unsigned char *flags;
-	std::string file;
+
+	void readfail(const char*, ...);
+	void load(FILE*);
+	void load_ruml(FILE*);
+	void load_sturtevant(FILE*);
+	void octile(void);
+	void eightway(void);
+	void fourway(void);
 };
 
 #endif	// _GRIDMAP_HPP_

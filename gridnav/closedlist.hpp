@@ -14,7 +14,7 @@ template<class Ops, class Node> struct ClosedList<Ops, Node, GridNav> {
 	~ClosedList(void) { delete[] nodes; }
 
 	void init(GridNav &d) {
-		len = d.width() * d.height();
+		len = d.map->w * d.map->h;
 		if (cap >= len)
 			return;
 
