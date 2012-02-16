@@ -126,8 +126,10 @@ static bool chkbench(const Domain &dom, const Algorithm &alg,
 	Result bench = readresult(f);
 	fclose(f);
 
+	double limhigh = bench.time * 1.05;
+	double limlow = bench.time * 0.95;
+
 	// Must pass 1 of 3 runs within the limit
-	double lim = bench.time + bench.time * 1.01;
 	unsigned int ok = 0;
 	for (unsigned int i = 0; i < 3 && ok < 1; i++) {
 		Result r = run(dom, alg, inst);
@@ -135,10 +137,12 @@ static bool chkbench(const Domain &dom, const Algorithm &alg,
 			printf("	expected %u solution length\n", bench.len);
 			continue;
 		}
-		if (r.time > lim) {
-			printf("	expected ≤ %g seconds (mean: %gs)\n", lim, bench.time);
+		if (r.time > limhigh) {
+			printf("	expected ≤ %g seconds (mean: %gs)\n", limhigh, bench.time);
 			continue;
 		}
+		if (r.time < limlow)
+			printf("	better: %g ≤ %g\n", r.time, limlow);
 		ok++;
 	}
 
