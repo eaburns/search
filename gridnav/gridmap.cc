@@ -204,19 +204,4 @@ void GridMap::fourway(void) {
 	mvs[nmvs++] = Move(*this, 0,1, 0);
 	mvs[nmvs++] = Move(*this, -1,0, 0);
 	mvs[nmvs++] = Move(*this, 0,-1, 0);
-	reverseops();
-}
-
-void GridMap::reverseops(void) {
-	unsigned int nrev = 0;
-	for (unsigned int i = 0; i < nmvs; i++) {
-		for (unsigned int j = 0; j < nmvs; j++) {
-			if (mvs[i].dx != -mvs[j].dx || mvs[i].dy != -mvs[j].dy)
-				continue;
-			rev[i] = j;
-			nrev++;
-			break;
-		} 
-	}
-	assert (nrev == nmvs);
 }

@@ -53,8 +53,6 @@ public:
 
 	unsigned int nmvs;
 	Move mvs[8];
-	// rev[i] holds the index of the reverse of mvs[i]
-	int rev[8];
 
 private:
 
@@ -97,21 +95,17 @@ private:
 	// on each side set to OutOfBounds.
 	void setsize(unsigned int, unsigned int);
 
-	// octile computes octile grid operators and their reverse.
-	// Octile operators disallow diagonal movements unless
-	// the two adjacent cells are also unblocked.
+	// octile computes octile grid operators. Octile operators
+	// disallow diagonal movements unless the two adjacent
+	// cells are also unblocked.
 	void octile(void);
 
-	// eightway computes eight-way grid operators and their reverse.
-	// Eight-way operators allow diagonal even if the adjacent cells
-	// are blocked.
+	// eightway computes eight-way grid operators.  Eight-way
+	// operators allow diagonal even if the adjacent cells are blocked.
 	void eightway(void);
 
-	// fourway computes four-way grid operators and their reverse.
+	// fourway computes four-way grid operators.
 	void fourway(void);
-
-	// reverseops computes the reverse operators
-	void reverseops(void);
 };
 
 #endif	// _GRIDMAP_HPP_

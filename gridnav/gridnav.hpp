@@ -78,7 +78,7 @@ public:
 		State state;
 
 		Transition(GridNav &d, State &s, Oper op) :
-			cost(d.map->mvs[op].cost), revop(d.map->rev[op]),
+			cost(d.map->mvs[op].cost), revop(d.rev[op]),
 			state(s.loc + d.map->mvs[op].delta) { }
 	};
 
@@ -97,6 +97,9 @@ public:
 	int start, finish;
 	GridMap *map;
 
+	// rev holds the index of the reverse of each operator
+	int rev[8];
+
 private:
 
 	float octiledist(int l0, int l1) const {
@@ -114,6 +117,9 @@ private:
 		int dy = abs(c0.second - c1.second);
 		return dx < dy ? dy : dx;
 	}
+
+	// reverseops computes the reverse operators
+	void reverseops(void);
 };
 
 #endif	// _GRIDPATH_HPP_
