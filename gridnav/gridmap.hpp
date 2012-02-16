@@ -12,16 +12,17 @@ class GridMap {
 public:
 	GridMap(std::string &file);
 
-	GridMap(FILE *f) : nmoves(0) { load(f); }
+	GridMap(FILE *f) : nmvs(0) { load(f); }
 
 	~GridMap(void);
 
-	int xcoord(int loc) const { return loc % w; }
+	// coord returns x,y coordinate for the given array index.
+	std::pair<int,int> coord(int loc) const { return std::pair<int,int>(loc%w, loc / w); }
 
-	int ycoord(int loc) const { return loc / w; }
+	// loc returns the array index for the x,y coordinate.
+	int index(int x, int y) const { return y * w + x; }
 
-	int loc(int x, int y) const { return y * w + x; }
-
+	// blkd returns true if the given location is blocked.
 	bool blkd(int l) const { return !(flags[l] & Passable); }
 
 	struct Move {
@@ -35,10 +36,12 @@ public:
 		struct { int dx, dy, delta; } chk[3];
 	};
 
+	// ok returns true if the given move is valid from the
+	// given location.
 	bool ok(int loc, const Move &m) const {
 		for (unsigned int i = 0; i < m.n; i++) {
 			int nxt = loc + m.chk[i].delta;
-			if (nxt < 0 || nxt >= (int) sz || !edeg(loc, nxt))
+			if (nxt < 0 || nxt >= (int) sz || !flagsok(loc, nxt))
 				return false;
 		}
 		return true;
@@ -48,10 +51,13 @@ public:
 	unsigned char *map;
 	std::string file;
 
-	unsigned int nmoves;
-	Move moves[8];
+	unsigned int nmvs;
+	Move mvs[8];
+	// rev[i] holds the index of the reverse of mvs[i]
+	int rev[8];
 
 private:
+
 	enum {
 		Passable = 1 << 0,
 		OutOfBounds = 1 << 1,
@@ -60,8 +66,8 @@ private:
 		Water = 1 << 4,
 	};
 
-	// Tests whether the terrain flags allow this move.
-        bool edeg(int l0, int l1) const {
+	// flagsok returns true if the flags allow a move from l0 to l1.
+        bool flagsok(int l0, int l1) const {
 		char f0 = flags[l0], f1 = flags[l1];
 		if (f1 & (OutOfBounds | Tree))
 			return false;
@@ -72,14 +78,40 @@ private:
 
 	unsigned char *flags;
 
+	// readfail prints a failure message when loading the grid is not
+	// successful.
 	void readfail(const char*, ...);
+
+	// load attempts to figure out if the map is a Ruml or Sturtevant map
+	// and then loads it.
 	void load(FILE*);
+
+	// load_ruml loads one of Wheeler's map
 	void load_ruml(FILE*);
+
+	// load_sturtevant loads one of Nathan's maps from movingai.org
 	void load_sturtevant(FILE*);
+
+	// setsize allocates the map and flags arrays and sets
+	// w, h and sz.  The size of the map is one extra row/col
+	// on each side set to OutOfBounds.
 	void setsize(unsigned int, unsigned int);
+
+	// octile computes octile grid operators and their reverse.
+	// Octile operators disallow diagonal movements unless
+	// the two adjacent cells are also unblocked.
 	void octile(void);
+
+	// eightway computes eight-way grid operators and their reverse.
+	// Eight-way operators allow diagonal even if the adjacent cells
+	// are blocked.
 	void eightway(void);
+
+	// fourway computes four-way grid operators and their reverse.
 	void fourway(void);
+
+	// reverseops computes the reverse operators
+	void reverseops(void);
 };
 
 #endif	// _GRIDMAP_HPP_

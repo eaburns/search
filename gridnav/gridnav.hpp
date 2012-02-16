@@ -63,9 +63,9 @@ public:
 			return s.nops;
 
 		s.nops = 0;
-		for (unsigned int i = 0; i < map->nmoves; i++) {
-			if (map->ok(s.loc, map->moves[i]))
-				s.ops[s.nops++] = s.loc + map->moves[i].delta;
+		for (unsigned int i = 0; i < map->nmvs; i++) {
+			if (map->ok(s.loc, map->mvs[i]))
+				s.ops[s.nops++] = i;
 		}
 		return s.nops;
 	}
@@ -78,13 +78,8 @@ public:
 		State state;
 
 		Transition(GridNav &d, State &s, Oper op) :
-			cost(digaonal(d, s.loc, op) ? sqrtf(2.0) : 1.0),
-			revop(s.loc), state(op) { }
-
-	private:
-		static bool digaonal(const GridNav &d, int l0, int l1) {
-			return d.map->xcoord(l0) != d.map->xcoord(l1) && d.map->ycoord(l0) != d.map->ycoord(l1);
-		}
+			cost(d.map->mvs[op].cost), revop(d.map->rev[op]),
+			state(s.loc + d.map->mvs[op].delta) { }
 	};
 
 	void pack(PackedState &dst, State &src) const { dst.loc = src.loc; }
@@ -95,7 +90,8 @@ public:
 	}
 
 	void dumpstate(FILE *out, State &s) const {
-		fprintf(out, "%u, %u\n", map->xcoord(s.loc), map->ycoord(s.loc));
+		std::pair<int,int> coord = map->coord(s.loc);
+		fprintf(out, "%u, %u\n", coord.first, coord.second);
 	}
 
 	int start, finish;
@@ -104,16 +100,18 @@ public:
 private:
 
 	float octiledist(int l0, int l1) const {
-		int dx = abs(map->xcoord(l0) - map->xcoord(l1));
-		int dy = abs(map->ycoord(l0) - map->ycoord(l1));
+		std::pair<int,int> c0 = map->coord(l0), c1 = map->coord(l1);
+		int dx = abs(c0.first - c1.first);
+		int dy = abs(c0.second - c1.second);
 		int diag = dx < dy ? dx : dy;
 		int straight = dx < dy ? dy : dx;
 		return (straight - diag) + sqrtf(2.0) * diag;
 	}
 
 	unsigned int octilecells(unsigned int l0, unsigned int l1) const {
-		int dx = abs(map->xcoord(l0) - map->xcoord(l1));
-		int dy = abs(map->ycoord(l0) - map->ycoord(l1));
+		std::pair<int,int> c0 = map->coord(l0), c1 = map->coord(l1);
+		int dx = abs(c0.first - c1.first);
+		int dy = abs(c0.second - c1.second);
 		return dx < dy ? dy : dx;
 	}
 };

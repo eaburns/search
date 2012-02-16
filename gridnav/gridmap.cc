@@ -8,7 +8,7 @@
 #include <cmath>
 #include <string>
 
-GridMap::GridMap(std::string &fname) : map(NULL),  file(fname), nmoves(0), flags(NULL) {
+GridMap::GridMap(std::string &fname) : map(NULL),  file(fname), nmvs(0), flags(NULL) {
 	FILE *f = fopen(file.c_str(), "r");
 	if (!f)
 		fatalx(errno, "Unable to open %s for reading\n", file.c_str());
@@ -184,24 +184,39 @@ GridMap::Move::Move(const GridMap &m, int _dx, int _dy, unsigned int _n, ...) :
 }
 
 void GridMap::octile(void) {
-	moves[nmoves++] = Move(*this, 1,1, 2, 1,0, 0,1);
-	moves[nmoves++] = Move(*this, -1,1, 2, -1,0, 0,1);
-	moves[nmoves++] = Move(*this, 1,-1, 2, 0,-1, 1,0);
-	moves[nmoves++] = Move(*this, -1,-1, 2, 0,-1, -1,0);
+	mvs[nmvs++] = Move(*this, 1,1, 2, 1,0, 0,1);
+	mvs[nmvs++] = Move(*this, -1,1, 2, -1,0, 0,1);
+	mvs[nmvs++] = Move(*this, 1,-1, 2, 0,-1, 1,0);
+	mvs[nmvs++] = Move(*this, -1,-1, 2, 0,-1, -1,0);
 	fourway();
 }
 
 void GridMap::eightway(void) {
-	moves[nmoves++] = Move(*this, 1,1, 0);
-	moves[nmoves++] = Move(*this, -1,1, 0);
-	moves[nmoves++] = Move(*this, 1,-1, 0);
-	moves[nmoves++] = Move(*this, -1,-1, 0);
+	mvs[nmvs++] = Move(*this, 1,1, 0);
+	mvs[nmvs++] = Move(*this, -1,1, 0);
+	mvs[nmvs++] = Move(*this, 1,-1, 0);
+	mvs[nmvs++] = Move(*this, -1,-1, 0);
 	fourway();
 }
 
 void GridMap::fourway(void) {
-	moves[nmoves++] = Move(*this, 1,0, 0);
-	moves[nmoves++] = Move(*this, 0,1, 0);
-	moves[nmoves++] = Move(*this, -1,0, 0);
-	moves[nmoves++] = Move(*this, 0,-1, 0);
+	mvs[nmvs++] = Move(*this, 1,0, 0);
+	mvs[nmvs++] = Move(*this, 0,1, 0);
+	mvs[nmvs++] = Move(*this, -1,0, 0);
+	mvs[nmvs++] = Move(*this, 0,-1, 0);
+	reverseops();
+}
+
+void GridMap::reverseops(void) {
+	unsigned int nrev = 0;
+	for (unsigned int i = 0; i < nmvs; i++) {
+		for (unsigned int j = 0; j < nmvs; j++) {
+			if (mvs[i].dx != -mvs[j].dx || mvs[i].dy != -mvs[j].dy)
+				continue;
+			rev[i] = j;
+			nrev++;
+			break;
+		} 
+	}
+	assert (nrev == nmvs);
 }

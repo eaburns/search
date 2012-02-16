@@ -11,7 +11,7 @@ int main(int argc, char *argv[]) {
 		unsigned int base = i * map.w;
 
 		for (unsigned int j = 0; j < map.h; j++)
-			blkd[base + j] = map.blkd(map.loc(i, j));
+			blkd[base + j] = map.blkd(map.index(i, j));
 	}
 
 	PolyMap polys(blkd, map.w, map.h);
