@@ -16,13 +16,13 @@ public:
 
 	~GridMap(void);
 
-	unsigned int xcoord(unsigned int loc) const { return loc % w; }
+	int xcoord(int loc) const { return loc % w; }
 
-	unsigned int ycoord(unsigned int loc) const { return loc / w; }
+	int ycoord(int loc) const { return loc / w; }
 
-	unsigned int loc(unsigned int x, unsigned int y) const { return y * w + x; }
+	int loc(int x, int y) const { return y * w + x; }
 
-	bool blkd(unsigned int l) const { return !(flags[l] & Passable); }
+	bool blkd(int l) const { return !(flags[l] & Passable); }
 
 	struct Move {
 		Move(void) : n(0) { }
@@ -35,7 +35,7 @@ public:
 		struct { int dx, dy, delta; } chk[3];
 	};
 
-	bool ok(unsigned int loc, const Move &m) const {
+	bool ok(int loc, const Move &m) const {
 		for (unsigned int i = 0; i < m.n; i++) {
 			int nxt = loc + m.chk[i].delta;
 			if (nxt < 0 || nxt >= (int) sz || !edeg(loc, nxt))
@@ -61,13 +61,13 @@ private:
 	};
 
 	// Tests whether the terrain flags allow this move.
-        bool edeg(unsigned int l0, unsigned int l1) const {
-                char f0 = flags[l0], f1 = flags[l1];
-                if (f1 & (OutOfBounds | Tree))
-                        return false;
-                else if (f0 & Water)
-                        return f1 & Water;
-                return f1 & (Passable | Swamp);
+        bool edeg(int l0, int l1) const {
+		char f0 = flags[l0], f1 = flags[l1];
+		if (f1 & (OutOfBounds | Tree))
+			return false;
+		else if (f0 & Water)
+			return f1 & Water;
+		return f1 & (Passable | Swamp);
         }
 
 	unsigned char *flags;

@@ -36,13 +36,13 @@ public:
 
 	private:
 		friend class GridNav;
-		unsigned int loc;
+		int loc;
 		int nops;
 		Oper ops[8];
 	};
 
 	struct PackedState {
-		unsigned int loc;
+		int loc;
 		unsigned long hash(void) { return loc; }
 
 		bool eq(const PackedState &other) const {
@@ -82,7 +82,7 @@ public:
 			revop(s.loc), state(op) { }
 
 	private:
-		static bool digaonal(const GridNav &d, unsigned int l0, unsigned int l1) {
+		static bool digaonal(const GridNav &d, int l0, int l1) {
 			return d.map->xcoord(l0) != d.map->xcoord(l1) && d.map->ycoord(l0) != d.map->ycoord(l1);
 		}
 	};
@@ -98,22 +98,22 @@ public:
 		fprintf(out, "%u, %u\n", map->xcoord(s.loc), map->ycoord(s.loc));
 	}
 
-	unsigned int start, finish;
+	int start, finish;
 	GridMap *map;
 
 private:
 
-	float octiledist(unsigned int l0, unsigned int l1) const {
-		unsigned int dx = abs(map->xcoord(l0) - map->xcoord(l1));
-		unsigned int dy = abs(map->ycoord(l0) - map->ycoord(l1));
-		unsigned int diag = dx < dy ? dx : dy;
-		unsigned int straight = dx < dy ? dy : dx;
+	float octiledist(int l0, int l1) const {
+		int dx = abs(map->xcoord(l0) - map->xcoord(l1));
+		int dy = abs(map->ycoord(l0) - map->ycoord(l1));
+		int diag = dx < dy ? dx : dy;
+		int straight = dx < dy ? dy : dx;
 		return (straight - diag) + sqrtf(2.0) * diag;
 	}
 
 	unsigned int octilecells(unsigned int l0, unsigned int l1) const {
-		unsigned int dx = abs(map->xcoord(l0) - map->xcoord(l1));
-		unsigned int dy = abs(map->ycoord(l0) - map->ycoord(l1));
+		int dx = abs(map->xcoord(l0) - map->xcoord(l1));
+		int dy = abs(map->ycoord(l0) - map->ycoord(l1));
 		return dx < dy ? dy : dx;
 	}
 };
