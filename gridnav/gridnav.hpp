@@ -43,6 +43,7 @@ public:
 
 	struct PackedState {
 		int loc;
+
 		unsigned long hash(void) { return loc; }
 
 		bool eq(const PackedState &other) const {
@@ -58,9 +59,15 @@ public:
 		return manhattan(s.loc, finish);
 	}
 
-	Cost d(State &s) const { return octilecells(s.loc, finish); }
+	Cost d(State &s) const {
+		if (map->nmvs > 4)
+			return octilecells(s.loc, finish);
+		return manhattan(s.loc, finish);
+	}
 
-	bool isgoal(State &s) const { return s.loc == finish; }
+	bool isgoal(State &s) const {
+		return s.loc == finish;
+	}
 
 	unsigned int nops(State &s) const {
 		if (s.nops > 0)
@@ -74,7 +81,9 @@ public:
 		return s.nops;
 	}
 
-	Oper nthop(State &s, unsigned int n) const { return s.ops[n]; }
+	Oper nthop(State &s, unsigned int n) const {
+		return s.ops[n];
+	}
 
 	struct Transition {
 		Cost cost;
@@ -86,7 +95,9 @@ public:
 			state(s.loc + d.map->mvs[op].delta) { }
 	};
 
-	void pack(PackedState &dst, State &src) const { dst.loc = src.loc; }
+	void pack(PackedState &dst, State &src) const {
+		dst.loc = src.loc;
+	}
 
 	State &unpack(State &buf, PackedState &pkd) const {
 		buf.loc = pkd.loc;
@@ -106,11 +117,13 @@ public:
 
 private:
 
+	// manhattan returns the Manhattan distance.
 	float manhattan(int l0, int l1) const {
 		std::pair<int,int> c0 = map->coord(l0), c1 = map->coord(l1);
 		return abs(c0.first - c1.first) + abs(c0.second - c1.second);
 	}
 
+	// octiledist returns an admissible heuristic estimate for eight-way grids.
 	float octiledist(int l0, int l1) const {
 		std::pair<int,int> c0 = map->coord(l0), c1 = map->coord(l1);
 		int dx = abs(c0.first - c1.first);
@@ -120,6 +133,7 @@ private:
 		return (straight - diag) + sqrtf(2.0) * diag;
 	}
 
+	// octilecells returns an admissible distance estimate for eight-way grids.
 	unsigned int octilecells(unsigned int l0, unsigned int l1) const {
 		std::pair<int,int> c0 = map->coord(l0), c1 = map->coord(l1);
 		int dx = abs(c0.first - c1.first);
