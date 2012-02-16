@@ -57,15 +57,13 @@ void GridMap::load_ruml(FILE *in) {
 	if (fscanf(in, " %u %u\nBoard:", &h, &w) != 2)
 		fatal("%s: Failed to read map size", file.c_str());
 
-	sz = w * h;
-	map = new unsigned char[sz];
-	flags = new unsigned char[sz];
+	size(w, h);
 
 	if (fgetc(in) != '\n')
 		fatal("Expected a new line after 'Board'");
 
-	for (unsigned int y = 0; y < h; y++) {
-		for (unsigned int x = 0; x < w; x++) {
+	for (unsigned int y = 1; y < h-1; y++) {
+		for (unsigned int x = 1; x < w-1; x++) {
 	 		unsigned int i = (h - y - 1) * w + x;
 			int c = fgetc(in);
 			if (c == EOF && ferror(in))
@@ -127,27 +125,48 @@ void GridMap::load_sturtevant(FILE *in) {
 	if (fscanf(in, "height %u\nwidth %u\nmap\n", &h, &w) != 2)
 		readfail("Failed to read the map header");
 
-	sz = w * h;
+	size(w, h);
 
-	map = new unsigned char[sz];
-	for (unsigned int y = 0; y < h; y++) {
-		if (fread((void*) (map + y * w), sizeof(*map), w, in) != w)
+	for (unsigned int y = 1; y < h-1; y++) {
+		if (fread((void*) (map + y * w + 1), sizeof(*map), w-2, in) != w-2)
 			readfail("Failed to read map line %u", y);
 		int c = fgetc(in);
 		if (c != '\n' && y < h - 1)
 			readfail("Expected newline, got [%c]",c);
 	}
 
-	flags = new unsigned char[sz];
-	for (unsigned int i = 0; i < w * h; i++)
-		flags[i] = terrain.flags[(int) map[i]];
+	for (unsigned int y = 1; y < h-1; y++) {
+		for (unsigned int x = 1; x < w-1; x++)
+			flags[y*w + x] = terrain.flags[(int) map[y*w + x]];
+	}
 
 	octile();
 }
 
+void GridMap::size(unsigned int width, unsigned int height) {
+	w = width + 2;
+	h = height + 2;
+	sz = w * h;
+	map = new unsigned char[sz];
+	flags = new unsigned char[sz];
+
+	for (unsigned int i = 0; i < w; i++) {
+		map[i] = '\0';
+		map[(h-1)*w + i] = '\0';
+		flags[i] = OutOfBounds;
+		flags[(h-1)*w + i] = OutOfBounds;
+	}
+	for (unsigned int i = 0; i < h; i++) {
+		map[i*w] = '\0';
+		map[i*w + w - 1] = '\0';
+		flags[i*w] = OutOfBounds;
+		flags[i*w + w - 1] = OutOfBounds;
+	}
+}
+
 GridMap::Move::Move(const GridMap &m, int _dx, int _dy, unsigned int _n, ...) :
 			dx(_dx), dy(_dy), delta(dx + m.w * dy), cost(1.0), n(_n + 1) {
-	if (n >= sizeof(chk) / sizeof(chk[0]))
+	if (n > sizeof(chk) / sizeof(chk[0]))
 		fatal("Cannot create a move with %d checks\n", n);
 
 	if (dx != 0 && dy != 0)

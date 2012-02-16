@@ -22,7 +22,7 @@ public:
 
 	unsigned int loc(unsigned int x, unsigned int y) const { return y * w + x; }
 
-	bool passable(unsigned int loc) const { return flags[loc] & Passable; }
+	bool blkd(unsigned int l) const { return !(flags[l] & Passable); }
 
 	struct Move {
 		Move(void) : n(0) { }
@@ -36,11 +36,9 @@ public:
 	};
 
 	bool ok(unsigned int loc, const Move &m) const {
-		int x = xcoord(loc), y = ycoord(loc);
 		for (unsigned int i = 0; i < m.n; i++) {
-			int dx = m.chk[i].dx, dy = m.chk[i].dy;
-			if (x + dx < 0 || x + dx >= (int) w || y + dy < 0 || y + dy >= (int) h ||
-					!terrainok(loc, loc + m.chk[i].delta))
+			int nxt = loc + m.chk[i].delta;
+			if (nxt < 0 || nxt >= (int) sz || !edeg(loc, nxt))
 				return false;
 		}
 		return true;
@@ -63,7 +61,7 @@ private:
 	};
 
 	// Tests whether the terrain flags allow this move.
-        bool terrainok(unsigned int l0, unsigned int l1) const {
+        bool edeg(unsigned int l0, unsigned int l1) const {
                 char f0 = flags[l0], f1 = flags[l1];
                 if (f1 & (OutOfBounds | Tree))
                         return false;
@@ -78,6 +76,7 @@ private:
 	void load(FILE*);
 	void load_ruml(FILE*);
 	void load_sturtevant(FILE*);
+	void size(unsigned int, unsigned int);
 	void octile(void);
 	void eightway(void);
 	void fourway(void);
