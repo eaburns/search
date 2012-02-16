@@ -57,7 +57,7 @@ void GridMap::load_ruml(FILE *in) {
 	if (fscanf(in, " %u %u\nBoard:", &h, &w) != 2)
 		fatal("%s: Failed to read map size", file.c_str());
 
-	size(w, h);
+	setsize(w, h);
 
 	if (fgetc(in) != '\n')
 		fatal("Expected a new line after 'Board'");
@@ -95,9 +95,31 @@ void GridMap::load_ruml(FILE *in) {
 		readfail("Invalid movement type");
 }
 
-enum { Bufsz = 128 };
-
 void GridMap::load_sturtevant(FILE *in) {
+	if (fscanf(in, "type ") != 0)
+		readfail("Failed to read the map type");
+
+	char typ[128];
+	if (!fgets(typ, sizeof(typ), in))
+		readfail("Failed to read the map type");
+	if (typ[strlen(typ)-1] == '\n')
+		typ[strlen(typ)-1] = '\0';
+	if (strcmp(typ, "octile") != 0)
+		readfail("Unsupported map type [%s]", typ);
+
+	if (fscanf(in, "height %u\nwidth %u\nmap\n", &h, &w) != 2)
+		readfail("Failed to read the map header");
+
+	setsize(w, h);
+
+	for (unsigned int y = 1; y < h-1; y++) {
+		if (fread((void*) (map + y * w + 1), sizeof(*map), w-2, in) != w-2)
+			readfail("Failed to read map line %u", y);
+		int c = fgetc(in);
+		if (c != '\n' && y < h - 1)
+			readfail("Expected newline, got [%c]",c);
+	}
+
 	const struct Terrain{
 		char flags[CHAR_MAX];
 		Terrain() {
@@ -111,30 +133,6 @@ void GridMap::load_sturtevant(FILE *in) {
 		}
 	} terrain;
 
-	if (fscanf(in, "type ") != 0)
-		readfail("Failed to read the map type");
-
-	char typ[Bufsz];
-	if (!fgets(typ, Bufsz, in))
-		readfail("Failed to read the map type");
-	if (typ[strlen(typ)-1] == '\n')
-		typ[strlen(typ)-1] = '\0';
-	if (strcmp(typ, "octile") != 0)
-		readfail("Unsupported map type [%s]", typ);
-
-	if (fscanf(in, "height %u\nwidth %u\nmap\n", &h, &w) != 2)
-		readfail("Failed to read the map header");
-
-	size(w, h);
-
-	for (unsigned int y = 1; y < h-1; y++) {
-		if (fread((void*) (map + y * w + 1), sizeof(*map), w-2, in) != w-2)
-			readfail("Failed to read map line %u", y);
-		int c = fgetc(in);
-		if (c != '\n' && y < h - 1)
-			readfail("Expected newline, got [%c]",c);
-	}
-
 	for (unsigned int y = 1; y < h-1; y++) {
 		for (unsigned int x = 1; x < w-1; x++)
 			flags[y*w + x] = terrain.flags[(int) map[y*w + x]];
@@ -143,7 +141,7 @@ void GridMap::load_sturtevant(FILE *in) {
 	octile();
 }
 
-void GridMap::size(unsigned int width, unsigned int height) {
+void GridMap::setsize(unsigned int width, unsigned int height) {
 	w = width + 2;
 	h = height + 2;
 	sz = w * h;

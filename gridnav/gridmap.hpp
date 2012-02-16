@@ -30,7 +30,7 @@ public:
 		Move(const GridMap&, int, int, unsigned int, ...);
 
 		int dx, dy, delta;
-		float cost;
+		double cost;
 		unsigned int n;
 		struct { int dx, dy, delta; } chk[3];
 	};
@@ -76,7 +76,7 @@ private:
 	void load(FILE*);
 	void load_ruml(FILE*);
 	void load_sturtevant(FILE*);
-	void size(unsigned int, unsigned int);
+	void setsize(unsigned int, unsigned int);
 	void octile(void);
 	void eightway(void);
 	void fourway(void);
