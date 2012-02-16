@@ -184,24 +184,29 @@ GridMap::Move::Move(const GridMap &m, int _dx, int _dy, unsigned int _n, ...) :
 }
 
 void GridMap::octile(void) {
-	mvs[nmvs++] = Move(*this, 1,1, 2, 1,0, 0,1);
-	mvs[nmvs++] = Move(*this, -1,1, 2, -1,0, 0,1);
-	mvs[nmvs++] = Move(*this, 1,-1, 2, 0,-1, 1,0);
+	// This operator ordering matches Nathan's scenario costs
+	// better than other orderings.  I blame floating point rounding.
+	mvs[nmvs++] = Move(*this, -1,0, 0);
+	mvs[nmvs++] = Move(*this, 1,0, 0);
+	mvs[nmvs++] = Move(*this, 0,-1, 0);
 	mvs[nmvs++] = Move(*this, -1,-1, 2, 0,-1, -1,0);
-	fourway();
+	mvs[nmvs++] = Move(*this, 1,-1, 2, 0,-1, 1,0);
+	mvs[nmvs++] = Move(*this, 0,1, 0);
+	mvs[nmvs++] = Move(*this, -1,1, 2, -1,0, 0,1);
+	mvs[nmvs++] = Move(*this, 1,1, 2, 1,0, 0,1);
 }
 
 void GridMap::eightway(void) {
 	mvs[nmvs++] = Move(*this, 1,1, 0);
-	mvs[nmvs++] = Move(*this, -1,1, 0);
 	mvs[nmvs++] = Move(*this, 1,-1, 0);
+	mvs[nmvs++] = Move(*this, -1,1, 0);
 	mvs[nmvs++] = Move(*this, -1,-1, 0);
 	fourway();
 }
 
 void GridMap::fourway(void) {
-	mvs[nmvs++] = Move(*this, 1,0, 0);
 	mvs[nmvs++] = Move(*this, 0,1, 0);
-	mvs[nmvs++] = Move(*this, -1,0, 0);
 	mvs[nmvs++] = Move(*this, 0,-1, 0);
+	mvs[nmvs++] = Move(*this, -1,0, 0);
+	mvs[nmvs++] = Move(*this, 1,0, 0);
 }

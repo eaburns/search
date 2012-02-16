@@ -52,7 +52,11 @@ public:
 
 	State initialstate(void);
 
-	Cost h(State &s) const { return octiledist(s.loc, finish); }
+	Cost h(State &s) const {
+		if (map->nmvs > 4)
+			return octiledist(s.loc, finish);
+		return manhattan(s.loc, finish);
+	}
 
 	Cost d(State &s) const { return octilecells(s.loc, finish); }
 
@@ -101,6 +105,11 @@ public:
 	int rev[8];
 
 private:
+
+	float manhattan(int l0, int l1) const {
+		std::pair<int,int> c0 = map->coord(l0), c1 = map->coord(l1);
+		return abs(c0.first - c1.first) + abs(c0.second - c1.second);
+	}
 
 	float octiledist(int l0, int l1) const {
 		std::pair<int,int> c0 = map->coord(l0), c1 = map->coord(l1);
