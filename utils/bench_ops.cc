@@ -7,6 +7,8 @@
 
 #include "utils.hpp"
 #include <cmath>
+#include <ctime>
+#include <cstdlib>
 
 volatile unsigned int ivol;
 volatile double dvol;
@@ -41,6 +43,13 @@ void rand_real_bench(unsigned long n, double *strt, double *end) {
 
 	for (unsigned long i = 0; i < n; i++)
 		dvol = randgen.real();
+}
+
+void rand_bench(unsigned long n, double *strt, double *end) {
+	*strt = walltime();
+
+	for (unsigned long i = 0; i < n; i++)
+		ivol = rand();
 }
 
 void ilog2_bench(unsigned long n, double *strt, double *end) {

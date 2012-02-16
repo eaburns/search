@@ -57,6 +57,7 @@ void malloc_32_free_bench(unsigned long, double*, double*);
 void malloc_128_free_bench(unsigned long, double*, double*);
 void rand_bits_bench(unsigned long, double*, double*);
 void rand_real_bench(unsigned long, double*, double*);
+void rand_bench(unsigned long, double*, double*);
 void ilog2_bench(unsigned long, double*, double*);
 void log2_int_bench(unsigned long, double*, double*);
 void log2_double_bench(unsigned long, double*, double*);
@@ -76,6 +77,7 @@ static const Benchmark benches[] = {
 	Benchmark("malloc(128)/free() benchmark", malloc_128_free_bench),
 	Benchmark("randgen.bits benchmark", rand_bits_bench),
 	Benchmark("randgen.real benchmark", rand_real_bench),
+	Benchmark("rand() benchmark", rand_bench),
 	Benchmark("ilog2 benchmark", ilog2_bench),
 	Benchmark("log2 with ints benchmark", log2_int_bench),
 	Benchmark("log2 with doubles benchmark", log2_double_bench),
