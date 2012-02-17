@@ -184,25 +184,17 @@ GridMap::Move::Move(const GridMap &m, int _dx, int _dy, unsigned int _n, ...) :
 }
 
 void GridMap::octile(void) {
-	mvs[nmvs++] = Move(*this, -1,-1, 2, 0,-1, -1,0);
-	mvs[nmvs++] = Move(*this, 1,-1, 2, 0,-1, 1,0);
-	mvs[nmvs++] = Move(*this, -1,1, 2, -1,0, 0,1);
-	mvs[nmvs++] = Move(*this, 1,1, 2, 1,0, 0,1);
+	// This operator ordering seems to give more accurate
+	// path-costs (compared to Nathan's scenario costs)
+	// when simply using doubles as the cost type.
 	mvs[nmvs++] = Move(*this, -1,0, 0);
 	mvs[nmvs++] = Move(*this, 1,0, 0);
 	mvs[nmvs++] = Move(*this, 0,-1, 0);
+	mvs[nmvs++] = Move(*this, -1,-1, 2, 0,-1, -1,0);
+	mvs[nmvs++] = Move(*this, 1,-1, 2, 0,-1, 1,0);
 	mvs[nmvs++] = Move(*this, 0,1, 0);
-
-//	// This operator ordering matches Nathan's scenario costs
-//	// better than other orderings.  I blame floating point rounding.
-//	mvs[nmvs++] = Move(*this, -1,0, 0);
-//	mvs[nmvs++] = Move(*this, 1,0, 0);
-//	mvs[nmvs++] = Move(*this, 0,-1, 0);
-//	mvs[nmvs++] = Move(*this, -1,-1, 2, 0,-1, -1,0);
-//	mvs[nmvs++] = Move(*this, 1,-1, 2, 0,-1, 1,0);
-//	mvs[nmvs++] = Move(*this, 0,1, 0);
-//	mvs[nmvs++] = Move(*this, -1,1, 2, -1,0, 0,1);
-//	mvs[nmvs++] = Move(*this, 1,1, 2, 1,0, 0,1);
+	mvs[nmvs++] = Move(*this, -1,1, 2, -1,0, 0,1);
+	mvs[nmvs++] = Move(*this, 1,1, 2, 1,0, 0,1);
 }
 
 void GridMap::eightway(void) {
