@@ -16,8 +16,6 @@ public:
 	typedef unsigned int Pos;
 
 	typedef int Cost;
-	enum { InfCost = -1 };
-
 	typedef int Oper;
 	enum { Nop = -1 };
 

@@ -10,14 +10,12 @@ extern "C" unsigned long hashbytes(unsigned char[], unsigned int);
 
 class Pancake {
 public:
-	enum { UnitCost = true };
 	enum { Ncakes = NCAKES };
 
 	typedef int Cake;
 	typedef int Oper;
 	enum { Nop = -1 };
 	typedef int Cost;
-	enum { InfCost = -1 };
 
 	class State {
 	public:

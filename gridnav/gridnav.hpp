@@ -9,8 +9,6 @@
 
 struct GridNav {
 
-	enum { UnitCost = false };
-
 	struct Cost {
 		Cost(void) { }
 
@@ -80,8 +78,6 @@ struct GridNav {
 		int units, sqrts;
 		double val;
 	};
-
-	static const Cost InfCost;
 
 	typedef int Oper;	// Index into the ops arrays.
 	enum { Nop = -1 };

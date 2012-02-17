@@ -29,11 +29,7 @@ struct Plat2d {
 	static const unsigned int Ops[];
 	static const unsigned int Nops;
 
-	enum { UnitCost = true };
-
 	typedef int Cost;
-	enum { InfCost = -1 };
-
 	typedef int Oper;
 	enum { Nop = -1 };
 

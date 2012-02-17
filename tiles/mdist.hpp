@@ -4,7 +4,6 @@
 
 class TilesMdist : public Tiles {
 public:
-	enum { UnitCost = true };
 
 	typedef PackedTiles<Ntiles> PackedState;
 

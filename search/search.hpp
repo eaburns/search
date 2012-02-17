@@ -301,7 +301,7 @@ template <class D> struct Result : public SearchStats {
 	std::vector<typename D::State> path;
 	std::vector<typename D::Oper> ops;
 
-	Result(void) : cost(D::InfCost) { }
+	Result(void) : cost(-1) { }
 
 	// Sets the cost and solution path of the result to that of
 	// the given goal node.

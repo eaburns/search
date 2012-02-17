@@ -7,14 +7,14 @@
 
 struct <DOMAIN> {
 
-	// Is this a unit cost domain?
-	enum { UnitCost = <UNITCOST?> };
-
-	// Probably float or int.  Some searches will
-	// use a special (faster) closed list if the
-	// costs are ints.
+	// Probably double, float, or int.  Must be convertable
+	// to a double, must be constructable from an int.
+	// Cost(-1) is reserved for infinite cost.  See gridnav
+	// for an example of a kind of sophistocated cost type.
+	// 
+	// Some searches will use a special (faster)
+	// closed list if the costs are ints.
 	typedef <COST> Cost;
-	static const <COST> InfCost = …;
 
 	// The type of an operator which can be
 	// applied to a state.  This is usually just an

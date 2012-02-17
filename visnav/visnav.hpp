@@ -3,10 +3,7 @@
 #include <cstdio>
 
 struct VisNav {
-	enum { UnitCost = false };
-
 	typedef double Cost;
-	enum { InfCost = -1 };
 
 	struct Oper {
 		Oper(void) : edge(NULL) { }

@@ -100,7 +100,7 @@ private:
 	// bestkids returns a vector of all of the successors that have the
 	// best f value.
 	std::vector<Current> bestkids(D &d, Current &cur, Cost &sndf) {
-		sndf = D::InfCost;
+		sndf = Cost(-1);
 		std::vector<Current> bests;
 
 		SearchAlgorithm<D>::res.expd++;
@@ -112,7 +112,7 @@ private:
 			SearchAlgorithm<D>::res.gend++;
 			typename D::Transition tr(d, cur.state, op);
 			Cost h = heuristic(d, tr.state, tr.revop);
-			Cost f = h == D::InfCost ? h : h + tr.cost;
+			Cost f = h == Cost(-1) ? h : h + tr.cost;
 
 			if (bests.empty() || better(f, bests[0].f)) {
 				if (!bests.empty())
@@ -143,7 +143,7 @@ private:
 			nodes->destroy(n);
 			return dup->h;
 		}
-		Cost alpha = D::InfCost;
+		Cost alpha = Cost(-1);
 		n->h = look(d, cur, alpha, pop, Cost(0), nlook);
 		seen.add(n, hash);
 		return n->h;
@@ -160,7 +160,7 @@ private:
 		}
 
 		SearchAlgorithm<D>::res.expd++;
-		Cost bestf = D::InfCost;
+		Cost bestf = Cost(-1);
 		for (unsigned int n = 0; n < d.nops(state); n++) {
 			Oper op = d.nthop(state, n);
 			if (op == pop)
@@ -199,7 +199,7 @@ private:
 
 	// better returns true if a is better than b.
 	static bool better(Cost a, Cost b) {
-		return b == D::InfCost || (a != D::InfCost && a < b);
+		return b == Cost(-1) || (a != Cost(-1) && a < b);
 	}
 
 	int nlook;

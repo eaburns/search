@@ -158,13 +158,13 @@ private:
 
 	bool goodnodes() {
 		return !open.empty() &&
-			(SearchAlgorithm<D>::res.cost == D::InfCost ||
+			(SearchAlgorithm<D>::res.cost == Cost(-1) ||
 			(double) SearchAlgorithm<D>::res.cost > (*open.front())->fprime);
 	}
 
 	// Find the tightest bound for the current incumbent.
 	double findbound(void) {
-		assert (SearchAlgorithm<D>::res.cost != D::InfCost);
+		assert (SearchAlgorithm<D>::res.cost != Cost(-1));
 		double cost = SearchAlgorithm<D>::res.cost;
 		double min = std::numeric_limits<double>::infinity();
 

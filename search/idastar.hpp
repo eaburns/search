@@ -22,7 +22,7 @@ public:
 			"iter expd", "iter gend");
 
 		for (int i = 0; !SearchAlgorithm<D>::limit(); i++) {
-			minoob = D::InfCost;
+			minoob = Cost(-1);
 
 			if (dfs(d, s0, D::Nop, Cost(0)))
 				break;
@@ -41,14 +41,14 @@ private:
 	bool dfs(D &d, State &s, Oper pop, Cost g) {
 		Cost f = g + d.h(s);
 
-		if ((D::UnitCost || f <= bound) && d.isgoal(s)) {
+		if (f <= bound && d.isgoal(s)) {
 			SearchAlgorithm<D>::res.cost = g;
 			SearchAlgorithm<D>::res.path.push_back(s);
 			return true;
 		}
 
 		if (f > bound) {
-			if (minoob == D::InfCost || f < minoob)
+			if (minoob == Cost(-1) || f < minoob)
 				minoob = f;
 			return false;
 		}
