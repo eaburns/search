@@ -159,7 +159,7 @@ private:
 	bool goodnodes() {
 		return !open.empty() &&
 			(SearchAlgorithm<D>::res.cost == D::InfCost ||
-			SearchAlgorithm<D>::res.cost > (*open.front())->fprime);
+			(double) SearchAlgorithm<D>::res.cost > (*open.front())->fprime);
 	}
 
 	// Find the tightest bound for the current incumbent.
@@ -204,11 +204,11 @@ private:
 		std::vector<Node*> &nodes = incons.nodes();
 		for (unsigned long i = 0; i < nodes.size(); i++) {
 			Node *n = nodes[i];
-			n->fprime = n->g + wt * n->h;
+			n->fprime = (double) n->g + wt * n->h;
 		}
 		for (long i = 0; i < open.size(); i++) {
 			Node *n = open.at(i);
-			n->fprime = n->g + wt * n->h;
+			n->fprime = (double) n->g + wt * n->h;
 		}
 		open.append(incons.nodes());	// reinits heap property
 		incons.clear();
@@ -250,7 +250,7 @@ private:
 			nodes->destroy(kid);
 		} else {
 			kid->h = d.h(tr.state);
-			kid->fprime = kid->g + wt * kid->h;
+			kid->fprime = (double) kid->g + wt * kid->h;
 			kid->update(kid->g, parent, op, tr.revop);
 			closed.add(kid, hash);
 			open.push(kid);
@@ -260,7 +260,7 @@ private:
 	Node *init(D &d, State &s0) {
 		Node *n0 = nodes->construct();
 		d.pack(n0->packed, s0);
-		n0->g = 0;
+		n0->g = Cost(0);
 		n0->h = d.h(s0);
 		n0->fprime = wt * n0->h;
 		n0->op = n0->pop = D::Nop;

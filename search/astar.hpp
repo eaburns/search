@@ -114,7 +114,7 @@ private:
 	Node *init(D &d, State &s0) {
 		Node *n0 = nodes->construct();
 		d.pack(n0->packed, s0);
-		n0->g = 0;
+		n0->g = Cost(0);
 		n0->f = d.h(s0);
 		n0->pop = n0->op = D::Nop;
 		n0->parent = NULL;

@@ -24,7 +24,7 @@ private:
 	unsigned int w, h;
 	unsigned int x0, y0;
 	unsigned int x1, y1;
-	float opt;
+	double opt;
 };
 
 struct Scenario {

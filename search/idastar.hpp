@@ -24,7 +24,7 @@ public:
 		for (int i = 0; !SearchAlgorithm<D>::limit(); i++) {
 			minoob = D::InfCost;
 
-			if (dfs(d, s0, D::Nop, 0))
+			if (dfs(d, s0, D::Nop, Cost(0)))
 				break;
 
 			dfrow(stdout, "iter", "dguu", (long) i, (double) bound,

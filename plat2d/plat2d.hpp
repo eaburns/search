@@ -32,10 +32,10 @@ struct Plat2d {
 	enum { UnitCost = true };
 
 	typedef int Cost;
-	static const int InfCost = -1;
+	enum { InfCost = -1 };
 
 	typedef int Oper;
-	static const int Nop = -1;
+	enum { Nop = -1 };
 
 	Plat2d(FILE*);
 
@@ -116,7 +116,7 @@ struct Plat2d {
 
 		Transition(Plat2d &d, State &s, Oper op) : revop(Nop), state(s) {
 			state.player.act(d.lvl, (unsigned int) op);
-			cost = 1;// + Threshold * Pt::distance(s.player.body.bbox.min, state.player.body.bbox.min);
+			cost = 1; // Geom2d::Pt::distance(s.player.body.bbox.min, state.player.body.bbox.min));
 			if (s.player.body.bbox.min.y == state.player.body.bbox.min.y) {
 				if (op == Player::Left)
 					revop = Player::Right;
@@ -171,7 +171,7 @@ private:
 	Cost hvis(const State &s) const {
 		const Lvl::Blkinfo &bi = lvl.majorblk(s.player.body.bbox);
 		if (bi.x == gx && bi.y == gy)
-			return 0;
+			return 0;;
 
 		Geom2d::Pt loc(s.player.body.bbox.center());
 		loc.x /= Maxx;

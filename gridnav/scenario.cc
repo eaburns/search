@@ -84,8 +84,8 @@ Result<GridNav> ScenarioEntry::run(SearchAlgorithm<GridNav> *srch) {
 
 	Result<GridNav> &r = srch->search(d, s0);
 	// Scenario file has 0-cost for no-path.  We use -1.
-	if (fabsf(r.cost - opt) > Eps && !(opt == 0 && r.cost == -1))
-		fatal("Expected optimal cost of %g, got %g\n", opt, r.cost);
+	if (fabsf((double) r.cost - (double) opt) > Eps && !(opt == 0 && r.cost == GridNav::InfCost))
+		fatal("Expected optimal cost of %g, got %g\n", opt, (int) r.cost);
 
 	return r;
 }
@@ -95,7 +95,7 @@ void ScenarioEntry::outputrow(FILE *out, unsigned int n, Result<GridNav> &r) {
 		(unsigned long) n, (unsigned long) bucket, (unsigned long) w,
 		(unsigned long) h, (unsigned long) x0, (unsigned long) y0,
 		(unsigned long)  x1, (unsigned long) y1, opt, r.expd, r.gend,
-		r.cost, (unsigned long) r.path.size(), r.wallend - r.wallstrt,
+		(double) r.cost, (unsigned long) r.path.size(), r.wallend - r.wallstrt,
 		r.cpuend - r.cpustrt);
 } 
 

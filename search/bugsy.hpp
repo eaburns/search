@@ -150,7 +150,7 @@ private:
 	Node *init(D &d, State &s0) {
 		Node *n0 = nodes->construct();
 		d.pack(n0->packed, s0);
-		n0->g = 0;
+		n0->g = Cost(0);
 		n0->h = n0->f = d.h(s0);
 		n0->d = d.d(s0);
 		computeutil(n0);

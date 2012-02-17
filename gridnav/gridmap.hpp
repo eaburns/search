@@ -41,7 +41,7 @@ public:
 	bool ok(int loc, const Move &m) const {
 		for (unsigned int i = 0; i < m.n; i++) {
 			int nxt = loc + m.chk[i].delta;
-			if (nxt < 0 || nxt >= (int) sz || !flagsok(loc, nxt))
+			if (!flagsok(loc, nxt))
 				return false;
 		}
 		return true;

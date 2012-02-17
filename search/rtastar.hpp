@@ -49,9 +49,9 @@ template <class D> struct Rtastar : public SearchAlgorithm<D> {
 	Result<D> &search(D &d, typename D::State &s0) {
 		SearchAlgorithm<D>::res.start();
 		seen.init(d);
-		Current cur(s0, D::Nop, D::Nop, 0, d.h(s0));
+		Current cur(s0, D::Nop, D::Nop, typename D::Cost(0), d.h(s0));
 		Cost *curh = storenode(d, cur.state, cur.f);
-		SearchAlgorithm<D>::res.cost = 0;
+		SearchAlgorithm<D>::res.cost = Cost(0);
 		SearchAlgorithm<D>::res.path.push_back(cur.state);
 
 		while (!d.isgoal(cur.state) && !SearchAlgorithm<D>::limit()) {
@@ -144,7 +144,7 @@ private:
 			return dup->h;
 		}
 		Cost alpha = D::InfCost;
-		n->h = look(d, cur, alpha, pop, 0, nlook);
+		n->h = look(d, cur, alpha, pop, Cost(0), nlook);
 		seen.add(n, hash);
 		return n->h;
 	}

@@ -7,13 +7,81 @@
 #include <cstdlib>
 #include <cstring>
 
-class GridNav {
-public:
+struct GridNav {
 
 	enum { UnitCost = false };
 
-	typedef double Cost;
-	enum { InfCost = -1 };
+	struct Cost {
+		Cost(void) { }
+
+		explicit Cost(int u, int s = 0) : units(u), sqrts(s) { compute(); }
+
+		Cost &operator=(const Cost &o) {
+			units = o.units;
+			sqrts = o.sqrts;
+			val = o.val;
+			return *this;
+		}
+
+		Cost &operator+=(const Cost &o) {
+			units += o.units;
+			sqrts += o.sqrts;
+			compute();
+			return *this;
+		}
+
+		Cost &operator-=(const Cost &o) {
+			units -= o.units;
+			sqrts -= o.sqrts;
+			compute();
+			return *this;
+		}
+
+		operator double() { return val; }
+
+		Cost operator+(const Cost &o) const {
+			return Cost(units + o.units, sqrts + o.sqrts);
+		}
+
+		Cost operator-(const Cost &o) const {
+			return Cost(units - o.units, sqrts - o.sqrts);
+		}
+
+		bool operator<(const Cost &o) const {
+			return val < o.val;
+		}
+
+		bool operator>(const Cost &o) const {
+			return val > o.val;
+		}
+
+		bool operator==(const Cost &o) const {
+			return units == o.units && sqrts == o.sqrts;
+		}
+
+		bool operator!=(const Cost &o) const {
+			return !(*this == o);
+		}
+
+		bool operator>=(const Cost &o) const {
+			return !(*this < o);
+		}
+
+		bool operator<=(const Cost &o) const {
+			return !(*this > o);
+		}
+
+	private:
+
+		void compute(void) {
+			val = units + sqrts * sqrt(2);
+		}
+
+		int units, sqrts;
+		double val;
+	};
+
+	static const Cost InfCost;
 
 	typedef int Oper;	// Index into the ops arrays.
 	enum { Nop = -1 };
@@ -91,8 +159,13 @@ public:
 		State state;
 
 		Transition(GridNav &d, State &s, Oper op) :
-			cost(d.map->mvs[op].cost), revop(d.rev[op]),
-			state(s.loc + d.map->mvs[op].delta) { }
+				revop(d.rev[op]),
+				state(s.loc + d.map->mvs[op].delta) {
+			if (d.map->mvs[op].cost == 1.0)
+				cost = Cost(1, 0);
+			else
+				cost = Cost(0, 1);
+		}
 	};
 
 	void pack(PackedState &dst, State &src) const {
@@ -118,27 +191,27 @@ public:
 private:
 
 	// manhattan returns the Manhattan distance.
-	float manhattan(int l0, int l1) const {
+	Cost manhattan(int l0, int l1) const {
 		std::pair<int,int> c0 = map->coord(l0), c1 = map->coord(l1);
-		return abs(c0.first - c1.first) + abs(c0.second - c1.second);
+		return Cost(abs(c0.first - c1.first) + abs(c0.second - c1.second), 0);
 	}
 
 	// octiledist returns an admissible heuristic estimate for eight-way grids.
-	float octiledist(int l0, int l1) const {
+	Cost octiledist(int l0, int l1) const {
 		std::pair<int,int> c0 = map->coord(l0), c1 = map->coord(l1);
 		int dx = abs(c0.first - c1.first);
 		int dy = abs(c0.second - c1.second);
 		int diag = dx < dy ? dx : dy;
 		int straight = dx < dy ? dy : dx;
-		return (straight - diag) + sqrtf(2.0) * diag;
+		return Cost(straight - diag, diag);
 	}
 
 	// octilecells returns an admissible distance estimate for eight-way grids.
-	unsigned int octilecells(unsigned int l0, unsigned int l1) const {
+	Cost octilecells(unsigned int l0, unsigned int l1) const {
 		std::pair<int,int> c0 = map->coord(l0), c1 = map->coord(l1);
 		int dx = abs(c0.first - c1.first);
 		int dy = abs(c0.second - c1.second);
-		return dx < dy ? dy : dx;
+		return Cost(dx < dy ? dy : dx, 0);
 	}
 
 	// reverseops computes the reverse operators

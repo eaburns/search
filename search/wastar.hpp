@@ -115,7 +115,7 @@ private:
 			open.pushupdate(dup, dup->openind);
 			nodes->destroy(kid);
 		} else {
-			double h = d.h(tr.state);
+			typename D::Cost h = d.h(tr.state);
 			kid->f = kid->g + h;
 			kid->fprime = kid->g + wt * h;
 			kid->update(kid->g, parent, op, tr.revop);
@@ -127,8 +127,8 @@ private:
 	Node *init(D &d, State &s0) {
 		Node *n0 = nodes->construct();
 		d.pack(n0->packed, s0);
-		n0->g = 0;
-		double h = d.h(s0);
+		n0->g = Cost(0);
+		typename D::Cost h = d.h(s0);
 		n0->f = h;
 		n0->fprime = wt * h;
 		n0->op = n0->pop = D::Nop;

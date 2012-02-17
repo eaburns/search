@@ -93,7 +93,7 @@ private:
 			nodes->destroy(kid);
 		} else {
 			kid->h = speedy ? d.d(tr.state) : d.h(tr.state);
-			assert (kid->h >= 0);
+			assert ((double) kid->h >= 0);
 			kid->update(kid->g, parent, op, tr.revop);
 			closed.add(kid, hash);
 			open.push(kid);
@@ -103,7 +103,7 @@ private:
 	Node *init(D &d, State &s0) {
 		Node *n0 = nodes->construct();
 		d.pack(n0->packed, s0);
-		n0->g = 0;
+		n0->g = Cost(0);
 		n0->h = speedy ? d.d(s0) : d.h(s0);
 		n0->op = n0->pop = D::Nop;
 		n0->parent = NULL;
