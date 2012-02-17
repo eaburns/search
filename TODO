@@ -5,6 +5,8 @@
 • remove dependency on
 	boost-filesystem
 
+• remove InfCost and just use -1
+
 • plat2d:
 
 	- random start locations
