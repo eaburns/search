@@ -5,6 +5,8 @@
 • remove dependency on
 	boost-filesystem
 
+• check for EEXIST on pathfor
+
 • plat2d:
 
 	- random start locations
