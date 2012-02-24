@@ -28,8 +28,6 @@ void fatalx(int, const char*, ...);
 // without the trailing newline. Returns an empty option on
 // end of file and calls fatal on error.  If echo is true then the line
 // is echoed to standard output.
-//
-// BUG(eaburns): Doesn't handle \r in any way
 boost::optional<std::string> readline(FILE*, bool echo = false);
 
 // readdir returns all of the entries of the given directory

@@ -25,11 +25,13 @@ boost::optional<std::string> readline(FILE *in, bool echo) {
 	if (line.size() == 0 && feof(in))
 		return boost::optional<std::string>();
 
-	if (line[line.size()] == '\n')
-		line.resize(line.size()-1);
-
 	if (echo)
 		puts(line.c_str());
+
+	if (line[line.size()-1] == '\n')
+		line.resize(line.size()-1);
+	if (line[line.size()-1] == '\r')
+		line.resize(line.size()-1);
 
 	return boost::optional<std::string>(line);
 }
