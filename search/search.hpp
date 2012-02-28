@@ -25,11 +25,11 @@ struct SearchStats {
 
 	// start must be called by the search in order to
 	// begin collecting statistical information.
-	void start(void);
+	void strt(void);
 
 	// finish must be called by the search in order to
 	// stop collecting information.
-	void finish(void);
+	void fin(void);
 
 	// output prints the statistical information to the given
 	// file in datafile format.
@@ -55,8 +55,10 @@ struct SearchStats {
 // search algorithm should be stopped because it has
 // hit a user specified limit.
 struct Limit {
-	unsigned long expd, gend, mem, time;
-	volatile sig_atomic_t timeup;
+
+	Limit(void);
+
+	Limit(int, const char*[]);
 
 	// reached returns true when the given statistics
 	// reports that the given limit has been reached.
@@ -66,14 +68,20 @@ struct Limit {
 			(gend > 0 && r.gend >= gend);
 	}
 
-	Limit(void);
-
-	Limit(int, const char*[]);
-
 	// output prints the limit to the given file in datafile
 	// format.
 	void output(FILE*);
 
+	// start must be called at the beginning of a search
+	// that would like to use the limit.
+	void start(void);
+
+	// finish must be called when a search, using the limit
+	// has finished.
+	void finish(void);
+
+	unsigned long expd, gend, mem, cputime, walltime;
+	volatile sig_atomic_t timeup;
 private:
 	void memlimit(const char*);
 	void timelimit(const char*);
@@ -357,6 +365,16 @@ public:
 	virtual void output(FILE *f) {
 		lim.output(f);
 		res.output(f);
+	}
+
+	void start(void) {
+		res.strt();
+		lim.start();
+	}
+
+	void finish(void) {
+		res.fin();
+		lim.finish();
 	}
 
 protected:

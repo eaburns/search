@@ -47,7 +47,7 @@ template <class D> struct Rtastar : public SearchAlgorithm<D> {
 	};
 
 	Result<D> &search(D &d, typename D::State &s0) {
-		SearchAlgorithm<D>::res.start();
+		this->start();
 		seen.init(d);
 		Current cur(s0, D::Nop, D::Nop, typename D::Cost(0), d.h(s0));
 		Cost *curh = storenode(d, cur.state, cur.f);
@@ -65,7 +65,7 @@ template <class D> struct Rtastar : public SearchAlgorithm<D> {
 			curh = storenode(d, cur.state, cur.f);
 		}
 
-		SearchAlgorithm<D>::res.finish();
+		this->finish();
 
 		// Reverse the path and operators since all other
 		// search algorithms build them in reverse.

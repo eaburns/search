@@ -55,7 +55,7 @@ template <class D> struct Bugsy : public SearchAlgorithm<D> {
 	enum { WaitTick, ExpandSome, WaitExpand };
 
 	Result<D> &search(D &d, typename D::State &s0) {
-		SearchAlgorithm<D>::res.start();
+		this->start();
 		closed.init(d);
 		Node *n0 = init(d, s0);
 		closed.add(n0);
@@ -74,7 +74,7 @@ template <class D> struct Bugsy : public SearchAlgorithm<D> {
 			expand(d, n, state);
 		}
 
-		SearchAlgorithm<D>::res.finish();
+		this->finish();
 		return SearchAlgorithm<D>::res;
 	}
 

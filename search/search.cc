@@ -7,16 +7,20 @@
 #include <sys/time.h>
 #include <sys/resource.h>
 
+static void settimer(int, unsigned long);
+static void stoptimer(int);
+static int timersig(int);
+
 SearchStats::SearchStats(void) : 
 	wallstrt(0), cpustrt(0), wallend(0), cpuend(0),
 	expd(0), gend(0), reopnd(0), dups(0) { }
 
-void SearchStats::start(void) {
+void SearchStats::strt(void) {
 	wallstrt = walltime();
 	cpustrt = cputime();
 }
 
-void SearchStats::finish(void) {
+void SearchStats::fin(void) {
 	wallend = walltime();
 	cpuend = cputime();
 }
@@ -30,9 +34,11 @@ void SearchStats::output(FILE *f) {
 	dfpair(f, "total nodes reopened", "%lu", reopnd);
 }
 
-Limit::Limit(void) : expd(0), gend(0), mem(0), time(0), timeup(0) { }
+Limit::Limit(void) :
+	expd(0), gend(0), mem(0), cputime(0), walltime(0), timeup(0) { }
 
-Limit::Limit(int argc, const char *argv[]) : expd(0), gend(0), mem(0), time(0), timeup(0) {
+Limit::Limit(int argc, const char *argv[]) :
+		expd(0), gend(0), mem(0), cputime(0), walltime(0), timeup(0) {
 	for (int i = 0; i < argc; i++) {
 		if (strcmp(argv[i], "-expd") == 0 && i < argc - 1)
 			expd = strtoul(argv[++i], NULL, 10);
@@ -40,8 +46,10 @@ Limit::Limit(int argc, const char *argv[]) : expd(0), gend(0), mem(0), time(0), 
 			gend = strtoul(argv[++i], NULL, 10);
 		else if (strcmp(argv[i], "-mem") == 0 && i < argc - 1)
 			memlimit(argv[++i]);
-		else if (strcmp(argv[i], "-time") == 0 && i < argc - 1)
-			timelimit(argv[++i]);
+		else if (strcmp(argv[i], "-cputime") == 0 && i < argc - 1)
+			cputime = strtoul(argv[++i], NULL, 10);
+		else if (strcmp(argv[i], "-walltime") == 0 && i < argc - 1)
+			walltime = strtoul(argv[++i], NULL, 10);
 	}
 }
 
@@ -74,7 +82,7 @@ void Limit::memlimit(const char *mstr) {
 // timed is the limit that is signalled when its time is up.
 static Limit *timed;
 
-void handlesigxcpu(int) {
+void handletimeout(int) {
 	timed->timeup = true;
 }
 
@@ -82,23 +90,73 @@ void Limit::timelimit(const char *tstr) {
 	if (timed)
 		fatal("Only one time limit is supported");
 	timed = this;
+}
+
+void Limit::start(void) {
+	if (walltime == 0 && cputime == 0)
+		return;
+	if (!timed)
+		timed = this;
+	if (timed != this)
+		fatal("Only one timed limit is supported");
+	if (walltime > 0)
+		settimer(ITIMER_REAL, walltime);
+	if (cputime > 0)
+		settimer(ITIMER_PROF, cputime);
+}
+
+void Limit::finish(void) {
+	if (walltime == 0 && cputime == 0)
+		return;
+	if (walltime > 0)
+		stoptimer(ITIMER_REAL);
+	if (cputime > 0)
+		stoptimer(ITIMER_PROF);
+	timed = NULL;
+}
+
+// settimer sets the signal handler to handletimout
+// and the timer to the given value.
+static void settimer(int timer, unsigned long secs) {
+	struct sigaction act = {};
+	act.sa_handler = handletimeout;
+	int sig = timersig(timer);
+	if (sigaction(sig, &act, NULL) != 0)
+		fatal("failed to set alarm (sig=%d) handler", sig);
+
+	struct itimerval vl = { };
+	vl.it_value.tv_sec = secs;
+	if (setitimer(timer, &vl, NULL) != 0)
+		fatalx(errno, "failed to set the timer (%d)", timer);
+}
+
+// stoptimer stops the timer and sets the
+// signal handler back to the default.
+static void stoptimer(int timer) {
+	struct itimerval vl = { };
+	if (setitimer(timer, &vl, NULL) != 0)
+		fatalx(errno, "failed to stop the timer (%d)", timer);
 
 	struct sigaction act = {};
-	act.sa_handler = handlesigxcpu;
-	int r = sigaction(SIGXCPU, &act, NULL);
-	if (r != 0)
-		fatal("failed to set SIGXCPU handler");
+	act.sa_handler = SIG_DFL;
+	int sig = timersig(timer);
+	if (sigaction(sig, &act, NULL) != 0)
+		fatal("failed to set alarm (sig=%d) handler", sig);
+}
 
-	struct rlimit lim;
-	r = getrlimit(RLIMIT_CPU, &lim);
-	if (r != 0)
-		fatalx(errno, "failed to get the current time limit");
-
-	time = strtoul(tstr, NULL, 10);
-	lim.rlim_cur = lim.rlim_max > time ? time : lim.rlim_max;
-	r = setrlimit(RLIMIT_CPU, &lim);
-	if (r != 0)
-		fatalx(errno, "failed to set the time limit");
+// timersig gets the signal associated with the
+// given timer.
+static int timersig(int timer) {
+	switch (timer) {
+	case ITIMER_REAL:
+		return SIGALRM;
+	case ITIMER_PROF:
+		return SIGPROF;
+	case ITIMER_VIRTUAL:
+		return SIGVTALRM;
+	}
+	fatal("unknown timer type: %d", timer);
+	return -1;	// unreachable
 }
 
 void Limit::output(FILE *f) {
@@ -108,6 +166,8 @@ void Limit::output(FILE *f) {
 		dfpair(f, "generated limit", "%lu", gend);
 	if (mem > 0)
 		dfpair(f, "memory limit", "%lu", mem);
-	if (time > 0)
-		dfpair(f, "time limit", "%lu", time);
+	if (cputime > 0)
+		dfpair(f, "cpu time limit", "%lu", cputime);
+	if (walltime > 0)
+		dfpair(f, "wall time limit", "%lu", walltime);
 }

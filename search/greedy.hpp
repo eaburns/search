@@ -28,7 +28,7 @@ template <class D, bool speedy = false> struct Greedy : public SearchAlgorithm<D
 	}
 
 	Result<D> &search(D &d, typename D::State &s0) {
-		SearchAlgorithm<D>::res.start();
+		this->start();
 		closed.init(d);
 
 		Node *n0 = init(d, s0);
@@ -46,7 +46,7 @@ template <class D, bool speedy = false> struct Greedy : public SearchAlgorithm<D
 
 			expand(d, n, state);
 		}
-		SearchAlgorithm<D>::res.finish();
+		this->finish();
 
 		return SearchAlgorithm<D>::res;
 	}

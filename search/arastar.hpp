@@ -76,7 +76,7 @@ template <class D> struct Arastar : public SearchAlgorithm<D> {
 	}
 
 	Result<D> &search(D &d, typename D::State &s0) {
-		SearchAlgorithm<D>::res.start();
+		this->start();
 		closed.init(d);
 		incons.init(d);
 
@@ -115,7 +115,7 @@ template <class D> struct Arastar : public SearchAlgorithm<D> {
 
 		} while(!SearchAlgorithm<D>::limit() && !open.empty());
 
-		SearchAlgorithm<D>::res.finish();
+		this->finish();
 		return SearchAlgorithm<D>::res;
 	}
 
