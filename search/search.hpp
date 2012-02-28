@@ -54,7 +54,7 @@ struct SearchStats {
 // search algorithm should be stopped because it has
 // hit a user specified limit.
 struct Limit {
-	unsigned long expd, gend;
+	unsigned long expd, gend, mem;
 
 	// reached returns true when the given statistics
 	// reports that the given limit has been reached.
@@ -70,6 +70,9 @@ struct Limit {
 	// output prints the limit to the given file in datafile
 	// format.
 	void output(FILE*);
+
+private:
+	void memlimit(const char*);
 };
 
 // SearchNode is a structure that encapsulates information that
