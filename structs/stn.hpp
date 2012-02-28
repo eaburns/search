@@ -25,6 +25,8 @@ public:
 		unsigned int i, j;
 		Time a, b;
 
+		Constraint(void) { }
+
 		Constraint(unsigned int _i, unsigned int _j, Time _a, Time _b) :
 			i(_i), j(_j), a(_a), b(_b) { }
 	};

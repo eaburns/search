@@ -52,9 +52,9 @@ static const Test tests[] = {
 
 enum { Ntests = sizeof(tests) / sizeof(tests[0]) };
 
-void malloc_16_free_bench(unsigned long, double*, double*);
-void malloc_32_free_bench(unsigned long, double*, double*);
-void malloc_128_free_bench(unsigned long, double*, double*);
+void new_16_delete_bench(unsigned long, double*, double*);
+void new_32_delete_bench(unsigned long, double*, double*);
+void new_128_delete_bench(unsigned long, double*, double*);
 void rand_bits_bench(unsigned long, double*, double*);
 void rand_real_bench(unsigned long, double*, double*);
 void rand_bench(unsigned long, double*, double*);
@@ -72,9 +72,9 @@ void ceil_bench(unsigned long, double*, double*);
 void floor_bench(unsigned long, double*, double*);
 
 static const Benchmark benches[] = {
-	Benchmark("malloc(16)/free() benchmark", malloc_16_free_bench),
-	Benchmark("malloc(32)/free() benchmark", malloc_32_free_bench),
-	Benchmark("malloc(128)/free() benchmark", malloc_128_free_bench),
+	Benchmark("new(16)/delete() benchmark", new_16_delete_bench),
+	Benchmark("new(32)/delete() benchmark", new_32_delete_bench),
+	Benchmark("new(128)/delete() benchmark", new_128_delete_bench),
 	Benchmark("randgen.bits benchmark", rand_bits_bench),
 	Benchmark("randgen.real benchmark", rand_real_bench),
 	Benchmark("rand() benchmark", rand_bench),

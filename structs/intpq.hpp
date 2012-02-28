@@ -21,7 +21,7 @@ public:
 
 	~Intpq(void) {
 		if (bins)
-			free(bins);
+			delete[] bins;
 	}
 
 	void push(Elm *e, unsigned int prio) {
@@ -98,7 +98,7 @@ private:
 	}
 
 	void resize(unsigned int sz) {
-		Elm **b = (Elm**) malloc(sz * sizeof(*b));
+		Elm **b = new Elm*[sz * sizeof(*b)];
 
 		for (unsigned int i = 0; i < nbins; i++)
 			b[i] = bins[i];
@@ -107,7 +107,7 @@ private:
 			b[i] = NULL;
 
 		if (bins)
-			free(bins);
+			delete[] bins;
 
 		nbins = sz;
 		bins = b;

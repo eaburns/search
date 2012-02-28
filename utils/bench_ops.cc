@@ -16,19 +16,19 @@ volatile double dvol;
 extern unsigned int *randuints(unsigned long);
 extern double *randdoubles(unsigned long);
 
-void malloc_16_free_bench(unsigned long n, double *strt, double *end) {
+void new_16_delete_bench(unsigned long n, double *strt, double *end) {
 	for (unsigned long i = 0; i < n; i++)
-		free(malloc(16));
+		delete[]  new char[16];
 }
 
-void malloc_32_free_bench(unsigned long n, double *strt, double *end) {
+void new_32_delete_bench(unsigned long n, double *strt, double *end) {
 	for (unsigned long i = 0; i < n; i++)
-		free(malloc(32));
+		delete[]  new char[32];
 }
 
-void malloc_128_free_bench(unsigned long n, double *strt, double *end) {
+void new_128_delete_bench(unsigned long n, double *strt, double *end) {
 	for (unsigned long i = 0; i < n; i++)
-		free(malloc(128));
+		delete[]  new char[128];
 }
 
 void rand_bits_bench(unsigned long n, double *strt, double *end) {

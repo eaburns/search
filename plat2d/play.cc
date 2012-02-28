@@ -116,7 +116,7 @@ static Lvl *getlvl(void) {
 static void dfline(std::vector<const char*> &cols, void *_pathp) {
 	if (strcmp(cols[1], "level") == 0) {
 		char **pathp = (char**) _pathp;
-		*pathp = (char*) malloc(strlen(cols[2]) + 1);
+		*pathp = new char[strlen(cols[2]) + 1];
 		memcpy(*pathp, cols[2], strlen(cols[2]) + 1);
 	} else if (strcmp(cols[1], "controls") == 0) {
 		controls = controlvec(cols[2]);

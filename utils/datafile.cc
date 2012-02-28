@@ -41,14 +41,14 @@ void dfpair(FILE *f, const char *key, const char *fmt, ...) {
 }
 
 static void dfpair_sz(FILE *f, unsigned int sz, const char *key, const char *fmt, va_list ap) {
-	char *buf = (char*) malloc(sz * sizeof(*buf));
+	char *buf = new char[sz * sizeof(*buf)];;
 
 	unsigned int n = snprintf(buf, sz, "#pair  \"%s\"\t\"", key);
 	assert (n <= sz);
 	vsnprintf(buf+n, sz-n, fmt, ap);
 
 	fprintf(f, "%s\"\n", buf);
-	free(buf);
+	delete[] buf;
 }
 
 void dfrowhdr(FILE *f, const char *name, int ncols, ...) {
@@ -190,13 +190,19 @@ static void tryprocstatus(FILE *out)
 	fclose(in);
 }
 
+char *strdup(const std::string &s) {
+	char *d = new char[s.size() + 1];
+	strcpy(d, s.c_str());
+	return d;
+}
+
 void dfread(FILE *in, Dfhandler seeline, void *priv, bool echo) {
 	unsigned int lineno = 1;
 	std::vector<const char*> toks;
 	boost::optional<std::string> line = readline(in, echo);
 
 	while (line) {
-		char *linebuf = strdup(line->c_str());
+		char *linebuf = strdup(*line);
 		toks.clear();
 
 		if (hasprefix(linebuf, "#pair"))
@@ -219,7 +225,7 @@ void dfread(FILE *in, Dfhandler seeline, void *priv, bool echo) {
 			seeline(toks, priv);
 		}
 
-		free(linebuf);
+		delete[] linebuf;
 		lineno++;
 		line = readline(in, echo);
 	}

@@ -113,7 +113,7 @@ enum { Nnodes = 1024 };
 Stn::Constraint *cs;
 
 void stn_add_bench(unsigned long n, double *strt, double *end) {
-	cs = (Stn::Constraint*) malloc(n * sizeof(*cs));
+	cs = new Stn::Constraint[n * sizeof(*cs)];
 	for (unsigned long i = 0; i < n; i++) {
 		cs[i].i = rand() % Nnodes;
 		cs[i].j = rand() % Nnodes;
@@ -128,7 +128,7 @@ void stn_add_bench(unsigned long n, double *strt, double *end) {
 		stn.add(cs[i]);
 	*end = walltime();
 
-	free(cs);
+	delete[] cs;
 }
 
 void stn_undo_bench(unsigned long n, double *strt, double *end) {
