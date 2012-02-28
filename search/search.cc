@@ -32,7 +32,7 @@ void SearchStats::output(FILE *f) {
 
 Limit::Limit(void) : expd(0), gend(0), mem(0), time(0), timeup(0) { }
 
-Limit::Limit(int argc, const char *argv[]) : expd(0), gend(0) {
+Limit::Limit(int argc, const char *argv[]) : expd(0), gend(0), mem(0), time(0), timeup(0) {
 	for (int i = 0; i < argc; i++) {
 		if (strcmp(argv[i], "-expd") == 0 && i < argc - 1)
 			expd = strtoul(argv[++i], NULL, 10);
