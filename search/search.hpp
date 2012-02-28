@@ -3,6 +3,7 @@
 
 #include <cstdio>
 #include <vector>
+#include <signal.h>
 
 #include "../structs/intpq.hpp"
 #include "../structs/binheap.hpp"
@@ -54,13 +55,15 @@ struct SearchStats {
 // search algorithm should be stopped because it has
 // hit a user specified limit.
 struct Limit {
-	unsigned long expd, gend, mem;
+	unsigned long expd, gend, mem, time;
+	volatile sig_atomic_t timeup;
 
 	// reached returns true when the given statistics
 	// reports that the given limit has been reached.
 	bool reached(SearchStats &r) {
-		return (expd > 0 && r.expd >= expd)
-			|| (gend > 0 && r.gend >= gend);
+		return timeup ||
+			(expd > 0 && r.expd >= expd) ||
+			(gend > 0 && r.gend >= gend);
 	}
 
 	Limit(void);
@@ -73,6 +76,7 @@ struct Limit {
 
 private:
 	void memlimit(const char*);
+	void timelimit(const char*);
 };
 
 // SearchNode is a structure that encapsulates information that

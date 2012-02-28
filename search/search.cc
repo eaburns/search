@@ -7,7 +7,6 @@
 #include <sys/time.h>
 #include <sys/resource.h>
 
-
 SearchStats::SearchStats(void) : 
 	wallstrt(0), cpustrt(0), wallend(0), cpuend(0),
 	expd(0), gend(0), reopnd(0), dups(0) { }
@@ -31,7 +30,7 @@ void SearchStats::output(FILE *f) {
 	dfpair(f, "total nodes reopened", "%lu", reopnd);
 }
 
-Limit::Limit(void) : expd(0), gend(0), mem(0) { }
+Limit::Limit(void) : expd(0), gend(0), mem(0), time(0), timeup(0) { }
 
 Limit::Limit(int argc, const char *argv[]) : expd(0), gend(0) {
 	for (int i = 0; i < argc; i++) {
@@ -41,6 +40,8 @@ Limit::Limit(int argc, const char *argv[]) : expd(0), gend(0) {
 			gend = strtoul(argv[++i], NULL, 10);
 		else if (strcmp(argv[i], "-mem") == 0 && i < argc - 1)
 			memlimit(argv[++i]);
+		else if (strcmp(argv[i], "-time") == 0 && i < argc - 1)
+			timelimit(argv[++i]);
 	}
 }
 
@@ -62,13 +63,42 @@ void Limit::memlimit(const char *mstr) {
 	struct rlimit lim;
 	int r = getrlimit(RLIMIT_AS, &lim);
 	if (r != 0)
-		fatalx(errno, "failed to get resource limit");
+		fatalx(errno, "failed to get the current memory limit");
 
-	lim.rlim_max = lim.rlim_max > mem ? mem : lim.rlim_max;
-	lim.rlim_cur = lim.rlim_max;
+	lim.rlim_cur =  lim.rlim_max > mem ? mem : lim.rlim_max;
 	r = setrlimit(RLIMIT_AS, &lim);
 	if (r != 0)
-		fatalx(errno, "failed to set resource limit");
+		fatalx(errno, "failed to set the memory limit");
+}
+
+// timed is the limit that is signalled when its time is up.
+static Limit *timed;
+
+void handlesigxcpu(int) {
+	timed->timeup = true;
+}
+
+void Limit::timelimit(const char *tstr) {
+	if (timed)
+		fatal("Only one time limit is supported");
+	timed = this;
+
+	struct sigaction act = {};
+	act.sa_handler = handlesigxcpu;
+	int r = sigaction(SIGXCPU, &act, NULL);
+	if (r != 0)
+		fatal("failed to set SIGXCPU handler");
+
+	struct rlimit lim;
+	r = getrlimit(RLIMIT_CPU, &lim);
+	if (r != 0)
+		fatalx(errno, "failed to get the current time limit");
+
+	time = strtoul(tstr, NULL, 10);
+	lim.rlim_cur = lim.rlim_max > time ? time : lim.rlim_max;
+	r = setrlimit(RLIMIT_CPU, &lim);
+	if (r != 0)
+		fatalx(errno, "failed to set the time limit");
 }
 
 void Limit::output(FILE *f) {
@@ -78,4 +108,6 @@ void Limit::output(FILE *f) {
 		dfpair(f, "generated limit", "%lu", gend);
 	if (mem > 0)
 		dfpair(f, "memory limit", "%lu", mem);
+	if (time > 0)
+		dfpair(f, "time limit", "%lu", time);
 }

@@ -1,11 +1,15 @@
-• lots of benchmarks
+• search
 
-• fix segfault in fatal
+	- gracefully handle memory limits
 
-• remove dependency on
+• utils
+
+	- fix segfault in fatal
+
+	- remove dependency on
 	boost-filesystem
 
-• check for EEXIST on pathfor
+	- check for EEXIST on pathfor
 
 • plat2d:
 
@@ -45,10 +49,6 @@
 • pancake:
 
 	- bit-packed states
-
-• geom:
-
-	- fix polygon tests
 
 • More domains:
 
