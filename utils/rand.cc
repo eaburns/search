@@ -4,7 +4,8 @@
 
 Rand randgen(walltime() * 1e9);
 
-// From Numerical Recipes
+// Ranq1, from "Numerical Recipes 3rd edition,"
+// Press, Tenkolsky, Vetterling and Flannery, 2007.
 
 static const uint64_t Mul = 2685821657736338717LL;
 static const uint64_t Vini = 4101842887655102017LL;
