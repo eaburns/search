@@ -82,15 +82,16 @@ bool isdir(const std::string &path) {
 
 void ensuredir(const std::string &p) {
 	std::string dir = dirname(p);
+
 	if (dir == "." || dir == sepstr || isdir(dir))
 		return;
 
-	ensuredir(dirname(dir));
+	ensuredir(dir);
 
 	if (mkdir(dir.c_str(), S_IRWXU|S_IRWXG|S_IRWXO) == -1) {
 		if (errno == EEXIST)
 			return;
-		fatalx(errno, "failed to make directory %s\n", dir.c_str());
+		fatalx(errno, "failed to make directory %s", dir.c_str());
 	}
 }
 

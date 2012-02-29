@@ -11,8 +11,10 @@ int main(int argc, char *argv[]) {
 
 	FILE *in = stdin;
 	if (argc == 2) {
-		if (!fileexists(argv[1]))
+		if (!fileexists(argv[1])) {
+			ensuredir(argv[1]);
 			return 1;
+		}
 
 		in = fopen(argv[1], "r");
 		if (!in)
