@@ -12,11 +12,14 @@
 // Functions for conveniently defining a new main
 // function for a domain.
 
+void dfheader(FILE*);
+void dffooter(FILE*);
 void dfpair(FILE *, const char *, const char *, ...);
 void dfprocstatus(FILE*);
 void fatal(const char*, ...);
 
 template<class D> SearchAlgorithm<D> *getsearch(int argc, const char *argv[]);
+bool headerfooter(int, const char*[]);
 
 template<class D> Result<D> search(D &d, int argc, const char *argv[]) {
 	SearchAlgorithm<D> *srch = getsearch<D>(argc, argv);
@@ -26,6 +29,8 @@ template<class D> Result<D> search(D &d, int argc, const char *argv[]) {
 		fatal("Must specify a search algorithm");
 
 	typename D::State s0 = d.initialstate();
+	if (headerfooter(argc, argv))
+		dfheader(stdout);
 	dfpair(stdout, "initial heuristic", "%g", (double) d.h(s0));
 	dfpair(stdout, "initial distance", "%g", (double) d.d(s0));
 	dfpair(stdout, "algorithm", argv[1]);
@@ -36,7 +41,8 @@ template<class D> Result<D> search(D &d, int argc, const char *argv[]) {
 		srch->finish();
 	}
 	srch->output(stdout);
-	dfprocstatus(stdout);
+	if (headerfooter(argc, argv))
+		dffooter(stdout);
 
 	Result<D> res = srch->res;
 	delete srch;
