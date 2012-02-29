@@ -1,7 +1,10 @@
-#include "../utils/utils.hpp"
+#include "rdb.hpp"
 #include <cstring>
+#include <cstdio>
 #include <vector>
 #include <string>
+
+void fatal(const char*, ...);
 
 void usage(void);
 

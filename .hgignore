@@ -7,11 +7,13 @@ syntax: glob
 bench/data
 .utils_test
 .structs_test
+.rdb_test
 structs/test
 utils/test
 rdb/pathfor
 rdb/withattrs
 rdb/dfcmplt
+rdb/test
 tiles/*pdbgen
 gridnav/2poly
 visnav/draw

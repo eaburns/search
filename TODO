@@ -2,10 +2,10 @@
 
 	- fix segfault in fatal
 
+• rdb
+
 	- remove dependency on
 	boost-filesystem
-
-	- check for EEXIST on pathfor
 
 • plat2d:
 

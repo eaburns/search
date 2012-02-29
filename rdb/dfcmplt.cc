@@ -1,4 +1,5 @@
 // returns success if stdin or the argument is a complete datafile
+#include "rdb.hpp"
 #include "../utils/utils.hpp"
 #include <cerrno>
 

@@ -14,10 +14,6 @@ bool test_poly_contains(void);
 bool test_poly_isects(void);
 bool test_poly_minisect(void);
 bool test_poly_hits(void);
-bool test_rdbpathfor_newpath(void);
-bool test_rdbpathfor_samepath(void);
-bool test_rdbpathfor_shareprefix(void);
-bool test_rdbpathfor_existing(void);
 bool test_base64enc(void);
 bool test_base64dec(void);
 bool test_encdec(void);
@@ -39,10 +35,6 @@ static const Test tests[] = {
 	Test("poly isects test", test_poly_isects),
 	Test("poly minisect test", test_poly_minisect),
 	Test("poly hits test", test_poly_hits),
-	Test("rdbpathfor newpath test", test_rdbpathfor_newpath),
-	Test("rdbpathfor samepath test", test_rdbpathfor_samepath),
-	Test("rdbpathfor shareprefix test", test_rdbpathfor_shareprefix),
-	Test("rdbpathfor existing test", test_rdbpathfor_existing),
 	Test("base64enc test", test_base64enc),
 	Test("base64dec test", test_base64dec),
 	Test("encode/decode test", test_encdec),

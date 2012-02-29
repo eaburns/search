@@ -1,5 +1,8 @@
-#include "../utils/utils.hpp"
+#include "rdb.hpp"
 #include <cstring>
+#include <cstdio>
+
+void fatal(const char*, ...);
 
 void usage(void);
 
