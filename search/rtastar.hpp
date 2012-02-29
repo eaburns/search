@@ -31,7 +31,7 @@ template <class D> struct Rtastar : public SearchAlgorithm<D> {
 		}
 		if (nlook < 0)
 			fatal("Must specify -d ≥ 0, the lookahead depth");
-		nodes = new boost::object_pool<Node>();
+		nodes = new Pool<Node>();
 	}
 
 	~Rtastar(void) { delete nodes; }
@@ -46,7 +46,7 @@ template <class D> struct Rtastar : public SearchAlgorithm<D> {
 		Cost f;
 	};
 
-	Result<D> &search(D &d, typename D::State &s0) {
+	void search(D &d, typename D::State &s0) {
 		this->start();
 		seen.init(d);
 		Current cur(s0, D::Nop, D::Nop, typename D::Cost(0), d.h(s0));
@@ -73,14 +73,12 @@ template <class D> struct Rtastar : public SearchAlgorithm<D> {
 			SearchAlgorithm<D>::res.ops.end());
 		std::reverse(SearchAlgorithm<D>::res.path.begin(),
 			SearchAlgorithm<D>::res.path.end());
-		
-		return SearchAlgorithm<D>::res;
 	}
 
 	virtual void reset(void) {
 		seen.clear();
 		delete nodes;
-		nodes = new boost::object_pool<Node>();
+		nodes = new Pool<Node>();
 	}
 
 	virtual void output(FILE *out) {
@@ -140,7 +138,7 @@ private:
 
 		Node *dup = seen.find(n->packed, hash);
 		if (dup) {
-			nodes->destroy(n);
+			nodes->destruct(n);
 			return dup->h;
 		}
 		Cost alpha = Cost(-1);
@@ -187,7 +185,7 @@ private:
 
 		Node *dup = seen.find(n->packed, hash);
 		if (dup) {
-			nodes->destroy(n);
+			nodes->destruct(n);
 			dup->h = h;
 			return &dup->h;
 		}
@@ -204,5 +202,5 @@ private:
 
 	int nlook;
 	ClosedList<Node, Node, D> seen;
-	boost::object_pool<Node> *nodes;
+	Pool<Node> *nodes;
 };

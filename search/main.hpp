@@ -30,10 +30,15 @@ template<class D> Result<D> search(D &d, int argc, const char *argv[]) {
 	dfpair(stdout, "initial distance", "%g", (double) d.d(s0));
 	dfpair(stdout, "algorithm", argv[1]);
 
-	Result<D> res = srch->search(d, s0);
+	try {
+		srch->search(d, s0);
+	} catch (std::bad_alloc&) {
+		srch->finish();
+	}
 	srch->output(stdout);
 	dfprocstatus(stdout);
 
+	Result<D> res = srch->res;
 	delete srch;
 
 	return res;

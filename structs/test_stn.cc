@@ -113,7 +113,7 @@ enum { Nnodes = 1024 };
 Stn::Constraint *cs;
 
 void stn_add_bench(unsigned long n, double *strt, double *end) {
-	cs = new Stn::Constraint[n * sizeof(*cs)];
+	cs = new Stn::Constraint[n];
 	for (unsigned long i = 0; i < n; i++) {
 		cs[i].i = rand() % Nnodes;
 		cs[i].j = rand() % Nnodes;

@@ -1,5 +1,5 @@
 #include "../search/search.hpp"
-#include <boost/pool/object_pool.hpp>
+#include "../utils/pool.hpp"
 
 template <class D, bool speedy = false> struct Greedy : public SearchAlgorithm<D> {
 
@@ -20,14 +20,14 @@ template <class D, bool speedy = false> struct Greedy : public SearchAlgorithm<D
 
 	Greedy(int argc, const char *argv[]) :
 		SearchAlgorithm<D>(argc, argv), closed(30000001) {
-		nodes = new boost::object_pool<Node>();
+		nodes = new Pool<Node>();
 	}
 
 	~Greedy(void) {
 		delete nodes;
 	}
 
-	Result<D> &search(D &d, typename D::State &s0) {
+	void search(D &d, typename D::State &s0) {
 		this->start();
 		closed.init(d);
 
@@ -47,8 +47,6 @@ template <class D, bool speedy = false> struct Greedy : public SearchAlgorithm<D
 			expand(d, n, state);
 		}
 		this->finish();
-
-		return SearchAlgorithm<D>::res;
 	}
 
 	virtual void reset(void) {
@@ -56,7 +54,7 @@ template <class D, bool speedy = false> struct Greedy : public SearchAlgorithm<D
 		open.clear();
 		closed.clear();
 		delete nodes;
-		nodes = new boost::object_pool<Node>();
+		nodes = new Pool<Node>();
 	}
 
 	virtual void output(FILE *out) {
@@ -90,7 +88,7 @@ private:
 		SearchNode<D> *dup = closed.find(kid->packed, hash);
 		if (dup) {
 			SearchAlgorithm<D>::res.dups++;
-			nodes->destroy(kid);
+			nodes->destruct(kid);
 		} else {
 			kid->h = speedy ? d.d(tr.state) : d.h(tr.state);
 			assert ((double) kid->h >= 0);
@@ -112,5 +110,5 @@ private:
 
 	OpenList<Node, Node, Cost> open;
  	ClosedList<SearchNode<D>, SearchNode<D>, D> closed;
-	boost::object_pool<Node> *nodes;
+	Pool<Node> *nodes;
 };

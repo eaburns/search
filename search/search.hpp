@@ -356,7 +356,7 @@ public:
 
 	virtual ~SearchAlgorithm() { }
 
-	virtual Result<D> &search(D &, typename D::State &) = 0;
+	virtual void search(D &, typename D::State &) = 0;
 
 	virtual void reset(void) {
 		res = Result<D>();
@@ -377,10 +377,11 @@ public:
 		lim.finish();
 	}
 
-protected:
-	bool limit(void) { return lim.reached(res); }
 	Result<D> res;
 	Limit lim;
+
+protected:
+	bool limit(void) { return lim.reached(res); }
 };
 
 #endif	// _SEARCH_HPP_

@@ -5,7 +5,7 @@
 
 #include "../search/search.hpp"
 #include "../structs/binheap.hpp"
-#include <boost/pool/object_pool.hpp>
+#include "../utils/pool.hpp"
 
 template <class D> struct Bugsy : public SearchAlgorithm<D> {
 	typedef typename D::State State;
@@ -45,7 +45,7 @@ template <class D> struct Bugsy : public SearchAlgorithm<D> {
 		if (wt < 0)
 			fatal("Must specify non-negative t-weight using -wt");
 
-		nodes = new boost::object_pool<Node>();
+		nodes = new Pool<Node>();
 	}
 
 	~Bugsy(void) {
@@ -54,7 +54,7 @@ template <class D> struct Bugsy : public SearchAlgorithm<D> {
 
 	enum { WaitTick, ExpandSome, WaitExpand };
 
-	Result<D> &search(D &d, typename D::State &s0) {
+	void search(D &d, typename D::State &s0) {
 		this->start();
 		closed.init(d);
 		Node *n0 = init(d, s0);
@@ -75,7 +75,6 @@ template <class D> struct Bugsy : public SearchAlgorithm<D> {
 		}
 
 		this->finish();
-		return SearchAlgorithm<D>::res;
 	}
 
 	virtual void reset(void) {
@@ -88,7 +87,7 @@ template <class D> struct Bugsy : public SearchAlgorithm<D> {
 		pertick = 20;
 		nexp = 0;
 		nresort = 0;
-		nodes = new boost::object_pool<Node>();
+		nodes = new Pool<Node>();
 	}
 
 	virtual void output(FILE *out) {
@@ -127,7 +126,7 @@ private:
 		if (dup) {
 			SearchAlgorithm<D>::res.dups++;
 			if (kid->g >= dup->g) {
-				nodes->destroy(kid);
+				nodes->destruct(kid);
 				return;
 			}
 			SearchAlgorithm<D>::res.reopnd++;
@@ -135,7 +134,7 @@ private:
 			dup->update(kid->g, parent, op, tr.revop);
 			computeutil(dup);
 			open.pushupdate(dup, dup->openind);
-			nodes->destroy(kid);
+			nodes->destruct(kid);
 		} else {
 			kid->d = d.d(tr.state);
 			kid->h = d.h(tr.state);
@@ -219,5 +218,5 @@ private:
 
 	BinHeap<Node, Node*> open;
  	ClosedList<SearchNode<D>, SearchNode<D>, D> closed;
-	boost::object_pool<Node> *nodes;
+	Pool<Node> *nodes;
 };

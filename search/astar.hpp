@@ -1,5 +1,5 @@
 #include "../search/search.hpp"
-#include <boost/pool/object_pool.hpp>
+#include "../utils/pool.hpp"
 
 template <class D> struct Astar : public SearchAlgorithm<D> {
 
@@ -24,14 +24,14 @@ template <class D> struct Astar : public SearchAlgorithm<D> {
 
 	Astar(int argc, const char *argv[]) :
 		SearchAlgorithm<D>(argc, argv), closed(30000001) {
-		nodes = new boost::object_pool<Node>();
+		nodes = new Pool<Node>();
 	}
 
 	~Astar(void) {
 		delete nodes;
 	}
 
-	Result<D> &search(D &d, typename D::State &s0) {
+	void search(D &d, typename D::State &s0) {
 		this->start();
 		closed.init(d);
 
@@ -51,7 +51,6 @@ template <class D> struct Astar : public SearchAlgorithm<D> {
 			expand(d, n, state);
 		}
 		this->finish();
-		return SearchAlgorithm<D>::res;
 	}
 
 	virtual void reset(void) {
@@ -59,7 +58,7 @@ template <class D> struct Astar : public SearchAlgorithm<D> {
 		open.clear();
 		closed.clear();
 		delete nodes;
-		nodes = new boost::object_pool<Node>();
+		nodes = new Pool<Node>();
 	}
 
 	virtual void output(FILE *out) {
@@ -85,6 +84,7 @@ private:
 
 	void considerkid(D &d, Node *parent, State &state, Oper op) {
 		Node *kid = nodes->construct();
+		assert (kid);
 		typename D::Transition tr(d, state, op);
 		kid->g = parent->g + tr.cost;
 		d.pack(kid->packed, tr.state);
@@ -94,7 +94,7 @@ private:
 		if (dup) {
 			SearchAlgorithm<D>::res.dups++;
 			if (kid->g >= dup->g) {
-				nodes->destroy(kid);
+				nodes->destruct(kid);
 				return;
 			}
 			SearchAlgorithm<D>::res.reopnd++;
@@ -102,7 +102,7 @@ private:
 			dup->f = dup->f - dup->g + kid->g;
 			dup->update(kid->g, parent, op, tr.revop);
 			open.post_update(dup);
-			nodes->destroy(kid);
+			nodes->destruct(kid);
 		} else {
 			kid->f = kid->g + d.h(tr.state);
 			kid->update(kid->g, parent, op, tr.revop);
@@ -123,5 +123,5 @@ private:
 
 	OpenList<Node, Node, Cost> open;
  	ClosedList<SearchNode<D>, SearchNode<D>, D> closed;
-	boost::object_pool<Node> *nodes;
+	Pool<Node> *nodes;
 };

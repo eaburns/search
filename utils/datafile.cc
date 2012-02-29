@@ -41,7 +41,7 @@ void dfpair(FILE *f, const char *key, const char *fmt, ...) {
 }
 
 static void dfpair_sz(FILE *f, unsigned int sz, const char *key, const char *fmt, va_list ap) {
-	char *buf = new char[sz * sizeof(*buf)];;
+	char *buf = new char[sz];
 
 	unsigned int n = snprintf(buf, sz, "#pair  \"%s\"\t\"", key);
 	assert (n <= sz);

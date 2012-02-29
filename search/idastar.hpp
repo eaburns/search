@@ -15,7 +15,7 @@ public:
 	Idastar(int argc, const char *argv[]) :
 		SearchAlgorithm<D>(argc, argv) { }
 
-	Result<D> &search(D &d, State &s0) {
+	void search(D &d, State &s0) {
 		this->start();
 		bound = d.h(s0);
 		dfrowhdr(stdout, "iter", 4, "iter no", "iter bound",
@@ -34,7 +34,6 @@ public:
 		}
 
 		this->finish();
-		return SearchAlgorithm<D>::res;
 	}
 
 private:

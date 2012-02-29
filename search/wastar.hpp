@@ -1,5 +1,5 @@
 #include "../search/search.hpp"
-#include <boost/pool/object_pool.hpp>
+#include "../utils/pool.hpp"
 
 void fatal(const char*, ...);	// utils.hpp
 
@@ -33,14 +33,14 @@ template <class D> struct Wastar : public SearchAlgorithm<D> {
 		if (wt < 1)
 			fatal("Must specify a weight ≥1 weight using -wt");
 
-		nodes = new boost::object_pool<Node>();
+		nodes = new Pool<Node>();
 	}
 
 	~Wastar(void) {
 		delete nodes;
 	}
 
-	Result<D> &search(D &d, typename D::State &s0) {
+	void search(D &d, typename D::State &s0) {
 		this->start();
 		closed.init(d);
 
@@ -60,8 +60,6 @@ template <class D> struct Wastar : public SearchAlgorithm<D> {
 			expand(d, n, state);
 		}
 		this->finish();
-
-		return SearchAlgorithm<D>::res;
 	}
 
 	virtual void reset(void) {
@@ -69,7 +67,7 @@ template <class D> struct Wastar : public SearchAlgorithm<D> {
 		open.clear();
 		closed.clear();
 		delete nodes;
-		nodes = new boost::object_pool<Node>();
+		nodes = new Pool<Node>();
 	}
 
 	virtual void output(FILE *out) {
@@ -105,7 +103,7 @@ private:
 		if (dup) {
 			SearchAlgorithm<D>::res.dups++;
 			if (kid->g >= dup->g) {
-				nodes->destroy(kid);
+				nodes->destruct(kid);
 				return;
 			}
 			SearchAlgorithm<D>::res.reopnd++;
@@ -113,7 +111,7 @@ private:
 			dup->f = dup->f - dup->g + kid->g;
 			dup->update(kid->g, parent, op, tr.revop);
 			open.pushupdate(dup, dup->openind);
-			nodes->destroy(kid);
+			nodes->destruct(kid);
 		} else {
 			typename D::Cost h = d.h(tr.state);
 			kid->f = kid->g + h;
@@ -139,5 +137,5 @@ private:
 	double wt;
 	BinHeap<Node, Node*> open;
  	ClosedList<SearchNode<D>, SearchNode<D>, D> closed;
-	boost::object_pool<Node> *nodes;
+	Pool<Node> *nodes;
 };

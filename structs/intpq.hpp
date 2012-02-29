@@ -98,7 +98,7 @@ private:
 	}
 
 	void resize(unsigned int sz) {
-		Elm **b = new Elm*[sz * sizeof(*b)];
+		Elm **b = new Elm*[sz];
 
 		for (unsigned int i = 0; i < nbins; i++)
 			b[i] = bins[i];

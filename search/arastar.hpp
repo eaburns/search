@@ -1,6 +1,6 @@
 #include "../search/search.hpp"
 #include "../structs/binheap.hpp"
-#include <boost/pool/object_pool.hpp>
+#include "../utils/pool.hpp"
 #include <limits>
 #include <vector>
 
@@ -68,14 +68,14 @@ template <class D> struct Arastar : public SearchAlgorithm<D> {
 			fatal("Must specify weight decrement > 0 using -dwt");
 
 		wt = wt0;
-		nodes = new boost::object_pool<Node>();
+		nodes = new Pool<Node>();
 	}
 
 	~Arastar(void) {
 		delete nodes;
 	}
 
-	Result<D> &search(D &d, typename D::State &s0) {
+	void search(D &d, typename D::State &s0) {
 		this->start();
 		closed.init(d);
 		incons.init(d);
@@ -116,7 +116,6 @@ template <class D> struct Arastar : public SearchAlgorithm<D> {
 		} while(!SearchAlgorithm<D>::limit() && !open.empty());
 
 		this->finish();
-		return SearchAlgorithm<D>::res;
 	}
 
 	virtual void reset(void) {
@@ -126,7 +125,7 @@ template <class D> struct Arastar : public SearchAlgorithm<D> {
 		closed.clear();
 		incons.clear();
 		delete nodes;
-		nodes = new boost::object_pool<Node>();
+		nodes = new Pool<Node>();
 	}
 
 	virtual void output(FILE *out) {
@@ -237,7 +236,7 @@ private:
 		if (dup) {
 			SearchAlgorithm<D>::res.dups++;
 			if (kid->g >= dup->g) {
-				nodes->destroy(kid);
+				nodes->destruct(kid);
 				return;
 			}
 			SearchAlgorithm<D>::res.reopnd++;
@@ -247,7 +246,7 @@ private:
 				incons.add(dup, hash);
 			else
 				open.update(dup->openind);
-			nodes->destroy(kid);
+			nodes->destruct(kid);
 		} else {
 			kid->h = d.h(tr.state);
 			kid->fprime = (double) kid->g + wt * kid->h;
@@ -272,5 +271,5 @@ private:
 	BinHeap<Node, Node*> open;
  	ClosedList<SearchNode<D>, SearchNode<D>, D> closed;
 	Incons incons;
-	boost::object_pool<Node> *nodes;
+	Pool<Node> *nodes;
 };

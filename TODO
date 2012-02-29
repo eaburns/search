@@ -1,7 +1,3 @@
-• search
-
-	- gracefully handle memory limits
-
 • utils
 
 	- fix segfault in fatal
