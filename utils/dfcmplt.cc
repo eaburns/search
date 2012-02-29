@@ -7,8 +7,12 @@ extern const char *start4;
 extern const char *end4;
 
 int main(int argc, char *argv[]) {
+
 	FILE *in = stdin;
 	if (argc == 2) {
+		if (!fileexists(argv[1]))
+			return 1;
+
 		in = fopen(argv[1], "r");
 		if (!in)
 			fatalx(errno, "failed to open %s for reading", argv[1]);
