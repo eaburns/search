@@ -3,6 +3,7 @@
 #include "../utils/pool.hpp"
 #include <limits>
 #include <vector>
+#include <cmath>
 
 void dfrowhdr(FILE *, const char *name, int ncols, ...);
 void dfrow(FILE *, const char *name, const char *colfmt, ...);
@@ -93,27 +94,26 @@ template <class D> struct Arastar : public SearchAlgorithm<D> {
 		do {
 			if (improve(d)) {
 				n++;
-				double epsprime = findbound();
+				double epsprime = wt == 1.0 ? 1.0 : findbound();
 				if (wt < epsprime)
 					epsprime = wt;
 	
-				dfrow(stdout, "sol", "uuugggg", n,
-					SearchAlgorithm<D>::res.expd,
-					SearchAlgorithm<D>::res.gend,
-					wt, epsprime,
-					(double) SearchAlgorithm<D>::res.cost,
-					walltime() - SearchAlgorithm<D>::res.wallstrt);
+				dfrow(stdout, "sol", "uuugggg", n, this->res.expd,
+					this->res.gend, wt, epsprime, (double) this->res.cost,
+					walltime() - this->res.wallstrt);
 			}
 
 			if (wt <= 1.0)
 				break;
 
 			wt = wt - dwt > 1.0 ? wt - dwt : 1.0;
+			if (wt < 1.0 + sqrt(std::numeric_limits<double>::epsilon()))
+				wt = 1.0;
 
 			updateopen();
 			closed.clear();
 
-		} while(!SearchAlgorithm<D>::limit() && !open.empty());
+		} while(!this->limit() && !open.empty());
 
 		this->finish();
 	}
@@ -141,12 +141,12 @@ private:
 
 	bool improve(D &d) {
 		bool goal = false;
-		while (!SearchAlgorithm<D>::limit() && goodnodes()) {
+		while (!this->limit() && goodnodes()) {
 			Node *n = *open.pop();
 			State buf, &state = d.unpack(buf, n->packed);
 
 			if (d.isgoal(state)) {
-				SearchAlgorithm<D>::res.goal(d, n);
+				this->res.goal(d, n);
 				goal = true;
 			}
 
@@ -157,14 +157,14 @@ private:
 
 	bool goodnodes() {
 		return !open.empty() &&
-			(SearchAlgorithm<D>::res.cost == Cost(-1) ||
-			(double) SearchAlgorithm<D>::res.cost > (*open.front())->fprime);
+			(this->res.cost == Cost(-1) ||
+			(double) this->res.cost > (*open.front())->fprime);
 	}
 
 	// Find the tightest bound for the current incumbent.
 	double findbound(void) {
-		assert (SearchAlgorithm<D>::res.cost != Cost(-1));
-		double cost = SearchAlgorithm<D>::res.cost;
+		assert (this->res.cost != Cost(-1));
+		double cost = this->res.cost;
 		double min = std::numeric_limits<double>::infinity();
 
 		std::vector<Node*> &inodes = incons.nodes();
@@ -214,13 +214,13 @@ private:
 	}
 
 	void expand(D &d, Node *n, State &state) {
-		SearchAlgorithm<D>::res.expd++;
+		this->res.expd++;
 		for (unsigned int i = 0; i < d.nops(state); i++) {
 			Oper op = d.nthop(state, i);
 			if (op == n->pop)
 				continue;
 
-			SearchAlgorithm<D>::res.gend++;
+			this->res.gend++;
 			considerkid(d, n, state, op);
 		}
 	}
@@ -234,12 +234,12 @@ private:
 		unsigned long hash = kid->packed.hash();
 		Node *dup = static_cast<Node*>(closed.find(kid->packed, hash));
 		if (dup) {
-			SearchAlgorithm<D>::res.dups++;
+			this->res.dups++;
 			if (kid->g >= dup->g) {
 				nodes->destruct(kid);
 				return;
 			}
-			SearchAlgorithm<D>::res.reopnd++;
+			this->res.reopnd++;
 			dup->fprime = dup->fprime - dup->g + kid->g;
 			dup->update(kid->g, parent, op, tr.revop);
 			if (dup->openind < 0)
