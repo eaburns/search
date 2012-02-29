@@ -84,6 +84,10 @@ private:
 	// and then loads it.
 	void load(FILE*);
 
+	// load_seedinst loads a Wheeler-style map
+	// that is described by its seed.
+	void load_seedinst(FILE*);
+
 	// load_ruml loads one of Wheeler's map
 	void load_ruml(FILE*);
 

@@ -1,5 +1,5 @@
-#include "closedlist.hpp"
 #include "gridnav.hpp"
+#include "closedlist.hpp"
 #include "../search/main.hpp"
 #include <cstdio>
 

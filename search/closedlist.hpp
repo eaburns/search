@@ -3,16 +3,17 @@
 
 #include "../structs/htable.hpp"
 #include <cstdio>
+#include <typeinfo>
 
 void dfpair(FILE *, const char *key, const char *fmt, ...);	// utils.hpp
 
 enum { FillFact = 0 };
 
-template<class Node, class D> struct ClosedEntry {
+template<typename Node, typename D> struct ClosedEntry {
 	HtableEntry<Node> ent;
 };
 
-template<class Ops, class Node, class D> struct ClosedList {
+template<typename Ops, typename Node, typename D> struct ClosedList {
 	typedef typename D::PackedState PackedState;
 
 	ClosedList(unsigned long szhint) : tbl(szhint) { }

@@ -46,16 +46,54 @@ void GridMap::load(FILE *in) {
 
 	if (c == 't')
 		load_sturtevant(in);
+	else if (c == 's')
+		load_seedinst(in);
 	else if (std::isdigit(c))
 		load_ruml(in);
 	else
 		readfail("Failed to read the map header, expected 't' or a digit");
 }
 
+void GridMap::load_seedinst(FILE *in) {
+	uint64_t  seed;
+	double prob;
+
+	if (fscanf(in, " seed %lu %u %u %lg\n", &seed, &w, &h, &prob) != 4)
+		readfail("Failed to read map header");
+
+	setsize(w, h);
+
+	int c = fgetc(in);
+	ungetc(c, in);
+	if (c == 'E' && fscanf(in, "Eightway") == 0)
+		eightway();
+	else if (c == 'F' && fscanf(in, "Fourway") == 0)
+		fourway();
+	else
+		readfail("Invalid movement type");
+
+	if (fscanf(in, " Unit\n") != 0)
+		readfail("Failed to scan Unit footer");
+
+	Rand rng(seed);
+	for (unsigned int x = 1; x < w - 1; x++) {
+	for (unsigned int y = 1; y < h - 1; y++) {
+		int i = index(x, y);
+		if (prob < rng.real()) {
+			map[i] = '#';
+			flags[i] = OutOfBounds;
+		} else {
+ 			map[i] = ' ';
+			flags[i] = Passable;
+		}
+	}
+	}
+}
+
 // Leaves the start/end locations in the FILE.
 void GridMap::load_ruml(FILE *in) {
 	if (fscanf(in, " %u %u\nBoard:", &h, &w) != 2)
-		fatal("%s: Failed to read map size", file.c_str());
+		readfail("Failed to read map size");
 
 	setsize(w, h);
 
