@@ -1,6 +1,8 @@
 #include "rdb.hpp"
 #include "../utils/utils.hpp"
 #include <cstring>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <boost/filesystem.hpp>
 
 namespace bf = boost::filesystem;
@@ -96,8 +98,10 @@ std::string rdbpathfor(const char *root, RdbAttrs attrs) {
 static std::string makepath(bf::path root, RdbAttrs attrs) {
 	while (attrs.size() > 0) {
 		if (!bf::exists(root)) {
-			if (!bf::create_directory(root))
-				fatal("failed to create %s\n", root.string().c_str());
+			if (mkdir(root.string().c_str(), S_IRWXU|S_IRWXG|S_IRWXO) == -1) {
+				if (errno != EEXIST)
+					fatalx(errno, "failed to create %s\n", root.string().c_str());
+			}
 		}
 
 		const std::string &key = attrs.front();
