@@ -30,6 +30,7 @@ include visnav/Make.inc
 include plat2d/Make.inc
 include graphics/Make.inc
 include bench/Make.inc
+include rdb/Make.inc
 
 everything: $(EVERYTHING)
 

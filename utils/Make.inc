@@ -25,8 +25,7 @@ include $(UTILOBJS:.o=.d)
 
 CLEAN+=$(UTILOBJS)
 
-utils: utils/utils.a utils/test utils/pathfor utils/withattrs\
-	utils/dfcmplt
+utils: utils/utils.a utils/test
 
 EVERYTHING+=utils
 
@@ -46,15 +45,3 @@ utils/test: utils/test_geom.cc utils/test_rdb.cc \
 	utils/test.cc utils/utils.a
 	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
 CLEAN+=utils/test
-
-utils/pathfor: utils/pathfor.cc utils/utils.a
-	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
-CLEAN+=utils/pathfor
-
-utils/withattrs: utils/withattrs.cc utils/utils.a
-	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
-CLEAN+=utils/withattrs
-
-utils/dfcmplt: utils/dfcmplt.cc utils/utils.a
-	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
-CLEAN+=utils/dfcmplt

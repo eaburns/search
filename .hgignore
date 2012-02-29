@@ -9,9 +9,9 @@ bench/data
 .structs_test
 structs/test
 utils/test
-utils/pathfor
-utils/withattrs
-utils/dfcmplt
+rdb/pathfor
+rdb/withattrs
+rdb/dfcmplt
 tiles/*pdbgen
 gridnav/2poly
 visnav/draw

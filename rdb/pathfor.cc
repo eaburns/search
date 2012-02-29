@@ -1,7 +1,5 @@
-#include "utils.hpp"
+#include "../utils/utils.hpp"
 #include <cstring>
-#include <vector>
-#include <string>
 
 void usage(void);
 
@@ -22,11 +20,7 @@ int main(int argc, char *argv[]) {
 		attrs.push_back(key, vl);
 	}
 
-	std::vector<std::string> files = rdbwithattrs(root, attrs);
-	for (unsigned int i = 0; i < files.size(); i++) {
-		printf("%s\n", files[i].c_str());
-	}
-
+	printf("%s\n", rdbpathfor(root, attrs).c_str());
 	return 0;
 }
 

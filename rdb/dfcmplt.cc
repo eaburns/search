@@ -1,5 +1,5 @@
 // returns success if stdin or the argument is a complete datafile
-#include "utils.hpp"
+#include "../utils/utils.hpp"
 #include <cerrno>
 
 // from datafile.cc
