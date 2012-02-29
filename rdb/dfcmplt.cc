@@ -20,7 +20,10 @@ int main(int argc, char *argv[]) {
 	}
 
 	boost::optional<std::string> l = readline(in);
-	if (l && *l != start4)
+	if (!l)
+		return 1;
+	l->push_back('\n');
+	if (*l != start4)
 		return 1;
 
 	std::string prev;
@@ -29,6 +32,7 @@ int main(int argc, char *argv[]) {
 		l = readline(in);
 	}
 
+	prev.push_back('\n');
 	if (prev != end4)
 		return 1;
 
