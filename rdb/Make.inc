@@ -11,7 +11,7 @@ include $(UTILOBJS:.o=.d)
 
 CLEAN+=$(UTILOBJS)
 
-rdb: rdb/pathfor rdb/withattrs rdb/dfcmplt
+rdb: rdb/pathfor rdb/withattrs rdb/dfcmplt rdb/pathattrs
 
 EVERYTHING+=rdb
 
@@ -36,3 +36,7 @@ CLEAN+=rdb/withattrs
 rdb/dfcmplt: rdb/dfcmplt.cc $(RDBOBJS) utils/utils.a
 	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
 CLEAN+=rdb/dfcmplt
+
+rdb/pathattrs: rdb/pathattrs.cc $(RDBOBJS) utils/utils.a
+	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
+CLEAN+=rdb/pathattrs

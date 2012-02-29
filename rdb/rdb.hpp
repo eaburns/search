@@ -7,10 +7,13 @@
 // It behaves as a FIFO queue of attributes.
 struct RdbAttrs {
 
-	// push_back adds a new key=value pair to the attribute
-	// vector.  It returs false if the key is already added as one
-	// of the attributes.
+	// push_back adds a new key=value pair to the back of the
+	// attribute list.  It returns false if the key is already added.
 	bool push_back(const std::string &key, const std::string &val);
+
+	// push_front adds a new key=value pair to the front of the
+	// attribute list.  It returns false if the key is already added.
+	bool push_front(const std::string &key, const std::string &val);
 
 	// pop_front removes the first attribute that was added to the
 	// list.
@@ -39,6 +42,10 @@ struct RdbAttrs {
 		return pairs.find(key) != pairs.end();
 	}
 
+	// string returns the string representation of this attribute
+	// list.
+	std::string string(void) const;
+
 private:
 	std::map<std::string, std::string> pairs;
 	std::deque<std::string> keys;
@@ -51,3 +58,6 @@ std::string rdbpathfor(const char *, RdbAttrs);
 // rdbwithattrs returns a vector of all file paths that have the given
 // attributes under the given root directory.
 std::vector<std::string> rdbwithattrs(const char*, RdbAttrs);
+
+// pathattrs returns the attributes for the given file path.
+RdbAttrs pathattrs(std::string);

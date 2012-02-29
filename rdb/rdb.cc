@@ -23,6 +23,14 @@ bool RdbAttrs::push_back(const std::string &key, const std::string &value) {
 	return true;
 }
 
+bool RdbAttrs::push_front(const std::string &key, const std::string &value) {
+	if (pairs.find(key) != pairs.end())
+		return false;
+	pairs[key] = value;
+	keys.push_front(key);
+	return true;
+}
+
 bool RdbAttrs::rm(const std::string &key) {
 	if (pairs.find(key) == pairs.end())
 		return false;
@@ -36,6 +44,22 @@ bool RdbAttrs::rm(const std::string &key) {
 
 	pairs.erase(pairs.find(key));
 	return true;	
+}
+
+std::string RdbAttrs::string(void) const {
+	std::string r;
+
+	for (std::deque<std::string>::const_iterator it = keys.begin(); it != keys.end(); it++) {
+		const std::string &k = *it;
+		const std::string &v = pairs.find(k)->second;
+		if (r.size() > 0)
+			r.push_back(' ');
+		r += k;
+		r.push_back('=');
+		r+= v;
+	}
+
+	return r;
 }
 
 std::vector<std::string> rdbwithattrs(const char *root, RdbAttrs attrs) {
@@ -136,4 +160,20 @@ static void touch(const bf::path &p) {
 	if (!touch)
 		fatalx(errno, "Failed to touch keyfile %s", p.string().c_str());
 	fclose(touch);
+}
+
+RdbAttrs pathattrs(std::string path) {
+	RdbAttrs attrs;
+
+	while (fileexists(path)) {
+		std::string dir = dirname(path);
+		std::string file = basename(path);
+		std::string key;
+		if (!getkey(dir, key))
+			break;
+		attrs.push_front(key, file);
+		path = dir;
+	}
+
+	return attrs;
 }

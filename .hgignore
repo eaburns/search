@@ -13,6 +13,7 @@ utils/test
 rdb/pathfor
 rdb/withattrs
 rdb/dfcmplt
+rdb/pathattrs
 rdb/test
 tiles/*pdbgen
 gridnav/2poly
