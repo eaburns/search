@@ -95,6 +95,30 @@ void ensuredir(const std::string &p) {
 	}
 }
 
+bool rmrecur(const std::string &path) {
+	if (!isdir(path)) {
+		if (remove(path.c_str()) != 0 && errno != ENOENT) {
+			warnx(errno, "failed to remove %s", path.c_str());
+			return false;
+		}
+		return true;
+	}
+
+	std::vector<std::string> ents = readdir(path);
+	bool ok = true;
+	for (unsigned int i = 0; i < ents.size(); i++) {
+		if (!rmrecur(ents[i]))
+			ok = false;
+	}
+	if (!ok)
+		return false;
+	if (remove(path.c_str()) != 0 && errno != ENOENT) {
+		warnx(errno, "failed to remove %s", path.c_str());
+		return false;
+	}
+	return true;
+}
+
 std::string basename(const std::string &p) {
 	if (p.size() == 0 || p == ".")
 		return ".";

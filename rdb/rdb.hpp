@@ -53,11 +53,11 @@ private:
 
 // rdbpathfor returns the filesystem path for the given attribute
 // set rooted at the given root directory.
-std::string rdbpathfor(const char *, RdbAttrs);
+std::string rdbpathfor(const std::string&, RdbAttrs);
 
 // rdbwithattrs returns a vector of all file paths that have the given
 // attributes under the given root directory.
-std::vector<std::string> rdbwithattrs(const char*, RdbAttrs);
+std::vector<std::string> rdbwithattrs(const std::string&, RdbAttrs);
 
 // pathattrs returns the attributes for the given file path.
 RdbAttrs pathattrs(std::string);

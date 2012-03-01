@@ -46,6 +46,11 @@ bool isdir(const std::string&);
 // path exists.
 void ensuredir(const std::string&);
 
+// recursively removes the given file(s) and return true
+// if they were all removed and false otherwise.  If a file
+// cannot be removed then a warning is printed.
+bool rmrecur(const std::string&);
+
 // basename returns the basename of the given path.
 // The basename is the entry to the right of the right-most
 // path seperator.

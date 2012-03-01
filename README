@@ -1,6 +1,5 @@
 Ubuntu package dependencies:
 	libboost-dev
-	libboost-filesystem-dev
 
-The plat2d/play binary also needs:
+The plat2d/play binary and graphics code also need:
 	libsdl1.2-dev
