@@ -55,9 +55,11 @@ void GridMap::load(FILE *in) {
 }
 
 void GridMap::load_seedinst(FILE *in) {
-	uint64_t  seed;
-	double prob;
+	unsigned long seed;
+	if (sizeof(seed) < sizeof(uint64_t))
+		fatal("unsigned long is too small to read 64-bit seeds");
 
+	double prob;
 	if (fscanf(in, " seed %lu %u %u %lg\n", &seed, &w, &h, &prob) != 4)
 		readfail("Failed to read map header");
 

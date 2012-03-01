@@ -203,7 +203,7 @@ private:
 
 	void updateopen(void) {
 		nresort++;
-		for (unsigned int i = 0; i < open.size(); i++)
+		for (int i = 0; i < open.size(); i++)
 			computeutil(open.at(i));
 		open.reinit();
 	}
