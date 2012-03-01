@@ -25,7 +25,7 @@ Player p(2 * Tile::Width + Player::Offx, 2 * Tile::Height + Player::Offy,
 static void parseargs(int, const char*[]);
 static void helpmsg(int);
 static Lvl *getlvl(void);
-static void dfline(std::vector<const char*>&, void*);
+static void dfline(std::vector<std::string>&, void*);
 static void initsdl(void);
 static unsigned int keys(void);
 static unsigned int sdlkeys(void);
@@ -98,27 +98,26 @@ static Lvl *getlvl(void) {
 	if (c != '#')
 		return new Lvl(stdin);
 
-	char *path = NULL;
+	std::string path;
 	nextctrl = 0;
 	dfread(stdin, dfline, &path, echo);
-	if (!path)
+	if (path.size() == 0)
 		fatal("No level key found");
 
-	FILE *f = fopen(path, "r");
+	FILE *f = fopen(path.c_str(), "r");
 	if (!f)
-		fatalx(errno, "Failed to open %s for reading", path);
+		fatalx(errno, "Failed to open %s for reading", path.c_str());
 
 	Lvl *lvl = new Lvl(f);
 	fclose(f);
 	return lvl;
 }
 
-static void dfline(std::vector<const char*> &cols, void *_pathp) {
-	if (strcmp(cols[1], "level") == 0) {
-		char **pathp = (char**) _pathp;
-		*pathp = new char[strlen(cols[2]) + 1];
-		memcpy(*pathp, cols[2], strlen(cols[2]) + 1);
-	} else if (strcmp(cols[1], "controls") == 0) {
+static void dfline(std::vector<std::string> &cols, void *_pathp) {
+	if (cols[1] == "level") {
+		std::string *pathp = (std::string*) _pathp;
+		*pathp = cols[0];
+	} else if (cols[1] == "controls") {
 		controls = controlvec(cols[2]);
 	}
 }

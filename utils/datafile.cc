@@ -198,7 +198,7 @@ char *strdup(const std::string &s) {
 
 void dfread(FILE *in, Dfhandler seeline, void *priv, bool echo) {
 	unsigned int lineno = 1;
-	std::vector<const char*> toks;
+	std::vector<std::string> toks;
 	boost::optional<std::string> line = readline(in, echo);
 
 	while (line) {
@@ -214,7 +214,7 @@ void dfread(FILE *in, Dfhandler seeline, void *priv, bool echo) {
 
 		if (toks.size() > 0) {
 			const char *end = linebuf + strlen(linebuf);
-			char *left = linebuf + strlen(toks[0]);
+			char *left = linebuf + toks[0].size();
 			while (left < end) {
 				char *vl = gettoken(left, lineno);
 				if (!vl)

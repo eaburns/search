@@ -120,7 +120,7 @@ void dffooter(FILE *);
 // if the proc/ filesystem is readable.
 void dfprocstatus(FILE*);
 
-typedef void(*Dfhandler)(std::vector<const char*>&, void*);
+typedef void(*Dfhandler)(std::vector<std::string>&, void*);
 
 // dfread reads #pair, #altcols and #altrow lines from the
 // given datafile and calls the handler for each.  The vector

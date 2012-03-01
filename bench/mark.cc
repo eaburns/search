@@ -58,7 +58,7 @@ static std::string benchpath(const Domain&, const Algorithm&,const std::string&)
 static bool chkbench(const Domain&, const Algorithm&, const std::string&);
 static void mkbench(const Domain&, const Algorithm&, const std::string&);
 static Result readresult(FILE*);
-static void dfline(std::vector<const char *>&, void*);
+static void dfline(std::vector<std::string>&, void*);
 static Result run(const Domain&, const Algorithm&, const std::string&);
 
 int main(int argc, const char *argv[]) {
@@ -234,18 +234,18 @@ static Result readresult(FILE *f) {
 	return res;
 }
 
-static void dfline(std::vector<const char *> &toks, void *_res) {
+static void dfline(std::vector<std::string> &toks, void *_res) {
 	Result *res = static_cast<Result*>(_res);
-	if (strcmp(toks[1], "total wall time") == 0) {
-		res->time = strtod(toks[2], NULL);
-	} else if (strcmp(toks[1], "final sol length") == 0) {
-		res->len = strtol(toks[2], NULL, 10);
-	} else if (strcmp(toks[1], "mean wall time") == 0) {
-		res->time = strtod(toks[2], NULL);
-	} else if (strcmp(toks[1], "stdev wall time") == 0) {
-		res->stdev = strtod(toks[2], NULL);
-	} else if (strcmp(toks[1], "num runs") == 0) {
-		res->nruns = strtol(toks[2], NULL, 10);
+	if (toks[1] == "total wall time") {
+		res->time = strtod(toks[2].c_str(), NULL);
+	} else if (toks[1] == "final sol length") {
+		res->len = strtol(toks[2].c_str(), NULL, 10);
+	} else if (toks[1] == "mean wall time") {
+		res->time = strtod(toks[2].c_str(), NULL);
+	} else if (toks[1] == "stdev wall time") {
+		res->stdev = strtod(toks[2].c_str(), NULL);
+	} else if (toks[1] == "num runs") {
+		res->nruns = strtol(toks[2].c_str(), NULL, 10);
 	}
 }
 
