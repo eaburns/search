@@ -25,7 +25,7 @@ int main(int argc, char *argv[]) {
 		attrs.push_back(key, vl);
 	}
 
-	std::vector<std::string> files = rdbwithattrs(root, attrs);
+	std::vector<std::string> files = withattrs(root, attrs);
 	for (unsigned int i = 0; i < files.size(); i++) {
 		printf("%s\n", files[i].c_str());
 	}

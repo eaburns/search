@@ -75,7 +75,7 @@ std::string RdbAttrs::string(void) const {
 	return r;
 }
 
-std::vector<std::string> rdbwithattrs(const std::string &root, RdbAttrs attrs) {
+std::vector<std::string> withattrs(const std::string &root, RdbAttrs attrs) {
 	std::vector<std::string> files;
 	collect(root, attrs, files);
 	return files;
@@ -109,7 +109,7 @@ static void addfiles(const std::string &path, RdbAttrs &attrs, std::vector<std::
 	files.push_back(path);
 }
 
-std::string rdbpathfor(const std::string &root, RdbAttrs attrs) {
+std::string pathfor(const std::string &root, RdbAttrs attrs) {
 	std::string path(root);
 	std::string curkey;
 

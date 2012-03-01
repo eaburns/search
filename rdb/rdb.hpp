@@ -51,13 +51,13 @@ private:
 	std::deque<std::string> keys;
 };
 
-// rdbpathfor returns the filesystem path for the given attribute
+// pathfor returns the filesystem path for the given attribute
 // set rooted at the given root directory.
-std::string rdbpathfor(const std::string&, RdbAttrs);
+std::string pathfor(const std::string&, RdbAttrs);
 
-// rdbwithattrs returns a vector of all file paths that have the given
+// withattrs returns a vector of all file paths that have the given
 // attributes under the given root directory.
-std::vector<std::string> rdbwithattrs(const std::string&, RdbAttrs);
+std::vector<std::string> withattrs(const std::string&, RdbAttrs);
 
 // pathattrs returns the attributes for the given file path.
 RdbAttrs pathattrs(std::string);

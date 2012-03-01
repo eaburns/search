@@ -5,7 +5,7 @@ include $(UTILOBJS:.o=.d)
 
 CLEAN+=$(UTILOBJS)
 
-rdb: rdb/pathfor rdb/withattrs rdb/dfcmplt rdb/pathattrs
+rdb: rdb/rdb.a rdb/pathfor rdb/withattrs rdb/dfcmplt rdb/pathattrs
 
 EVERYTHING+=rdb
 
@@ -15,22 +15,26 @@ TESTS+=.rdb_test
 	./rdb/test ".*test" && touch $@
 CLEAN+=.rdb_test
 
-rdb/test: rdb/test.cc rdb/test_rdb.cc $(RDBOBJS) utils/utils.a
+rdb/rdb.a: $(RDBOBJS)
+	$(AR) rsc $@ $(RDBOBJS)
+CLEAN+=rdb/rdb.a
+
+rdb/test: rdb/test.cc rdb/test_rdb.cc rdb/rdb.a utils/utils.a
 	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
 CLEAN+=rdb/test
 
-rdb/pathfor: rdb/pathfor.cc $(RDBOBJS) utils/utils.a
+rdb/pathfor: rdb/pathfor.cc rdb/rdb.a  utils/utils.a
 	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
 CLEAN+=rdb/pathfor
 
-rdb/withattrs: rdb/withattrs.cc $(RDBOBJS) utils/utils.a
+rdb/withattrs: rdb/withattrs.cc rdb/rdb.a  utils/utils.a
 	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
 CLEAN+=rdb/withattrs
 
-rdb/dfcmplt: rdb/dfcmplt.cc $(RDBOBJS) utils/utils.a
+rdb/dfcmplt: rdb/dfcmplt.cc rdb/rdb.a  utils/utils.a
 	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
 CLEAN+=rdb/dfcmplt
 
-rdb/pathattrs: rdb/pathattrs.cc $(RDBOBJS) utils/utils.a
+rdb/pathattrs: rdb/pathattrs.cc rdb/rdb.a  utils/utils.a
 	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
 CLEAN+=rdb/pathattrs

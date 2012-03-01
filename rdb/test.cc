@@ -1,15 +1,15 @@
 #include "../utils/utils.hpp"
 
-bool test_rdbpathfor_newpath(void);
-bool test_rdbpathfor_samepath(void);
-bool test_rdbpathfor_shareprefix(void);
-bool test_rdbpathfor_existing(void);
+bool test_pathfor_newpath(void);
+bool test_pathfor_samepath(void);
+bool test_pathfor_shareprefix(void);
+bool test_pathfor_existing(void);
 
 static const Test tests[] = {
-	Test("rdbpathfor newpath test", test_rdbpathfor_newpath),
-	Test("rdbpathfor samepath test", test_rdbpathfor_samepath),
-	Test("rdbpathfor shareprefix test", test_rdbpathfor_shareprefix),
-	Test("rdbpathfor existing test", test_rdbpathfor_existing),
+	Test("pathfor newpath test", test_pathfor_newpath),
+	Test("pathfor samepath test", test_pathfor_samepath),
+	Test("pathfor shareprefix test", test_pathfor_shareprefix),
+	Test("pathfor existing test", test_pathfor_existing),
 };
 
 enum { Ntests = sizeof(tests) / sizeof(tests[0]) };

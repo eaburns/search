@@ -14,7 +14,7 @@ int main(int argc, const char *argv[]) {
 	const char *root = argv[1];
 	RdbAttrs attrs = attrargs(argc-2, argv+2);
 
-	printf("%s\n", rdbpathfor(root, attrs).c_str());
+	printf("%s\n", pathfor(root, attrs).c_str());
 	return 0;
 }
 

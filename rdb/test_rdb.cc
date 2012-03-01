@@ -9,7 +9,7 @@
 static bool hassuffix(const std::string&, const char*);
 static void touch(const std::string&);
 
-bool test_rdbpathfor_newpath(void) {
+bool test_pathfor_newpath(void) {
 	char dir[] = "rdb-XXXXXX";
 	const char *root = mkdtemp(dir);
 
@@ -17,7 +17,7 @@ bool test_rdbpathfor_newpath(void) {
 	attrs.push_back("test0", "0");
 	attrs.push_back("test1", "1");
 
-	std::string path = rdbpathfor(root, attrs);
+	std::string path = pathfor(root, attrs);
 	bool ok = hassuffix(path, "0/1");
 	if (!ok)
 		testpr("Expected test0/test1 suffix on [%s]\n", path.c_str());
@@ -27,7 +27,7 @@ bool test_rdbpathfor_newpath(void) {
 	return ok;		
 }
 
-bool test_rdbpathfor_samepath(void) {
+bool test_pathfor_samepath(void) {
 	char dir[] = "rdb-XXXXXX";
 	const char *root = mkdtemp(dir);
 
@@ -35,8 +35,8 @@ bool test_rdbpathfor_samepath(void) {
 	attrs.push_back("test0", "0");
 	attrs.push_back("test1", "1");
 
-	std::string path0 = rdbpathfor(root, attrs);
-	std::string path1 = rdbpathfor(root, attrs);
+	std::string path0 = pathfor(root, attrs);
+	std::string path1 = pathfor(root, attrs);
 	bool ok = path0 == path1;
 	if (!ok)
 		testpr("Expected [%s] == [%s]\n", path0.c_str(), path1.c_str());
@@ -46,7 +46,7 @@ bool test_rdbpathfor_samepath(void) {
 	return ok;		
 }
 
-bool test_rdbpathfor_shareprefix(void) {
+bool test_pathfor_shareprefix(void) {
 	bool ok = true;
 	char dir[] = "rdb-XXXXXX";
 	const char *root = mkdtemp(dir);
@@ -64,17 +64,17 @@ bool test_rdbpathfor_shareprefix(void) {
 	attrs2.push_back("test1", "1");
 	attrs2.push_back("test2", "2");
 
-	std::string path0 = rdbpathfor(root, attrs0);
+	std::string path0 = pathfor(root, attrs0);
 	if (path0 != std::string(root) + "/0/1/1") {
 		testpr("Expected path to be %s/0/1/1, got [%s]\n", root, path0.c_str());
 		ok = false;
 	}
-	std::string path1 = rdbpathfor(root, attrs1);
+	std::string path1 = pathfor(root, attrs1);
 	if (path1 != std::string(root) + "/0/2/1") {
 		testpr("Expected path to be %s/0/2/1, got [%s]\n", root, path1.c_str());
 		ok = false;
 	}
-	std::string path2 = rdbpathfor(root, attrs2);
+	std::string path2 = pathfor(root, attrs2);
 	if (path2 != std::string(root) + "/0/1/2") {
 		testpr("Expected path to be %s/0/1/,, got [%s]\n", root, path2.c_str());
 		ok = false;
@@ -85,7 +85,7 @@ bool test_rdbpathfor_shareprefix(void) {
 	return ok;		
 }
 
-bool test_rdbpathfor_existing(void) {
+bool test_pathfor_existing(void) {
 	bool ok = true;
 	char dir[] = "rdb-XXXXXX";
 	const char *root = mkdtemp(dir);
@@ -105,7 +105,7 @@ bool test_rdbpathfor_existing(void) {
 	attrs.push_back("zero", "0");
 	attrs.push_back("one", "1");
 
-	std::string path = rdbpathfor(root, attrs);
+	std::string path = pathfor(root, attrs);
 	if (path != std::string(root) + "/0/1/2") {
 		testpr("Expected %s/0/1/2, got [%s]\n", root, path.c_str());
 		ok = false;
