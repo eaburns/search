@@ -1,5 +1,6 @@
 #include "rdb.hpp"
 #include "../utils/utils.hpp"
+#include <utility>
 #include <cstring>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -22,6 +23,10 @@ static bool getkey(const std::string&, std::string&);
 
 // touch 'ensure that the given file exists.
 static void touch(const std::string&);
+
+// frontpair gets the first key=value pair from the argument vector.
+// The return value is the number of arguments used to find this pair.
+static int frontpair(int, const char*[], std::string&, std::string&);
 
 bool RdbAttrs::push_back(const std::string &key, const std::string &value) {
 	if (pairs.find(key) != pairs.end())
@@ -184,4 +189,40 @@ RdbAttrs pathattrs(std::string path) {
 	}
 
 	return attrs;
+}
+
+RdbAttrs attrargs(int argc, const char *argv[]) {
+	RdbAttrs attrs;
+	while (argc > 0) {
+		std::string key, value;
+		int shift = frontpair(argc, argv, key, value);
+		if (shift < 0)
+			break;
+		argc -= shift;
+		argv += shift;
+		attrs.push_back(key.c_str(), value.c_str());
+	}
+	return attrs;
+}
+
+static int frontpair(int argc, const char *argv[], std::string &key, std::string &vl) {
+	key.clear();
+	vl.clear();
+
+	for (int i = 0; i < argc; i++) {
+		std::string arg = argv[i];
+		size_t eq = arg.find('=');
+		if (eq == std::string::npos) {
+			key += arg;
+			key.push_back(' ');
+			continue;
+		}
+		vl = arg.substr(eq + 1, arg.size() - eq - 1);
+		if (eq > 0)
+			key += arg.substr(0, eq - 1);
+		else if (key[key.size()-1] == ' ')
+			key.resize(key.size()-1);
+		return i + 1;
+	}
+	return -1;
 }

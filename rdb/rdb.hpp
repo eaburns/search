@@ -61,3 +61,10 @@ std::vector<std::string> rdbwithattrs(const std::string&, RdbAttrs);
 
 // pathattrs returns the attributes for the given file path.
 RdbAttrs pathattrs(std::string);
+
+// attrargs returns the attribute list that is pulled out
+// of command-line arguments.  The first argument in
+// the vector is considered as a key so you may need to
+// shift over argv by one to ignore the program name
+// argument.
+RdbAttrs attrargs(int, const char*[]);
