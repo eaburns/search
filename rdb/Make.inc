@@ -1,9 +1,3 @@
-LDFLAGS+=\
-	/usr/lib/libboost_filesystem.a\
-	/usr/lib/libboost_filesystem-mt.a\
-	/usr/lib/libboost_system.a\
-	/usr/lib/libboost_system-mt.a\
-
 RDBOBJS:=\
 	rdb/rdb.o\
 

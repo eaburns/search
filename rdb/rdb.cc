@@ -3,17 +3,25 @@
 #include <cstring>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <boost/filesystem.hpp>
+#include <cerrno>
 
-namespace bf = boost::filesystem;
+// makepath builds the path for the given attribute list.
+static std::string makepath(std::string, RdbAttrs);
 
-static std::string makepath(bf::path, RdbAttrs);
-static void walkwithattrs(bf::path, RdbAttrs&, std::vector<std::string>&);
-static void addpath(bf::path, RdbAttrs&, std::vector<std::string>&);
-// Get the key for the given path.
-static bool getkey(const bf::path&, std::string&);
-static bf::path keyfile(const std::string&);
-static void touch(const bf::path&);
+// collect collects all of the files with attributes matching the
+// given attribute list to the vector.
+static void collect(std::string, RdbAttrs&, std::vector<std::string>&);
+
+// addfiles adds the RDB entries matching the attribute list
+// beneath the given directory to the vector.
+static void addfiles(const std::string&, RdbAttrs&, std::vector<std::string>&);
+
+// getkey searches the given directory for the
+// KEY= file and returns the key name.
+static bool getkey(const std::string&, std::string&);
+
+// touch 'ensure that the given file exists.
+static void touch(const std::string&);
 
 bool RdbAttrs::push_back(const std::string &key, const std::string &value) {
 	if (pairs.find(key) != pairs.end())
@@ -62,14 +70,14 @@ std::string RdbAttrs::string(void) const {
 	return r;
 }
 
-std::vector<std::string> rdbwithattrs(const char *root, RdbAttrs attrs) {
+std::vector<std::string> rdbwithattrs(const std::string &root, RdbAttrs attrs) {
 	std::vector<std::string> files;
-	walkwithattrs(root, attrs, files);
+	collect(root, attrs, files);
 	return files;
 }
 
-static void walkwithattrs(bf::path path, RdbAttrs &attrs, std::vector<std::string> &files) {
-	if (!bf::exists(path) || !bf::is_directory(path))
+static void collect(std::string path, RdbAttrs &attrs, std::vector<std::string> &files) {
+	if (!fileexists(path) || !isdir(path))
 		return;
 
 	std::string curkey;
@@ -77,38 +85,39 @@ static void walkwithattrs(bf::path path, RdbAttrs &attrs, std::vector<std::strin
 		return;
 
 	if (attrs.mem(curkey)) {
-		path /= attrs.lookup(curkey);
-		return addpath(path, attrs, files);
+		path = pathcat(path, attrs.lookup(curkey));
+		return addfiles(path, attrs, files);
 	}
 
-	for (bf::directory_iterator it(path); it != bf::directory_iterator(); it++)
-		addpath(*it, attrs, files);
+	std::vector<std::string> ents = readdir(path);
+	for (unsigned int i = 0; i < ents.size(); i++)
+		addfiles(ents[i], attrs, files);
 }
 
-static void addpath(bf::path path, RdbAttrs &attrs, std::vector<std::string> &files) {
-	if (strstr(path.string().c_str(), "KEY=") != NULL)
+static void addfiles(const std::string &path, RdbAttrs &attrs, std::vector<std::string> &files) {
+	if (strstr(path.c_str(), "KEY=") != NULL)
 		return;
-	if (!bf::exists(path))
+	if (!fileexists(path))
 		return;
-	if (bf::is_directory(path))
-		return walkwithattrs(path, attrs, files);
-	files.push_back(path.string());
+	if (isdir(path))
+		return collect(path, attrs, files);
+	files.push_back(path);
 }
 
-std::string rdbpathfor(const char *root, RdbAttrs attrs) {
-	bf::path path(root);
+std::string rdbpathfor(const std::string &root, RdbAttrs attrs) {
+	std::string path(root);
 	std::string curkey;
 
 	while (attrs.size() > 0) {
-		if (bf::exists(path)) {
-			if (!bf::is_directory(path) && attrs.size() > 0)
-				fatal("%s is not a directory\n", path.string().c_str());
+		if (fileexists(path)) {
+			if (!isdir(path) && attrs.size() > 0)
+				fatal("%s is not a directory\n", path.c_str());
 			if (!getkey(path, curkey))
 				return makepath(path, attrs);
 			if (!attrs.mem(curkey)) {
-				path /= "UNSPECIFIED";
+				path = pathcat(path, "UNSPECIFIED");
 			} else {
-				path /= attrs.lookup(curkey);
+				path = pathcat(path, attrs.lookup(curkey));
 				attrs.rm(curkey);
 			}
 		} else {
@@ -116,49 +125,48 @@ std::string rdbpathfor(const char *root, RdbAttrs attrs) {
 		}
 	}
 
-	return path.string();
+	return path;
 }
 
-static std::string makepath(bf::path root, RdbAttrs attrs) {
+static std::string makepath(std::string root, RdbAttrs attrs) {
 	while (attrs.size() > 0) {
-		if (!bf::exists(root)) {
-			if (mkdir(root.string().c_str(), S_IRWXU|S_IRWXG|S_IRWXO) == -1) {
+		if (!fileexists(root)) {
+			if (mkdir(root.c_str(), S_IRWXU|S_IRWXG|S_IRWXO) == -1) {
 				if (errno != EEXIST)
-					fatalx(errno, "failed to create %s\n", root.string().c_str());
+					fatalx(errno, "failed to create %s\n", root.c_str());
 			}
 		}
 
-		const std::string &key = attrs.front();
-		const std::string &vl = attrs.lookup(key);
-		if (!bf::exists(root / keyfile(key)))
-			touch(root / keyfile(key));
+		std::string key = attrs.front();
+		std::string vl = attrs.lookup(key);
+		std::string kfile = pathcat(root, "KEY=" + key);
+		if (!fileexists(kfile))
+			touch(kfile);
 		attrs.pop_front();
-		root /= vl;
+		root = pathcat(root, vl);
 	}
 
-	return root.string();
+	return root;
 }
 
-static bool getkey(const bf::path &p, std::string &key) {
-	for (bf::directory_iterator it(p); it != bf::directory_iterator(); it++) {
-		const char *fname = it->path().string().c_str();
+static bool getkey(const std::string &p, std::string &key) {
+	std::vector<std::string> ents = readdir(p);
+	for (unsigned int i = 0; i < ents.size(); i++) {
+		const char *fname = ents[i].c_str();
 		const char *keyfile = strstr(fname, "KEY=");
 		if (!keyfile)
 			continue;
 		key = keyfile + strlen("KEY=");
 		return true;
+	
 	}
 	return false;
 }
 
-static bf::path keyfile(const std::string &key) {
-	return bf::path(std::string("KEY=") + key);
-}
-
-static void touch(const bf::path &p) {
-	FILE *touch = fopen(p.string().c_str(), "w");
+static void touch(const std::string &p) {
+	FILE *touch = fopen(p.c_str(), "w");
 	if (!touch)
-		fatalx(errno, "Failed to touch keyfile %s", p.string().c_str());
+		fatalx(errno, "Failed to touch keyfile %s", p.c_str());
 	fclose(touch);
 }
 

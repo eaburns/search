@@ -2,11 +2,6 @@
 
 	- fix segfault in fatal
 
-• rdb
-
-	- remove dependency on
-	boost-filesystem
-
 • plat2d:
 
 	- random start locations

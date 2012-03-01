@@ -2,12 +2,12 @@
 #include "../utils/utils.hpp"
 #include <cstring>
 #include <cstdio>
-#include <boost/filesystem.hpp>
-
-namespace bf = boost::filesystem;
+#include <cerrno>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 static bool hassuffix(const std::string&, const char*);
-static void touch(const bf::path&);
+static void touch(const std::string&);
 
 bool test_rdbpathfor_newpath(void) {
 	char dir[] = "rdb-XXXXXX";
@@ -22,7 +22,7 @@ bool test_rdbpathfor_newpath(void) {
 	if (!ok)
 		testpr("Expected test0/test1 suffix on [%s]\n", path.c_str());
 
-	bf::remove_all(root);
+	rmrecur(root);
 
 	return ok;		
 }
@@ -41,7 +41,7 @@ bool test_rdbpathfor_samepath(void) {
 	if (!ok)
 		testpr("Expected [%s] == [%s]\n", path0.c_str(), path1.c_str());
 
-	bf::remove_all(root);
+	rmrecur(root);
 
 	return ok;		
 }
@@ -80,7 +80,7 @@ bool test_rdbpathfor_shareprefix(void) {
 		ok = false;
 	}
 
-	bf::remove_all(root);
+	rmrecur(root);
 
 	return ok;		
 }
@@ -90,15 +90,15 @@ bool test_rdbpathfor_existing(void) {
 	char dir[] = "rdb-XXXXXX";
 	const char *root = mkdtemp(dir);
 
-	bf::path p(root);
-	bf::create_directory(p);
-	touch((p / "KEY=zero").string());
-	p /= "0";
-	bf::create_directory(p);
-	touch((p / "KEY=one").string());
-	p /= "1";
-	bf::create_directory(p);
-	touch((p / "KEY=two").string());
+	std::string p(root);
+	mkdir(p.c_str(), S_IRWXU|S_IRWXG|S_IRWXO);
+	touch(pathcat(p, "KEY=zero"));
+	p = pathcat(p, "0");
+	mkdir(p.c_str(), S_IRWXU|S_IRWXG|S_IRWXO);
+	touch(pathcat(p, "KEY=one"));
+	p = pathcat(p, "1");
+	mkdir(p.c_str(), S_IRWXU|S_IRWXG|S_IRWXO);
+	touch(pathcat(p, "KEY=two"));
 
 	RdbAttrs attrs;
 	attrs.push_back("two", "2");
@@ -111,7 +111,7 @@ bool test_rdbpathfor_existing(void) {
 		ok = false;
 	}
 
-	bf::remove_all(root);
+	rmrecur(root);
 
 	return ok;		
 }
@@ -121,9 +121,9 @@ static bool hassuffix(const std::string &string, const char *suffix) {
 	return strstr(s, suffix) == s + strlen(s) - strlen(suffix);
 }
 
-static void touch(const bf::path &p) {
-	FILE *touch = fopen(p.string().c_str(), "w");
+static void touch(const std::string &p) {
+	FILE *touch = fopen(p.c_str(), "w");
 	if (!touch)
-		fatalx(errno, "Failed to touch keyfile %s", p.string().c_str());
+		fatalx(errno, "Failed to touch keyfile %s", p.c_str());
 	fclose(touch);
 }
