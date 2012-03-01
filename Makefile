@@ -1,16 +1,16 @@
 #CXX:=clang++ -fno-color-diagnostics
 #CC:=clang -fno-color-diagnostics
 
-CXX:=g++
-CC:=gcc
+CXX:=g++ -std=c++98
+CC:=gcc -std=c99
 
 AR:=ar
 
 FLAGS:=-Wall -Werror -O3
 
-CXXFLAGS:=$(FLAGS) -std=c++98
+CXXFLAGS:=$(FLAGS)
 
-CFLAGS:=$(FLAGS) -std=c99
+CFLAGS:=$(FLAGS)
 
 LDFLAGS:=
 
