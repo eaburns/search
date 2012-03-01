@@ -219,9 +219,9 @@ static int frontpair(int argc, const char *argv[], std::string &key, std::string
 		}
 		vl = arg.substr(eq + 1, arg.size() - eq - 1);
 		if (eq > 0)
-			key += arg.substr(0, eq - 1);
+			key += arg.substr(0, eq);
 		else if (key[key.size()-1] == ' ')
-			key.resize(key.size()-1);
+			key.resize(key.size() - 1);
 		return i + 1;
 	}
 	return -1;
