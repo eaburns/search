@@ -3,16 +3,22 @@
 #include <boost/integer/static_log2.hpp>
 
 void fatal(const char*, ...);
+extern "C" unsigned long hashbytes(unsigned char[], unsigned int);
 
 class Tiles;
 
 template<int Ntiles> class PackedTiles {
 	friend class Tiles;
-	static const unsigned int nbits = boost::static_log2<Ntiles>::value;
-	static const unsigned int nbytes = (int) ((nbits / 8.0) * Ntiles);
 
-	unsigned char bytes[nbytes];
+	enum {
+		Nbits = boost::static_log2<Ntiles>::value,
+		Nbytes = (int) ((Nbits / 8.0) * Ntiles),
+	};
+
+	unsigned char bytes[Nbytes];
+
 public:
+
 	void pack(Tiles::Tile ts[]) {
 		fatal("Tiles::pack is unimplemented");
 	}
@@ -39,8 +45,11 @@ public:
 
 template<> class PackedTiles<16> {
 	friend class Tiles;
-	boost::uint64_t word;
+
 	enum { Ntiles = 16 };
+
+	boost::uint64_t word;
+
 public:
 
 	void pack(Tiles::Tile ts[]) {

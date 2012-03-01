@@ -100,7 +100,7 @@ struct GridNav {
 		State(unsigned int l) : loc(l), nops(-1) { }
 
 	private:
-		friend class GridNav;
+		friend struct GridNav;
 		int loc;
 		int nops;
 		Oper ops[8];

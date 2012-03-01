@@ -8,9 +8,9 @@ AR:=ar
 
 FLAGS:=-Wall -Werror -O3
 
-CXXFLAGS:=$(FLAGS)
+CXXFLAGS:=$(FLAGS) -std=c++98
 
-CFLAGS:=$(FLAGS)
+CFLAGS:=$(FLAGS) -std=c99
 
 LDFLAGS:=
 
