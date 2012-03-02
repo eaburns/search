@@ -15,13 +15,37 @@ int main(int argc, const char *argv[]) {
 	if (argc < 4)
 		usage(1);
 
+	std::string root = argv[3];
 	double cbins = strtod(argv[1], NULL);
 	double tbins = strtod(argv[2], NULL);
 
-	std::vector<Imp> *imps = readsols(argv[3], attrargs(argc-4, argv+4));
+	RdbAttrs attrs = attrargs(argc-4, argv+4);
+	if (!attrs.mem("alg"))
+		fatal("must specify the alg attribute");
+
+	std::vector<Imp> *imps = readsols(root, attrs);
 	printf("%lu solution improvements\n", (unsigned long) imps->size());
 
-	AnyProf p(*imps, cbins, tbins);
+	AnyProf prof(*imps, cbins, tbins);
+
+	RdbAttrs dstattrs;
+	while (attrs.size() > 0) {
+		std::string key = attrs.front();
+		std::string vl = attrs.lookup(key);
+		attrs.pop_front();
+		if (key == "alg")
+			vl += ".profile";
+		dstattrs.push_back(key, vl);
+	}
+
+	std::string file = pathfor(root, dstattrs);
+	printf("saving profile to %s\n", file.c_str());
+	fflush(stdout);
+	FILE *f = fopen(file.c_str(), "w");
+	if (!f)
+		fatalx(errno, "failed to open %s for writing", file.c_str());
+	prof.write(f);
+	fclose(f);
 
 	return 0;
 }
@@ -37,7 +61,7 @@ static void usage(int res) {
 // calls of dfline.
 struct Aux {
 	std::vector<Imp> *imps;
-	double cprev, tprev;
+	double qprev, tprev;
 };
 
 // readsols returns the solution improvement info for
@@ -73,12 +97,12 @@ static void dfline(std::vector<std::string> &toks, void *auxp) {
 	if (toks.size() != 9 || toks[0] != "#altrow" || toks[1] != "sol")
 		return;
 
-	double c = strtod(toks[6].c_str(), NULL);
+	double q = strtod(toks[6].c_str(), NULL);
 	double t = strtod(toks[8].c_str(), NULL);
 
 	Aux *aux = static_cast<Aux*>(auxp);
 	if (aux->tprev >= 0)
-		aux->imps->push_back(Imp(aux->cprev, aux->tprev, c, t));
-	aux->cprev = c;
+		aux->imps->push_back(Imp(aux->qprev, aux->tprev, q, t));
+	aux->qprev = q;
 	aux->tprev = t;
 }
