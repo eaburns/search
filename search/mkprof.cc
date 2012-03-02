@@ -37,7 +37,7 @@ static void usage(int res) {
 // calls of dfline.
 struct Aux {
 	std::vector<Imp> *imps;
-	double prev;
+	double cprev, tprev;
 };
 
 // readsols returns the solution improvement info for
@@ -51,7 +51,7 @@ static std::vector<Imp> *readsols(const std::string &root, const RdbAttrs &attrs
 		FILE *f = fopen(files[i].c_str(), "r");
 		if (!f)
 			fatalx(errno, "failed to open %s for reading", files[i].c_str());
-		aux.prev = std::numeric_limits<double>::infinity();
+		aux.tprev = -1;
 		dfread(f, dfline, &aux, false);
 		fclose(f);
 	}
@@ -72,10 +72,13 @@ static std::vector<Imp> *readsols(const std::string &root, const RdbAttrs &attrs
 static void dfline(std::vector<std::string> &toks, void *auxp) {
 	if (toks.size() != 9 || toks[0] != "#altrow" || toks[1] != "sol")
 		return;
-	double bound = strtod(toks[6].c_str(), NULL);
-	double time = strtod(toks[8].c_str(), NULL);
+
+	double c = strtod(toks[6].c_str(), NULL);
+	double t = strtod(toks[8].c_str(), NULL);
+
 	Aux *aux = static_cast<Aux*>(auxp);
-	if (!isinf(aux->prev))
-		aux->imps->push_back(Imp(aux->prev, bound, time));
-	aux->prev = bound;
+	if (aux->tprev >= 0)
+		aux->imps->push_back(Imp(aux->cprev, aux->tprev, c, t));
+	aux->cprev = c;
+	aux->tprev = t;
 }

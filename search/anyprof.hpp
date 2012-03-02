@@ -5,17 +5,16 @@
 // such as the initial cost, the new cost and the time delta
 // between them.
 struct Imp {
-	Imp(double _c0, double _c1, double _dt) : c0(_c0), c1(_c1), dt(_dt) { }
+	Imp(double _c0, double _t0, double _c1, double _t1) :
+		c0(_c0), t0(_t0), c1(_c1), t1(_t1) { }
 	Imp(void) { }
-	double c0, c1, dt;
+	double c0, t0, c1, t1;
 };
 
 // AnyProf holds an anytime algorithm's performance profile.
 struct AnyProf {
 
 	AnyProf(const std::vector<Imp>&, int, int);
-
-	~AnyProf(void);
 
 private:
 
@@ -27,16 +26,12 @@ private:
 		double c0bin = c0 / cwidth;
 		double dtbin = dt / twidth;
 		double c1bin = c1 / cwidth;
-		int i = c0bin*tbins*cbins + dtbin*cbins + c1bin;
-		assert (i < sz);
-		assert (i >= 0);
-		return i;
+		return c0bin*tbins*cbins + dtbin*cbins + c1bin;
 	}
 
-	double cmax, tmax;	// maximum cost and delta time
+	double cmax, dtmax, tmax;	// maximum cost, delta time and time
 	double cwidth, twidth;	// width of each cost and delta time bin
 	int cbins, tbins;	// number of cost and delta time bins
-	
-	int sz;
-	double *prof;
+
+	std::vector<double> prof;
 };
