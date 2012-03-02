@@ -116,7 +116,7 @@ static Lvl *getlvl(void) {
 static void dfline(std::vector<std::string> &cols, void *_pathp) {
 	if (cols[1] == "level") {
 		std::string *pathp = (std::string*) _pathp;
-		*pathp = cols[0];
+		*pathp = cols[2];
 	} else if (cols[1] == "controls") {
 		controls = controlvec(cols[2]);
 	}
