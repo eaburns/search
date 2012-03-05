@@ -6,7 +6,7 @@ CC:=gcc -std=c99
 
 AR:=ar
 
-FLAGS:=-Wall -Werror -O3
+FLAGS:=-Wall -Werror -g
 
 CXXFLAGS:=$(FLAGS)
 
