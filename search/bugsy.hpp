@@ -95,8 +95,8 @@ template <class D> struct Bugsy : public SearchAlgorithm<D> {
 		closed.prstats(stdout, "closed ");
 		dfpair(stdout, "open list type", "%s", "binary heap");
 		dfpair(stdout, "node size", "%u", sizeof(Node));
-		dfpair(stdout, "wt", "%g", wt);
-		dfpair(stdout, "wf", "%g", wf);
+		dfpair(stdout, "cost weight", "%g", wf);
+		dfpair(stdout, "time weight", "%g", wt);
 		dfpair(stdout, "final time per expand", "%g", timeper);
 		dfpair(stdout, "number of resorts", "%lu", nresort);
 	}
