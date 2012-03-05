@@ -1,13 +1,16 @@
-#include "../search/search.hpp"
+#include "search.hpp"
+#include "anyprof.hpp"
 #include "../structs/binheap.hpp"
 #include "../utils/pool.hpp"
 #include <limits>
 #include <vector>
 #include <cmath>
+#include <cerrno>
 
 void dfrowhdr(FILE *, const char *name, int ncols, ...);
 void dfrow(FILE *, const char *name, const char *colfmt, ...);
 void fatal(const char*, ...);
+void fatalx(int, const char*, ...);
 
 template <class D> struct Arastar : public SearchAlgorithm<D> {
 
@@ -72,7 +75,7 @@ template <class D> struct Arastar : public SearchAlgorithm<D> {
 		nodes = new Pool<Node>();
 	}
 
-	~Arastar(void) {
+	virtual ~Arastar(void) {
 		delete nodes;
 	}
 
@@ -84,7 +87,6 @@ template <class D> struct Arastar : public SearchAlgorithm<D> {
 		dfrowhdr(stdout, "sol", 7, "num", "nodes expanded",
 			"nodes generated", "weight", "solution bound", "solution cost",
 			"wall time");
-
 
 		Node *n0 = init(d, s0);
 		closed.add(n0);
@@ -137,7 +139,7 @@ template <class D> struct Arastar : public SearchAlgorithm<D> {
 		dfpair(stdout, "weight decrement", "%g", dwt);
 	}
 
-private:
+protected:
 
 	bool improve(D &d) {
 		bool goal = false;
@@ -272,4 +274,153 @@ private:
  	ClosedList<SearchNode<D>, SearchNode<D>, D> closed;
 	Incons incons;
 	Pool<Node> *nodes;
+};
+
+
+// ArastarMon is an implementation of ARA* that uses a
+// monitor in order to stop it when the utility of the current
+// solution/search time is estimated to be better than that
+// which is achievable from further search.
+template <class D> struct ArastarMon : public Arastar<D> {
+
+	typedef typename D::State State;
+	typedef typename D::PackedState PackedState;
+	typedef typename D::Cost Cost;
+	typedef typename D::Oper Oper;
+	typedef typename Arastar<D>::Node Node;
+	typedef typename Arastar<D>::Incons Incons;
+
+	ArastarMon(int argc, const char *argv[]) :
+			Arastar<D>(argc, argv), stopnext(false),
+			stop(false), nextmon(0) {
+		this->wt0 = this->dwt = -1;
+		wcost = wtime = 1;
+		std::string path;
+		for (int i = 0; i < argc; i++) {
+			if (i < argc - 1 && strcmp(argv[i], "-wt0") == 0)
+				this->wt0 = strtod(argv[++i], NULL);
+			else if (i < argc - 1 && strcmp(argv[i], "-dwt") == 0)
+				this->dwt = strtod(argv[++i], NULL);
+			else if (i < argc -1 && strcmp(argv[i], "-wf") == 0)
+				wcost = strtod(argv[++i], NULL);
+			else if (i < argc - 1 && strcmp(argv[i], "-wt") == 0)
+				wtime = strtod(argv[++i], NULL);
+			else if (i < argc - 1 && strcmp(argv[i], "-p") == 0)
+				path = argv[++i];
+		}
+
+		if (this->wt0 < 1)
+			fatal("Must specify initial weight ≥ 1 using -wt0");
+		if (this->dwt <= 0)
+			fatal("Must specify weight decrement > 0 using -dwt");
+		if (path == "")
+			fatal("Must specify a profile file");
+
+		AnyProf prof;
+		FILE *f = fopen(path.c_str(), "r");
+		if (!f)
+			fatalx(errno, "failed to open %s for reading", path.c_str());
+		prof.read(f);
+		fclose(f);
+		monitor = MonPolicy(prof, wcost, wtime);
+
+		this->wt = this->wt0;
+		this->nodes = new Pool<Node>();
+	}
+
+	void search(D &d, typename D::State &s0) {
+		this->start();
+		this->closed.init(d);
+		this->incons.init(d);
+
+		dfrowhdr(stdout, "sol", 7, "num", "nodes expanded",
+			"nodes generated", "weight", "solution bound", "solution cost",
+			"wall time");
+
+		Node *n0 = init(d, s0);
+		this->closed.add(n0);
+		this->open.push(n0);
+
+		unsigned long n = 0;
+		do {
+			if (improve(d)) {
+				n++;
+				double epsprime = this->wt == 1.0 ? 1.0 : this->findbound();
+				if (this->wt < epsprime)
+					epsprime = this->wt;
+	
+				dfrow(stdout, "sol", "uuugggg", n, this->res.expd,
+					this->res.gend, this->wt, epsprime,
+					(double) this->res.cost, walltime() - this->res.wallstrt);
+			}
+
+			if (this->wt <= 1.0 || stop)
+				break;
+
+			this->wt = this->wt - this->dwt > 1.0 ? this->wt - this->dwt : 1.0;
+			if (this->wt < 1.0 + sqrt(std::numeric_limits<double>::epsilon()))
+				this->wt = 1.0;
+
+			this->updateopen();
+			this->closed.clear();
+
+		} while(!stop && !this->limit() && !this->open.empty());
+
+		this->finish();
+	}
+
+	virtual void output(FILE *out) {
+		SearchAlgorithm<D>::output(out);
+		Arastar<D>::output(out);
+		dfpair(stdout, "cost weight", "%g", wcost);
+		dfpair(stdout, "time weight", "%g", wtime);
+	}
+
+private:
+
+	bool improve(D &d) {
+		bool goal = false;
+		mon();
+		while (!stop && !this->limit() && this->goodnodes()) {
+			Node *n = *this->open.pop();
+			State buf, &state = d.unpack(buf, n->packed);
+
+			if (d.isgoal(state)) {
+				this->res.goal(d, n);
+				goal = true;
+			}
+
+			this->expand(d, n, state);
+			mon();
+		}
+		return goal;
+	}
+
+	// TODO: don't compute walltime on each call to
+	// mon.  Try to learn a good frequency at which to
+	// re-check the time.
+	void mon(void) {
+		double wallt = walltime();
+		double t = wallt - this->res.wallstrt;
+		if (wallt < nextmon || this->res.cost  < 0)
+			return;
+		if (stopnext) {
+			printf("stopping\n");
+			stop = true;
+			return;
+		}
+
+		std::pair<double, bool> m = monitor.next(this->res.cost, t);
+		printf("Δt=%g, stop=%d\n", m.first, m.second);
+		fflush(stdout);
+		nextmon = wallt + m.first;
+		stopnext = m.second;
+		if (m.first == 0)
+			stop = stopnext;
+	}
+
+	double wcost, wtime;
+	MonPolicy monitor;
+	bool stopnext, stop;
+	double nextmon;
 };
