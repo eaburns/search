@@ -162,6 +162,8 @@ AnyProf profile(unsigned int cbins, unsigned int tbins) {
 		unsigned int s = 0;
 		for (unsigned int c1 = 0; c1 < cbins; c1++)
 			s += p.bins[c0][dt][c1];
+		if (s == 0)
+			s = 1;	// 0/1 == 0, so this will set entries to 0
 		for (unsigned int c1 = 0; c1 < cbins; c1++)
 			p.bins[c0][dt][c1] /= s;
 	}
