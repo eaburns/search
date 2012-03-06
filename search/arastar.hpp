@@ -6,6 +6,7 @@
 #include <vector>
 #include <cmath>
 #include <cerrno>
+#include <string>
 
 void dfrowhdr(FILE *, const char *name, int ncols, ...);
 void dfrow(FILE *, const char *name, const char *colfmt, ...);
@@ -80,14 +81,10 @@ template <class D> struct Arastar : public SearchAlgorithm<D> {
 	}
 
 	void search(D &d, typename D::State &s0) {
+		rowhdr();
 		this->start();
 		closed.init(d);
 		incons.init(d);
-
-		dfrowhdr(stdout, "sol", 7, "num", "nodes expanded",
-			"nodes generated", "weight", "solution bound", "solution cost",
-			"wall time");
-
 		Node *n0 = init(d, s0);
 		closed.add(n0);
 		open.push(n0);
@@ -99,19 +96,12 @@ template <class D> struct Arastar : public SearchAlgorithm<D> {
 				double epsprime = wt == 1.0 ? 1.0 : findbound();
 				if (wt < epsprime)
 					epsprime = wt;
-	
-				dfrow(stdout, "sol", "uuugggg", n, this->res.expd,
-					this->res.gend, wt, epsprime, (double) this->res.cost,
-					walltime() - this->res.wallstrt);
+				row(n, epsprime);
 			}
 
 			if (wt <= 1.0)
 				break;
-
-			wt = wt - dwt > 1.0 ? wt - dwt : 1.0;
-			if (wt < 1.0 + sqrt(std::numeric_limits<double>::epsilon()))
-				wt = 1.0;
-
+			nextwt();
 			updateopen();
 			closed.clear();
 
@@ -141,6 +131,27 @@ template <class D> struct Arastar : public SearchAlgorithm<D> {
 
 protected:
 
+	// nextwt decrements the weight by the given value.
+	void nextwt(void) {
+		wt = wt - dwt > 1.0 ? wt - dwt : 1.0;
+		if (wt < 1.0 + sqrt(std::numeric_limits<double>::epsilon()))
+			wt = 1.0;
+	}
+
+	// rowhdr outputs the incumbent solution row header line.
+	void rowhdr(void) {
+		dfrowhdr(stdout, "sol", 7, "num", "nodes expanded",
+			"nodes generated", "weight", "solution bound", "solution cost",
+			"wall time");
+	}
+
+	// row outputs an incumbent solution row.
+	void row(unsigned long n, double epsprime) {
+		dfrow(stdout, "sol", "uuugggg", n, this->res.expd,
+			this->res.gend, wt, epsprime, (double) this->res.cost,
+			walltime() - this->res.wallstrt);
+	}
+
 	bool improve(D &d) {
 		bool goal = false;
 		while (!this->limit() && goodnodes()) {
@@ -163,7 +174,8 @@ protected:
 			(double) this->res.cost > (*open.front())->fprime);
 	}
 
-	// Find the tightest bound for the current incumbent.
+	// findbound finds and returns the tightest bound for
+	// the current incumbent.
 	double findbound(void) {
 		assert (this->res.cost != Cost(-1));
 		double cost = this->res.cost;
@@ -199,8 +211,8 @@ protected:
 		return cost / min;
 	}
 
-	// Update the open list: update f' values and add INCONS
-	// and re-heapify.
+	// updateopen updates the f' values of nodes in incons and
+	// on the open list, then incons is added to the open list.
 	void updateopen(void) {
 		std::vector<Node*> &nodes = incons.nodes();
 		for (unsigned long i = 0; i < nodes.size(); i++) {
@@ -329,14 +341,12 @@ template <class D> struct ArastarMon : public Arastar<D> {
 	}
 
 	void search(D &d, typename D::State &s0) {
+		this->rowhdr();
+		// Output this early for debugging!
+		monitor.output(stdout);
 		this->start();
 		this->closed.init(d);
 		this->incons.init(d);
-
-		dfrowhdr(stdout, "sol", 7, "num", "nodes expanded",
-			"nodes generated", "weight", "solution bound", "solution cost",
-			"wall time");
-
 		Node *n0 = init(d, s0);
 		this->closed.add(n0);
 		this->open.push(n0);
@@ -348,19 +358,12 @@ template <class D> struct ArastarMon : public Arastar<D> {
 				double epsprime = this->wt == 1.0 ? 1.0 : this->findbound();
 				if (this->wt < epsprime)
 					epsprime = this->wt;
-	
-				dfrow(stdout, "sol", "uuugggg", n, this->res.expd,
-					this->res.gend, this->wt, epsprime,
-					(double) this->res.cost, walltime() - this->res.wallstrt);
+				this->row(n, epsprime);
 			}
 
 			if (this->wt <= 1.0 || stop)
 				break;
-
-			this->wt = this->wt - this->dwt > 1.0 ? this->wt - this->dwt : 1.0;
-			if (this->wt < 1.0 + sqrt(std::numeric_limits<double>::epsilon()))
-				this->wt = 1.0;
-
+			this->nextwt();
 			this->updateopen();
 			this->closed.clear();
 
@@ -372,6 +375,7 @@ template <class D> struct ArastarMon : public Arastar<D> {
 	virtual void output(FILE *out) {
 		SearchAlgorithm<D>::output(out);
 		Arastar<D>::output(out);
+		monitor.output(stdout);
 		dfpair(stdout, "cost weight", "%g", wcost);
 		dfpair(stdout, "time weight", "%g", wtime);
 	}
@@ -405,13 +409,11 @@ private:
 		if (wallt < nextmon || this->res.cost  < 0)
 			return;
 		if (stopnext) {
-			printf("stopping\n");
 			stop = true;
 			return;
 		}
 
 		std::pair<double, bool> m = monitor.next(this->res.cost, t);
-		printf("Δt=%g, stop=%d\n", m.first, m.second);
 		fflush(stdout);
 		nextmon = wallt + m.first;
 		stopnext = m.second;

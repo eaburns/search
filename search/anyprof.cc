@@ -12,10 +12,15 @@ AnyProf::AnyProf(unsigned int cbs, double cm, unsigned int tbs, double tm) :
 	assert (floor(tmax/twidth) == tbins-1);
 
 	bins.resize(cbins);
-	for (unsigned int i = 0; i < cbins; i++) {
+	for (unsigned int i = 0; i < bins.size(); i++) {
 		bins[i].resize(tbins);
-		for (unsigned int j = 0; j < cbins; j++)
+		for (unsigned int j = 0; j < bins[i].size(); j++)
 			bins[i][j].resize(cbins, 0);
+	}
+	for (unsigned int i = 0; i < cbins; i++) {
+		assert (bins[i].size() == tbins);
+		for (unsigned int j = 0; j < tbins; j++)
+			assert (bins[i][j].size() == cbins);
 	}
 }
 
@@ -30,9 +35,9 @@ void AnyProf::read(FILE *in) {
 	twidth = tmax/(tbins-1);
 
 	bins.resize(cbins);
-	for (unsigned int i = 0; i < cbins; i++) {
+	for (unsigned int i = 0; i < bins.size(); i++) {
 		bins[i].resize(tbins);
-		for (unsigned int j = 0; j < cbins; j++) {
+		for (unsigned int j = 0; j < bins[i].size(); j++) {
 			bins[i][j].resize(cbins);
 			for (unsigned int k = 0; k < cbins; k++) {
 				if (fscanf(in, " %lg", &bins[i][j][k]) == 1)
@@ -61,7 +66,7 @@ void AnyProf::write(FILE *out) const {
 }
 
 MonPolicy::MonPolicy(const AnyProf &p, double wc, double wt) :
-		prof(p), wcost(wt), wtime(wt) {
+		prof(p), wcost(wc), wtime(wt) {
 
 	static const double Inifinity = std::numeric_limits<double>::infinity();
 
@@ -74,7 +79,6 @@ MonPolicy::MonPolicy(const AnyProf &p, double wc, double wt) :
 		ents[ci][prof.tbins-1] = Entry(u, 0, true);
 	}
 
-
 	// v(c_i, t_i) = max_{dt, stop} (
 	// 	sum_j pr(c_j, | c_i, dt) * u(c_j, t_i + dt)		if stop
 	// 	sum_j pr(c_j, | c_i, dt) * v(c_j, t_i + dt) + C	otherwise)
@@ -82,39 +86,43 @@ MonPolicy::MonPolicy(const AnyProf &p, double wc, double wt) :
 	for (unsigned int ci = 0; ci < prof.cbins; ci++) {
 		double max = -Inifinity;
 		bool smax = true;
-		double dmax = 0;
+		double dmax = 0, vstop = 0, vgo = 0;
 
-		for (unsigned int tj = ti+1; tj < prof.tbins; tj++) {
+		for (unsigned int tj = ti; tj < prof.tbins; tj++) {
 			double time = tj*prof.twidth;
-			double dt = time - ti*prof.twidth;
-			unsigned int dti = dt/prof.twidth;
+			unsigned int dti = tj - ti;
 
-			double sum = 0;
-			for (unsigned int cj = 0; cj < prof.cbins; cj++) {
+			vstop = 0;
+			for (unsigned int cj = 0; cj <= ci; cj++) {
 				double cost = cj*prof.cwidth;
 				double u = -(wcost*cost + wtime*time);
-				sum += prof.bins[ci][dti][cj] * u;
+				vstop += prof.bins[ci][dti][cj] * u;
 			}
-			if (sum > max) {
-				max = sum;
+			if (vstop > max) {
+				max = vstop;
 				smax = true;
 				dmax = dti*prof.twidth;
 			}
 
-			sum = 0;
-			for (unsigned int cj = 0; cj < prof.cbins; cj++) {
+			if ((unsigned int) ti == tj)
+				continue;
+
+			vgo = 0;
+			for (unsigned int cj = 0; cj <= ci; cj++) {
 				assert (ents[cj][tj].set);
 				double v = ents[cj][tj].value;
-				sum += prof.bins[ci][dti][cj] * v;
+				vgo += prof.bins[ci][dti][cj] * v;
 			}
-			if (sum > max) {
-				max = sum;
+			if (vgo > max) {
+				max = vgo;
 				smax = false;
+				assert (dti > 0);	// should never moniton again after Δt == 0
 				dmax = dti*prof.twidth;
 			}
-
-			ents[ci][ti] = Entry(max, dmax, smax);
 		}
+		
+		assert (!ents[ci][ti].set);
+		ents[ci][ti] = Entry(max, dmax, smax);
 	}
 	}
 }

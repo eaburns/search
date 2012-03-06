@@ -5,7 +5,7 @@ SEARCHOBJS:=\
 
 include $(SEARCHOBJS:.o=.d)
 
-search: search/search.a
+search: search/search.a search/mkprof
 
 EVERYTHING+=search
 

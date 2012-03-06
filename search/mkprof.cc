@@ -35,7 +35,7 @@ int main(int argc, const char *argv[]) {
 
 	std::string root = argv[3];
 	unsigned int cbins = strtoul(argv[1], NULL, 10);
-	unsigned int tbins = strtoul(argv[1], NULL, 10);
+	unsigned int tbins = strtoul(argv[2], NULL, 10);
 
 	RdbAttrs attrs = attrargs(argc-4, argv+4);
 	if (!attrs.mem("alg"))
@@ -124,36 +124,40 @@ static void dfline(std::vector<std::string> &toks, void *aux) {
 	inst->sols.push_back(Sol(c, t));
 }
 
+
+
 AnyProf profile(unsigned int cbins, unsigned int tbins) {
 	AnyProf p(cbins, cmax, tbins, tmax);
+	assert (p.cbins == cbins);
 
 	// Accumulate counts
 	for (unsigned int i = 0; i < insts.size(); i++) {
 		const Inst &inst = insts[i];
 
-		for (unsigned int j = 1; j < inst.sols.size(); j++) {
-			double deltat = inst.sols[j].time - inst.sols[j-1].time;
-			if (deltat < 0)
-				fatal("%s has a negative time delta", inst.file.c_str());
-			unsigned int dt = deltat / p.twidth;
-			unsigned int c0 = inst.sols[j-1].cost / p.cwidth;
-			unsigned int c1 = inst.sols[j].cost / p.cwidth;
-			assert (dt < tbins);
+		for (unsigned int j = 0; j < inst.sols.size()-1; j++) {
+			unsigned int c0 = inst.sols[j].cost / p.cwidth;
 			assert (c0 < cbins);
-			assert (c1 < cbins);
+			unsigned int dtprev = 0;
+			unsigned int cprev = c0;
 
-			p.bins[c0][dt][c1]++;
-			for (unsigned int t = 0; t < dt; t++)
-				p.bins[c0][t][c0]++;
+			for (unsigned int k = j+1;  k < inst.sols.size(); k++) {
+				unsigned int cnext = inst.sols[k].cost / p.cwidth;
+				if (cnext == cprev)
+					continue;
+				double deltat =  inst.sols[k].time - inst.sols[j].time;
+				if (deltat < 0)
+					fatal("%s has a negative time delta", inst.file.c_str());
+	
+				unsigned int dtnext = deltat / p.twidth;
+				for (unsigned int dt = dtprev; dt < dtnext; dt++)
+					p.bins[c0][dt][cprev]++;
+
+				cprev = cnext;
+				dtprev = dtnext;
+			}
+			for (unsigned int dt = dtprev; dt < tbins; dt++)
+				p.bins[c0][dt][cprev]++;
 		}
-
-		unsigned int cost = inst.sols[inst.sols.size()-1].cost / p.cwidth;
-		if (inst.sols[inst.sols.size()-1].time > inst.tmax)
-			fatal("%s finds a solution after the search is done", inst.file.c_str());
-
-		assert (cost < tbins);
-		for (unsigned int dt = 0; dt < tbins; dt++)
-			p.bins[cost][dt][cost]++;
 	}
 
 	// Normalize
@@ -162,10 +166,13 @@ AnyProf profile(unsigned int cbins, unsigned int tbins) {
 		unsigned int s = 0;
 		for (unsigned int c1 = 0; c1 < cbins; c1++)
 			s += p.bins[c0][dt][c1];
-		if (s == 0)
-			s = 1;	// 0/1 == 0, so this will set entries to 0
-		for (unsigned int c1 = 0; c1 < cbins; c1++)
-			p.bins[c0][dt][c1] /= s;
+		if (s == 0) {
+			// no data: well, Δt=0 should have no solution improvement.
+			p.bins[c0][0][c0] = 1;
+		} else {
+			for (unsigned int c1 = 0; c1 < cbins; c1++)
+				p.bins[c0][dt][c1] /= s;
+		}
 	}
 	}
 
