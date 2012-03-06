@@ -31,6 +31,16 @@ void new_128_delete_bench(unsigned long n, double *strt, double *end) {
 		delete[]  new char[128];
 }
 
+void walltime_bench(unsigned long n, double *strt, double *end) {
+	for (unsigned long i = 0; i < n; i++)
+		dvol = walltime();
+}
+
+void cputime_bench(unsigned long n, double *strt, double *end) {
+	for (unsigned long i = 0; i < n; i++)
+		dvol = cputime();
+}
+
 void rand_bits_bench(unsigned long n, double *strt, double *end) {
 	*strt = walltime();
 
