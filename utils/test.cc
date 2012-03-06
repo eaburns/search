@@ -47,6 +47,8 @@ enum { Ntests = sizeof(tests) / sizeof(tests[0]) };
 void new_16_delete_bench(unsigned long, double*, double*);
 void new_32_delete_bench(unsigned long, double*, double*);
 void new_128_delete_bench(unsigned long, double*, double*);
+void walltime_bench(unsigned long, double*, double*);
+void cputime_bench(unsigned long, double*, double*);
 void rand_bits_bench(unsigned long, double*, double*);
 void rand_real_bench(unsigned long, double*, double*);
 void rand_bench(unsigned long, double*, double*);
@@ -67,6 +69,8 @@ static const Benchmark benches[] = {
 	Benchmark("new(16)/delete() benchmark", new_16_delete_bench),
 	Benchmark("new(32)/delete() benchmark", new_32_delete_bench),
 	Benchmark("new(128)/delete() benchmark", new_128_delete_bench),
+	Benchmark("walltime benchmark", walltime_bench),
+	Benchmark("cputime benchmark", cputime_bench),
 	Benchmark("randgen.bits benchmark", rand_bits_bench),
 	Benchmark("randgen.real benchmark", rand_real_bench),
 	Benchmark("rand() benchmark", rand_bench),
