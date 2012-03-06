@@ -46,4 +46,4 @@ clean:
 	rm -f $(CLEAN) $(BINS) $(TMPLS:.hpp=.hpp.gch)
 
 nuke: clean
-	rm -f $(shell find . -name \*.d) 
+	rm -f $(shell find . -not -iwholename \*.hg\* -name \*.d)
