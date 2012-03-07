@@ -36,7 +36,7 @@ struct GridNav {
 			return *this;
 		}
 
-		operator double() { return val; }
+		operator double() const { return val; }
 
 		Cost operator+(const Cost &o) const {
 			return Cost(units + o.units, sqrts + o.sqrts);
