@@ -1,3 +1,17 @@
+• search
+
+	- fix cost comptation. Due to
+	inconsistency updates, the g
+	value of a node is sometimes
+	not the correct cost value. Need
+	to compute the cost by traversing
+	the path in the domain code.
+	This is probably a good idea anyway
+	because 1) no need to store opcost
+	in the search nodes and 2) no
+	excuse not to validate the solution
+	path.
+
 • utils
 
 	- fix segfault in fatal
