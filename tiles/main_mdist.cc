@@ -17,8 +17,8 @@ int main(int argc, const char *argv[]) {
 		assert(tr.state.eq(res.path[i]));
 		state = tr.state;
 	}
-	assert (res.cost == cost);
 	assert (d.isgoal(state));
+	assert (res.cost == cost);
 
 	return 0;
 }
