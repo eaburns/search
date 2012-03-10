@@ -14,8 +14,7 @@ unsigned long virtmem(void) {
 	if (n <= 0 || n > Bufsz)
 		return 0;
 
-	struct stat sb;
-	if (stat(buf, &sb) < 0)
+	if (!fileexists(buf))
 		return 0;
 
 	FILE *in = fopen(buf, "r");
