@@ -158,7 +158,7 @@ struct GridNav {
 		Transition(GridNav &d, State &s, Oper op) :
 				revop(d.rev[op]),
 				state(s.loc + d.map->mvs[op].delta) {
-			assert (state.loc < (int) d.map->sz);
+			assert (state.loc < d.map->sz);
 			if (d.map->mvs[op].cost == 1.0)
 				cost = Cost(1, 0);
 			else
