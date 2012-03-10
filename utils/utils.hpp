@@ -97,7 +97,7 @@ void dfpair(FILE *, const char *key, const char *fmt, ...);
 // dfrowhdr writes 'altcol' header information to the given file.
 // ncols specifies the number of columns and the variadic
 // arguments be ncols strings representing the column headers.
-void dfrowhdr(FILE *, const char *name, int ncols, ...);
+void dfrowhdr(FILE *, const char *name, unsigned int ncols, ...);
 
 // dfrow writes an 'altcols' row to the given file.
 // colfmt is a string of characters: g, f, d, and u with the

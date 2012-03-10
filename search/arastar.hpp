@@ -5,8 +5,8 @@
 #include <vector>
 #include <cmath>
 
-void dfrowhdr(FILE *, const char *name, int ncols, ...);
-void dfrow(FILE *, const char *name, const char *colfmt, ...);
+void dfrowhdr(FILE*, const char*, unsigned int ncols, ...);
+void dfrow(FILE*, const char*, const char*, ...);
 void fatal(const char*, ...);
 
 template <class D> struct Arastar : public SearchAlgorithm<D> {

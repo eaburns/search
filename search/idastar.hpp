@@ -1,8 +1,8 @@
 #include <cstdio>
 #include "../search/search.hpp"
 
-void dfrowhdr(FILE *, const char *name, int ncols, ...);
-void dfrow(FILE *, const char *name, const char *colfmt, ...);
+void dfrowhdr(FILE*, const char*, unsigned int, ...);
+void dfrow(FILE*, const char*, const char*, ...);
 
 template <class D> class Idastar : public SearchAlgorithm<D> {
 
