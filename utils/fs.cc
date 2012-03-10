@@ -5,7 +5,9 @@
 #include <cstdarg>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <unistd.h> 
+#include <unistd.h>
+
+enum { MaxLine = 4096 };
 
 static const char *sepstr = "/";
 static const char sepchar = sepstr[0];
@@ -15,6 +17,8 @@ boost::optional<std::string> readline(FILE *in, bool echo) {
 
 	int c = fgetc(in);
 	while (c != '\n' && c != EOF) {
+		if (line.size() == MaxLine)
+			fatal("Your line is too big");
 		line.push_back(c);
 		c = fgetc(in);
 	}
