@@ -1,4 +1,7 @@
 #include <boost/cstdint.hpp>
+#include <limits>
+
+void fatal(const char*, ...);
 
 unsigned int ilog2(boost::uint32_t v) {
 	if (!v)
@@ -34,4 +37,14 @@ unsigned long ipow(unsigned int b, unsigned int e) {
 	for (unsigned int i = 0; i < e; i++)
 		r *= b;
 	return r;
+}
+
+unsigned long fallfact(unsigned int x, unsigned int n) {
+	unsigned long f = x;
+	for (unsigned int i = 1; i < n; i++) {
+		if (std::numeric_limits<unsigned int>::max() / (x-1) < f)
+			fatal("Overflow in falling factorial");
+		f *= x - i;
+	}
+	return f;
 }

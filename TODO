@@ -41,10 +41,6 @@
 
 	- verify solution paths
 
-	- make sure that the size of
-	grids doesn't overflow the
-	size of a signed integer
-
 • tiles:
 
 	- PDBs

@@ -101,13 +101,13 @@ struct GridNav {
 
 	private:
 		friend struct GridNav;
-		int loc;
+		unsigned int loc;
 		int nops;
 		Oper ops[8];
 	};
 
 	struct PackedState {
-		int loc;
+		unsigned int loc;
 
 		unsigned long hash(void) { return loc; }
 
@@ -135,7 +135,7 @@ struct GridNav {
 	}
 
 	unsigned int nops(State &s) const {
-		if (s.nops > 0)
+		if (s.nops >= 0)
 			return s.nops;
 
 		s.nops = 0;
@@ -180,7 +180,7 @@ struct GridNav {
 		fprintf(out, "%u, %u\n", coord.first, coord.second);
 	}
 
-	int start, finish;
+	unsigned int start, finish;
 	GridMap *map;
 
 	// rev holds the index of the reverse of each operator

@@ -5,8 +5,12 @@
 #include <cstring>
 #include <cmath>
 #include <cerrno>
+#include <limits>
 
 Lvl::Lvl(unsigned int _w, unsigned int _h) : w(_w), h(_h) {
+	if (w > MaxDim || h > MaxDim)
+		fatal("Level is too large");
+
 	blks = new Blk[w * h];
 	memset(blks, 0, w * h * sizeof(*blks));
 }
@@ -29,6 +33,9 @@ void Lvl::read(FILE *f)
 		fatal("Malformed level header");
 	if (d != 1)
 		fatal("Only levels with a depth of 1 are supported");
+
+	if (w > MaxDim || h > MaxDim || d > MaxDim)
+		fatal("Level is too large");
 
 	blks = new Blk[w * h * d];
 	memset(blks, 0, w * h * d * sizeof(*blks));

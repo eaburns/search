@@ -7,6 +7,10 @@ struct Image;
 
 struct Lvl {
 
+	// MaxDim is the maximum dimension of a level
+	// in x, or y.  This limit is mainly to prevent overflow.
+	enum { MaxDim = 1000 };
+
 	// This constructor creates an empty level.
 	Lvl(unsigned int, unsigned int);
 

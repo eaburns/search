@@ -63,14 +63,14 @@ int main(int argc, const char *argv[]) {
 }
 
 static void parseargs(int argc, const char *argv[]) {
-	for (int i = 1; i < argc; i++) {
+	for (unsigned int i = 1; i < (unsigned int) argc; i++) {
 		if (strcmp(argv[i], "-h") == 0)
 			helpmsg(0);
-		else if (i < argc - 1 && strcmp(argv[i], "-t") == 0)
+		else if (i < (unsigned int) argc - 1 && strcmp(argv[i], "-t") == 0)
 			frametime = strtol(argv[++i], NULL, 10);
 		else if (strcmp(argv[i], "-e") == 0)
 			echo = true;
-		else if (i < argc - 1 && strcmp(argv[i], "-d") == 0)
+		else if (i < (unsigned int) argc - 1 && strcmp(argv[i], "-d") == 0)
 			delay = 1000 * strtol(argv[++i], NULL, 10);
 		else {
 			printf("Unknown option %s\n", argv[i]);

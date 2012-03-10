@@ -8,8 +8,18 @@
 
 void fatal(const char*, ...);
 
-class GridMap {
-public:
+struct GridMap {
+
+	// MaxDim is the maximum dimension allowed for
+	// a grid map.  The extra padding of boundary cells
+	// is not counted against this limit.  The main purpose
+	// of this limit is to ensure there are no overflows.
+	//
+	// This value is small enough to ensure that squaring
+	// it is significantly less than any reasonable maximum
+	// integer size.
+	enum { MaxDim = 1<<15 };
+
 	GridMap(std::string &file);
 
 	GridMap(FILE *f) : nmvs(0) { load(f); }

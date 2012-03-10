@@ -182,6 +182,9 @@ void GridMap::load_sturtevant(FILE *in) {
 }
 
 void GridMap::setsize(unsigned int width, unsigned int height) {
+	if (w > MaxDim || h > MaxDim)
+		fatal("Map is too large");
+
 	w = width + 2;
 	h = height + 2;
 	sz = w * h;

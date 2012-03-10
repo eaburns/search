@@ -264,4 +264,7 @@ unsigned int ilog2(boost::uint32_t);
 // to the power of the second argument.
 unsigned long ipow(unsigned int, unsigned int);
 
+// fallfact returns `x to the n falling.'
+unsigned long fallfact(unsigned int x, unsigned int n);
+
 #endif	// _UTILS_HPP_
