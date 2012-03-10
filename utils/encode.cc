@@ -101,7 +101,7 @@ std::string ascii85enc(const std::string &data) {
 	uint32_t word;
 	unsigned int i = 0;
 
-	while (data.size() - i >= 4) {
+	while (data.size() >= i && data.size() - i >= 4) {
 		word = (unsigned char) data[i++] << 24;
 		word |= (unsigned char) data[i++] << 16;
 		word |= (unsigned char) data[i++] << 8;
@@ -109,14 +109,15 @@ std::string ascii85enc(const std::string &data) {
 		digits85(dst, 5, word);
 	}
 
-	if (data.size() - i == 0)
+	if (data.size() < i || data.size() - i == 0)
 		return dst;
 
-	assert (data.size() - i < 4);
+	assert (data.size() >= i && data.size() - i < 4);
+
 	word = (unsigned char) data[i] << 24;
-	if (data.size() - i > 1)
+	if (data.size() >= i && data.size() - i > 1)
 		word |= (unsigned char) data[i+1] << 16;
-	if (data.size() - i > 2)
+	if (data.size() >= i && data.size() - i > 2)
 		word |= (unsigned char) data[i+2] << 8;
 
 	digits85(dst, data.size() - i + 1, word);
