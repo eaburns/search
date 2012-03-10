@@ -19,14 +19,14 @@ static std::string msg;
 static bool runtest(const Test &);
 static void runbench(const Benchmark &);
 
-bool runtests(const Test tests[], int num, const char *regexp) {
+bool runtests(const Test tests[], unsigned int num, const char *regexp) {
 	regex_t re;
 	int err = regcomp(&re, regexp, 0);
 	if (err)
 		fatalx(err, "Failed to compile regexp [%s]", regexp);
 
 	unsigned int nfailed = 0, ntotal = 0;
-	for (int i = 0; i < num; i++) {
+	for (unsigned int i = 0; i < num; i++) {
 		if (regexec(&re, tests[i].name, 0, NULL, 0) == REG_NOMATCH)
 			continue;
 		if (!runtest(tests[i]))
@@ -41,13 +41,13 @@ bool runtests(const Test tests[], int num, const char *regexp) {
 	return nfailed == 0;
 }
 
-void runbenches(const Benchmark benchs[], int num, const char *regexp) {
+void runbenches(const Benchmark benchs[], unsigned int num, const char *regexp) {
 	regex_t re;
 	int err = regcomp(&re, regexp, 0);
 	if (err)
 		fatalx(err, "Failed to compile regexp [%s]", regexp);
 
-	for (int i = 0; i < num; i++) {
+	for (unsigned int i = 0; i < num; i++) {
 		if (regexec(&re, benchs[i].name, 0, NULL, 0) == REG_NOMATCH)
 			continue;
 		runbench(benchs[i]);
@@ -117,8 +117,10 @@ static void runbench(const Benchmark &b) {
 		puts(msg.c_str());
 }
 
+enum { Bufsz = 128 };
+
 std::string commas(const char *fmt, ...) {
-	char str[128];
+	char str[Bufsz];
 	memset(str, 'a', sizeof(str));
 
 	va_list ap;
@@ -128,7 +130,7 @@ std::string commas(const char *fmt, ...) {
 
 	if (n < 0)
 		fatal("commas: Failed to write format to the buffer");
-	if ((unsigned int) n >= sizeof(str))
+	if (n >= Bufsz)
 		fatal("commas: Buffer size is too small");
 
 	char *end = str + n;

@@ -153,12 +153,12 @@ struct Benchmark {
 // runtests runs all of the tests in the list that match the given
 // regular expression.  Information on each test and the number
 // of passed and failed tests is printed to standard output.
-bool runtests(const Test [], int, const char *regexp);
+bool runtests(const Test [], unsigned int, const char *regexp);
 
 // runbenches runs all of the benchmarks that match the given
 // regular expression.  Timing information is printed for each
 // benchmark.
-void runbenches(const Benchmark[], int, const char *regexp);
+void runbenches(const Benchmark[], unsigned int, const char *regexp);
 
 // testpr can be used to display formatted output from within
 // a testing function.  The output is surpressed until the test is
