@@ -2,6 +2,7 @@
 #include "../structs/djset.hpp"
 #include "polymap.hpp"
 #include <vector>
+#include <limits>
 
 struct Comp {
 	Comp(unsigned int _w, unsigned int _h) :
@@ -137,6 +138,10 @@ struct Comp {
 };
 
 PolyMap::PolyMap(const bool blkd[], unsigned int w, unsigned int h) {
+
+	if (std::numeric_limits<unsigned int>::max() / h < w)
+		fatal("Map dimensions are too large");
+
 	Djset *forest = new Djset[w * h];
 	for (unsigned int x = 0; x < w; x++) {
 	for (unsigned int y = 0; y < h; y++) {

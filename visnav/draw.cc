@@ -17,14 +17,14 @@ enum {
 };
 
 int main(int argc, char *argv[]) {
-	for (int i = 1; i < argc; i++) {
+	for (unsigned int i = 1; i < (unsigned int) argc; i++) {
 		if (strcmp(argv[i], "-h") == 0) {
 			helpmsg(0);
 		} else if (strcmp(argv[i], "-e") == 0) {
 			echo = true;
-		} else if (i < argc - 1 && strcmp(argv[i], "-o") == 0) {
+		} else if (i < (unsigned int) argc - 1 && strcmp(argv[i], "-o") == 0) {
 			outfile = argv[++i];
-		} else if (i < argc - 1 && strcmp(argv[i], "-i") == 0) {
+		} else if (i < (unsigned int) argc - 1 && strcmp(argv[i], "-i") == 0) {
 			infile = argv[++i];
 		} else if (strcmp(argv[i], "-l") == 0) {
 			labels = true;

@@ -32,6 +32,9 @@ static void readpbm(FILE *in) {
 	if (res != 2)
 		fatal("Failed to read the pbm size");
 
+	if (std::numeric_limits<unsigned int>::max() / w < h)
+		fatal("Image dimensions are too large");
+
 	junkcomment(in);
 
 	blkd = new bool[w * h];

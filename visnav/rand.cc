@@ -16,18 +16,21 @@ static const char *outfile;
 static bool stats;
 
 int main(int argc, char *argv[]) {
-	for (int i = 1; i < argc; i++) {
+	if (argc < 0)
+		fatal("Negative argument count");
+
+	for (unsigned int i = 1; i < (unsigned int) argc; i++) {
 		if (strcmp(argv[i], "-h") == 0)
 			helpmsg(0);
-		else if (i < argc - 1 && strcmp(argv[i], "-o") == 0)
+		else if (i < (unsigned int) argc - 1 && strcmp(argv[i], "-o") == 0)
 			outfile = argv[++i];
-		else if (i < argc - 1 && strcmp(argv[i], "-npolys") == 0)
+		else if (i < (unsigned int) argc - 1 && strcmp(argv[i], "-npolys") == 0)
 			Npolys = strtoll(argv[++i], NULL, 10);
-		else if (i < argc - 1 && strcmp(argv[i], "-nverts") == 0)
+		else if (i < (unsigned int) argc - 1 && strcmp(argv[i], "-nverts") == 0)
 			Maxverts = strtoll(argv[++i], NULL, 10);
-		else if (i < argc - 1 && strcmp(argv[i], "-minrad") == 0)
+		else if (i < (unsigned int) argc - 1 && strcmp(argv[i], "-minrad") == 0)
 			Minrad = strtod(argv[++i], NULL);
-		else if (i < argc - 1 && strcmp(argv[i], "-maxrad") == 0)
+		else if (i < (unsigned int) argc - 1 && strcmp(argv[i], "-maxrad") == 0)
 			Maxrad = strtod(argv[++i], NULL);
 		else if (strcmp(argv[i], "-stats") == 0)
 			stats = true;
