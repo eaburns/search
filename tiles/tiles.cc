@@ -1,5 +1,6 @@
 #include "tiles.hpp"
 #include "../utils/utils.hpp"
+#include "../utils/safeops.hpp"
 #include <cerrno>
 #include <cstdio>
 #include <ctime>
@@ -27,8 +28,8 @@ void Tiles::readruml(FILE *in) {
 	if (fscanf(in, " %u %u", &w, &h) != 2)
 		fatalx(errno, "Failed to read width and height");
 
-	if (std::numeric_limits<unsigned int>::max() / w < h)
-		fatal("Tiles board is too large");
+	if (!can_mul(w, h))
+		fatal("The tiles board is too big");
 
 	if (w != Width && h != HEIGHT)
 		fatal("Width and height instance/compiler option mismatch");

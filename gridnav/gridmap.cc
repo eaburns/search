@@ -1,5 +1,6 @@
 #include "gridmap.hpp"
 #include "../utils/utils.hpp"
+#include "../utils/safeops.hpp"
 #include <cstdio>
 #include <cstddef>
 #include <cerrno>
@@ -63,7 +64,11 @@ void GridMap::load_seedinst(FILE *in) {
 	if (fscanf(in, " seed %lu %u %u %lg\n", &seed, &w, &h, &prob) != 4)
 		readfail("Failed to read map header");
 
-	setsize(w, h);
+	try {
+		setsize(w, h);
+	} catch (const BadFlow<unsigned int>&) {
+		fatal("Grid is too big");
+	}
 
 	int c = fgetc(in);
 	ungetc(c, in);
@@ -182,12 +187,9 @@ void GridMap::load_sturtevant(FILE *in) {
 }
 
 void GridMap::setsize(unsigned int width, unsigned int height) {
-	if (w > MaxDim || h > MaxDim)
-		fatal("Map is too large");
-
-	w = width + 2;
-	h = height + 2;
-	sz = w * h;
+	w = safe_add(width, (unsigned int) 2);
+	h = safe_add(height, (unsigned int) 2);
+	sz = safe_mul(w, h);
 	map = new unsigned char[sz];
 	flags = new unsigned char[sz];
 

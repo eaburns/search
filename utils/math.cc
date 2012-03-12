@@ -1,3 +1,4 @@
+#include "safeops.hpp"
 #include <boost/cstdint.hpp>
 #include <limits>
 
@@ -35,16 +36,13 @@ unsigned int ilog2(boost::uint32_t v) {
 unsigned long ipow(unsigned int b, unsigned int e) {
 	unsigned long r = 1;
 	for (unsigned int i = 0; i < e; i++)
-		r *= b;
+		r = safe_mul(r, (unsigned long) b);
 	return r;
 }
 
 unsigned long fallfact(unsigned int x, unsigned int n) {
 	unsigned long f = x;
-	for (unsigned int i = 1; i < n; i++) {
-		if (std::numeric_limits<unsigned int>::max() / (x-1) < f)
-			fatal("Overflow in falling factorial");
-		f *= x - i;
-	}
+	for (unsigned int i = 1; i < n; i++)
+		f = safe_mul(f, (unsigned long) safe_sub(x, i));
 	return f;
 }
