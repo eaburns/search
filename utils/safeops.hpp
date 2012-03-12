@@ -58,7 +58,7 @@ struct safe_ops<N, true>{
 	}
 
 	static N div(N a, N b){
-		if(b == 0)
+		if(b == 0 || (a == n::min() && b == -1))
 			throw BadFlow<N>(a, b, "/", true);
 		return a/b;
 	}

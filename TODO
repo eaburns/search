@@ -16,6 +16,8 @@
 
 	- fix segfault in fatal
 
+	- unit test Steve's safeops
+
 • plat2d:
 
 	- random start locations
