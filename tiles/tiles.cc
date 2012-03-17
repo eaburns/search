@@ -28,7 +28,7 @@ void Tiles::readruml(FILE *in) {
 	if (fscanf(in, " %u %u", &w, &h) != 2)
 		fatalx(errno, "Failed to read width and height");
 
-	if (!can_mul(w, h))
+	if (!safe::can_mul(w, h))
 		fatal("The tiles board is too big");
 
 	if (w != Width && h != HEIGHT)

@@ -66,7 +66,7 @@ void GridMap::load_seedinst(FILE *in) {
 
 	try {
 		setsize(w, h);
-	} catch (const BadFlow<unsigned int>&) {
+	} catch (const safe::BadFlow<unsigned int>&) {
 		fatal("Grid is too big");
 	}
 
@@ -187,9 +187,9 @@ void GridMap::load_sturtevant(FILE *in) {
 }
 
 void GridMap::setsize(unsigned int width, unsigned int height) {
-	w = safe_add(width, (unsigned int) 2);
-	h = safe_add(height, (unsigned int) 2);
-	sz = safe_mul(w, h);
+	w = safe::add(width, (unsigned int) 2);
+	h = safe::add(height, (unsigned int) 2);
+	sz = safe::mul(w, h);
 	map = new unsigned char[sz];
 	flags = new unsigned char[sz];
 

@@ -8,7 +8,7 @@
 #include <limits>
 
 Lvl::Lvl(unsigned int _w, unsigned int _h) : w(_w), h(_h) {
-	blks = new Blk[safe_mul(w, h)];
+	blks = new Blk[safe::mul(w, h)];
 }
 
 Lvl::Lvl(FILE *in) {
@@ -30,7 +30,7 @@ void Lvl::read(FILE *f)
 	if (d != 1)
 		fatal("Only levels with a depth of 1 are supported");
 
-	blks = new Blk[safe_mul(w, h)];
+	blks = new Blk[safe::mul(w, h)];
 
 	if (fgetc(f) != '\n')
 		fatal("Expected a new line at z=0");
