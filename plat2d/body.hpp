@@ -10,9 +10,9 @@ struct Line1d {
 	Line1d(double _a, double _b) : a(_a), b(_b) { }
 
 	double isect(const Line1d &o) const {
-		if (Geom2d::between(o.a, o.b, b))
+		if (geom2d::between(o.a, o.b, b))
 			return b - o.a;
-		else if (Geom2d::between(a, b, o.b))
+		else if (geom2d::between(a, b, o.b))
 			return o.b - a;
 		return -1.0;
 	}
@@ -33,12 +33,12 @@ struct Isect {
 	double dx, dy;
 };
 
-struct Bbox : public Geom2d::Bbox {
+struct Bbox : public geom2d::Bbox {
 
 	Bbox(void) { }
 
 	Bbox(unsigned int x0, unsigned int y0, unsigned int x1,
-			unsigned int y1) : Geom2d::Bbox(x0, y0, x1, y1) { }
+			unsigned int y1) : geom2d::Bbox(x0, y0, x1, y1) { }
 
 	Isect isect(const Bbox &o) const {
 		double ix = projx().isect(o.projx());
@@ -66,7 +66,7 @@ struct Body {
 	Body(const Body &o) : bbox(o.bbox), dy(o.dy), fall(o.fall) { }
 
 	bool operator==(const Body &o) const {
-		return fall == o.fall && bbox == o.bbox && Geom2d::doubleeq(dy, o.dy);
+		return fall == o.fall && bbox == o.bbox && geom2d::doubleeq(dy, o.dy);
 	}
 
 	void output(FILE *out) const {
@@ -82,7 +82,7 @@ struct Body {
 
 private:
 
-	Geom2d::Pt step(const Geom2d::Pt&);
+	geom2d::Pt step(const geom2d::Pt&);
 
 	void dofall(const Lvl&, const Isect&);
 };

@@ -18,7 +18,7 @@ static int nextctrl = -1;
 static std::vector<unsigned int> controls;
 
 SDL_Surface *screen;
-Geom2d::Pt tr(0, 0);
+geom2d::Pt tr(0, 0);
 Player p(2 * Tile::Width + Player::Offx, 2 * Tile::Height + Player::Offy,
 		Player::Width, Player::Height);
 
@@ -29,7 +29,7 @@ static void dfline(std::vector<std::string>&, void*);
 static void initsdl(void);
 static unsigned int keys(void);
 static unsigned int sdlkeys(void);
-static void scroll(const Geom2d::Pt&, const Geom2d::Pt&);
+static void scroll(const geom2d::Pt&, const geom2d::Pt&);
 static void draw(const Lvl&, const Player&);
 static void drawlvl(const Lvl&);
 static void drawplayer(const Player&);
@@ -47,7 +47,7 @@ int main(int argc, const char *argv[]) {
 		unsigned int next = SDL_GetTicks() + frametime;
 
 		draw(*lvl, p);
-		Geom2d::Pt l0(p.loc());
+		geom2d::Pt l0(p.loc());
 		p.act(*lvl, keys());
 		scroll(l0, p.loc());
 
@@ -180,8 +180,8 @@ static unsigned int sdlkeys(void) {
 }
 #endif
 
-static void scroll(const Geom2d::Pt &l0, const Geom2d::Pt &l1) {
-	Geom2d::Pt delta(l1.x - l0.x, l1.y - l0.y);
+static void scroll(const geom2d::Pt &l0, const geom2d::Pt &l1) {
+	geom2d::Pt delta(l1.x - l0.x, l1.y - l0.y);
 
 	if ((delta.x > 0 && l1.x + tr.x > Width * 0.75) ||
 		(delta.x < 0 && l1.x + tr.x < Width * 0.25))

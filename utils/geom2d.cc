@@ -4,7 +4,7 @@
 #include <cstdarg>
 #include <cerrno>
 
-namespace Geom2d {
+namespace geom2d {
 	
 	static unsigned int minx(const std::vector<Pt>&);
 	static void xsortedpts(std::vector<Pt>&, double, double, double);

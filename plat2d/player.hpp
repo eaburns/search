@@ -40,7 +40,7 @@ struct Player {
 	void act(const Lvl&, unsigned int);
 
 	// bottom left
-	Geom2d::Pt loc(void) { return body.bbox.min; }
+	geom2d::Pt loc(void) { return body.bbox.min; }
 
 	// canjump returns true if the jump action can
 	// actually do anything.

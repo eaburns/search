@@ -178,11 +178,11 @@ void Image::Arc::writeeps(FILE *out) const {
 	fprintf(out, "%g %g %g setrgbcolor\n", c.getred(), c.getgreen(), c.getblue());
 	fprintf(out, "%g setlinewidth\n", w);
 	fputs("newpath\n", out);
-	Geom2d::Pt p(start());
+	geom2d::Pt p(start());
 	fprintf(out, "%g %g moveto\n", p.x, p.y);
 	double d0 = t0 * (180 / M_PI), d1 = t1 * (180 / M_PI);
 	fprintf(out, "%g %g %g %g %g arc\n",
-		Geom2d::Arc::c.x, Geom2d::Arc::c.y, r, d0, d1);
+		geom2d::Arc::c.x, geom2d::Arc::c.y, r, d0, d1);
 	fputs("stroke\n", out);
 }
 

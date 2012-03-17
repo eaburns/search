@@ -2,7 +2,7 @@
 #include "geom2d.hpp"
 #include <cstdarg>
 
-using namespace Geom2d;
+using namespace geom2d;
 
 static bool samepts(std::vector<Pt>&, unsigned int n, ...);
 

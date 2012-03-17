@@ -27,7 +27,7 @@ struct Scene {
 
 	struct Pt : public Renderable, public Image::Pt {
 
-		Pt(const Geom2d::Pt &p, const Color &c, double r = 1, double w = 1) :
+		Pt(const geom2d::Pt &p, const Color &c, double r = 1, double w = 1) :
 			Image::Pt(p, c, r, w)
 			{ }
 
@@ -38,7 +38,7 @@ struct Scene {
 
 	struct Line : public Renderable, public Image::Line {
 
-		Line(const Geom2d::LineSg &l, const Color &c, double w = 1) :
+		Line(const geom2d::LineSg &l, const Color &c, double w = 1) :
 			Image::Line(l, c, w) { }
 
 		virtual void writeeps(FILE *out) const { Image::Line::writeeps(out); }
@@ -48,7 +48,7 @@ struct Scene {
 
 	struct Arc : public Renderable, public Image::Arc {
 
-		Arc(const Geom2d::Arc &a, const Color &c, double w = 1);
+		Arc(const geom2d::Arc &a, const Color &c, double w = 1);
 
 		virtual void writeeps(FILE *out) const { Image::Arc::writeeps(out); }
 
@@ -56,12 +56,12 @@ struct Scene {
 	private:
 		enum { Narcpts = 10 };
 
-		Geom2d::Pt pts[Narcpts];
+		geom2d::Pt pts[Narcpts];
 	};
 
 	struct Poly : public Renderable, public Image::Poly {
 
-		Poly(const Geom2d::Poly &p, const Color &c, double w = 1) :
+		Poly(const geom2d::Poly &p, const Color &c, double w = 1) :
 			Image::Poly(p, c, w) { }
 
 		virtual void writeeps(FILE *out) const { Image::Poly::writeeps(out); }

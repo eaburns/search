@@ -68,9 +68,9 @@ struct Plat2d {
 
 		bool eq(PackedState &o) const {
 			return jframes == o.jframes &&
-				Geom2d::doubleeq(x, o.x) &&
-				Geom2d::doubleeq(y, o.y) &&
-				Geom2d::doubleeq(dy, o.dy);
+				geom2d::doubleeq(x, o.x) &&
+				geom2d::doubleeq(y, o.y) &&
+				geom2d::doubleeq(dy, o.dy);
 		}
 
 		double x, y, dy;
@@ -112,7 +112,7 @@ struct Plat2d {
 
 		Transition(Plat2d &d, State &s, Oper op) : revop(Nop), state(s) {
 			state.player.act(d.lvl, (unsigned int) op);
-			cost = 1; // Geom2d::Pt::distance(s.player.body.bbox.min, state.player.body.bbox.min));
+			cost = 1; // geom2d::Pt::distance(s.player.body.bbox.min, state.player.body.bbox.min));
 			if (s.player.body.bbox.min.y == state.player.body.bbox.min.y) {
 				if (op == Player::Left)
 					revop = Player::Right;
@@ -169,29 +169,29 @@ private:
 		if (bi.x == gx && bi.y == gy)
 			return 0;;
 
-		Geom2d::Pt loc(s.player.body.bbox.center());
+		geom2d::Pt loc(s.player.body.bbox.center());
 		loc.x /= Maxx;
 		loc.y /= Maxy;
 
 		int c = centers[bi.x * lvl.height() + bi.y];
-		Geom2d::Pt g = goalpt(bi, loc);
+		geom2d::Pt g = goalpt(bi, loc);
 		if (togoal[c].prev == gcenter || vg->map.isvisible(loc, g))
 			// still admissible if we go up to the next int
-			return ceil(Geom2d::Pt::distance(loc, g));
+			return ceil(geom2d::Pt::distance(loc, g));
 
 		// Length of a tile diagonal, subtracted from the visnav
 		// distance to account for the fact that the goal vertex
 		// is in the center of the goal cell, not on the side.
 		static const double diag = sqrt((W/2)*(W/2) + (H/2)*(H/2));
-		double h = togoal[c].d - Geom2d::Pt::distance(loc, vg->verts[c].pt) - diag;
-		assert (h >= -Geom2d::Threshold);
+		double h = togoal[c].d - geom2d::Pt::distance(loc, vg->verts[c].pt) - diag;
+		assert (h >= -geom2d::Threshold);
 		return h <= 0 ? 1 : ceil(h);	// still admissible if we go up to the next int
 	}
 
 	// goalpt returns a point in the goal cell that is closest
 	// to the given location.
-	Geom2d::Pt goalpt(const Lvl::Blkinfo &bi, const Geom2d::Pt &loc) const {
-		Geom2d::Pt pt;
+	geom2d::Pt goalpt(const Lvl::Blkinfo &bi, const geom2d::Pt &loc) const {
+		geom2d::Pt pt;
 		if (bi.y == gy)
 			pt.y = loc.y;
 		else if (bi.y < gy)

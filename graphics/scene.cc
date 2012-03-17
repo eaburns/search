@@ -34,12 +34,12 @@ void Scene::Line::render(void) const {
 	glEnd();
 }
 
-Scene::Arc::Arc(const Geom2d::Arc &a, const Color &c, double w) : Image::Arc(a, c, w) {
+Scene::Arc::Arc(const geom2d::Arc &a, const Color &c, double w) : Image::Arc(a, c, w) {
 	double dt = (t1 - t0) / (Narcpts - 1);
 	double t = t0;
 	for (unsigned int i = 0; i < Narcpts; i++) {
-		pts[i].x = Geom2d::Arc::c.x + cos(t) * r;
-		pts[i].y = Geom2d::Arc::c.y + sin(t) * r;
+		pts[i].x = geom2d::Arc::c.x + cos(t) * r;
+		pts[i].y = geom2d::Arc::c.y + sin(t) * r;
 		t += dt;
 	}
 	assert (pts[0] == start());

@@ -34,7 +34,7 @@ struct VisGraph {
 	void translate(double, double);
 
 	// add adds a vertex to the graph.
-	unsigned int add(const Geom2d::Pt&);
+	unsigned int add(const geom2d::Pt&);
 
 	struct Edge {
 		Edge(unsigned int s, unsigned int d, double c) :
@@ -49,14 +49,14 @@ struct VisGraph {
 	};
 
 	struct Vert {
-		Vert(unsigned int i, const Geom2d::Pt &p) : id(i), pt(p) { }
+		Vert(unsigned int i, const geom2d::Pt &p) : id(i), pt(p) { }
 
 		Vert(FILE*);
 
 		void output(FILE*) const;
 
 		unsigned int id;
- 		Geom2d::Pt pt;
+ 		geom2d::Pt pt;
 		std::vector<Edge> edges;
 	};
 
@@ -75,7 +75,7 @@ private:
 
 	// addpoly adds the vertices specified by the index vector
 	//  for the given polygon to the graph.
-	void addpoly(const Geom2d::Poly&, const std::vector<unsigned int>&);
+	void addpoly(const geom2d::Poly&, const std::vector<unsigned int>&);
 
 	// visedges adds edges between each pair of
 	// vertices that are visible from eachother.

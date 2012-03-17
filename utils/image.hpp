@@ -62,7 +62,7 @@ struct Image {
 
 		enum Position { Left, Right, Centered };
 
-		Text(const char *_text, const Geom2d::Pt &p) :
+		Text(const char *_text, const geom2d::Pt &p) :
 			loc(p), sz(12), pos(Centered), font("Times-Roman"),
 			text(_text), c(black)
 			{ }
@@ -74,17 +74,17 @@ struct Image {
 
 		virtual void writeeps(FILE*) const;
 
-		Geom2d::Pt loc;
+		geom2d::Pt loc;
 		double sz;
 		enum Position pos;
 		std::string font, text;
 		Color c;
 	};
 
-	struct Pt : public Drawable, public Geom2d::Pt {
+	struct Pt : public Drawable, public geom2d::Pt {
 
-		Pt(const Geom2d::Pt &p, const Color &_c, double _r, double _w) : 
-			Geom2d::Pt(p), r(_r), w(_w), c(_c)
+		Pt(const geom2d::Pt &p, const Color &_c, double _r, double _w) : 
+			geom2d::Pt(p), r(_r), w(_w), c(_c)
 			{ }
 
 		virtual void writeeps(FILE*) const;
@@ -93,15 +93,15 @@ struct Image {
 		Color c;
 	};
 
-	struct Line : public Drawable, public Geom2d::LineSg {
+	struct Line : public Drawable, public geom2d::LineSg {
 
-		Line(const Geom2d::Pt &p0, const Geom2d::Pt &p1,
+		Line(const geom2d::Pt &p0, const geom2d::Pt &p1,
 				const Color &_c, double _w) :
-			Geom2d::LineSg(p0, p1), w(_w), c(_c)
+			geom2d::LineSg(p0, p1), w(_w), c(_c)
 			{ }
 
-		Line(const Geom2d::LineSg &l, const Color &_c, double _w) :
-			Geom2d::LineSg(l), w(_w), c(_c)
+		Line(const geom2d::LineSg &l, const Color &_c, double _w) :
+			geom2d::LineSg(l), w(_w), c(_c)
 			{ }
 
 		virtual void writeeps(FILE*) const;
@@ -110,10 +110,10 @@ struct Image {
 		Color c;
 	};
 	
-	struct Arc : public Drawable, public Geom2d::Arc {
+	struct Arc : public Drawable, public geom2d::Arc {
 
-		Arc(const Geom2d::Arc &a, const Color &_c, double _w) :
-			Geom2d::Arc(a), w(_w), c(_c)
+		Arc(const geom2d::Arc &a, const Color &_c, double _w) :
+			geom2d::Arc(a), w(_w), c(_c)
 			{ }
 
 		virtual void writeeps(FILE*) const;
@@ -122,10 +122,10 @@ struct Image {
 		Color c;
 	};
 
-	struct Poly : public Drawable, public Geom2d::Poly  {
+	struct Poly : public Drawable, public geom2d::Poly  {
 
-		Poly(const Geom2d::Poly &p, const Color &_c, double _w) :
-			Geom2d::Poly(p), w(_w), c(_c)
+		Poly(const geom2d::Poly &p, const Color &_c, double _w) :
+			geom2d::Poly(p), w(_w), c(_c)
 			{ }
 
 		virtual void writeeps(FILE*) const;
