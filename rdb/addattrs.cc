@@ -7,8 +7,10 @@
 #include <cstdio>
 #include <cerrno>
 #include <string>
+#include <utility>
 
 static void usage(int);
+static void dfline(std::vector<std::string>&, void*);
 
 int main(int argc, const char *argv[]) {
 	if (argc < 2)
@@ -22,6 +24,12 @@ int main(int argc, const char *argv[]) {
 	FILE *fin = fopen(file, "r");
 	if (!fin)
 		fatalx(errno, "Failed to open %s for reading", file);
+
+	std::pair<RdbAttrs*, const char*> p(&attrs, file);
+	dfread(fin, dfline, &p);
+
+	if (fseek(fin, 0, SEEK_SET) == -1)
+		fatalx(errno, "Failed to reset file position to 0");
 
 	std::string outfile = std::string(file) + '~';
 	FILE *fout = fopen(outfile.c_str(), "w");
@@ -57,4 +65,15 @@ int main(int argc, const char *argv[]) {
 static void usage(int r) {
 	puts("Usage: addattrs <datafile> [<key>=<value>]*");
 	exit(r);
+}
+
+static void dfline(std::vector<std::string> &cols, void *aux) {
+	if (cols[0] != "#pair")
+		return;
+	std::pair<RdbAttrs*, const char*> *p = static_cast<std::pair<RdbAttrs*, const char*>*>(aux);
+	RdbAttrs *attrs = p->first;
+	if (attrs->mem(cols[1])) {
+		warn("%s: key %s already exists", p->second, cols[1].c_str());
+		attrs->rm(cols[1]);
+	}
 }
