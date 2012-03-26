@@ -12,7 +12,7 @@ enum { MaxLine = 4096 };
 static const char *sepstr = "/";
 static const char sepchar = sepstr[0];
 
-boost::optional<std::string> readline(FILE *in, bool echo) {
+boost::optional<std::string> readline(FILE *in, FILE *echo) {
 	std::string line;
 
 	int c = fgetc(in);
@@ -30,7 +30,7 @@ boost::optional<std::string> readline(FILE *in, bool echo) {
 		return boost::optional<std::string>();
 
 	if (echo)
-		puts(line.c_str());
+		fputs(line.c_str(), echo);
 
 	if (line[line.size()-1] == '\n')
 		line.resize(line.size()-1);

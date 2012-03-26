@@ -1,31 +1,19 @@
 #include "rdb.hpp"
 #include <cstring>
+#include <cstdlib>
 #include <cstdio>
 #include <vector>
 #include <string>
 
 void fatal(const char*, ...);
 
-void usage(void);
+static void usage(int);
 
-int main(int argc, char *argv[]) {
+int main(int argc, const char *argv[]) {
 	if (argc < 2)
-		usage();
+		usage(1);
 
-	const char *root = argv[1];
-
-	RdbAttrs attrs;
-	for (int i = 2; i < argc; i++) {
-		char *key = argv[i];
-		char *vl = strchr(key, '=');
-		if (!vl)
-			usage();
-		vl[0] = '\0';
-		vl++;
-		attrs.push_back(key, vl);
-	}
-
-	std::vector<std::string> files = withattrs(root, attrs);
+	std::vector<std::string> files = withattrs(argv[1], attrargs(argc-2, argv+2));
 	for (unsigned int i = 0; i < files.size(); i++) {
 		printf("%s\n", files[i].c_str());
 	}
@@ -33,6 +21,7 @@ int main(int argc, char *argv[]) {
 	return 0;
 }
 
-void usage(void) {
-	fatal("Usage: pathfor <root> <key>=<value>*\n");
+static void usage(int r) {
+	puts("Usage: pathfor <root> [<key>=<value>]*\n");
+	exit(r);
 }

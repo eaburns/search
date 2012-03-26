@@ -24,9 +24,9 @@ void fatalx(int, const char*, ...);
 
 // readline reads a line from the given file stream and returns it
 // without the trailing newline. Returns an empty option on
-// end of file and calls fatal on error.  If echo is true then the line
-// is echoed to standard output.
-boost::optional<std::string> readline(FILE*, bool echo = false);
+// end of file and calls fatal on error.  If echo is non-NULL then
+// each line is echoed to the file after it is read.
+boost::optional<std::string> readline(FILE*, FILE *echo = NULL);
 
 // readdir returns all of the entries of the given directory
 // excluding '.' and '..'.
@@ -127,9 +127,9 @@ typedef void(*Dfhandler)(std::vector<std::string>&, void*);
 // passed to the handler fast the type of line as the 0th
 // element (#pair, #altcols or #altrow) and has the remaining
 // tokes of the line as its remaining aruments.  If echo is
-// true then the lines that are read are echoed back out
-// standard output.
-void dfread(FILE*, Dfhandler, void *priv = NULL, bool echo = false);
+// non-NULL then the lines are echoed to this file immediately
+// after they are read.
+void dfread(FILE*, Dfhandler, void *priv = NULL, FILE *echo = false);
 
 // A Test holds information on a unit test that may be run
 // via the testing framework.

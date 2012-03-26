@@ -193,7 +193,7 @@ char *strdup(const std::string &s) {
 	return d;
 }
 
-void dfread(FILE *in, Dfhandler seeline, void *priv, bool echo) {
+void dfread(FILE *in, Dfhandler seeline, void *priv, FILE *echo) {
 	unsigned int lineno = 1;
 	std::vector<std::string> toks;
 	boost::optional<std::string> line = readline(in, echo);
