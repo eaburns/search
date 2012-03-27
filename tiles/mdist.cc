@@ -33,11 +33,11 @@ void TilesMdist::initmd(void) {
 
 void TilesMdist::initincr(void) {
 	for (unsigned int t = 1; t < Ntiles; t++) {
-	for (unsigned int old = 0; old < Ntiles; old++) {
-		unsigned int cur = md[t][old];
-		for (unsigned int n = 0; n <ops[old].n; n++) {
-			unsigned int nw = ops[old].mvs[n];
-			incr[t][old][nw] = md[t][nw] - cur;
+	for (unsigned int nw = 0; nw < Ntiles; nw++) {
+		unsigned int next = md[t][nw];
+		for (unsigned int n = 0; n <ops[nw].n; n++) {
+			unsigned int old = ops[nw].mvs[n];
+			incr[t][nw][old] = md[t][old] - next;
 		}
 	}
 	}
