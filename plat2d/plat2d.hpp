@@ -105,12 +105,12 @@ struct Plat2d {
 		return Ops[n];
 	}
 
-	struct Transition {
+	struct Edge {
 		Cost cost;
 		Oper revop;
 		State state;
 
-		Transition(Plat2d &d, State &s, Oper op) : revop(Nop), state(s) {
+		Edge(Plat2d &d, State &s, Oper op) : revop(Nop), state(s) {
 			state.player.act(d.lvl, (unsigned int) op);
 			cost = 1; // geom2d::Pt::distance(s.player.body.bbox.min, state.player.body.bbox.min));
 			if (s.player.body.bbox.min.y == state.player.body.bbox.min.y) {

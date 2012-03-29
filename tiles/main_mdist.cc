@@ -17,7 +17,7 @@ int main(int argc, const char *argv[]) {
 
 	for (int i = res.ops.size() - 1; i >= 0; i--) {
 		TilesMdist::State copy(state);
-		TilesMdist::Transition tr(d, copy, res.ops[i]);
+		TilesMdist::Edge tr(d, copy, res.ops[i]);
 		cost += tr.cost;
 		assert(tr.state.eq(res.path[i]));
 		state = tr.state;

@@ -68,7 +68,7 @@ private:
 				// If a goal was found then we want the
 				// transition reverted so that we may push
 				// the parent state onto the path.
-				typename D::Transition tr(d, s, op);
+				typename D::Edge tr(d, s, op);
 				goal = dfs(d, tr.state, tr.revop, g + tr.cost);
 			}
 

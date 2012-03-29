@@ -67,12 +67,12 @@ struct VisNav {
 		return Oper(&g.verts[s.vert].edges[n]);
 	}
 
-	struct Transition {
+	struct Edge {
 		Cost cost;
 		Oper revop;
 		State state;
 
-		Transition(VisNav &d, State &s, Oper op) :
+		Edge(VisNav &d, State &s, Oper op) :
 			cost(op.edge->dist), revop(op), state(op.edge->dst) { }
 	};
 

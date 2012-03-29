@@ -85,7 +85,7 @@ private:
 	void considerkid(D &d, Node *parent, State &state, Oper op) {
 		Node *kid = nodes->construct();
 		assert (kid);
-		typename D::Transition tr(d, state, op);
+		typename D::Edge tr(d, state, op);
 		kid->g = parent->g + tr.cost;
 		d.pack(kid->packed, tr.state);
 

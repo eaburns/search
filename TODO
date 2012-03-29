@@ -24,7 +24,7 @@
 
 	- better transposition
 	breaking.  Should be easier
-	because the new Transition
+	because the new Edge
 	code has access to both the
 	current and next state when
 	setting revop.

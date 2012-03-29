@@ -108,7 +108,7 @@ private:
 				continue;
 
 			SearchAlgorithm<D>::res.gend++;
-			typename D::Transition tr(d, cur.state, op);
+			typename D::Edge tr(d, cur.state, op);
 			Cost h = heuristic(d, tr.state, tr.revop);
 			Cost f = h == Cost(-1) ? h : h + tr.cost;
 
@@ -165,7 +165,7 @@ private:
 				continue;
 
 			SearchAlgorithm<D>::res.gend++;
-			typename D::Transition tr(d, state, op);
+			typename D::Edge tr(d, state, op);
 			f = look(d, tr.state, alpha, tr.revop, g + tr.cost, left-1);
 			if (better(f, bestf))
 				bestf = f;

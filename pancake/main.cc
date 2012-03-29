@@ -10,7 +10,7 @@ int main(int argc, const char *argv[]) {
 	Pancake::Cost cost = 0;
 	for (int i = res.ops.size() - 1; i >= 0; i--) {
 		Pancake::State copy(state);
-		Pancake::Transition tr(d, copy, res.ops[i]);
+		Pancake::Edge tr(d, copy, res.ops[i]);
 		assert (tr.state.eq(res.path[i]));
 		state = tr.state;
 		cost += tr.cost;
