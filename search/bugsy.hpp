@@ -30,6 +30,7 @@ template <class D> struct Bugsy : public SearchAlgorithm<D> {
 
 	Bugsy(int argc, const char *argv[]) :
 			SearchAlgorithm<D>(argc, argv),
+			correct(false), herror(0), derror(0), navg(0),
 			timeper(0.0), nresort(0), pertick(20), nexp(0), state(WaitTick),
 			closed(30000001) {
 		wf = wt = -1;
@@ -38,6 +39,8 @@ template <class D> struct Bugsy : public SearchAlgorithm<D> {
 				wf = strtod(argv[++i], NULL);
 			else if (i < argc - 1 && strcmp(argv[i], "-wt") == 0)
 				wt = strtod(argv[++i], NULL);
+			else if (strcmp(argv[i], "-correct") == 0)
+				correct = true;
 		}
 
 		if (wf < 0)
@@ -99,23 +102,48 @@ template <class D> struct Bugsy : public SearchAlgorithm<D> {
 		dfpair(stdout, "time weight", "%g", wt);
 		dfpair(stdout, "final time per expand", "%g", timeper);
 		dfpair(stdout, "number of resorts", "%lu", nresort);
+		dfpair(stdout, "corrected h and d", "%s", correct ? "yes" : "no");
+		if (correct) {
+			dfpair(stdout, "final h error", "%g", herror);
+			dfpair(stdout, "final d error", "%g", derror);
+		}
 	}
 
 private:
 
 	void expand(D &d, Node *n, State &state) {
 		SearchAlgorithm<D>::res.expd++;
+		double hbest = -1, hcost = -1, dbest = -1;
 
 		for (unsigned int i = 0; i < d.nops(state); i++) {
 			Oper op = d.nthop(state, i);
 			if (op == n->pop)
 				continue;
 			SearchAlgorithm<D>::res.gend++;
-			considerkid(d, n, state, op);
+			Node *k = considerkid(d, n, state, op);
+
+			if (!correct || !k)
+				continue;
+
+			if (hbest < 0 || k->h < hbest) {
+				hbest = k->h;
+				hcost = k->g - n->g;
+			}
+			if (dbest < 0 || k->d < dbest)
+				dbest = k->d;
 		}
+
+		if (!correct || hbest < 0)
+			return;
+
+		navg++;
+		double herr = hbest + hcost - n->h;
+		herror = herror + (herr - herror)/navg;
+		double derr = dbest + 1 - n->d;
+		derror = derror + (derr - derror)/navg;
 	}
 
-	void considerkid(D &d, Node *parent, State &state, Oper op) {
+	Node *considerkid(D &d, Node *parent, State &state, Oper op) {
 		Node *kid = nodes->construct();
 		typename D::Transition tr(d, state, op);
 		kid->g = parent->g + tr.cost;
@@ -127,7 +155,7 @@ private:
 			SearchAlgorithm<D>::res.dups++;
 			if (kid->g >= dup->g) {
 				nodes->destruct(kid);
-				return;
+				return NULL;
 			}
 			SearchAlgorithm<D>::res.reopnd++;
 			dup->f = dup->f - dup->g + kid->g;
@@ -135,15 +163,16 @@ private:
 			computeutil(dup);
 			open.pushupdate(dup, dup->openind);
 			nodes->destruct(kid);
-		} else {
-			kid->d = d.d(tr.state);
-			kid->h = d.h(tr.state);
-			kid->f = kid->g + kid->h;
-			kid->update(kid->g, parent, op, tr.revop);
-			computeutil(kid);
-			closed.add(kid, hash);
-			open.push(kid);
+			return dup;
 		}
+		kid->d = d.d(tr.state);
+		kid->h = d.h(tr.state);
+		kid->f = kid->g + kid->h;
+		kid->update(kid->g, parent, op, tr.revop);
+		computeutil(kid);
+		closed.add(kid, hash);
+		open.push(kid);
+		return kid;
 	}
 
 	Node *init(D &d, State &s0) {
@@ -209,6 +238,11 @@ private:
 	}
 
 	double wf, wt;
+
+	// heuristic updating
+	bool correct;
+	double herror, derror;
+	unsigned long navg;
 
 	// for nodes-per-second estimation
 	double timeper;
