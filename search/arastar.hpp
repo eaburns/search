@@ -242,10 +242,10 @@ private:
 			this->res.reopnd++;
 			dup->fprime = dup->fprime - dup->g + kid->g;
 			dup->update(kid->g, parent, op, tr.revop);
-			if (dup->openind < 0)
+			if (dup->ind < 0)
 				incons.add(dup, hash);
 			else
-				open.update(dup->openind);
+				open.update(dup->ind);
 			nodes->destruct(kid);
 		} else {
 			kid->h = d.h(tr.state);

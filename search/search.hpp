@@ -97,17 +97,20 @@ private:
 	ClosedEntry<SearchNode, D> closedent;
 
 public:
-	int openind;
+	int ind;
 	typename D::PackedState packed;
 	typename D::Cost g;
 	typename D::Oper op;
 	typename D::Oper pop;
 	SearchNode *parent;
 
-	SearchNode(void) : openind(-1) { }
+	SearchNode(void) : ind(-1) { }
 
-	// setind sets openind to the given value.
-	static void setind(SearchNode *n, int i) { n->openind = i; }
+	// setind sets index field to the given value.
+	static void setind(SearchNode *n, int i) { n->ind = i; }
+	
+	// getind returns the value of the index field.
+	static int getind(SearchNode *n) { return n->ind; }
 
 	// entry returns a reference to the closed list entry of the
 	// given node.
@@ -154,8 +157,7 @@ public:
 };
 
 // An OpenList holds nodes and returns them ordered by some
-// priority.  This template assumes that the nodes have a field
-// 'openind'.  The Ops class has a pred method which accepts
+// priority.  The Ops class has a pred method which accepts
 // two Nodes and returns true if the 1st node is a predecessor
 // of the second.
 template <class Ops, class Node, class Cost> class OpenList {
@@ -174,15 +176,15 @@ public:
 	void pre_update(Node *n) { }
 
 	void post_update(Node *n) {
-		if (n->openind < 0)
+		if (n->ind < 0)
 			heap.push(n);
 		else
-			heap.update(n->openind);
+			heap.update(Ops::getind(n));
 	}
 
 	bool empty(void) { return heap.empty(); }
 
-	bool mem(Node *n) { return n->openind != -1; }
+	bool mem(Node *n) { return n->ind != -1; }
 
 	void clear(void) { heap.clear(); }
 
@@ -190,15 +192,14 @@ private:
 	struct Heapops {
  		static bool pred(Node *a, Node *b) { return Ops::pred(a, b); }
 
-		static void setind(Node *n, int i) { n->openind = i; }
+		static void setind(Node *n, int i) { Ops::setind(n, i); }
 	};
 	BinHeap<Heapops, Node*> heap;
 };
 
 typedef int IntOpenCost;
 
-// This specialization of OpenList assumes that a node has an
-// 'openind' field.  The Ops struct has prio and tieprio methods,
+// The Ops struct has prio and tieprio methods,
 // both of which return ints.  The list is sorted in increasing order
 // on the prio key then secondary sorted in decreasing order on
 // the tieprio key.
@@ -229,7 +230,7 @@ public:
 	}
 
 	void pre_update(Node*n) {
-		if (n->openind < 0)
+		if (Ops::getind(n) < 0)
 			return;
 		assert ((unsigned long) Ops::prio(n) < qs.size());
 		qs[Ops::prio(n)].rm(n, Ops::tieprio(n));
@@ -237,13 +238,13 @@ public:
 	}
 
 	void post_update(Node *n) {
-		assert (n->openind < 0);
+		assert (Ops::getind(n) < 0);
 		push(n);
 	}
 
 	bool empty(void) { return fill == 0; }
 
-	bool mem(Node *n) { return n->openind >= 0; }
+	bool mem(Node *n) { return Ops::getind(n) >= 0; }
 
 	void clear(void) {
 		qs.clear();
@@ -262,7 +263,7 @@ private:
 			if (p > max)
 				max = p;
 
-			n->openind = bkts[p].size();
+			Ops::setind(n, bkts[p].size());
 			bkts[p].push_back(n);
 			fill++;
 		}
@@ -283,7 +284,7 @@ private:
 			assert (p < bkts.size());
 			std::vector<Node*> &bkt = bkts[p];
 
-			unsigned int i = n->openind;
+			unsigned int i = Ops::getind(n);
 			assert (i < bkt.size());
 
 			if (bkt.size() > 1) {

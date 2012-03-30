@@ -110,7 +110,7 @@ private:
 			dup->fprime = dup->fprime - dup->g + kid->g;
 			dup->f = dup->f - dup->g + kid->g;
 			dup->update(kid->g, parent, op, tr.revop);
-			open.pushupdate(dup, dup->openind);
+			open.pushupdate(dup, dup->ind);
 			nodes->destruct(kid);
 		} else {
 			typename D::Cost h = d.h(tr.state);

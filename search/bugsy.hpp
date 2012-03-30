@@ -133,7 +133,7 @@ private:
 			dup->f = dup->f - dup->g + kid->g;
 			dup->update(kid->g, parent, op, tr.revop);
 			computeutil(dup);
-			open.pushupdate(dup, dup->openind);
+			open.pushupdate(dup, dup->ind);
 			nodes->destruct(kid);
 		} else {
 			kid->d = d.d(tr.state);
