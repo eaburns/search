@@ -204,8 +204,62 @@ typedef int IntOpenCost;
 // on the prio key then secondary sorted in decreasing order on
 // the tieprio key.
 template <class Ops, class Node> class OpenList <Ops, Node, IntOpenCost> {
+
+	struct Maxq {
+		Maxq(void) : fill(0), max(0), bkts(100)  { }
+
+		void push(Node *n, unsigned long p) {
+			if (bkts.size() <= p)
+				bkts.resize(p+1);
+
+			if (p > max)
+				max = p;
+
+			Ops::setind(n, bkts[p].size());
+			bkts[p].push_back(n);
+			fill++;
+		}
+
+		Node *pop(void) {
+			for ( ; bkts[max].empty() && max > 0; max--)
+				;
+			Node *n = bkts[max].back();
+			bkts[max].pop_back();
+			Ops::setind(n, -1);
+			fill--;
+			return n;
+		}
+
+		void rm(Node *n, unsigned long p) {
+			assert (p < bkts.size());
+			std::vector<Node*> &bkt = bkts[p];
+
+			unsigned int i = Ops::getind(n);
+			assert (i < bkt.size());
+
+			if (bkt.size() > 1) {
+				bkt[i] = bkt[bkt.size() - 1];
+				Ops::setind(bkt[i], i);
+			}
+
+			bkt.pop_back();
+			Ops::setind(n, -1);
+			fill--;
+		}
+
+		bool empty(void) { return fill == 0; }
+
+		unsigned long fill;
+		unsigned int max;
+		std::vector< std::vector<Node*> > bkts;
+	};
+
+	unsigned long fill;
+	unsigned int min;
+	std::vector<Maxq> qs;
+
 public:
-	OpenList(void) : fill(0), min(0) { }
+	OpenList(void) : fill(0), min(0), qs(100) { }
 
 	static const char *kind(void) { return "2d bucketed"; }
 
@@ -250,63 +304,6 @@ public:
 		qs.clear();
 		min = 0;
 	}
-
-private:
-
-	struct Maxq {
-		Maxq(void) : fill(0), max(0) { }
-
-		void push(Node *n, unsigned long p) {
-			if (bkts.size() <= p)
-				bkts.resize(p+1);
-
-			if (p > max)
-				max = p;
-
-			Ops::setind(n, bkts[p].size());
-			bkts[p].push_back(n);
-			fill++;
-		}
-
-		Node *pop(void) {
-			for ( ; bkts[max].empty(); max--) {
-				if (max == 0)
-					break;
-			}
-			Node *n = bkts[max].back();
-			bkts[max].pop_back();
-			Ops::setind(n, -1);
-			fill--;
-			return n;
-		}
-
-		void rm(Node *n, unsigned long p) {
-			assert (p < bkts.size());
-			std::vector<Node*> &bkt = bkts[p];
-
-			unsigned int i = Ops::getind(n);
-			assert (i < bkt.size());
-
-			if (bkt.size() > 1) {
-				bkt[i] = bkt[bkt.size() - 1];
-				Ops::setind(bkt[i], i);
-			}
-
-			bkt.pop_back();
-			Ops::setind(n, -1);
-			fill--;
-		}
-
-		bool empty(void) { return fill == 0; }
-
-		unsigned long fill;
-		unsigned int max;
-		std::vector< std::vector<Node*> > bkts;
-	};
-
-	unsigned long fill;
-	unsigned int min;
-	std::vector<Maxq> qs;
 };
 
 // A Result is returned from a completed search.  It contains
