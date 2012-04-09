@@ -41,8 +41,7 @@ private:
 		Cost f = g + d.h(s);
 
 		if (f <= bound && d.isgoal(s)) {
-			SearchAlgorithm<D>::res.cost = g;
-			SearchAlgorithm<D>::res.path.push_back(s);
+			this->res.path.push_back(s);
 			return true;
 		}
 
@@ -52,29 +51,29 @@ private:
 			return false;
 		}
 
-		SearchAlgorithm<D>::res.expd++;
+		this->res.expd++;
 
 		for (unsigned int n = 0; n < d.nops(s); n++) {
-			if (SearchAlgorithm<D>::limit())
+			if (this->limit())
 				return false;
 			Oper op = d.nthop(s, n);
 			if (op == pop)
 				continue;
 
-			SearchAlgorithm<D>::res.gend++;
+			this->res.gend++;
 			bool goal = false;
 			{	// Put the transition in a new scope so that
 				// it is destructed before we test for a goal.
 				// If a goal was found then we want the
 				// transition reverted so that we may push
 				// the parent state onto the path.
-				typename D::Edge tr(d, s, op);
-				goal = dfs(d, tr.state, tr.revop, g + tr.cost);
+				typename D::Edge e(d, s, op);
+				goal = dfs(d, e.state, e.revop, g + e.cost);
 			}
 
 			if (goal) {
-				SearchAlgorithm<D>::res.path.push_back(s);
-				SearchAlgorithm<D>::res.ops.push_back(op);
+				this->res.path.push_back(s);
+				this->res.ops.push_back(op);
 				return true;
 			}
 		}

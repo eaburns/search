@@ -51,17 +51,15 @@ template <class D> struct Rtastar : public SearchAlgorithm<D> {
 		seen.init(d);
 		Current cur(s0, D::Nop, D::Nop, typename D::Cost(0), d.h(s0));
 		Cost *curh = storenode(d, cur.state, cur.f);
-		SearchAlgorithm<D>::res.cost = Cost(0);
-		SearchAlgorithm<D>::res.path.push_back(cur.state);
+		this->res.path.push_back(cur.state);
 
 		while (!d.isgoal(cur.state) && !SearchAlgorithm<D>::limit()) {
 			std::vector<Current> bests = bestkids(d, cur, *curh);
 			if (bests.size() == 0)
 				break;	// deadend;
 			cur = bests.at(randgen.integer(0, bests.size()-1));
-			SearchAlgorithm<D>::res.cost += cur.edgecost;
-			SearchAlgorithm<D>::res.ops.push_back(cur.op);
-			SearchAlgorithm<D>::res.path.push_back(cur.state);
+			this->res.ops.push_back(cur.op);
+			this->res.path.push_back(cur.state);
 			curh = storenode(d, cur.state, cur.f);
 		}
 
@@ -108,18 +106,18 @@ private:
 				continue;
 
 			SearchAlgorithm<D>::res.gend++;
-			typename D::Edge tr(d, cur.state, op);
-			Cost h = heuristic(d, tr.state, tr.revop);
-			Cost f = h == Cost(-1) ? h : h + tr.cost;
+			typename D::Edge e(d, cur.state, op);
+			Cost h = heuristic(d, e.state, e.revop);
+			Cost f = h == Cost(-1) ? h : h + e.cost;
 
 			if (bests.empty() || better(f, bests[0].f)) {
 				if (!bests.empty())
 					sndf = bests[0].f;
 				bests.clear();
-				bests.push_back(Current(tr.state, op, tr.revop, tr.cost, f));
+				bests.push_back(Current(e.state, op, e.revop, e.cost, f));
 			} else if (bests[0].f == f) {
 				assert (!bests.empty());
-				bests.push_back(Current(tr.state, op, tr.revop, tr.cost, f));
+				bests.push_back(Current(e.state, op, e.revop, e.cost, f));
 			} else if (better(f, sndf)) {
 				sndf = f;
 			}
@@ -157,16 +155,16 @@ private:
 			return f;
 		}
 
-		SearchAlgorithm<D>::res.expd++;
+		this->res.expd++;
 		Cost bestf = Cost(-1);
 		for (unsigned int n = 0; n < d.nops(state); n++) {
 			Oper op = d.nthop(state, n);
 			if (op == pop)
 				continue;
 
-			SearchAlgorithm<D>::res.gend++;
-			typename D::Edge tr(d, state, op);
-			f = look(d, tr.state, alpha, tr.revop, g + tr.cost, left-1);
+			this->res.gend++;
+			typename D::Edge e(d, state, op);
+			f = look(d, e.state, alpha, e.revop, g + e.cost, left-1);
 			if (better(f, bestf))
 				bestf = f;
 		}

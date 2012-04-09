@@ -80,19 +80,19 @@ private:
 
 	void considerkid(D &d, Node *parent, State &state, Oper op) {
 		Node *kid = nodes->construct();
-		typename D::Edge tr(d, state, op);
-		kid->g = parent->g + tr.cost;
-		d.pack(kid->packed, tr.state);
+		typename D::Edge e(d, state, op);
+		kid->g = parent->g + e.cost;
+		d.pack(kid->packed, e.state);
 
 		unsigned long hash = kid->packed.hash();
 		SearchNode<D> *dup = closed.find(kid->packed, hash);
 		if (dup) {
-			SearchAlgorithm<D>::res.dups++;
+			this->res.dups++;
 			nodes->destruct(kid);
 		} else {
-			kid->h = speedy ? d.d(tr.state) : d.h(tr.state);
+			kid->h = speedy ? d.d(e.state) : d.h(e.state);
 			assert ((double) kid->h >= 0);
-			kid->update(kid->g, parent, op, tr.revop);
+			kid->update(kid->g, parent, op, e.revop);
 			closed.add(kid, hash);
 			open.push(kid);
 		}

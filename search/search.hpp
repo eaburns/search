@@ -310,16 +310,14 @@ public:
 // statistical information about the search along with the
 // solution cost and solution path if a goal was found.
 template <class D> struct Result : public SearchStats {
-	typename D::Cost cost;
 	std::vector<typename D::State> path;
 	std::vector<typename D::Oper> ops;
 
-	Result(void) : cost(-1) { }
+	Result(void) { }
 
 	// Sets the cost and solution path of the result to that of
 	// the given goal node.
 	void goal(D &d, SearchNode<D> *goal) {
-		cost = goal->g;
 		ops.clear();
 		path.clear();
 		for (SearchNode<D> *n = goal; n; n = n->parent) {
@@ -335,7 +333,6 @@ template <class D> struct Result : public SearchStats {
 	void output(FILE *f) {
 		dfpair(f, "state size", "%u", sizeof(typename D::State));
 		dfpair(f, "packed state size", "%u", sizeof(typename D::PackedState));
-		dfpair(f, "final sol cost", "%g", (double) cost);
 		dfpair(f, "final sol length", "%lu", (unsigned long) path.size());
 		SearchStats::output(f);
 	}
@@ -344,7 +341,6 @@ template <class D> struct Result : public SearchStats {
 	// in the receiver.  The path infromation is not accumulated.
 	void add(Result<D> &other) {
 		SearchStats::add(other);
-		cost += other.cost;
 	}
 };
 

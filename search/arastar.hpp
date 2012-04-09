@@ -99,7 +99,7 @@ template <class D> struct Arastar : public SearchAlgorithm<D> {
 					epsprime = wt;
 	
 				dfrow(stdout, "sol", "uuugggg", n, this->res.expd,
-					this->res.gend, wt, epsprime, (double) this->res.cost,
+					this->res.gend, wt, epsprime, cost,
 					walltime() - this->res.wallstrt);
 			}
 
@@ -146,6 +146,7 @@ private:
 			State buf, &state = d.unpack(buf, n->packed);
 
 			if (d.isgoal(state)) {
+				cost = (double) n->g;
 				this->res.goal(d, n);
 				goal = true;
 			}
@@ -156,15 +157,11 @@ private:
 	}
 
 	bool goodnodes() {
-		return !open.empty() &&
-			(this->res.cost == Cost(-1) ||
-			(double) this->res.cost > (*open.front())->fprime);
+		return !open.empty() && (cost == Cost(-1) || cost > (*open.front())->fprime);
 	}
 
 	// Find the tightest bound for the current incumbent.
 	double findbound(void) {
-		assert (this->res.cost != Cost(-1));
-		double cost = this->res.cost;
 		double min = std::numeric_limits<double>::infinity();
 
 		std::vector<Node*> &inodes = incons.nodes();
@@ -227,9 +224,9 @@ private:
 
 	void considerkid(D &d, Node *parent, State &state, Oper op) {
 		Node *kid = nodes->construct();
-		typename D::Edge tr(d, state, op);
-		kid->g = parent->g + tr.cost;
-		d.pack(kid->packed, tr.state);
+		typename D::Edge e(d, state, op);
+		kid->g = parent->g + e.cost;
+		d.pack(kid->packed, e.state);
 
 		unsigned long hash = kid->packed.hash();
 		Node *dup = static_cast<Node*>(closed.find(kid->packed, hash));
@@ -241,16 +238,16 @@ private:
 			}
 			this->res.reopnd++;
 			dup->fprime = dup->fprime - dup->g + kid->g;
-			dup->update(kid->g, parent, op, tr.revop);
+			dup->update(kid->g, parent, op, e.revop);
 			if (dup->ind < 0)
 				incons.add(dup, hash);
 			else
 				open.update(dup->ind);
 			nodes->destruct(kid);
 		} else {
-			kid->h = d.h(tr.state);
+			kid->h = d.h(e.state);
 			kid->fprime = (double) kid->g + wt * kid->h;
-			kid->update(kid->g, parent, op, tr.revop);
+			kid->update(kid->g, parent, op, e.revop);
 			closed.add(kid, hash);
 			open.push(kid);
 		}
@@ -272,4 +269,6 @@ private:
  	ClosedList<SearchNode<D>, SearchNode<D>, D> closed;
 	Incons incons;
 	Pool<Node> *nodes;
+
+	double cost;	// solution cost
 };

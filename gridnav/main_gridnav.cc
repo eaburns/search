@@ -11,7 +11,8 @@ int main(int argc, const char *argv[]) {
 		fatal("Failed to read start and end locations");
 
 	GridNav d(&map, x0, y0, xg, yg);
-	search<GridNav>(d, argc, argv);
+	Result<GridNav> res = search<GridNav>(d, argc, argv);
+	dfpair(stdout, "final sol cost", "%u", d.pathcost(res.ops));
 
 	return 0;
 }

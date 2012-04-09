@@ -40,8 +40,7 @@ void Scenario::run(std::istream &in) {
 		if (entry >= 0 && nentries - 1 != entry)
 			continue;
 
-		Result<GridNav> r = ent.run(srch);
-		ent.outputrow(stdout, nentries-1, r);
+		Result<GridNav> r = ent.run(nentries-1, srch);
 		res.add(r);
 		srch->reset();
 	}
@@ -80,27 +79,26 @@ GridMap *Scenario::getmap(std::string mapfile) {
 
 ScenarioEntry::ScenarioEntry(Scenario &s) : scen(s) { }
 
-Result<GridNav> ScenarioEntry::run(SearchAlgorithm<GridNav> *srch) {
+Result<GridNav> ScenarioEntry::run(unsigned int n, SearchAlgorithm<GridNav> *srch) {
 	GridNav d(scen.getmap(mapfile), x0, y0, x1, y1);
 	GridNav::State s0 = d.initialstate();
 
 	srch->search(d, s0);
-	Result<GridNav> &r = srch->res;
+	Result<GridNav> &res = srch->res;
+	GridNav::Cost cost = d.pathcost(res.ops);
 	// Scenario file has 0-cost for no-path.  We use -1.
-	if (fabsf((double) r.cost - (double) opt) > Eps && !(opt == 0 && r.cost == GridNav::Cost(-1)))
-		fatal("Expected optimal cost of %g, got %g\n", opt, (int) r.cost);
+	if (fabsf((cost - (double) opt) > Eps && !(opt == 0 && cost == GridNav::Cost(-1))))
+		fatal("Expected optimal cost of %g, got %g\n", opt, (double) cost);
 
-	return r;
-}
-
-void ScenarioEntry::outputrow(FILE *out, unsigned int n, Result<GridNav> &r) {
-	dfrow(out, "run", "uuuuuuuuguugugg",
+	dfrow(stdout, "run", "uuuuuuuuguugugg",
 		(unsigned long) n, (unsigned long) bucket, (unsigned long) w,
 		(unsigned long) h, (unsigned long) x0, (unsigned long) y0,
-		(unsigned long)  x1, (unsigned long) y1, opt, r.expd, r.gend,
-		(double) r.cost, (unsigned long) r.path.size(), r.wallend - r.wallstrt,
-		r.cpuend - r.cpustrt);
-} 
+		(unsigned long)  x1, (unsigned long) y1, opt, res.expd, res.gend,
+		cost, (unsigned long) res.path.size(), res.wallend - res.wallstrt,
+		res.cpuend - res.cpustrt);
+
+	return res;
+}
 
 std::istream &operator>>(std::istream &in, ScenarioEntry &s) {
 	in >> s.bucket;

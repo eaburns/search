@@ -94,29 +94,29 @@ private:
 
 	void considerkid(D &d, Node *parent, State &state, Oper op) {
 		Node *kid = nodes->construct();
-		typename D::Edge tr(d, state, op);
-		kid->g = parent->g + tr.cost;
-		d.pack(kid->packed, tr.state);
+		typename D::Edge e(d, state, op);
+		kid->g = parent->g + e.cost;
+		d.pack(kid->packed, e.state);
 
 		unsigned long hash = kid->packed.hash();
 		Node *dup = static_cast<Node*>(closed.find(kid->packed, hash));
 		if (dup) {
-			SearchAlgorithm<D>::res.dups++;
+			this->res.dups++;
 			if (kid->g >= dup->g) {
 				nodes->destruct(kid);
 				return;
 			}
-			SearchAlgorithm<D>::res.reopnd++;
+			this->res.reopnd++;
 			dup->fprime = dup->fprime - dup->g + kid->g;
 			dup->f = dup->f - dup->g + kid->g;
-			dup->update(kid->g, parent, op, tr.revop);
+			dup->update(kid->g, parent, op, e.revop);
 			open.pushupdate(dup, dup->ind);
 			nodes->destruct(kid);
 		} else {
-			typename D::Cost h = d.h(tr.state);
+			typename D::Cost h = d.h(e.state);
 			kid->f = kid->g + h;
 			kid->fprime = kid->g + wt * h;
-			kid->update(kid->g, parent, op, tr.revop);
+			kid->update(kid->g, parent, op, e.revop);
 			closed.add(kid, hash);
 			open.push(kid);
 		}

@@ -116,7 +116,7 @@ struct GridNav {
 		}
 	};
 
-	State initialstate(void);
+	State initialstate(void) const;
 
 	Cost h(State &s) const {
 		if (map->nmvs > 4)
@@ -155,7 +155,7 @@ struct GridNav {
 		Oper revop;
 		State state;
 
-		Edge(GridNav &d, State &s, Oper op) :
+		Edge(const GridNav &d, State &s, Oper op) :
 				revop(d.rev[op]),
 				state(s.loc + d.map->mvs[op].delta) {
 			assert (state.loc < d.map->sz);
@@ -179,6 +179,9 @@ struct GridNav {
 		std::pair<int,int> coord = map->coord(s.loc);
 		fprintf(out, "%u, %u\n", coord.first, coord.second);
 	}
+
+	// pathcost returns the cost of the given path.
+	Cost pathcost(const std::vector<Oper>&) const;
 
 	unsigned int start, finish;
 	GridMap *map;
