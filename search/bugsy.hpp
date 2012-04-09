@@ -149,18 +149,18 @@ private:
 	// the info struct for the generated child.
 	Kidinfo considerkid(D &d, Node *parent, State &state, Oper op) {
 		Node *kid = nodes->construct();
-		typename D::Transition tr(d, state, op);
-		kid->g = parent->g + tr.cost;
-		d.pack(kid->packed, tr.state);
+		typename D::Transition e(d, state, op);
+		kid->g = parent->g + e.cost;
+		d.pack(kid->packed, e.state);
 
 		unsigned long hash = kid->packed.hash();
 		Node *dup = static_cast<Node*>(closed.find(kid->packed, hash));
 		if (dup) {
-			SearchAlgorithm<D>::res.dups++;
+			this->res.dups++;
 			if (kid->g < dup->g) {
-				SearchAlgorithm<D>::res.reopnd++;
+				this->res.reopnd++;
 				dup->f = dup->f - dup->g + kid->g;
-				dup->update(kid->g, parent, op, tr.revop);
+				dup->update(kid->g, parent, op, e.revop);
 				computeutil(dup);
 				open.pushupdate(dup, dup->openind);
 			}
@@ -169,10 +169,10 @@ private:
 			return kinfo;
 		}
 
-		kid->d = d.d(tr.state);
-		kid->h = d.h(tr.state);
+		kid->d = d.d(e.state);
+		kid->h = d.h(e.state);
 		kid->f = kid->g + kid->h;
-		kid->update(kid->g, parent, op, tr.revop);
+		kid->update(kid->g, parent, op, e.revop);
 		computeutil(kid);
 		closed.add(kid, hash);
 		open.push(kid);
