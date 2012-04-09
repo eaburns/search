@@ -29,8 +29,10 @@ boost::optional<std::string> readline(FILE *in, FILE *echo) {
 	if (line.size() == 0 && feof(in))
 		return boost::optional<std::string>();
 
-	if (echo)
+	if (echo) {
 		fputs(line.c_str(), echo);
+		fputc('\n', echo);
+	}
 
 	if (line[line.size()-1] == '\n')
 		line.resize(line.size()-1);
