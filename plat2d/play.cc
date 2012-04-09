@@ -100,7 +100,7 @@ static Lvl *getlvl(void) {
 
 	std::string path;
 	nextctrl = 0;
-	dfread(stdin, dfline, &path, stdout);
+	dfread(stdin, dfline, &path, echo ? stdout : NULL);
 	if (path.size() == 0)
 		fatal("No level key found");
 
