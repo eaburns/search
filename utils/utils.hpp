@@ -129,7 +129,7 @@ typedef void(*Dfhandler)(std::vector<std::string>&, void*);
 // tokes of the line as its remaining aruments.  If echo is
 // non-NULL then the lines are echoed to this file immediately
 // after they are read.
-void dfread(FILE*, Dfhandler, void *priv = NULL, FILE *echo = false);
+void dfread(FILE*, Dfhandler, void *priv = NULL, FILE *echo = NULL);
 
 // A Test holds information on a unit test that may be run
 // via the testing framework.
