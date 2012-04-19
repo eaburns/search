@@ -98,10 +98,14 @@ private:
 				return;
 			}
 			this->res.reopnd++;
-			open.pre_update(dup);
+			if (open.mem(dup))
+				open.pre_update(dup);
 			dup->f = dup->f - dup->g + kid->g;
 			dup->update(kid->g, parent, op, e.revop);
-			open.post_update(dup);
+			if (open.mem(dup))		
+				open.post_update(dup);
+			else
+				open.push(dup);
 			nodes->destruct(kid);
 		} else {
 			kid->f = kid->g + d.h(e.state);
