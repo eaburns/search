@@ -1,7 +1,5 @@
 You can build with either GCC or clang.  If one or the other doesn't
-work then it is a bug so please tell me.  When building with clang,
-you still need GCC in order to build the dependency files because clang
-doesn't support the -MM or -MG flags yet.
+work then it is a bug so please tell me.
 
 Ubuntu package dependencies:
 	libboost-dev

@@ -24,9 +24,9 @@ void fatalx(int, const char*, ...);
 
 // readline reads a line from the given file stream and returns it
 // without the trailing newline. Returns an empty option on
-// end of file and calls fatal on error.  If echo is true then the line
-// is echoed to standard output.
-boost::optional<std::string> readline(FILE*, bool echo = false);
+// end of file and calls fatal on error.  If echo is non-NULL then
+// each line is echoed to the file after it is read.
+boost::optional<std::string> readline(FILE*, FILE *echo = NULL);
 
 // readdir returns all of the entries of the given directory
 // excluding '.' and '..'.
@@ -97,7 +97,7 @@ void dfpair(FILE *, const char *key, const char *fmt, ...);
 // dfrowhdr writes 'altcol' header information to the given file.
 // ncols specifies the number of columns and the variadic
 // arguments be ncols strings representing the column headers.
-void dfrowhdr(FILE *, const char *name, int ncols, ...);
+void dfrowhdr(FILE *, const char *name, unsigned int ncols, ...);
 
 // dfrow writes an 'altcols' row to the given file.
 // colfmt is a string of characters: g, f, d, and u with the
@@ -127,9 +127,9 @@ typedef void(*Dfhandler)(std::vector<std::string>&, void*);
 // passed to the handler fast the type of line as the 0th
 // element (#pair, #altcols or #altrow) and has the remaining
 // tokes of the line as its remaining aruments.  If echo is
-// true then the lines that are read are echoed back out
-// standard output.
-void dfread(FILE*, Dfhandler, void *priv = NULL, bool echo = false);
+// non-NULL then the lines are echoed to this file immediately
+// after they are read.
+void dfread(FILE*, Dfhandler, void *priv = NULL, FILE *echo = NULL);
 
 // A Test holds information on a unit test that may be run
 // via the testing framework.
@@ -153,12 +153,12 @@ struct Benchmark {
 // runtests runs all of the tests in the list that match the given
 // regular expression.  Information on each test and the number
 // of passed and failed tests is printed to standard output.
-bool runtests(const Test [], int, const char *regexp);
+bool runtests(const Test [], unsigned int, const char *regexp);
 
 // runbenches runs all of the benchmarks that match the given
 // regular expression.  Timing information is printed for each
 // benchmark.
-void runbenches(const Benchmark[], int, const char *regexp);
+void runbenches(const Benchmark[], unsigned int, const char *regexp);
 
 // testpr can be used to display formatted output from within
 // a testing function.  The output is surpressed until the test is
@@ -263,5 +263,8 @@ unsigned int ilog2(boost::uint32_t);
 // ipow returns the value of the first argument raised
 // to the power of the second argument.
 unsigned long ipow(unsigned int, unsigned int);
+
+// fallfact returns `x to the n falling.'
+unsigned long fallfact(unsigned int x, unsigned int n);
 
 #endif	// _UTILS_HPP_

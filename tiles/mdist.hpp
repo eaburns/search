@@ -45,12 +45,12 @@ public:
 		return ops[s.b].mvs[n];
 	}
 
-	struct Transition {
+	struct Edge {
 		Cost cost;
 		Oper revop;
 		State &state;
 
-		Transition(TilesMdist &d, State &s, Oper op) :
+		Edge(TilesMdist &d, State &s, Oper op) :
 				cost(1), revop(s.b), state(s), oldh(s.h) {
 			Tile t = state.ts[op];
 			state.ts[state.b] = t;
@@ -58,7 +58,7 @@ public:
 			state.b = op;
 		}
 
-		~Transition(void) {
+		~Edge(void) {
 			state.ts[state.b] = state.ts[revop];
 			state.b = revop;
 			state.h = oldh;

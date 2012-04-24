@@ -4,7 +4,7 @@
 #include <cstdio>
 #include <cerrno>
 
-static void randpolys(std::vector<Geom2d::Poly>&);
+static void randpolys(std::vector<geom2d::Poly>&);
 static double rnddbl(double, double);
 static void helpmsg(int);
 
@@ -16,18 +16,21 @@ static const char *outfile;
 static bool stats;
 
 int main(int argc, char *argv[]) {
-	for (int i = 1; i < argc; i++) {
+	if (argc < 0)
+		fatal("Negative argument count");
+
+	for (unsigned int i = 1; i < (unsigned int) argc; i++) {
 		if (strcmp(argv[i], "-h") == 0)
 			helpmsg(0);
-		else if (i < argc - 1 && strcmp(argv[i], "-o") == 0)
+		else if (i < (unsigned int) argc - 1 && strcmp(argv[i], "-o") == 0)
 			outfile = argv[++i];
-		else if (i < argc - 1 && strcmp(argv[i], "-npolys") == 0)
+		else if (i < (unsigned int) argc - 1 && strcmp(argv[i], "-npolys") == 0)
 			Npolys = strtoll(argv[++i], NULL, 10);
-		else if (i < argc - 1 && strcmp(argv[i], "-nverts") == 0)
+		else if (i < (unsigned int) argc - 1 && strcmp(argv[i], "-nverts") == 0)
 			Maxverts = strtoll(argv[++i], NULL, 10);
-		else if (i < argc - 1 && strcmp(argv[i], "-minrad") == 0)
+		else if (i < (unsigned int) argc - 1 && strcmp(argv[i], "-minrad") == 0)
 			Minrad = strtod(argv[++i], NULL);
-		else if (i < argc - 1 && strcmp(argv[i], "-maxrad") == 0)
+		else if (i < (unsigned int) argc - 1 && strcmp(argv[i], "-maxrad") == 0)
 			Maxrad = strtod(argv[++i], NULL);
 		else if (strcmp(argv[i], "-stats") == 0)
 			stats = true;
@@ -38,7 +41,7 @@ int main(int argc, char *argv[]) {
 	if (stats)
 		fprintf(stderr, "seed: %lu\n", randgen.seed());
 
-	std::vector<Geom2d::Poly> polys;
+	std::vector<geom2d::Poly> polys;
 	double start = walltime();
 	randpolys(polys);
 	if (stats)
@@ -58,7 +61,7 @@ int main(int argc, char *argv[]) {
 	return 0;
 }
 
-static void randpolys(std::vector<Geom2d::Poly> &polys) {
+static void randpolys(std::vector<geom2d::Poly> &polys) {
 	for (unsigned int i = 0; i < Npolys; i++) {
 redo:
 		double r = rnddbl(Minrad, Maxrad);
@@ -69,7 +72,7 @@ redo:
 		assert (y >= 0.0);
 		assert (r >= 0.0);
 
-		Geom2d::Poly p = Geom2d::Poly::random(randgen.integer(3, Maxverts), x, y, r);
+		geom2d::Poly p = geom2d::Poly::random(randgen.integer(3, Maxverts), x, y, r);
 			
 		for (unsigned int i = 0; i < polys.size(); i++) {
 			if (polys[i].bbox.hits(p.bbox))

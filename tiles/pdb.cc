@@ -1,14 +1,6 @@
 #include "pdb.hpp"
 #include <cstring>	// memset
 
-// 'x to the n falling'
-static unsigned long fallfact(unsigned int x, unsigned int n) {
-	unsigned long f = x;
-	for (unsigned int i = 1; i < n; i++)
-		f *= x - i;
-	return f;
-}
-
 Pdb::Pdb(unsigned long csz, unsigned int psz, const Tiles::Tile p[]) :
 		patsz(psz), costssz(csz), costs(NULL),
 		nents(fallfact(Tiles::Ntiles, patsz)) {

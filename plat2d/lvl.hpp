@@ -27,9 +27,12 @@ struct Lvl {
 
 	// isect returns intersection information for a bounding
 	// box moving at a given velocity through the level.
-	Isect isect(const Bbox&, const Geom2d::Pt&) const;
+	Isect isect(const Bbox&, const geom2d::Pt&) const;
 
-	struct Blk { unsigned int tile; };
+	struct Blk {
+		Blk(void) : tile(0) { }
+		unsigned int tile;
+	};
 
 	// Blkinfo contains information on a specific level block.
 	struct Blkinfo {
@@ -56,7 +59,7 @@ struct Lvl {
 	// majorblk returns the block information struct for the level
 	// block that contains a majority of the rectangle.
 	Blkinfo majorblk(const Bbox &r) const {
-		const Geom2d::Pt &c = r.center();
+		const geom2d::Pt &c = r.center();
 		return at(c.x / Tile::Width, c.y / Tile::Height);
 	}
 

@@ -30,16 +30,19 @@ int main(int argc, const char *argv[]) {
 		return 0;
 
 	std::vector<unsigned int> controls;
-	Player p(2 * Tile::Width + Player::Offx, 2 * Tile::Height + Player::Offy,
-	Player::Width, Player::Height);
+	Plat2d::State state = d.initialstate();
+	Plat2d::Cost cost(0);
 	for (int i = res.ops.size() - 1; i >= 0; i--) {
 		controls.push_back(res.ops[i]);
-		p.act(d.lvl, res.ops[i]);
-		assert(p == res.path[i].player);
+		Plat2d::Edge e(d, state, res.ops[i]);
+		cost += e.cost;
+		state = e.state;
+		assert(state.player == res.path[i].player);
 	}
 	const Player &final = res.path[0].player;
 	assert(d.lvl.majorblk(final.body.bbox).tile.flags & Tile::Down);
 
+	dfpair(stdout, "final sol cost", "%g", (double) cost);
 	dfpair(stdout, "final x loc", "%g", final.body.bbox.min.x);
 	dfpair(stdout, "final y loc", "%g", final.body.bbox.min.y);
 	dfpair(stdout, "controls", "%s", controlstr(controls).c_str());

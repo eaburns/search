@@ -8,8 +8,8 @@
 #include <cerrno>
 #include <string>
 
-void dfrowhdr(FILE *, const char *name, int ncols, ...);
-void dfrow(FILE *, const char *name, const char *colfmt, ...);
+void dfrowhdr(FILE*, const char*, unsigned int ncols, ...);
+void dfrow(FILE*, const char*, const char*, ...);
 void fatal(const char*, ...);
 void fatalx(int, const char*, ...);
 
@@ -148,7 +148,7 @@ protected:
 	// row outputs an incumbent solution row.
 	void row(unsigned long n, double epsprime) {
 		dfrow(stdout, "sol", "uuugggg", n, this->res.expd,
-			this->res.gend, wt, epsprime, (double) this->res.cost,
+			this->res.gend, wt, epsprime, (double) this->cost,
 			walltime() - this->res.wallstrt);
 	}
 
@@ -159,6 +159,7 @@ protected:
 			State buf, &state = d.unpack(buf, n->packed);
 
 			if (d.isgoal(state)) {
+				cost = (double) n->g;
 				this->res.goal(d, n);
 				goal = true;
 			}
@@ -169,16 +170,12 @@ protected:
 	}
 
 	bool goodnodes() {
-		return !open.empty() &&
-			(this->res.cost == Cost(-1) ||
-			(double) this->res.cost > (*open.front())->fprime);
+		return !open.empty() && (cost == Cost(-1) || cost > (*open.front())->fprime);
 	}
 
 	// findbound finds and returns the tightest bound for
 	// the current incumbent.
 	double findbound(void) {
-		assert (this->res.cost != Cost(-1));
-		double cost = this->res.cost;
 		double min = std::numeric_limits<double>::infinity();
 
 		std::vector<Node*> &inodes = incons.nodes();
@@ -241,9 +238,9 @@ protected:
 
 	void considerkid(D &d, Node *parent, State &state, Oper op) {
 		Node *kid = nodes->construct();
-		typename D::Transition tr(d, state, op);
-		kid->g = parent->g + tr.cost;
-		d.pack(kid->packed, tr.state);
+		typename D::Edge e(d, state, op);
+		kid->g = parent->g + e.cost;
+		d.pack(kid->packed, e.state);
 
 		unsigned long hash = kid->packed.hash();
 		Node *dup = static_cast<Node*>(closed.find(kid->packed, hash));
@@ -255,16 +252,16 @@ protected:
 			}
 			this->res.reopnd++;
 			dup->fprime = dup->fprime - dup->g + kid->g;
-			dup->update(kid->g, parent, op, tr.revop);
-			if (dup->openind < 0)
+			dup->update(kid->g, parent, op, e.revop);
+			if (dup->ind < 0)
 				incons.add(dup, hash);
 			else
-				open.update(dup->openind);
+				open.update(dup->ind);
 			nodes->destruct(kid);
 		} else {
-			kid->h = d.h(tr.state);
+			kid->h = d.h(e.state);
 			kid->fprime = (double) kid->g + wt * kid->h;
-			kid->update(kid->g, parent, op, tr.revop);
+			kid->update(kid->g, parent, op, e.revop);
 			closed.add(kid, hash);
 			open.push(kid);
 		}
@@ -286,6 +283,8 @@ protected:
  	ClosedList<SearchNode<D>, SearchNode<D>, D> closed;
 	Incons incons;
 	Pool<Node> *nodes;
+
+	double cost;	// solution cost
 };
 
 
@@ -406,14 +405,14 @@ private:
 	void mon(void) {
 		double wallt = walltime();
 		double t = wallt - this->res.wallstrt;
-		if (wallt < nextmon || this->res.cost  < 0)
+		if (wallt < nextmon || this->cost  < 0)
 			return;
 		if (stopnext) {
 			stop = true;
 			return;
 		}
 
-		std::pair<double, bool> m = monitor.next(this->res.cost, t);
+		std::pair<double, bool> m = monitor.next(this->cost, t);
 		fflush(stdout);
 		nextmon = wallt + m.first;
 		stopnext = m.second;

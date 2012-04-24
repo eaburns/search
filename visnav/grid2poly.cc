@@ -2,6 +2,7 @@
 #include "../structs/djset.hpp"
 #include "polymap.hpp"
 #include <vector>
+#include <limits>
 
 struct Comp {
 	Comp(unsigned int _w, unsigned int _h) :
@@ -18,10 +19,10 @@ struct Comp {
 		blkd[x*h + y] = true;
 	}
 
-	Geom2d::Poly poly(void) {
-		std::vector<Geom2d::Pt> pts;
+	geom2d::Poly poly(void) {
+		std::vector<geom2d::Pt> pts;
 		Pose cur(minx, miny, Pose::Up);
-		pts.push_back(Geom2d::Pt(minx, miny));
+		pts.push_back(geom2d::Pt(minx, miny));
 
 		for ( ; ; ) {
 			Pose next = clockwise(cur);
@@ -35,25 +36,25 @@ struct Comp {
 				break;
 			switch (cur.dir) {
 			case Pose::Up:
-				pts.push_back(Geom2d::Pt(cur.x, cur.y+1));
+				pts.push_back(geom2d::Pt(cur.x, cur.y+1));
 				break;
 
 			case Pose::Down:
-				pts.push_back(Geom2d::Pt(cur.x+1, cur.y));
+				pts.push_back(geom2d::Pt(cur.x+1, cur.y));
 				break;
 
 			case Pose::Right:
-				pts.push_back(Geom2d::Pt(cur.x+1, cur.y+1));
+				pts.push_back(geom2d::Pt(cur.x+1, cur.y+1));
 				break;
 
 			case Pose::Left:
-				pts.push_back(Geom2d::Pt(cur.x, cur.y));
+				pts.push_back(geom2d::Pt(cur.x, cur.y));
 				break;
 			}
 			cur = next;
 		}
 
-		return Geom2d::Poly(pts);
+		return geom2d::Poly(pts);
 	}
 
 	struct Pose {
@@ -137,6 +138,10 @@ struct Comp {
 };
 
 PolyMap::PolyMap(const bool blkd[], unsigned int w, unsigned int h) {
+
+	if (std::numeric_limits<unsigned int>::max() / h < w)
+		fatal("Map dimensions are too large");
+
 	Djset *forest = new Djset[w * h];
 	for (unsigned int x = 0; x < w; x++) {
 	for (unsigned int y = 0; y < h; y++) {

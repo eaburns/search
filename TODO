@@ -2,13 +2,15 @@
 
 	- fix segfault in fatal
 
+	- unit test Steve's safeops
+
 • plat2d:
 
 	- random start locations
 
 	- better transposition
 	breaking.  Should be easier
-	because the new Transition
+	because the new Edge
 	code has access to both the
 	current and next state when
 	setting revop.
@@ -19,23 +21,15 @@
 
 • visnav:
 
-	- verify solution paths
-
 	- specific closed list
-
-• gridnav:
-
-	- verify solution paths
-
-	- make sure that the size of
-	grids doesn't overflow the
-	size of a signed integer
 
 • tiles:
 
 	- PDBs
 
 	- linear conflicts
+
+	- packed 24 puzzle states
 
 • pancake:
 
@@ -59,8 +53,6 @@
 	- Rubik's cube
 
 • More algorithms:
-
-	- ARA* monitoring
 
 	- DTA*
 

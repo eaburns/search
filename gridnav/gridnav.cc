@@ -10,7 +10,7 @@ GridNav::GridNav(GridMap *m, unsigned int x0, unsigned int y0,
 	reverseops();
 }
 
-GridNav::State GridNav::initialstate(void) {
+GridNav::State GridNav::initialstate(void) const {
 	State s;
 	s.loc = start;
 	return s;
@@ -28,4 +28,17 @@ void GridNav::reverseops(void) {
 	} 
 	}
 	assert (nrev == map->nmvs);
+}
+
+GridNav::Cost GridNav::pathcost(const std::vector<Oper> &ops) const {
+	GridNav::State state = initialstate();
+	GridNav::Cost cost(0);
+	for (int i = ops.size() - 1; i >= 0; i--) {
+		GridNav::State copy(state);
+		GridNav::Edge e(*this, copy, ops[i]);
+		state = e.state;
+		cost += e.cost;
+	}
+	assert (isgoal(state));
+	return cost;
 }

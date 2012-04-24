@@ -6,8 +6,6 @@
 #include <cstring>
 #include <cassert>
 #include <sys/utsname.h>
-#include <unistd.h>
-#include <sys/stat.h>
 
 enum { Bufsz = 256 };
 
@@ -51,7 +49,7 @@ static void dfpair_sz(FILE *f, unsigned int sz, const char *key, const char *fmt
 	delete[] buf;
 }
 
-void dfrowhdr(FILE *f, const char *name, int ncols, ...) {
+void dfrowhdr(FILE *f, const char *name, unsigned int ncols, ...) {
 	char buf[Bufsz];
 	int n = snprintf(buf, Bufsz, "#altcols  \"%s\"", name);
 	if (n > Bufsz)
@@ -59,7 +57,7 @@ void dfrowhdr(FILE *f, const char *name, int ncols, ...) {
 
 	va_list ap;
 	va_start(ap, ncols);
-	for (int i = 0; i < ncols; i++) {
+	for (unsigned int i = 0; i < ncols; i++) {
 		char *col = va_arg(ap, char*);
 		unsigned int m = snprintf(buf+n, Bufsz-n, "\t\"%s\"", col);
 		if (m > (unsigned int) Bufsz - n)
@@ -168,8 +166,7 @@ static void tryprocstatus(FILE *out)
 	if (n <= 0 || n > Bufsz)
 		return;
 
-	struct stat sb;
-	if (stat(buf, &sb) < 0)
+	if (!fileexists(buf))
 		return;
 
 	FILE *in = fopen(buf, "r");
@@ -196,7 +193,7 @@ char *strdup(const std::string &s) {
 	return d;
 }
 
-void dfread(FILE *in, Dfhandler seeline, void *priv, bool echo) {
+void dfread(FILE *in, Dfhandler seeline, void *priv, FILE *echo) {
 	unsigned int lineno = 1;
 	std::vector<std::string> toks;
 	boost::optional<std::string> line = readline(in, echo);

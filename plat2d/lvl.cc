@@ -1,14 +1,14 @@
 #include "lvl.hpp"
 #include "tile.hpp"
 #include "../utils/utils.hpp"
+#include "../utils/safeops.hpp"
 #include "../utils/image.hpp"
-#include <cstring>
 #include <cmath>
 #include <cerrno>
+#include <limits>
 
 Lvl::Lvl(unsigned int _w, unsigned int _h) : w(_w), h(_h) {
-	blks = new Blk[w * h];
-	memset(blks, 0, w * h * sizeof(*blks));
+	blks = new Blk[safe::mul(w, h)];
 }
 
 Lvl::Lvl(FILE *in) {
@@ -30,8 +30,7 @@ void Lvl::read(FILE *f)
 	if (d != 1)
 		fatal("Only levels with a depth of 1 are supported");
 
-	blks = new Blk[w * h * d];
-	memset(blks, 0, w * h * d * sizeof(*blks));
+	blks = new Blk[safe::mul(w, h)];
 
 	if (fgetc(f) != '\n')
 		fatal("Expected a new line at z=0");
@@ -45,7 +44,7 @@ void Lvl::read(FILE *f)
 }
 
 struct Hitzone {
-	Hitzone(Bbox a, const Geom2d::Pt &v) {
+	Hitzone(Bbox a, const geom2d::Pt &v) {
 		Bbox b(a);
 		b.translate(v.x, v.y);
 
@@ -62,7 +61,7 @@ struct Hitzone {
 	unsigned int x0, y0, x1, y1;
 };
 
-Isect Lvl::isect(const Bbox &r, const Geom2d::Pt &v) const {
+Isect Lvl::isect(const Bbox &r, const geom2d::Pt &v) const {
 	Hitzone test(r, v);
 	Isect isect;
 	Bbox mv(r);
@@ -124,8 +123,8 @@ void Lvl::draw(Image &img) const {
 			double rot = M_PI / 2;
 			if (tiles[t].flags & Tile::Down)
 				rot = 3 * M_PI / 2;
-			Geom2d::Pt c = Geom2d::Pt(xpos, ypos);
-			Geom2d::Poly t = Geom2d::Poly::triangle(c, Tile::Width, M_PI/4, rot);
+			geom2d::Pt c = geom2d::Pt(xpos, ypos);
+			geom2d::Poly t = geom2d::Poly::triangle(c, Tile::Width, M_PI/4, rot);
 			img.add(new Image::Poly(t, Image::black, 1));
 		}
 	}

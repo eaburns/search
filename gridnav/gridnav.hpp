@@ -101,13 +101,13 @@ struct GridNav {
 
 	private:
 		friend struct GridNav;
-		int loc;
+		unsigned int loc;
 		int nops;
 		Oper ops[8];
 	};
 
 	struct PackedState {
-		int loc;
+		unsigned int loc;
 
 		unsigned long hash(void) { return loc; }
 
@@ -116,7 +116,7 @@ struct GridNav {
 		}
 	};
 
-	State initialstate(void);
+	State initialstate(void) const;
 
 	Cost h(State &s) const {
 		if (map->nmvs > 4)
@@ -135,7 +135,7 @@ struct GridNav {
 	}
 
 	unsigned int nops(State &s) const {
-		if (s.nops > 0)
+		if (s.nops >= 0)
 			return s.nops;
 
 		s.nops = 0;
@@ -150,15 +150,15 @@ struct GridNav {
 		return s.ops[n];
 	}
 
-	struct Transition {
+	struct Edge {
 		Cost cost;
 		Oper revop;
 		State state;
 
-		Transition(GridNav &d, State &s, Oper op) :
+		Edge(const GridNav &d, State &s, Oper op) :
 				revop(d.rev[op]),
 				state(s.loc + d.map->mvs[op].delta) {
-			assert (state.loc < (int) d.map->sz);
+			assert (state.loc < d.map->sz);
 			if (d.map->mvs[op].cost == 1.0)
 				cost = Cost(1, 0);
 			else
@@ -180,7 +180,10 @@ struct GridNav {
 		fprintf(out, "%u, %u\n", coord.first, coord.second);
 	}
 
-	int start, finish;
+	// pathcost returns the cost of the given path.
+	Cost pathcost(const std::vector<Oper>&) const;
+
+	unsigned int start, finish;
 	GridMap *map;
 
 	// rev holds the index of the reverse of each operator

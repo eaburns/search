@@ -7,7 +7,7 @@
 #include <cstdio>
 #include <cassert>
 
-namespace Geom2d {
+namespace geom2d {
 	
 	// Epsilon is the smallest double value that can be added
 	// to 1 to make it no longer equal to 1.

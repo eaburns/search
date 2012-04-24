@@ -89,7 +89,7 @@ struct <DOMAIN> {
 		return 0;
 	}
 
-	struct Transition {
+	struct Edge {
 		Cost cost;
 		Oper revop;
 
@@ -105,15 +105,15 @@ struct <DOMAIN> {
 		// may modify the input state in this constructor.
 		// Because of this, a search algorithm may not
 		// use the state passed to this constructor until
-		// after the Transition's destructor has been called!
-		Transition(DOMAIN&, State&, Oper) { }
+		// after the Edge's destructor has been called!
+		Edge(DOMAIN&, State&, Oper) { }
 
 		// The destructor is expected to undo any changes
 		// that it may have made to the input state in
 		// the constructor.  If a domain uses out-of-place
 		// modification then the destructor may not be
 		// required.
-		~Transition(void) { }
+		~Edge(void) { }
 	};
 
 	// Pack the state into the destination packed state.

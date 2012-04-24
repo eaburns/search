@@ -1,8 +1,10 @@
 #include "tiles.hpp"
 #include "../utils/utils.hpp"
+#include "../utils/safeops.hpp"
 #include <cerrno>
 #include <cstdio>
 #include <ctime>
+#include <limits>
 
 bool Tiles::hashvecinit = false;
 unsigned long Tiles::hashvec[Ntiles][Ntiles];
@@ -25,6 +27,9 @@ void Tiles::readruml(FILE *in) {
 
 	if (fscanf(in, " %u %u", &w, &h) != 2)
 		fatalx(errno, "Failed to read width and height");
+
+	if (!safe::can_mul(w, h))
+		fatal("The tiles board is too big");
 
 	if (w != Width && h != HEIGHT)
 		fatal("Width and height instance/compiler option mismatch");
@@ -52,7 +57,7 @@ void Tiles::readruml(FILE *in) {
 }
 
 void Tiles::initops(void) {
-	for (int i = 0; i < Ntiles; i++) {
+	for (unsigned int i = 0; i < Ntiles; i++) {
 		ops[i].n = 0;
 		if (i >= Width)
 			ops[i].mvs[ops[i].n++] = i - Width;
@@ -75,7 +80,7 @@ void Tiles::inithashvec(void) {
 }
 
 void Tiles::dumptiles(FILE *out, Tile ts[]) {
-	for (int i = 0; i < Ntiles; i++) {
+	for (unsigned int i = 0; i < Ntiles; i++) {
 		if (i > 0 && i % Width == 0)
 			fprintf(out, "\n");
 		else if (i > 0)

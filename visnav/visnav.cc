@@ -5,8 +5,8 @@ const VisNav::Oper VisNav::Nop;
 
 VisNav::VisNav(const VisGraph &_g, double _x0, double _y0, double _x1, double _y1) :
 		x0(_x0), y0(_y0), x1(_x1), y1(_y1), g(_g) {
-	start = g.add(Geom2d::Pt(x0, y0));
-	finish = g.add(Geom2d::Pt(x1, y1));
+	start = g.add(geom2d::Pt(x0, y0));
+	finish = g.add(geom2d::Pt(x1, y1));
 }
 
 VisNav::State VisNav::initialstate(void) {
@@ -21,8 +21,8 @@ enum {
 void VisNav::save(const char *file, std::vector<State> path) {
 	Image img(Width, Height);
 
-	Geom2d::Pt min = g.map.min();
-	Geom2d::Pt max = g.map.max();
+	geom2d::Pt min = g.map.min();
+	geom2d::Pt max = g.map.max();
 	g.translate(-min.x, -min.y);
 	double w = max.x - min.x;
 	double h = max.y - min.y;
@@ -34,9 +34,9 @@ void VisNav::save(const char *file, std::vector<State> path) {
 
 	g.draw(img, false);
 
-	Geom2d::Pt p0 = g.verts[path[0].vert].pt;
+	geom2d::Pt p0 = g.verts[path[0].vert].pt;
 	for (unsigned int i = 1; i < path.size(); i++) {
-		const Geom2d::Pt &p1 = g.verts[path[i].vert].pt;
+		const geom2d::Pt &p1 = g.verts[path[i].vert].pt;
 		img.add(new Image::Line(p0, p1, Image::red, 3));
 		p0 = p1;
 	}

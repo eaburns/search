@@ -11,6 +11,7 @@ public:
 	// O(lg n) time.
 	void push(Elm e) {
 		heap.push_back(e);
+		Ops::setind(e, heap.size() - 1);
 		pullup(heap.size() - 1);
 	}
 

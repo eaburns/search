@@ -4,7 +4,7 @@
 #include <cstdarg>
 #include <cerrno>
 
-namespace Geom2d {
+namespace geom2d {
 	
 	static unsigned int minx(const std::vector<Pt>&);
 	static void xsortedpts(std::vector<Pt>&, double, double, double);
@@ -198,7 +198,7 @@ namespace Geom2d {
 	
 	void Poly::removecolinear(void) {
 		for (unsigned int i = 0; i < verts.size(); ) {
-			if (fabs(interangle(i) - M_PI) < std::numeric_limits<double>::epsilon())
+			if (fabs(interangle(i) - M_PI) < Epsilon)
 				verts.erase(verts.begin() + i);
 			else
 				i++;

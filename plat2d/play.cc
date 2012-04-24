@@ -18,7 +18,7 @@ static int nextctrl = -1;
 static std::vector<unsigned int> controls;
 
 SDL_Surface *screen;
-Geom2d::Pt tr(0, 0);
+geom2d::Pt tr(0, 0);
 Player p(2 * Tile::Width + Player::Offx, 2 * Tile::Height + Player::Offy,
 		Player::Width, Player::Height);
 
@@ -29,7 +29,7 @@ static void dfline(std::vector<std::string>&, void*);
 static void initsdl(void);
 static unsigned int keys(void);
 static unsigned int sdlkeys(void);
-static void scroll(const Geom2d::Pt&, const Geom2d::Pt&);
+static void scroll(const geom2d::Pt&, const geom2d::Pt&);
 static void draw(const Lvl&, const Player&);
 static void drawlvl(const Lvl&);
 static void drawplayer(const Player&);
@@ -47,7 +47,7 @@ int main(int argc, const char *argv[]) {
 		unsigned int next = SDL_GetTicks() + frametime;
 
 		draw(*lvl, p);
-		Geom2d::Pt l0(p.loc());
+		geom2d::Pt l0(p.loc());
 		p.act(*lvl, keys());
 		scroll(l0, p.loc());
 
@@ -63,14 +63,14 @@ int main(int argc, const char *argv[]) {
 }
 
 static void parseargs(int argc, const char *argv[]) {
-	for (int i = 1; i < argc; i++) {
+	for (unsigned int i = 1; i < (unsigned int) argc; i++) {
 		if (strcmp(argv[i], "-h") == 0)
 			helpmsg(0);
-		else if (i < argc - 1 && strcmp(argv[i], "-t") == 0)
+		else if (i < (unsigned int) argc - 1 && strcmp(argv[i], "-t") == 0)
 			frametime = strtol(argv[++i], NULL, 10);
 		else if (strcmp(argv[i], "-e") == 0)
 			echo = true;
-		else if (i < argc - 1 && strcmp(argv[i], "-d") == 0)
+		else if (i < (unsigned int) argc - 1 && strcmp(argv[i], "-d") == 0)
 			delay = 1000 * strtol(argv[++i], NULL, 10);
 		else {
 			printf("Unknown option %s\n", argv[i]);
@@ -100,7 +100,7 @@ static Lvl *getlvl(void) {
 
 	std::string path;
 	nextctrl = 0;
-	dfread(stdin, dfline, &path, echo);
+	dfread(stdin, dfline, &path, echo ? stdout : NULL);
 	if (path.size() == 0)
 		fatal("No level key found");
 
@@ -180,8 +180,8 @@ static unsigned int sdlkeys(void) {
 }
 #endif
 
-static void scroll(const Geom2d::Pt &l0, const Geom2d::Pt &l1) {
-	Geom2d::Pt delta(l1.x - l0.x, l1.y - l0.y);
+static void scroll(const geom2d::Pt &l0, const geom2d::Pt &l1) {
+	geom2d::Pt delta(l1.x - l0.x, l1.y - l0.y);
 
 	if ((delta.x > 0 && l1.x + tr.x > Width * 0.75) ||
 		(delta.x < 0 && l1.x + tr.x < Width * 0.25))

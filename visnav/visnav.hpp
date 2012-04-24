@@ -44,7 +44,7 @@ struct VisNav {
 	State initialstate(void);
 
 	Cost h(State &s) {
-		const Geom2d::Pt &pt = g.verts[s.vert].pt;
+		const geom2d::Pt &pt = g.verts[s.vert].pt;
 		double dx = x1 - pt.x;
 		double dy = y1 - pt.y;
 		return sqrt(dx * dx + dy * dy);
@@ -67,12 +67,12 @@ struct VisNav {
 		return Oper(&g.verts[s.vert].edges[n]);
 	}
 
-	struct Transition {
+	struct Edge {
 		Cost cost;
 		Oper revop;
 		State state;
 
-		Transition(VisNav &d, State &s, Oper op) :
+		Edge(VisNav &d, State &s, Oper op) :
 			cost(op.edge->dist), revop(op), state(op.edge->dst) { }
 	};
 

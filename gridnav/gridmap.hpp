@@ -8,8 +8,8 @@
 
 void fatal(const char*, ...);
 
-class GridMap {
-public:
+struct GridMap {
+
 	GridMap(std::string &file);
 
 	GridMap(FILE *f) : nmvs(0) { load(f); }

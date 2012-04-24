@@ -13,10 +13,21 @@ int main(int argc, const char *argv[]) {
 	dfpair(stdout, "y0", "%g", y0);
 	dfpair(stdout, "x1", "%g", x1);
 	dfpair(stdout, "y1", "%g", y1);
-	VisNav nav(g, x0, y0, x1, y1);
-	Result<VisNav> res = search<VisNav>(nav, argc, argv);
+	VisNav d(g, x0, y0, x1, y1);
+	Result<VisNav> res = search<VisNav>(d, argc, argv);
 
-	nav.save("path.eps", res.path);
+	VisNav::State state = d.initialstate();
+	VisNav::Cost cost(0);
+	for (int i = res.ops.size() - 1; i >= 0; i--) {
+		VisNav::State copy(state);
+		VisNav::Edge e(d, copy, res.ops[i]);
+		assert (e.state.eq(res.path[i]));
+		state = e.state;
+		cost += e.cost;
+	}
+	assert (d.isgoal(state));
+	dfpair(stdout, "final sol cost", "%g", (double) cost);
+	d.save("path.eps", res.path);
 
 	return 0;
 }

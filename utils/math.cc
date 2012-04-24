@@ -1,4 +1,8 @@
+#include "safeops.hpp"
 #include <boost/cstdint.hpp>
+#include <limits>
+
+void fatal(const char*, ...);
 
 unsigned int ilog2(boost::uint32_t v) {
 	if (!v)
@@ -32,6 +36,13 @@ unsigned int ilog2(boost::uint32_t v) {
 unsigned long ipow(unsigned int b, unsigned int e) {
 	unsigned long r = 1;
 	for (unsigned int i = 0; i < e; i++)
-		r *= b;
+		r = safe::mul(r, (unsigned long) b);
 	return r;
+}
+
+unsigned long fallfact(unsigned int x, unsigned int n) {
+	unsigned long f = x;
+	for (unsigned int i = 1; i < n; i++)
+		f = safe::mul(f, (unsigned long) safe::sub(x, i));
+	return f;
 }

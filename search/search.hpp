@@ -97,17 +97,20 @@ private:
 	ClosedEntry<SearchNode, D> closedent;
 
 public:
-	int openind;
+	int ind;
 	typename D::PackedState packed;
 	typename D::Cost g;
 	typename D::Oper op;
 	typename D::Oper pop;
 	SearchNode *parent;
 
-	SearchNode(void) : openind(-1) { }
+	SearchNode(void) : ind(-1) { }
 
-	// setind sets openind to the given value.
-	static void setind(SearchNode *n, int i) { n->openind = i; }
+	// setind sets index field to the given value.
+	static void setind(SearchNode *n, int i) { n->ind = i; }
+	
+	// getind returns the value of the index field.
+	static int getind(SearchNode *n) { return n->ind; }
 
 	// entry returns a reference to the closed list entry of the
 	// given node.
@@ -154,8 +157,7 @@ public:
 };
 
 // An OpenList holds nodes and returns them ordered by some
-// priority.  This template assumes that the nodes have a field
-// 'openind'.  The Ops class has a pred method which accepts
+// priority.  The Ops class has a pred method which accepts
 // two Nodes and returns true if the 1st node is a predecessor
 // of the second.
 template <class Ops, class Node, class Cost> class OpenList {
@@ -174,15 +176,15 @@ public:
 	void pre_update(Node *n) { }
 
 	void post_update(Node *n) {
-		if (n->openind < 0)
+		if (n->ind < 0)
 			heap.push(n);
 		else
-			heap.update(n->openind);
+			heap.update(Ops::getind(n));
 	}
 
 	bool empty(void) { return heap.empty(); }
 
-	bool mem(Node *n) { return n->openind != -1; }
+	bool mem(Node *n) { return n->ind != -1; }
 
 	void clear(void) { heap.clear(); }
 
@@ -190,21 +192,74 @@ private:
 	struct Heapops {
  		static bool pred(Node *a, Node *b) { return Ops::pred(a, b); }
 
-		static void setind(Node *n, int i) { n->openind = i; }
+		static void setind(Node *n, int i) { Ops::setind(n, i); }
 	};
 	BinHeap<Heapops, Node*> heap;
 };
 
 typedef int IntOpenCost;
 
-// This specialization of OpenList assumes that a node has an
-// 'openind' field.  The Ops struct has prio and tieprio methods,
+// The Ops struct has prio and tieprio methods,
 // both of which return ints.  The list is sorted in increasing order
 // on the prio key then secondary sorted in decreasing order on
 // the tieprio key.
 template <class Ops, class Node> class OpenList <Ops, Node, IntOpenCost> {
+
+	struct Maxq {
+		Maxq(void) : fill(0), max(0), bkts(100)  { }
+
+		void push(Node *n, unsigned long p) {
+			if (bkts.size() <= p)
+				bkts.resize(p+1);
+
+			if (p > max)
+				max = p;
+
+			Ops::setind(n, bkts[p].size());
+			bkts[p].push_back(n);
+			fill++;
+		}
+
+		Node *pop(void) {
+			for ( ; bkts[max].empty() && max > 0; max--)
+				;
+			Node *n = bkts[max].back();
+			bkts[max].pop_back();
+			Ops::setind(n, -1);
+			fill--;
+			return n;
+		}
+
+		void rm(Node *n, unsigned long p) {
+			assert (p < bkts.size());
+			std::vector<Node*> &bkt = bkts[p];
+
+			unsigned int i = Ops::getind(n);
+			assert (i < bkt.size());
+
+			if (bkt.size() > 1) {
+				bkt[i] = bkt[bkt.size() - 1];
+				Ops::setind(bkt[i], i);
+			}
+
+			bkt.pop_back();
+			Ops::setind(n, -1);
+			fill--;
+		}
+
+		bool empty(void) { return fill == 0; }
+
+		unsigned long fill;
+		unsigned int max;
+		std::vector< std::vector<Node*> > bkts;
+	};
+
+	unsigned long fill;
+	unsigned int min;
+	std::vector<Maxq> qs;
+
 public:
-	OpenList(void) : fill(0), min(0) { }
+	OpenList(void) : fill(0), min(0), qs(100) { }
 
 	static const char *kind(void) { return "2d bucketed"; }
 
@@ -229,7 +284,7 @@ public:
 	}
 
 	void pre_update(Node*n) {
-		if (n->openind < 0)
+		if (Ops::getind(n) < 0)
 			return;
 		assert ((unsigned long) Ops::prio(n) < qs.size());
 		qs[Ops::prio(n)].rm(n, Ops::tieprio(n));
@@ -237,91 +292,32 @@ public:
 	}
 
 	void post_update(Node *n) {
-		assert (n->openind < 0);
+		assert (Ops::getind(n) < 0);
 		push(n);
 	}
 
 	bool empty(void) { return fill == 0; }
 
-	bool mem(Node *n) { return n->openind >= 0; }
+	bool mem(Node *n) { return Ops::getind(n) >= 0; }
 
 	void clear(void) {
 		qs.clear();
 		min = 0;
 	}
-
-private:
-
-	struct Maxq {
-		Maxq(void) : fill(0), max(0) { }
-
-		void push(Node *n, unsigned long p) {
-			if (bkts.size() <= p)
-				bkts.resize(p+1);
-
-			if (p > max)
-				max = p;
-
-			n->openind = bkts[p].size();
-			bkts[p].push_back(n);
-			fill++;
-		}
-
-		Node *pop(void) {
-			for ( ; bkts[max].empty(); max--) {
-				if (max == 0)
-					break;
-			}
-			Node *n = bkts[max].back();
-			bkts[max].pop_back();
-			Ops::setind(n, -1);
-			fill--;
-			return n;
-		}
-
-		void rm(Node *n, unsigned long p) {
-			assert (p < bkts.size());
-			std::vector<Node*> &bkt = bkts[p];
-
-			unsigned int i = n->openind;
-			assert (i < bkt.size());
-
-			if (bkt.size() > 1) {
-				bkt[i] = bkt[bkt.size() - 1];
-				Ops::setind(bkt[i], i);
-			}
-
-			bkt.pop_back();
-			Ops::setind(n, -1);
-			fill--;
-		}
-
-		bool empty(void) { return fill == 0; }
-
-		unsigned long fill;
-		unsigned int max;
-		std::vector< std::vector<Node*> > bkts;
-	};
-
-	unsigned long fill;
-	unsigned int min;
-	std::vector<Maxq> qs;
 };
 
 // A Result is returned from a completed search.  It contains
 // statistical information about the search along with the
 // solution cost and solution path if a goal was found.
 template <class D> struct Result : public SearchStats {
-	typename D::Cost cost;
 	std::vector<typename D::State> path;
 	std::vector<typename D::Oper> ops;
 
-	Result(void) : cost(-1) { }
+	Result(void) { }
 
 	// Sets the cost and solution path of the result to that of
 	// the given goal node.
 	void goal(D &d, SearchNode<D> *goal) {
-		cost = goal->g;
 		ops.clear();
 		path.clear();
 		for (SearchNode<D> *n = goal; n; n = n->parent) {
@@ -337,7 +333,6 @@ template <class D> struct Result : public SearchStats {
 	void output(FILE *f) {
 		dfpair(f, "state size", "%u", sizeof(typename D::State));
 		dfpair(f, "packed state size", "%u", sizeof(typename D::PackedState));
-		dfpair(f, "final sol cost", "%g", (double) cost);
 		dfpair(f, "final sol length", "%lu", (unsigned long) path.size());
 		SearchStats::output(f);
 	}
@@ -346,7 +341,6 @@ template <class D> struct Result : public SearchStats {
 	// in the receiver.  The path infromation is not accumulated.
 	void add(Result<D> &other) {
 		SearchStats::add(other);
-		cost += other.cost;
 	}
 };
 

@@ -149,7 +149,7 @@ private:
 	// the info struct for the generated child.
 	Kidinfo considerkid(D &d, Node *parent, State &state, Oper op) {
 		Node *kid = nodes->construct();
-		typename D::Transition e(d, state, op);
+		typename D::Edge e(d, state, op);
 		kid->g = parent->g + e.cost;
 		d.pack(kid->packed, e.state);
 
@@ -162,10 +162,10 @@ private:
 				dup->f = dup->f - dup->g + kid->g;
 				dup->update(kid->g, parent, op, e.revop);
 				computeutil(dup);
-				open.pushupdate(dup, dup->openind);
+				open.pushupdate(dup, dup->ind);
 			}
 			Kidinfo kinfo(kid->g, dup->h, dup->d);
-			//nodes->destruct(kid);
+			nodes->destruct(kid);
 			return kinfo;
 		}
 
