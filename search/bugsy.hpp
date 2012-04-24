@@ -31,7 +31,7 @@ template <class D> struct Bugsy : public SearchAlgorithm<D> {
 	Bugsy(int argc, const char *argv[]) :
 			SearchAlgorithm<D>(argc, argv),
 			navg(0), herror(0), derror(0),
-			timeper(0.0), nresort(0), pertick(20), nexp(0), state(WaitTick),
+			timeper(0.0), nresort(0), batchsize(20), nexp(0), state(WaitTick),
 			closed(30000001) {
 		wf = wt = -1;
 		for (int i = 0; i < argc; i++) {
@@ -85,7 +85,7 @@ template <class D> struct Bugsy : public SearchAlgorithm<D> {
 		delete nodes;
 		timeper = 0.0;
 		state = WaitTick;
-		pertick = 20;
+		batchsize = 20;
 		nexp = 0;
 		nresort = 0;
 		nodes = new Pool<Node>();
@@ -201,12 +201,13 @@ private:
 		n->u = -(wf * fhat + wt * n->t);
 	}
 
+	// updatetime runs a simple state machine (from Wheeler's BUGSY
+	// implementation) that estimates the node expansion rate.
 	void updatetime(void) {
 		double now;
-		nexp++;
 
 		switch (state) {
-		case WaitTick:
+		case WaitTick:	// wait until the clock ticks
 			now = walltime();
 			if (now <= lasttick)
 				break;
@@ -214,21 +215,27 @@ private:
 			state = ExpandSome;
 			break;
 
-		case ExpandSome:
-			if (nexp < pertick)
+		case ExpandSome:	// expand a batch of nodes
+			nexp++;
+			if (nexp < batchsize)
 				break;
 			lasttick = walltime();
 			state = WaitExpand;
 			break;
 
-		case WaitExpand:
+		case WaitExpand:	// estimate the exps for the next tick and reset
+			nexp++;
 			now = walltime();
-			if (now <= lasttick)
+			if (now <= lasttick)	// clock hasn't ticked yet
 				break;
 			updateopen();
 			timeper = (now - starttime) / nexp;
-			// 1.8 * nexp from Wheeler's bugsy_old.ml
-			pertick = nexp * 9 / 5;
+			// Re-check the time after 1.8*nexp expansions.
+			// 1.8 is from Wheeler's bugsy_old.ml code.  This
+			// should be geometrically increasing in nexp to
+			// ensure that we only sort the open list a logarithmic
+			// number of times.
+			batchsize = nexp * 9 / 5;
 			nexp = 0;
 			starttime = now;
 			state = ExpandSome;
@@ -254,7 +261,7 @@ private:
 
 	// for nodes-per-second estimation
 	double timeper;
-	unsigned long nresort, pertick, nexp;
+	unsigned long nresort, batchsize, nexp;
 	double starttime, lasttick;
 	int state;
 
