@@ -36,7 +36,7 @@ namespace safe {
 		}
 	
 		static N sub(N a, N b){
-			if(a > 0 && b < 0 && n::max() - b < a)
+			if(a > 0 && b < 0 && n::max() + b < a)
 				throw BadFlow<N>(a, b, "-", true);
 			if(a < 0 && b > 0 && n::min() + b > a)
 				throw BadFlow<N>(a, b, "-", true);
