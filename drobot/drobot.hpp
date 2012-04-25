@@ -100,6 +100,9 @@ struct DockRobot {
 
 	static const Oper Nop;
 
+	// creates a dummy instance with the given number of locations.
+	DockRobot(unsigned int);
+
 	DockRobot(FILE*);
 
 	struct State {
@@ -188,6 +191,8 @@ struct DockRobot {
 	}
 
 private:
+	friend bool compute_moves_test();
+	friend bool compute_loads_test();
 
 	void readadj(FILE*, unsigned int);
 	void readcranes(FILE*, unsigned int);
@@ -196,7 +201,7 @@ private:
 	void computeops(State&) const;
 
 	// The number of various things in the dockyard.
-	unsigned int nlocs, ncranes, nboxes, npiles;
+	unsigned int nlocs, nboxes;
 
 	// maxpiles is the maximum number of piles at a given location.
 	std::vector<unsigned int> maxpiles; 

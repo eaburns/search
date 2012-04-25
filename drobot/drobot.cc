@@ -1,4 +1,5 @@
 #include "drobot.hpp"
+#include <limits>
 
 unsigned int DockRobot::Loc::pop(unsigned int p) {
 	assert (p < piles.size());
@@ -45,8 +46,16 @@ void DockRobot::Loc::addcrane(unsigned int box) {
 
 const DockRobot::Oper DockRobot::Nop = { DockRobot::Oper::None, 0 };
 
+DockRobot::DockRobot(unsigned int n) :
+		nlocs(n),  nboxes(0), maxpiles(n, 0), maxcranes(n, 0), adj(n), initlocs(n) {
+	for (unsigned int i = 0; i < n; i++) {
+	for (unsigned int j = 0; j < n; j++)
+		adj[i].push_back(std::numeric_limits<float>::infinity());
+	}
+}
+
 DockRobot::DockRobot(FILE *in) {
-	unsigned int nrobots;
+	unsigned int nrobots, ncranes, npiles;
 
 	if (fscanf(in, "nlocations: %u\n", &nlocs) != 1)
 		fatal("Failed to read the number of locations");
@@ -239,15 +248,15 @@ void DockRobot::computeops(State &s) const {
 	const Loc &l = s.locs[s.rloc];
 
 	// Push cranes onto piles.
-	unsigned int lastpile = l.piles.size();
-	if (lastpile >= maxpiles[s.rloc])
+	int lastpile = l.piles.size();
+	if ((unsigned int) lastpile >= maxpiles[s.rloc])
 		lastpile = maxpiles[s.rloc] - 1;
 	for (unsigned int c = 0; c < l.cranes.size(); c++) {
-		for (unsigned int p = 0; p <= lastpile; p++)
+		for (int p = 0; p <= lastpile; p++)
 			s.ops.push_back(Oper(Oper::Push, c, p));
 	}
 
-	if (l.cranes.size() != maxcranes[s.rloc]) {	// empty cranes?
+	if (l.cranes.size() < maxcranes[s.rloc]) {	// empty cranes?
 
 		// Pop piles onto a crane
 		for (unsigned int p = 0; p < l.piles.size(); p++)

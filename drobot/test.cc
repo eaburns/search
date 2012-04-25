@@ -240,6 +240,88 @@ bool loc_full_equality_test() {
 	return ok;
 }
 
+bool compute_moves_test() {
+	bool ok = true;
+
+	DockRobot dr(3);
+	DockRobot::State s;
+	s.locs.resize(3);
+	s.rloc = 0;
+
+	unsigned int n = dr.nops(s);
+	if (n != 2) {
+		testpr("Expected 2 move operations but got %u", n);
+		ok = false;
+	}
+
+	std::vector<bool> seen(3, false);
+	for (unsigned int i = 0; i < n; i++) {
+		unsigned int dst = dr.nthop(s, i).x;
+		if (dst > seen.size()) {
+			testpr("Move to out of bound location %u", dst);
+			ok = false;
+		} else {
+			seen[dst] = true;
+		}
+	}
+
+	if (seen[0]) {
+		testpr("Move to the current location");
+		ok = false;
+	}
+	if (!seen[1]) {
+		testpr("No move to location 1");
+		ok = false;
+	}
+	if (!seen[2]) {
+		testpr("No move to location 2");
+		ok = false;
+	}
+
+	return ok;
+}
+
+bool compute_loads_test() {
+	bool ok = true;
+
+	DockRobot dr(1);
+	dr.maxcranes[0] = 2;
+	dr.maxpiles[1] = 0;
+	DockRobot::State s;
+	s.locs.resize(1);
+	s.rloc = 0;
+	s.rbox = -1;
+	s.locs[0].cranes.push_back(0);
+	s.locs[0].cranes.push_back(1);
+
+	unsigned int n = dr.nops(s);
+	if (n != 2) {
+		testpr("Expected 2 operators but got %u\n", n);
+		ok = false;
+	}
+
+	std::vector<bool> seen(2, false);
+	for (unsigned int i = 0; i < n; i++) {
+		unsigned int cr = dr.nthop(s, i).x;
+		if (cr > seen.size()) {
+			testpr("Load from out of bound crane %u", cr);
+			ok = false;
+		} else {
+			seen[cr] = true;
+		}
+	}
+	if (!seen[0]) {
+		testpr("No load from crane 0");
+		ok = false;
+	}
+	if (!seen[1]) {
+		testpr("No load from crane 1");
+		ok = false;
+	}
+
+	return ok;
+}
+
 static const Test tests[] = {
 	Test("loc pop test", loc_pop_test),
 	Test("loc push test", loc_push_test),
@@ -248,6 +330,8 @@ static const Test tests[] = {
 	Test("loc crane equality test", loc_crane_equality_test),
 	Test("loc pile equality test", loc_pile_equality_test),
 	Test("loc full equality test", loc_full_equality_test),
+	Test("compute moves test", compute_moves_test),
+	Test("compute loads test", compute_loads_test),
 };
 enum { Ntests = sizeof(tests) / sizeof(tests[0]) };
 
