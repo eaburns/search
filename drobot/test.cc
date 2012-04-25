@@ -146,6 +146,11 @@ bool loc_crane_equality_test() {
 	}
 
 	a.addcrane(1);
+	if (a == b) {
+		testpr("Expected locations with different number of cranes to be unequal");
+		ok = false;
+	}
+
 	b.addcrane(0);
 	if (a == b) {
 		testpr("Expected locations with different cranes to be unequal");
@@ -162,12 +167,87 @@ bool loc_crane_equality_test() {
 	return ok;
 }
 
+bool loc_pile_equality_test() {
+	bool ok = true;
+	DockRobot::Loc a, b;
+
+	if (a != b) {
+		testpr("Expected two empty locations to be equal");
+		ok = false;
+	}
+
+	a.push(1, 0);
+	if (a == b) {
+		testpr("Expected locations with different number of piles to be unequal");
+		ok = false;
+	}
+
+	b.push(0, 0);
+	if (a == b) {
+		testpr("Expected locations with different piles to be unequal");
+		ok = false;
+	}
+
+	a.push(0, 1);
+	b.push(1, 1);
+	if (a != b) {
+		testpr("Expected locations with matching piles to be equal");
+		ok = false;
+	}
+
+	return ok;
+}
+
+bool loc_full_equality_test() {
+	bool ok = true;
+	DockRobot::Loc a, b;
+
+	if (a != b) {
+		testpr("Expected two empty locations to be equal");
+		ok = false;
+	}
+
+	a.addcrane(1);
+	b.addcrane(0);
+	a.push(1, 0);
+	b.push(0, 0);
+	if (a == b) {
+		testpr("Expected locations with different cranes and piles to be unequal");
+		ok = false;
+	}
+
+	a.addcrane(0);
+	b.addcrane(1);
+	if (a == b) {
+		testpr("Expected locations with matching cranes but different piles to be unequal");
+		ok = false;
+	}
+
+	a.push(0, 1);
+	b.push(1, 1);
+	if (a != b) {
+		testpr("Expected locations with matching cranes and piles to be equal");
+		ok = false;
+	}
+
+	a.addcrane(3);
+	b.addcrane(4);
+	if (a == b) {
+		testpr("Expected locations with matching piles but different cranes to be unequal");
+		ok = false;
+	}
+
+	return ok;
+}
+
 static const Test tests[] = {
 	Test("loc pop test", loc_pop_test),
 	Test("loc push test", loc_push_test),
 	Test("loc rmcrane test", loc_rmcrane_test),
 	Test("loc addcrane test", loc_addcrane_test),
 	Test("loc crane equality test", loc_crane_equality_test),
+	Test("loc pile equality test", loc_pile_equality_test),
+	Test("loc full equality test", loc_full_equality_test),
 };
 enum { Ntests = sizeof(tests) / sizeof(tests[0]) };
 
