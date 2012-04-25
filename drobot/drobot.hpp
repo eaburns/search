@@ -150,8 +150,10 @@ struct DockRobot {
 	}
 
 	unsigned int nops(State &s) {
-		if (!s.hasops)
+		if (!s.hasops) {
 			computeops(s);
+			s.hasops = true;
+		}
 		return s.ops.size();
 	}
 

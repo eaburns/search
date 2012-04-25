@@ -270,6 +270,4 @@ void DockRobot::computeops(State &s) const {
 			continue;
 		s.ops.push_back(Oper(Oper::Move, i));
 	}
-
-	s.hasops = true;
 }
