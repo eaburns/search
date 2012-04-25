@@ -39,3 +39,32 @@ char *gettoken(char *str, unsigned int lineno) {
 
 	return strt;	
 }
+
+std::vector<std::string> tokens(const std::string &str) {
+	std::vector<std::string> tokens;
+	std::string tok;
+	bool instring = false;
+
+	for (unsigned int i = 0; i < str.size(); i++) {
+		if (str[i] == '"') {
+			if (instring) {
+				tokens.push_back(tok);
+				tok.clear();
+			}
+			instring = !instring;
+			continue;
+		} else if (!instring && isspace(str[i])) {
+			if (tok.size() > 0) {
+				tokens.push_back(tok);
+				tok.clear();
+			}
+			continue;
+		}
+		tok.push_back(str[i]);
+	}
+	if (instring)
+		fatal("Missing a closing quote");
+	if (tok.size() > 0)
+		tokens.push_back(tok);
+	return tokens;
+}

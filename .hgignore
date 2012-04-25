@@ -8,6 +8,7 @@ bench/data
 .utils_test
 .structs_test
 .rdb_test
+.drobot_test
 structs/test
 utils/test
 rdb/pathfor
@@ -15,6 +16,7 @@ rdb/withattrs
 rdb/dfcmplt
 rdb/pathattrs
 rdb/test
+rdb/addattrs
 tiles/*pdbgen
 gridnav/2poly
 visnav/draw

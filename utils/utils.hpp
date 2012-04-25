@@ -80,6 +80,11 @@ bool hasprefix(const char*, const char*);
 // quote match fails.
 char *gettoken(char*, unsigned int lineno = 0);
 
+// tokens returns a vector of the space delimited tokens in
+// the given string.  Quotes are interpreted as strings, and so
+// spaces within quotes do not delimit tokens.
+std::vector<std::string> tokens(const std::string&);
+
 // walltime returns the current wall-cloce time in seconds
 double walltime(void);
 
