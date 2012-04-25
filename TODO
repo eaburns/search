@@ -1,5 +1,7 @@
 • change latches to #pragma once
 
+• change all (void) to ()
+
 • utils
 
 	- change fatal to be an exception
