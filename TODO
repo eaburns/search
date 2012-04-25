@@ -2,6 +2,8 @@
 
 • utils
 
+	- change fatal to be an exception
+
 	- fix segfault in fatal
 
 	- unit test Steve's safeops
