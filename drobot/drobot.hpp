@@ -77,8 +77,8 @@ struct DockRobot {
 		Pile() { }
 
 		// Construct a new pile with a single box.
-		Pile(unsigned int b) {
-			stack.push_back(b);
+		Pile(unsigned int b) : stack(1) {
+			stack[0] = b;
 		}
 
 		// operator< orders piles by their bottom stack element.
@@ -101,6 +101,10 @@ struct DockRobot {
 
 		Oper(OpType t = None, unsigned int _x = 0, unsigned int _y = 0) :
 			type(t), x(_x), y(_y) { }
+
+		bool operator==(const Oper &o) const {
+			return type == o.type && x == o.x && y == o.y;
+		}
 
 		OpType type;
 		unsigned int x, y;
@@ -142,27 +146,27 @@ struct DockRobot {
 
 	State initialstate(void);
 
-	unsigned long hash(PackedState &p) const {
+	unsigned long hash(const PackedState &p) const {
 		unsigned int pos[nboxes];
 		boxlocs(p, pos);
 		return hashbytes(reinterpret_cast<unsigned char*>(&pos[0]),
 			sizeof(pos[0]*nboxes));
 	}
 
-	Cost h(State &s) {
+	Cost h(const State &s) const {
 		return s.h;
 	}
 
-	Cost d(State &s) {
+	Cost d(const State &s) const {
 		return s.d;
 	}
 
 	// Is the given state a goal state?
-	bool isgoal(State &s) {
+	bool isgoal(const State &s) const {
 		return s.nleft == 0;
 	}
 
-	unsigned int nops(State &s) {
+	unsigned int nops(State &s) const {
 		if (!s.hasops) {
 			computeops(s);
 			s.hasops = true;
@@ -170,7 +174,7 @@ struct DockRobot {
 		return s.ops.size();
 	}
 
-	Oper nthop(State &s, unsigned int n) {
+	Oper nthop(const State &s, unsigned int n) const {
 		return s.ops[n];
 	}
 
@@ -179,20 +183,22 @@ struct DockRobot {
 		Oper revop;
 		State &state;
 
-		Edge(DockRobot&, State&, Oper);
+		Edge(DockRobot&, State&, const Oper&);
 		~Edge();
 
 	private:
+
+		void apply(State&, const Oper&);
 
 		// needed to reverse an operator application.
 		DockRobot &dom;
 	};
 
-	void pack(PackedState &dst, State &src) {
+	void pack(PackedState &dst, const State &src) {
 		dst = src;
 	}
 
-	State &unpack(State &buf, PackedState &pkd) {
+	State &unpack(const State &buf, PackedState &pkd) {
 		return pkd;
 	}
 

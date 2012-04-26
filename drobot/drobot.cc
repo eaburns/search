@@ -102,6 +102,32 @@ DockRobot::DockRobot(FILE *in) {
 	}
 }
 
+DockRobot::State DockRobot::initialstate() {
+	State st;
+	st.locs = initlocs;
+	st.rbox = -1;
+	st.rloc = 0;
+	st.h = st.d = 0;
+
+	st.nleft = 0;
+	for (unsigned int g = 0; g < goal.size(); g++) {
+		if (goal[g] < 0)
+			continue;
+		for (unsigned int l = 0; l < st.locs.size(); l++) {
+		for (unsigned int p = 0; p < st.locs[l].piles.size(); p++) {
+		for (unsigned int s = 0; s < st.locs[l].piles[p].stack.size(); s++) {
+				if ((unsigned int) goal[st.locs[l].piles[p].stack[s]] != l)
+					st.nleft++;
+		}
+		}
+		}
+	}
+
+	st.hasops = false;
+
+	return st;
+}
+
 void DockRobot::readadj(FILE *in, unsigned int loc) {
 	boost::optional<std::string> line = readline(in);
 	if (!line)
@@ -161,13 +187,23 @@ void DockRobot::readpile(FILE *in, unsigned int n, const std::vector<unsigned in
 	initlocs[loc].piles.push_back(pile);
 }
 
-DockRobot::Edge::Edge(DockRobot &d, State &s, Oper o) : state(s), dom(d) {
+DockRobot::Edge::Edge(DockRobot &d, State &s, const Oper &o) : state(s), dom(d) {
+	apply(state, o);
+}
+
+DockRobot::Edge::~Edge() {
+	// creating the reverse edge undoes the operator.
+	apply(state, revop);
+}
+
+void DockRobot::Edge::apply(State &s, const Oper &o) {
 	s.h = s.d = 0;
 
 	switch (o.type) {
 	case Oper::Push: {
 		unsigned int c = o.x;
 		int p = o.y;
+		assert (s.rloc < s.locs.size());
 		Loc &l = s.locs[s.rloc];
 		unsigned int box = l.rmcrane(c);
 		unsigned int bottom = box;
@@ -219,7 +255,7 @@ DockRobot::Edge::Edge(DockRobot &d, State &s, Oper o) : state(s), dom(d) {
 		Loc &l = s.locs[s.rloc];
 		unsigned int box = s.rbox;
 		l.addcrane(box);
-		assert (l.cranes.size() <= d.maxcranes[s.rloc]);	// not to many cranes, right?
+		assert (l.cranes.size() <= dom.maxcranes[s.rloc]);	// not to many cranes, right?
 		s.rbox = -1;
 
 		int c = l.findcrane(box);
@@ -233,27 +269,23 @@ DockRobot::Edge::Edge(DockRobot &d, State &s, Oper o) : state(s), dom(d) {
 
 		// Are we moving a box out of its goal location
 		// or to its goal location?
-		if (s.rbox >= 0 && d.goal[s.rbox] >= 0) {
- 			if ((unsigned int) d.goal[s.rbox] == s.rloc)
+		if (s.rbox >= 0 && dom.goal[s.rbox] >= 0) {
+ 			if ((unsigned int) dom.goal[s.rbox] == s.rloc)
 				s.nleft++;
-			else if ((unsigned int) d.goal[s.rbox] == dst)
+			else if ((unsigned int) dom.goal[s.rbox] == dst)
 				s.nleft--;
 		}
 
 		s.rloc = dst;
 
 		revop = Oper(Oper::Move, src);
-		cost = d.adj[src][dst];
+		cost = dom.adj[src][dst];
 		break;
 	}
 	default:
 		fatal("Unknown operator type %d", o.type);
 	}
-}
 
-DockRobot::Edge::~Edge() {
-	// creating the reverse edge undoes the operator.
-	Edge e(dom, state, revop);
 }
 
 void DockRobot::computeops(State &s) const {
