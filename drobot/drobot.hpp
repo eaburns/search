@@ -122,15 +122,10 @@ struct DockRobot {
 		// nleft is the number of packages out of their goal location.
 		unsigned int nleft;
 
-		Cost h;
-		unsigned int d;
+		Cost h, d;
 
 		bool hasops;
 		std::vector<Oper> ops;
-
-		unsigned long hash(void) const {
-			return -1;
-		}
 
 		bool eq(State &o) {
 			if (rloc != o.rloc)
@@ -146,6 +141,13 @@ struct DockRobot {
 	typedef State PackedState;
 
 	State initialstate(void);
+
+	unsigned long hash(PackedState &p) const {
+		unsigned int pos[nboxes];
+		boxlocs(p, pos);
+		return hashbytes(reinterpret_cast<unsigned char*>(&pos[0]),
+			sizeof(pos[0]*nboxes));
+	}
 
 	Cost h(State &s) {
 		return s.h;
@@ -207,6 +209,7 @@ private:
 	void readpiles(FILE*, unsigned int, std::vector<unsigned int>&);
 	void readpile(FILE*, unsigned int, const std::vector<unsigned int>&);
 	void computeops(State&) const;
+	void boxlocs(const State&, unsigned int[]) const;
 
 	// The number of various things in the dockyard.
 	unsigned int nlocs, nboxes;
@@ -224,5 +227,5 @@ private:
 	std::vector<Loc> initlocs;
 
 	// goal is a vector of the desired location for each box
-	std::vector<unsigned int> goal;
+	std::vector<int> goal;
 };

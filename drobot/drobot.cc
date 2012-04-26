@@ -73,7 +73,7 @@ DockRobot::DockRobot(FILE *in) {
 	adj.resize(nlocs);
 	initlocs.resize(nlocs);
 	maxcranes.resize(nlocs);
-	goal.resize(nboxes);
+	goal.resize(nboxes, -1);
 
 	std::vector<unsigned int> pilelocs(npiles);
 
@@ -162,6 +162,8 @@ void DockRobot::readpile(FILE *in, unsigned int n, const std::vector<unsigned in
 }
 
 DockRobot::Edge::Edge(DockRobot &d, State &s, Oper o) : state(s), dom(d) {
+	s.h = s.d = 0;
+
 	switch (o.type) {
 	case Oper::Push: {
 		unsigned int c = o.x;
@@ -228,6 +230,16 @@ DockRobot::Edge::Edge(DockRobot &d, State &s, Oper o) : state(s), dom(d) {
 	}
 	case Oper::Move: {
 		unsigned int src = s.rloc, dst = o.x;
+
+		// Are we moving a box out of its goal location
+		// or to its goal location?
+		if (s.rbox >= 0 && d.goal[s.rbox] >= 0) {
+ 			if ((unsigned int) d.goal[s.rbox] == s.rloc)
+				s.nleft++;
+			else if ((unsigned int) d.goal[s.rbox] == dst)
+				s.nleft--;
+		}
+
 		s.rloc = dst;
 
 		revop = Oper(Oper::Move, src);
@@ -280,3 +292,24 @@ void DockRobot::computeops(State &s) const {
 		s.ops.push_back(Oper(Oper::Move, i));
 	}
 }
+
+// pos must be at least nboxes in size.
+void DockRobot::boxlocs(const State &s, unsigned int pos[]) const {
+	for (unsigned int i = 0; i < nboxes; i++)
+		pos[i] = 0;
+
+	unsigned int cur = 0;
+	for (unsigned int i = 0; i < s.locs.size(); i++) {
+		const Loc &l = s.locs[i];
+		for (unsigned int c = 0; c < l.cranes.size(); c++)
+			pos[l.cranes[c]] = cur + c;
+		cur += maxcranes[i];
+		for (unsigned int p = 0; p < l.piles.size(); p++) {
+			for (unsigned int s = 0; s < l.piles[p].stack.size(); s++) {
+				pos[l.piles[p].stack[s]] = cur + s + p*nboxes;
+			}
+		}
+		cur += maxpiles[i]*nboxes;
+	}
+}
+		
