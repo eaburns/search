@@ -103,7 +103,7 @@ struct DockRobot {
 			type(t), x(_x), y(_y) { }
 
 		bool operator==(const Oper &o) const {
-			return type == o.type && x == o.x && y == o.y;
+			return x == o.x && type == o.type && y == o.y;
 		}
 
 		OpType type;
@@ -149,10 +149,12 @@ struct DockRobot {
 	State initialstate(void);
 
 	unsigned long hash(const PackedState &p) const {
-		unsigned int pos[nboxes];
+		unsigned int pos[nboxes+1];
 		boxlocs(p, pos);
+		pos[nboxes] = p.rloc;
+
 		return hashbytes(reinterpret_cast<unsigned char*>(&pos[0]),
-			sizeof(pos[0]*nboxes));
+			sizeof(pos[0])*(nboxes+1));
 	}
 
 	Cost h(const State &s) const {
@@ -207,6 +209,8 @@ struct DockRobot {
 	void dumpstate(FILE *out, State &s) {
 		fatal("Unimplemented");
 	}
+
+	Cost pathcost(const std::vector<State>&, const std::vector<Oper>&);
 
 private:
 	friend bool compute_moves_test();

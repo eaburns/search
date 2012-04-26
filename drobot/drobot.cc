@@ -328,6 +328,10 @@ void DockRobot::boxlocs(const State &s, unsigned int pos[]) const {
 		pos[i] = 0;
 
 	unsigned int cur = 0;
+	if (s.rbox >= 0)
+		pos[s.rbox] = cur;
+	cur++;
+
 	for (unsigned int i = 0; i < s.locs.size(); i++) {
 		const Loc &l = s.locs[i];
 		for (unsigned int c = 0; c < l.cranes.size(); c++)
@@ -341,4 +345,17 @@ void DockRobot::boxlocs(const State &s, unsigned int pos[]) const {
 		cur += maxpiles[i]*nboxes;
 	}
 }
-		
+
+DockRobot::Cost DockRobot::pathcost(const std::vector<State> &path, const std::vector<Oper> &ops) {
+	State state = initialstate();
+	Cost cost(0);
+	for (int i = ops.size() - 1; i >= 0; i--) {
+		State copy(state);
+		Edge e(*this, copy, ops[i]);
+		assert (e.state == path[i]);
+		state = e.state;
+		cost += e.cost;
+	}
+	assert (isgoal(state));
+	return cost;
+}
