@@ -47,7 +47,7 @@ public:
 
 	Elm *find(Key k, unsigned long h) {
 		for (Elm *p = bins[h % nbins]; p; p = Ops::entry(p).nxt) {
-			if (Ops::eq(Ops::key(p), k))
+			if (Ops::key(p) == k)
 				return p;
 		}
 

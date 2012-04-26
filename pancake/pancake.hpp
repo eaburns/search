@@ -18,9 +18,9 @@ public:
 	typedef int Cost;
 
 	struct State {
-		bool eq(State &other) const {
+		bool operator==(const State &o) const {
 			for (unsigned int i = 0; i < Ncakes; i++) {
-				if (cakes[i] != other.cakes[i])
+				if (cakes[i] != o.cakes[i])
 					return false;
 			}
 			return true;

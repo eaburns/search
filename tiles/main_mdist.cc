@@ -19,7 +19,7 @@ int main(int argc, const char *argv[]) {
 		TilesMdist::State copy(state);
 		TilesMdist::Edge e(d, copy, res.ops[i]);
 		cost += e.cost;
-		assert(e.state.eq(res.path[i]));
+		assert(e.state == res.path[i]);
 		state = e.state;
 	}
 

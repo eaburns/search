@@ -38,8 +38,8 @@ public:
 		return hashbytes(bytes, sizeof(bytes));
 	}
 
-	bool eq(PackedTiles &other) const {
-		return memcmp(bytes, other.bytes, sizeof(bytes)) == 0;
+	bool operator==(PackedTiles &o) const {
+		return memcmp(bytes, o.bytes, sizeof(bytes)) == 0;
 	}
 };
 
@@ -92,7 +92,7 @@ public:
 		return word;
 	}
 
-	bool eq(PackedTiles &other) const {
-		return word == other.word;
+	bool operator==(const PackedTiles &o) const {
+		return word == o.word;
 	}
 };

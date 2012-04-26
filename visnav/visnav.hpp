@@ -29,7 +29,9 @@ struct VisNav {
 
 		State(int v) : vert(v) { }
 
-		bool eq(const State &o) { return vert == o.vert; }
+		bool operator==(const State &o) const {
+			return vert == o.vert;
+		}
 
 	private: 
 		friend struct Undo;

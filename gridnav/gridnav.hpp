@@ -109,8 +109,8 @@ struct GridNav {
 	struct PackedState {
 		unsigned int loc;
 
-		bool eq(const PackedState &other) const {
-			return other.loc == loc;
+		bool operator==(const PackedState &o) const {
+			return o.loc == loc;
 		}
 	};
 

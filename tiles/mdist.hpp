@@ -8,11 +8,11 @@ public:
 	typedef PackedTiles<Ntiles> PackedState;
 
 	struct State {
-		bool eq(State &other) const {
-			if (b != other.b)
+		bool operator==(const State &o) const {
+			if (b != o.b)
 				return false;
 			for (unsigned int i = 0; i < Ntiles; i++) {
-				if (ts[i] != other.ts[i] && i != b)
+				if (ts[i] != o.ts[i] && i != b)
 					return false;
 			}
 			return true;

@@ -48,7 +48,7 @@ struct Plat2d {
 
 	struct PackedState {
 
-		bool eq(PackedState &o) const {
+		bool operator==(const PackedState &o) const {
 			return jframes == o.jframes &&
 				geom2d::doubleeq(x, o.x) &&
 				geom2d::doubleeq(y, o.y) &&

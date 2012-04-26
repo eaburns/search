@@ -21,7 +21,7 @@ int main(int argc, const char *argv[]) {
 	for (int i = res.ops.size() - 1; i >= 0; i--) {
 		VisNav::State copy(state);
 		VisNav::Edge e(d, copy, res.ops[i]);
-		assert (e.state.eq(res.path[i]));
+		assert (e.state == res.path[i]);
 		state = e.state;
 		cost += e.cost;
 	}

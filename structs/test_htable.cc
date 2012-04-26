@@ -15,7 +15,6 @@ struct Ops {
 	static Key key(Ent *e) { return e->vl; }
 	static unsigned long hash(Key k) { return k; }
 	static HtableEntry<Ent> &entry(Ent *e) { return e->htent; }
-	static bool eq(Key a, Key b) { return a == b; }
 };
 
 enum { N = 1000 };

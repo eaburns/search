@@ -56,7 +56,7 @@ template<typename Ops, typename Node, typename D> struct ClosedList {
 
 	Node *find(PackedState &k, unsigned long h) {
 		for (Node *p = bins[h % nbins]; p; p = Ops::closedentry(p).nxt) {
-			if (Ops::key(p).eq(k))
+			if (Ops::key(p) == k)
 				return p;
 		}
 
