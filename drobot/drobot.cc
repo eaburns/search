@@ -157,17 +157,13 @@ DockRobot::State DockRobot::initialstate() {
 	st.h = st.d = 0;
 
 	st.nleft = 0;
-	for (unsigned int g = 0; g < goal.size(); g++) {
-		if (goal[g] < 0)
-			continue;
-		for (unsigned int l = 0; l < st.locs.size(); l++) {
-		for (unsigned int p = 0; p < st.locs[l].piles.size(); p++) {
-		for (unsigned int s = 0; s < st.locs[l].piles[p].stack.size(); s++) {
-			if ((unsigned int) goal[st.locs[l].piles[p].stack[s]] != l)
-				st.nleft++;
-		}
-		}
-		}
+	for (unsigned int l = 0; l < st.locs.size(); l++) {
+	for (unsigned int p = 0; p < st.locs[l].piles.size(); p++) {
+	for (unsigned int s = 0; s < st.locs[l].piles[p].stack.size(); s++) {
+		if ((unsigned int) goal[st.locs[l].piles[p].stack[s]] != l)
+			st.nleft++;
+	}
+	}
 	}
 
 	st.hasops = false;
