@@ -72,33 +72,80 @@ DockRobot::DockRobot(FILE *in) {
 
 	adj.resize(nlocs);
 	initlocs.resize(nlocs);
-	maxcranes.resize(nlocs);
+	maxcranes.resize(nlocs, 0);
+	maxpiles.resize(nlocs, 0);
 	goal.resize(nboxes, -1);
-
 	std::vector<unsigned int> pilelocs(npiles);
 
-	for (unsigned int i = 0; i < nlocs; i++) {
-		unsigned int loc;
+	long loc = -1;
+	boost::optional<std::string> line = readline(in);
+	while (line) {
+		std::vector<std::string> toks = tokens(*line);
+		if (toks.size() == 0)
+			continue;
 
-		if (fscanf(in, "location %u\n", &loc) != 1)
-			fatal("Failed to read the %uth location number", i);
+		if (toks[0] == "location") {
+			loc = strtol(toks[1].c_str(), NULL, 10);
+			if (loc < 0 || loc >= nlocs)
+				fatal("Invalid location %d", loc);
 
-		readadj(in, loc);
-		readcranes(in, loc);
-		readpiles(in, loc, pilelocs);
-	}
+		} else if (toks[0] == "adjacent:") {
+			if (toks.size() != nlocs + 1)
+				fatal("Malformed adjacency list for location %ld", loc);
 
-	for (unsigned int i = 0; i < npiles; i++)
-		readpile(in, i, pilelocs);
+			for (unsigned int i = 1; i < toks.size(); i++)
+				adj[loc].push_back(strtof(toks[i].c_str(), NULL));
 
-	for (unsigned int i = 0; i < nlocs; i++)
-		maxpiles.push_back(initlocs[i].piles.size());
+		} else if (toks[0] == "cranes:") {
+			maxcranes[loc] = toks.size()-1;
 
-	for (unsigned int i = 0; i < nboxes; i++) {
-		unsigned int box, loc;
-		if (fscanf(in, "container %u at %u\n", &box, &loc) != 2)
-			fatal("Failed to read the goal location for the %uth box", i);
-		goal[box] = loc;
+		} else if (toks[0] == "piles:") {
+			for (unsigned int i = 1; i < toks.size(); i++) {
+				long p = strtol(toks[i].c_str(), NULL, 10);
+				if (p < 0 || p >= npiles)
+					fatal("Malformed pile list, pile %ld is out of bounds", p);
+				pilelocs[p] = loc;
+				maxpiles[loc]++;
+			}
+
+		} else if (toks[0] == "pile") {
+			if (toks.size() != 2)
+				fatal("Malformed pile descriptor");
+
+			long pnum = strtol(toks[1].c_str(), NULL, 10);
+			if (pnum < 0 || pnum >= npiles)
+				fatal("Malformed pile descriptor, pile %ld is out of bounds", pnum);
+
+			line = readline(in);
+			if (!line)
+				continue;
+			toks = tokens(*line);
+			Pile p;
+			for (unsigned int i = 0; i < toks.size(); i++) {
+				long box = strtol(toks[i].c_str(), NULL, 10);
+				if (box < 0 || box >= nboxes)
+					fatal("Malformed pile, box %ld is out of bounds", box);
+				p.stack.push_back(box);
+			}
+			if (p.stack.size() > 0)
+				initlocs[pilelocs[pnum]].piles.push_back(p);
+
+		} else if (toks[0] == "container") {
+			if (toks.size() != 4)
+				fatal("Malformed goal descriptor");
+
+			long box = strtol(toks[1].c_str(), NULL, 10);
+			if (box < 0 || box >= nboxes)
+				fatal("Out of bound container %ld in a goal descriptor", box);
+
+			long dest = strtol(toks[3].c_str(), NULL, 10);
+			if (dest < 0 || dest >= nlocs)
+				fatal("Out of bound location %ld in goal descriptor", dest);
+
+			goal[box] = dest;
+		}
+
+		line = readline(in);
 	}
 }
 
@@ -116,8 +163,8 @@ DockRobot::State DockRobot::initialstate() {
 		for (unsigned int l = 0; l < st.locs.size(); l++) {
 		for (unsigned int p = 0; p < st.locs[l].piles.size(); p++) {
 		for (unsigned int s = 0; s < st.locs[l].piles[p].stack.size(); s++) {
-				if ((unsigned int) goal[st.locs[l].piles[p].stack[s]] != l)
-					st.nleft++;
+			if ((unsigned int) goal[st.locs[l].piles[p].stack[s]] != l)
+				st.nleft++;
 		}
 		}
 		}
@@ -126,66 +173,6 @@ DockRobot::State DockRobot::initialstate() {
 	st.hasops = false;
 
 	return st;
-}
-
-void DockRobot::readadj(FILE *in, unsigned int loc) {
-	boost::optional<std::string> line = readline(in);
-	if (!line)
-		fatal("Failed to read the adjacency list for location %u", loc);
-	std::vector<std::string> ts = tokens(*line);
-	if (ts.size() == 0 || ts[0] != "adjacent:")
-		fatal("Failed to read the adjacency list for location %u", loc);
-	if (ts.size() != nlocs + 1)
-		fatal("Too few entries in the adjacency list for location %u", loc);
-	for (unsigned int i = 1; i < ts.size(); i++)
-		adj[loc].push_back(strtof(ts[i].c_str(), NULL));
-}
-
-void DockRobot::readcranes(FILE *in, unsigned int loc) {
-	boost::optional<std::string> line = readline(in);
-	if (!line)
-		fatal("Failed to read the crane list for location %u", loc);
-	std::vector<std::string> ts = tokens(*line);
-	if (ts.size() == 0 || ts[0] != "cranes:")
-		fatal("Failed to read the crane list for location %u", loc);
-	maxcranes[loc] = ts.size() - 1;
-}
-
-void DockRobot::readpiles(FILE *in, unsigned int loc, std::vector<unsigned int> &pilelocs) {
-	boost::optional<std::string> line = readline(in);
-	if (!line)
-		fatal("Failed to read the piles list for location %u", loc);
-	std::vector<std::string> ts = tokens(*line);
-	if (ts.size() == 0 || ts[0] != "piles:")
-		fatal("Failed to read the piles list for location %u", loc);
-	for (unsigned int i = 1; i < ts.size(); i++) {
-		long pile = strtol(ts[i].c_str(), NULL, 10);
-		pilelocs[pile] = loc;
-	}
-}
-
-void DockRobot::readpile(FILE *in, unsigned int n, const std::vector<unsigned int> &pilelocs) {
-	unsigned int p;
-
-	if (fscanf(in, " pile %u", &p) != 1)
-		fatal("Failed to read the %uth pile", n);
-	if (fgetc(in) != '\n')
-		fatal("Failed to read the new line on the %uth pile", n);
-
-	boost::optional<std::string> line = readline(in);
-	std::vector<std::string> ts;
-	if (line)
-	 	 ts = tokens(*line);
-
-	Pile pile;
-	for (unsigned int i = 0; i < ts.size(); i++) {
-		long box = strtol(ts[i].c_str(), NULL, 10);
-		pile.stack.push_back(box);
-	}
-
-	unsigned int loc = pilelocs[p];
-	if (pile.stack.size() > 0)
-		initlocs[loc].piles.push_back(pile);
 }
 
 DockRobot::Edge::Edge(DockRobot &d, State &s, const Oper &o) : state(s), dom(d) {

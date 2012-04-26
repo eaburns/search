@@ -216,10 +216,6 @@ private:
 	friend bool compute_moves_test();
 	friend bool compute_loads_test();
 
-	void readadj(FILE*, unsigned int);
-	void readcranes(FILE*, unsigned int);
-	void readpiles(FILE*, unsigned int, std::vector<unsigned int>&);
-	void readpile(FILE*, unsigned int, const std::vector<unsigned int>&);
 	void computeops(State&) const;
 	void boxlocs(const State&, unsigned int[]) const;
 
