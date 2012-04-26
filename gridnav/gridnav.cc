@@ -30,7 +30,7 @@ void GridNav::reverseops(void) {
 	assert (nrev == map->nmvs);
 }
 
-GridNav::Cost GridNav::pathcost(const std::vector<Oper> &ops) const {
+GridNav::Cost GridNav::pathcost(const std::vector<State>&, const std::vector<Oper> &ops) const {
 	GridNav::State state = initialstate();
 	GridNav::Cost cost(0);
 	for (int i = ops.size() - 1; i >= 0; i--) {

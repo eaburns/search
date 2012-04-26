@@ -1,5 +1,6 @@
 #include "mdist.hpp"
 #include <cstdlib>
+#include <limits>
 
 TilesMdist::TilesMdist(FILE *in) : Tiles(in) {
 	initmd();
@@ -41,4 +42,22 @@ void TilesMdist::initincr(void) {
 		}
 	}
 	}
+}
+
+TilesMdist::Cost TilesMdist::pathcost(const std::vector<State> &path, const std::vector<Oper> &ops) {
+	State state = initialstate();
+	Cost cost(0);
+
+	if (ops.size() > (unsigned int) std::numeric_limits<int>::max())
+		fatal("Too many actions");
+
+	for (int i = ops.size() - 1; i >= 0; i--) {
+		State copy(state);
+		Edge e(*this, copy, ops[i]);
+		cost += e.cost;
+		assert(e.state == path[i]);
+		state = e.state;
+	}
+	assert (isgoal(state));
+	return cost;
 }

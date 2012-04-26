@@ -24,28 +24,7 @@ int main(int argc, const char *argv[]) {
 	if (infile != stdin)
 		fclose(infile);
 
-	Result<Plat2d> res = search<Plat2d>(d, argc, argv);
-
-	if (res.path.size() == 0)
-		return 0;
-
-	std::vector<unsigned int> controls;
-	Plat2d::State state = d.initialstate();
-	Plat2d::Cost cost(0);
-	for (int i = res.ops.size() - 1; i >= 0; i--) {
-		controls.push_back(res.ops[i]);
-		Plat2d::Edge e(d, state, res.ops[i]);
-		cost += e.cost;
-		state = e.state;
-		assert(state.player == res.path[i].player);
-	}
-	const Player &final = res.path[0].player;
-	assert(d.lvl.majorblk(final.body.bbox).tile.flags & Tile::Down);
-
-	dfpair(stdout, "final sol cost", "%g", (double) cost);
-	dfpair(stdout, "final x loc", "%g", final.body.bbox.min.x);
-	dfpair(stdout, "final y loc", "%g", final.body.bbox.min.y);
-	dfpair(stdout, "controls", "%s", controlstr(controls).c_str());
+	search<Plat2d>(d, argc, argv);
 
 	return 0;
 }

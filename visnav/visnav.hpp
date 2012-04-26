@@ -92,6 +92,8 @@ struct VisNav {
 		fprintf(out, "%d\n", s.vert);
 	}
 
+	Cost pathcost(const std::vector<State>&, const std::vector<Oper>&);
+
 	void save(const char*, std::vector<State> path = std::vector<State>());
 
 private:

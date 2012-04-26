@@ -5,8 +5,15 @@
 #include <string>
 #include <cstdio>
 
+void dfpair(FILE *, const char *, const char *, ...);
 void fatal(const char*, ...);
 extern "C" unsigned long hashbytes(unsigned char[], unsigned int);
+
+// controlstr converts a vector of controls to an ASCII string.
+std::string controlstr(const std::vector<unsigned int>&);
+
+// controlvec converts a string of controls back into a vector.
+std::vector<unsigned int> controlvec(const std::string&);
 
 // Maxx is the maximum travel distance in the x-direction
 // in a single frame.
@@ -148,6 +155,8 @@ struct Plat2d {
 		fprintf(out, "%g, %g\n", s.player.loc().x, s.player.loc().y);
 	}
 
+	Cost pathcost(const std::vector<State>&, const std::vector<Oper>&);
+
 	unsigned int gx, gy;	// goal tile location
 	Lvl lvl;
 
@@ -217,10 +226,5 @@ private:
 	std::vector<Node> togoal;
 	int gcenter;	// vertex ID of the goal center
 	double gleft, gright, gtop, gbottom;
-};
+}; 
 
-// controlstr converts a vector of controls to an ASCII string.
-std::string controlstr(const std::vector<unsigned int>&);
-
-// controlvec converts a string of controls back into a vector.
-std::vector<unsigned int> controlvec(const std::string&);

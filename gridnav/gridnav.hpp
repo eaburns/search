@@ -1,5 +1,4 @@
-#ifndef _GRIDPATH_HPP_
-#define _GRIDPATH_HPP_
+#pragma once
 
 #include "gridmap.hpp"
 #include <cstdio>
@@ -183,7 +182,7 @@ struct GridNav {
 	}
 
 	// pathcost returns the cost of the given path.
-	Cost pathcost(const std::vector<Oper>&) const;
+	Cost pathcost(const std::vector<State>&, const std::vector<Oper>&) const;
 
 	unsigned int start, finish;
 	GridMap *map;
@@ -220,5 +219,3 @@ private:
 	// reverseops computes the reverse operators
 	void reverseops(void);
 };
-
-#endif	// _GRIDPATH_HPP_
