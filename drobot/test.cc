@@ -250,7 +250,7 @@ bool compute_moves_test() {
 
 	unsigned int n = dr.nops(s);
 	if (n != 2) {
-		testpr("Expected 2 move operations but got %u", n);
+		testpr("Expected 2 move operations but got %u\n", n);
 		ok = false;
 	}
 
@@ -258,7 +258,7 @@ bool compute_moves_test() {
 	for (unsigned int i = 0; i < n; i++) {
 		unsigned int dst = dr.nthop(s, i).x;
 		if (dst > seen.size()) {
-			testpr("Move to out of bound location %u", dst);
+			testpr("Move to out of bound location %u\n", dst);
 			ok = false;
 		} else {
 			seen[dst] = true;
@@ -266,15 +266,15 @@ bool compute_moves_test() {
 	}
 
 	if (seen[0]) {
-		testpr("Move to the current location");
+		testpr("Move to the current location\n");
 		ok = false;
 	}
 	if (!seen[1]) {
-		testpr("No move to location 1");
+		testpr("No move to location 1\n");
 		ok = false;
 	}
 	if (!seen[2]) {
-		testpr("No move to location 2");
+		testpr("No move to location 2\n");
 		ok = false;
 	}
 

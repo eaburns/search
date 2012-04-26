@@ -188,12 +188,9 @@ void DockRobot::readpile(FILE *in, unsigned int n, const std::vector<unsigned in
 }
 
 DockRobot::Edge::Edge(DockRobot &d, State &s, const Oper &o) : state(s), dom(d) {
+	state.hasops = false;
+	state.ops.clear();
 	apply(state, o);
-}
-
-DockRobot::Edge::~Edge() {
-	// creating the reverse edge undoes the operator.
-	apply(state, revop);
 }
 
 void DockRobot::Edge::apply(State &s, const Oper &o) {

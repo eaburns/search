@@ -15,7 +15,10 @@ int main(int argc, const char *argv[]) {
 		state = e.state;
 		cost += e.cost;
 	}
-	assert (d.isgoal(state));
+
+	assert (res.path.size() == 0 || d.isgoal(state));
+	if (res.path.size() == 0)
+		cost = -1;
 	dfpair(stdout, "final sol cost", "%u", (unsigned int) cost);
 
 	return 0;

@@ -119,6 +119,8 @@ struct DockRobot {
 
 	struct State {
 
+		State() : hasops(false) { }
+
 		std::vector<Loc> locs;
 		int rbox;	// the robot's contents (-1 is empty)
 		unsigned int rloc;	// the robot's location
@@ -181,10 +183,10 @@ struct DockRobot {
 	struct Edge {
 		Cost cost;
 		Oper revop;
-		State &state;
+		State state;
 
 		Edge(DockRobot&, State&, const Oper&);
-		~Edge();
+		~Edge() { }
 
 	private:
 
