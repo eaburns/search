@@ -2,6 +2,10 @@
 
 • change all (void) to ()
 
+• Operators class so that some domains
+	don't need to store the operators
+	in the state struct.
+
 • utils
 
 	- change fatal to be an exception
