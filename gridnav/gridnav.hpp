@@ -109,14 +109,16 @@ struct GridNav {
 	struct PackedState {
 		unsigned int loc;
 
-		unsigned long hash(void) { return loc; }
-
 		bool eq(const PackedState &other) const {
 			return other.loc == loc;
 		}
 	};
 
 	State initialstate(void) const;
+
+	unsigned long hash(PackedState &p) {
+		return p.loc;
+	}
 
 	Cost h(State &s) const {
 		if (map->nmvs > 4)

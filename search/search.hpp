@@ -125,17 +125,6 @@ public:
 		return n->packed;
 	}
 
-	// hash returns the hash value for a packed state representation.
-	static unsigned long hash(typename D::PackedState &s) {
-		return s.hash();
-	}
-
-	// eq performs an equality tests on two packed states.
-	static bool eq(typename D::PackedState &a,
-			typename D::PackedState &b) {
-		return a.eq(b);
-	}
-
 	// update updates the g, parent, op and pop fields of
 	// the receiver to match that of another node.
 	void update(const SearchNode &other) {

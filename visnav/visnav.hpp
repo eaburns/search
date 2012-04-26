@@ -29,8 +29,6 @@ struct VisNav {
 
 		State(int v) : vert(v) { }
 
-		unsigned long hash(void) { return vert; }
-
 		bool eq(const State &o) { return vert == o.vert; }
 
 	private: 
@@ -42,6 +40,10 @@ struct VisNav {
 	typedef State PackedState;
 
 	State initialstate(void);
+
+	unsigned long hash(PackedState &p) {
+		return p.vert;
+	}
 
 	Cost h(State &s) {
 		const geom2d::Pt &pt = g.verts[s.vert].pt;

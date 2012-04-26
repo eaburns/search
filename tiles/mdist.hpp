@@ -8,10 +8,6 @@ public:
 	typedef PackedTiles<Ntiles> PackedState;
 
 	struct State {
-		unsigned long hash(void) {
-			return Tiles::hash(ts, b);
-		}
-
 		bool eq(State &other) const {
 			if (b != other.b)
 				return false;
@@ -31,6 +27,10 @@ public:
 	TilesMdist(FILE*);
 
 	State initialstate(void);
+
+	unsigned long hash(PackedState &p) {
+		return p.hash();
+	}
 
 	Cost h(State &s) const { return s.h; }
 
