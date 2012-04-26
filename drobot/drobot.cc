@@ -173,9 +173,9 @@ void DockRobot::readpile(FILE *in, unsigned int n, const std::vector<unsigned in
 		fatal("Failed to read the new line on the %uth pile", n);
 
 	boost::optional<std::string> line = readline(in);
- 	std::vector<std::string> ts;
+	std::vector<std::string> ts;
 	if (line)
-		ts = tokens(*line);
+	 	 ts = tokens(*line);
 
 	Pile pile;
 	for (unsigned int i = 0; i < ts.size(); i++) {
@@ -184,7 +184,8 @@ void DockRobot::readpile(FILE *in, unsigned int n, const std::vector<unsigned in
 	}
 
 	unsigned int loc = pilelocs[p];
-	initlocs[loc].piles.push_back(pile);
+	if (pile.stack.size() > 0)
+		initlocs[loc].piles.push_back(pile);
 }
 
 DockRobot::Edge::Edge(DockRobot &d, State &s, const Oper &o) : state(s), dom(d) {
