@@ -10,11 +10,11 @@ struct DockRobot {
 
 	struct Loc {
 
-		bool operator==(Loc &o) {
+		bool operator==(const Loc &o) const {
 			return cranes == o.cranes && piles == o.piles;
 		}
 
-		bool operator!=(Loc &o) {
+		bool operator!=(const Loc &o) const {
 			return !(*this == o);
 		}
 
@@ -119,15 +119,15 @@ struct DockRobot {
 		int rbox;	// the robot's contents (-1 is empty)
 		unsigned int rloc;	// the robot's location
 
+		Cost h, d;
+
 		// nleft is the number of packages out of their goal location.
 		unsigned int nleft;
-
-		Cost h, d;
 
 		bool hasops;
 		std::vector<Oper> ops;
 
-		bool eq(State &o) {
+		bool operator==(const State &o) const {
 			if (rloc != o.rloc)
 				return false;
 			for (unsigned int i = 0; i < locs.size(); i++) {
