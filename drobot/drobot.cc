@@ -82,7 +82,7 @@ DockRobot::DockRobot(FILE *in) {
 	while (line) {
 		std::vector<std::string> toks = tokens(*line);
 		if (toks.size() == 0)
-			continue;
+			goto reloop;
 
 		if (toks[0] == "location") {
 			loc = strtol(toks[1].c_str(), NULL, 10);
@@ -118,7 +118,7 @@ DockRobot::DockRobot(FILE *in) {
 
 			line = readline(in);
 			if (!line)
-				continue;
+				goto reloop;
 			toks = tokens(*line);
 			Pile p;
 			for (unsigned int i = 0; i < toks.size(); i++) {
@@ -144,7 +144,7 @@ DockRobot::DockRobot(FILE *in) {
 
 			goal[box] = dest;
 		}
-
+reloop:
 		line = readline(in);
 	}
 }
