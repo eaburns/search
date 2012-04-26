@@ -40,6 +40,12 @@ template<class D> Result<D> search(D &d, int argc, const char *argv[]) {
 	} catch (std::bad_alloc&) {
 		srch->finish();
 	}
+	if (srch->res.path.size() > 0) {
+		dfpair(stdout, "final sol cost", "%g",
+			(double) d.pathcost(srch->res.path, srch->res.ops));
+	} else {
+		dfpair(stdout, "final sol cost", "%g", -1.0);
+	}
 	srch->output(stdout);
 	if (headerfooter(argc, argv))
 		dffooter(stdout);

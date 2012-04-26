@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cassert>
+#include <vector>
 
 #if NCAKES >= 128
 #error Too many pancakes for char typed cost.
@@ -117,6 +118,8 @@ public:
 		}
 		fputc('\n', out);
 	}
+
+	Cost pathcost(const std::vector<State>&, const std::vector<Oper>&);
 
 private:
 

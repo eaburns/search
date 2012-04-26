@@ -26,3 +26,17 @@ Pancake::State Pancake::initialstate(void) {
 
 	return s;
 }
+
+Pancake::Cost Pancake::pathcost(const std::vector<State> &path, const std::vector<Oper> &ops) {
+	State state = initialstate();
+	Cost cost(0);
+	for (int i = ops.size() - 1; i >= 0; i--) {
+		State copy(state);
+		Edge e(*this, copy, ops[i]);
+		assert (e.state == path[i]);
+		state = e.state;
+		cost += e.cost;
+	}
+	assert (isgoal(state));
+	return cost;
+}

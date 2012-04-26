@@ -43,3 +43,18 @@ void VisNav::save(const char *file, std::vector<State> path) {
 
 	img.saveeps(file, true, 72.0/2.0);
 }
+
+VisNav::Cost VisNav::pathcost(const std::vector<State> &path, const std::vector<Oper> &ops) {
+
+	State state = initialstate();
+	Cost cost(0);
+	for (int i = ops.size() - 1; i >= 0; i--) {
+		State copy(state);
+		Edge e(*this, copy,ops[i]);
+		assert (e.state == path[i]);
+		state = e.state;
+		cost += e.cost;
+	}
+	assert (isgoal(state));
+	return cost;
+}

@@ -1,4 +1,5 @@
 #include <cstring>
+#include <vector>
 #include "tiles.hpp"
 #include "packed.hpp"
 
@@ -83,6 +84,8 @@ public:
 		s.ts[s.b] = 0;
 		Tiles::dumptiles(out, s.ts);
 	}
+
+	Cost pathcost(const std::vector<State>&, const std::vector<Oper>&);
 
 protected:
 

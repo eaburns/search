@@ -133,6 +133,26 @@ void Plat2d::drawmap(const char *file) const {
 	img.saveeps(file);
 }
 
+Plat2d::Cost Plat2d::pathcost(const std::vector<State> &path, const std::vector<Oper> &ops) {
+	std::vector<unsigned int> controls;
+	Plat2d::State state = initialstate();
+	Plat2d::Cost cost(0);
+	for (int i = ops.size() - 1; i >= 0; i--) {
+		controls.push_back(ops[i]);
+		Plat2d::Edge e(*this, state, ops[i]);
+		cost += e.cost;
+		state = e.state;
+		assert(state.player == path[i].player);
+	}
+	const Player &final = path[0].player;
+	assert(lvl.majorblk(final.body.bbox).tile.flags & Tile::Down);
+
+	dfpair(stdout, "final x loc", "%g", final.body.bbox.min.x);
+	dfpair(stdout, "final y loc", "%g", final.body.bbox.min.y);
+	dfpair(stdout, "controls", "%s", controlstr(controls).c_str());
+	return cost;
+}
+
 std::string controlstr(const std::vector<unsigned int> &controls) {
 	std::string bytes;
 	for (unsigned int i = 0; i < controls.size(); i++)
