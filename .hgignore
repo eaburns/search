@@ -30,3 +30,4 @@ plat2d/play
 plat2d/2poly
 graphics/test
 bench/mark
+search/mkprof
