@@ -89,7 +89,7 @@ private:
 		kid->g = parent->g + e.cost;
 		d.pack(kid->packed, e.state);
 
-		unsigned long hash = kid->packed.hash();
+		unsigned long hash = d.hash(kid->packed);
 		Node *dup = static_cast<Node*>(closed.find(kid->packed, hash));
 		if (dup) {
 			this->res.dups++;

@@ -17,13 +17,7 @@ public:
 	enum { Nop = -1 };
 	typedef int Cost;
 
-	class State {
-	public:
-		unsigned long hash(void) {
-			return hashbytes((unsigned char *) cakes,
-					Ncakes * sizeof(Cake));
-		}
-
+	struct State {
 		bool eq(State &other) const {
 			for (unsigned int i = 0; i < Ncakes; i++) {
 				if (cakes[i] != other.cakes[i])
@@ -55,6 +49,11 @@ public:
 	Pancake(FILE*);
 
 	State initialstate(void);
+
+	unsigned long hash(PackedState &p) {
+		return hashbytes((unsigned char *) p.cakes,
+					Ncakes * sizeof(Cake));
+	}
 
 	Cost h(State &s) {
 		return s.h;

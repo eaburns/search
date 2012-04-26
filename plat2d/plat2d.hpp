@@ -47,24 +47,6 @@ struct Plat2d {
 	};
 
 	struct PackedState {
-		unsigned long hash(void) {
-			static const unsigned int sz = sizeof(x) +
-				sizeof(y) + sizeof(dy) + sizeof(jframes);
-			unsigned char bytes[sz];
-			unsigned int i = 0;
-			char *p = (char*) &x;
-			for (unsigned int j = 0; j < sizeof(x); j++)
-				bytes[i++] = p[j];
-			p = (char*) &y;
-			for (unsigned int j = 0; j < sizeof(y); j++)
-				bytes[i++] = p[j];
-			p = (char*) &dy;
-			for (unsigned int j = 0; j < sizeof(dy); j++)
-				bytes[i++] = p[j];
-			bytes[i++] = jframes;
-			assert (i <= sz);
-			return hashbytes(bytes, i);
-		}
 
 		bool eq(PackedState &o) const {
 			return jframes == o.jframes &&
@@ -80,6 +62,25 @@ struct Plat2d {
 	};
 
 	State initialstate(void);
+
+	unsigned long hash(PackedState &pkd) {
+		static const unsigned int sz = sizeof(pkd.x) +
+			sizeof(pkd.y) + sizeof(pkd.dy) + sizeof(pkd.jframes);
+		unsigned char bytes[sz];
+		unsigned int i = 0;
+		char *p = (char*) &pkd.x;
+		for (unsigned int j = 0; j < sizeof(pkd.x); j++)
+			bytes[i++] = p[j];
+		p = (char*) &pkd.y;
+		for (unsigned int j = 0; j < sizeof(pkd.y); j++)
+			bytes[i++] = p[j];
+		p = (char*) &pkd.dy;
+		for (unsigned int j = 0; j < sizeof(pkd.dy); j++)
+			bytes[i++] = p[j];
+		bytes[i++] = pkd.jframes;
+		assert (i <= sz);
+		return hashbytes(bytes, i);
+	}
 
 	Cost h(State &s) { return hvis(s); }
 

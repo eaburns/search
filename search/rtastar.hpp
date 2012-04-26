@@ -15,10 +15,6 @@ template <class D> struct Rtastar : public SearchAlgorithm<D> {
 
 		static PackedState &key(Node *n) { return n->packed; }
 
-		static bool eq(PackedState &a, PackedState &b) { return a.eq(b); }
-
-		static unsigned long hash(PackedState &k) { return k.hash(); }
-
 		static ClosedEntry<Node, D> &closedentry(Node *n) { return n->closedent; }
 	};
 
@@ -132,7 +128,7 @@ private:
 	Cost heuristic(D &d, State &cur, Oper pop) {
 		Node *n = nodes->construct();
 		d.pack(n->packed, cur);
-		unsigned long hash = n->packed.hash();
+		unsigned long hash = d.hash(n->packed);
 
 		Node *dup = seen.find(n->packed, hash);
 		if (dup) {
@@ -179,7 +175,7 @@ private:
 	Cost *storenode(D &d, State &cur, Cost h) {
 		Node *n = nodes->construct();
 		d.pack(n->packed, cur);
-		unsigned long hash = n->packed.hash();
+		unsigned long hash = d.hash(n->packed);
 
 		Node *dup = seen.find(n->packed, hash);
 		if (dup) {
