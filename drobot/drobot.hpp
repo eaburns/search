@@ -35,31 +35,41 @@ struct DockRobot {
 		// findpile returns the index of the pile with the
 		// given bottom box.
 		int findpile(unsigned int box) {
-			for (unsigned int i = 0; i < piles.size(); i++) {
-				if (piles[i].stack[0] == box)
-					return i;
+			unsigned int l = 0, u = piles.size();
+			if (u == 0)
+				return -1;
+
+			// define: piles[-1] ≡ -∞ and piles[piles.size] ≡ ∞
+			// invariant: l - 1 < box and u ≥ box
+			while (l < u) {
+				unsigned int m = ((u - l) >> 1) + l;
+				if (piles[m].stack[0] < box)
+					l = m + 1;	// l - 1 < box
+				else
+					u = m;	// u >= box
 			}
-			return -1;
+			return (l < piles.size() && piles[l].stack[0] == box) ? l : -1;
 		}
 
 		// findcrane returns the index of the crane with the
 		// given box.
 		int findcrane(unsigned int box) {
-			for (unsigned int i = 0; i < cranes.size(); i++) {
-				if (cranes[i] == box)
-					return i;
+			unsigned int l = 0, u = cranes.size();
+			if (u == 0)
+				return -1;
+
+			while (l < u) {
+				unsigned int m = ((u - l) >> 1) + l;
+				if (cranes[m] < box)
+					l = m + 1;
+				else
+					u = m;
 			}
-			return -1;
+			return (l < cranes.size() && cranes[l] == box) ? l : -1;
 		}
 
 		std::vector<unsigned int> cranes;
 		std::vector<Pile> piles;
-
-	private:
-
-		// sorted is true if the cranes and piles are
-		// already sorted.
-		bool sorted;
 	};
 
 	struct Pile {
@@ -73,8 +83,6 @@ struct DockRobot {
 
 		// operator< orders piles by their bottom stack element.
 		bool operator<(const Pile &o) const {
-			assert (!stack.empty());
-			assert (!o.stack.empty());
 			return stack[0] < o.stack[0];
 		}
 

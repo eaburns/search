@@ -319,6 +319,112 @@ bool compute_loads_test() {
 		ok = false;
 	}
 
+	// what if the robot isn't empty?
+	s.rbox = 0;
+	s.hasops = false;
+	s.ops.clear();
+	n = dr.nops(s);
+	if (n != 0) {
+		testpr("Loaded into a full robot");
+		ok = false;
+	}
+
+	return ok;
+}
+
+bool find_pile_test() {
+	bool ok = true;
+
+	DockRobot::Loc l;
+
+	int ind = l.findpile(0);
+	if (ind >= 0) {
+		testpr("Find succeeded in an empty location at index %d\n", ind);
+		ok = false;
+	}
+
+	l.piles.push_back(DockRobot::Pile(0));
+	l.piles.push_back(DockRobot::Pile(1));
+	l.piles.push_back(DockRobot::Pile(2));
+
+	for (int i = 0; i < 3; i++) {
+		ind = l.findpile(i);
+		if (ind != i) {
+			testpr("Expected box %d at index %d, got index %d\n", i, i, ind);
+			ok = false;
+		}
+	}
+
+	ind = l.findpile(3);
+	if (ind >= 0) {
+		testpr("Find succeeded for a box that is not at the location at index %d\n", ind);
+		ok = false;
+	}
+
+	// test an even number of piles
+	l.piles.push_back(DockRobot::Pile(3));
+	for (int i = 0; i < 4; i++) {
+		ind = l.findpile(i);
+		if (ind != i) {
+			testpr("Expected box %d at index %d, got index %d\n", i, i, ind);
+			ok = false;
+		}
+	}
+
+	ind = l.findpile(4);
+	if (ind >= 0) {
+		testpr("Find succeeded for a box that is not at the location at index %d\n", ind);
+		ok = false;
+	}
+
+	return ok;
+}
+
+bool find_crane_test() {
+	bool ok = true;
+
+	DockRobot::Loc l;
+
+	int ind = l.findpile(0);
+	if (ind >= 0) {
+		testpr("Find succeeded in an empty location at index %d\n", ind);
+		ok = false;
+	}
+
+	l.addcrane(0);
+	l.addcrane(1);
+	l.addcrane(2);
+
+	for (int i = 0; i < 3; i++) {
+		ind = l.findcrane(i);
+		if (ind != i) {
+			testpr("Expected box %d at index %d, got index %d\n", i, i, ind);
+			ok = false;
+		}
+	}
+
+	ind = l.findcrane(3);
+	if (ind >= 0) {
+		testpr("Find succeeded for a box that is not at the location at index %d\n", ind);
+		ok = false;
+	}
+
+	// test an even number of cranes
+	l.addcrane(3);
+	for (int i = 0; i < 4; i++) {
+		ind = l.findcrane(i);
+		if (ind != i) {
+			testpr("Expected box %d at index %d, got index %d\n", i, i, ind);
+			ok = false;
+		}
+	}
+
+	ind = l.findcrane(4);
+	if (ind >= 0) {
+		testpr("Find succeeded for a box that is not at the location at index %d\n", ind);
+		ok = false;
+	}
+
 	return ok;
 }
 
@@ -332,6 +438,8 @@ static const Test tests[] = {
 	Test("loc full equality test", loc_full_equality_test),
 	Test("compute moves test", compute_moves_test),
 	Test("compute loads test", compute_loads_test),
+	Test("find pile test", find_pile_test),
+	Test("find crane test", find_crane_test),
 };
 enum { Ntests = sizeof(tests) / sizeof(tests[0]) };
 
