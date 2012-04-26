@@ -6,9 +6,9 @@ CC:=gcc
 
 AR:=ar
 
-FLAGS:=-Wall -Werror -O3
+FLAGS:=-Wall -Werror -g
 
-CXXFLAGS:=$(FLAGS) -std=c++98
+CXXFLAGS:=$(FLAGS) -std=c++0x
 
 CFLAGS:=$(FLAGS) -std=c99
 
@@ -31,6 +31,7 @@ include plat2d/Make.inc
 include graphics/Make.inc
 include bench/Make.inc
 include rdb/Make.inc
+include drobot/Make.inc
 
 everything: $(EVERYTHING)
 
