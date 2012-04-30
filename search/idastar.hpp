@@ -53,11 +53,11 @@ private:
 
 		this->res.expd++;
 
-		for (unsigned int n = 0; n < d.nops(s); n++) {
+		typename D::Operators ops(d, s);
+		for (unsigned int n = 0; n < ops.size(); n++) {
 			if (this->limit())
 				return false;
-			Oper op = d.nthop(s, n);
-			if (op == pop)
+			if (ops[n] == pop)
 				continue;
 
 			this->res.gend++;
@@ -67,13 +67,13 @@ private:
 				// If a goal was found then we want the
 				// transition reverted so that we may push
 				// the parent state onto the path.
-				typename D::Edge e(d, s, op);
+				typename D::Edge e(d, s, ops[n]);
 				goal = dfs(d, e.state, e.revop, g + e.cost);
 			}
 
 			if (goal) {
 				this->res.path.push_back(s);
-				this->res.ops.push_back(op);
+				this->res.ops.push_back(ops[n]);
 				return true;
 			}
 		}

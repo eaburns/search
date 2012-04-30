@@ -39,12 +39,22 @@ public:
 
 	bool isgoal(State &s) const { return s.h == 0; }
 
-	unsigned int nops(State &s) const { return ops[s.b].n; }
+	struct Operators {
+		Operators(TilesMdist& d, State &s) :
+			n(d.ops[s.b].n), mvs(d.ops[s.b].mvs) { }
 
-	Oper nthop(State &s, unsigned int n) const {
-		assert (n < ops[s.b].n);
-		return ops[s.b].mvs[n];
-	}
+		unsigned int size() const {
+			return n;
+		}
+
+		Oper operator[](unsigned int n) const {
+			return mvs[n];
+		}
+
+	private:
+		unsigned int n;
+		const Pos *mvs;
+	};
 
 	struct Edge {
 		Cost cost;

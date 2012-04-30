@@ -95,14 +95,14 @@ private:
 		sndf = Cost(-1);
 		std::vector<Current> bests;
 
-		SearchAlgorithm<D>::res.expd++;
-		for (unsigned int n = 0; n < d.nops(cur.state); n++) {
-			Oper op = d.nthop(cur.state, n);
-			if (op == cur.pop)
+		this->res.expd++;
+		typename D::Operators ops(d, cur.state);
+		for (unsigned int n = 0; n < ops.size(); n++) {
+			if (ops[n] == cur.pop)
 				continue;
 
 			SearchAlgorithm<D>::res.gend++;
-			typename D::Edge e(d, cur.state, op);
+			typename D::Edge e(d, cur.state, ops[n]);
 			Cost h = heuristic(d, e.state, e.revop);
 			Cost f = h == Cost(-1) ? h : h + e.cost;
 
@@ -110,10 +110,10 @@ private:
 				if (!bests.empty())
 					sndf = bests[0].f;
 				bests.clear();
-				bests.push_back(Current(e.state, op, e.revop, e.cost, f));
+				bests.push_back(Current(e.state, ops[n], e.revop, e.cost, f));
 			} else if (bests[0].f == f) {
 				assert (!bests.empty());
-				bests.push_back(Current(e.state, op, e.revop, e.cost, f));
+				bests.push_back(Current(e.state, ops[n], e.revop, e.cost, f));
 			} else if (better(f, sndf)) {
 				sndf = f;
 			}
@@ -153,13 +153,13 @@ private:
 
 		this->res.expd++;
 		Cost bestf = Cost(-1);
-		for (unsigned int n = 0; n < d.nops(state); n++) {
-			Oper op = d.nthop(state, n);
-			if (op == pop)
+		typename D::Operators ops(d, state);
+		for (unsigned int n = 0; n < ops.size(); n++) {
+			if (ops[n] == pop)
 				continue;
 
 			this->res.gend++;
-			typename D::Edge e(d, state, op);
+			typename D::Edge e(d, state, ops[n]);
 			f = look(d, e.state, alpha, e.revop, g + e.cost, left-1);
 			if (better(f, bestf))
 				bestf = f;

@@ -2,7 +2,7 @@
 #include "../utils/utils.hpp"
 #include "../structs/binheap.hpp"
 
-const unsigned int Plat2d::Ops[] = {
+const unsigned int Plat2d::Operators::Ops[] = {
 	Player::Left,
 	Player::Right,
 	Player::Jump,
@@ -10,7 +10,7 @@ const unsigned int Plat2d::Ops[] = {
 	Player::Right | Player::Jump,
 };
 
-const unsigned int Plat2d::Nops = sizeof(Plat2d::Ops) / sizeof(Plat2d::Ops[0]);
+const unsigned int Plat2d::Operators::Nops = sizeof(Ops) / sizeof(Ops[0]);
 
 Plat2d::Plat2d(FILE *in) : lvl(in) {
 	gx = lvl.width();

@@ -45,49 +45,43 @@ struct <DOMAIN> {
 	};
 
 	// Get the initial state.
-	State initialstate(void);
+	State initialstate(void) const;
 
 	// Get the heuristic.
-	Cost h(State &s) {
+	Cost h(const State &s) const {
 		fatal("Unimplemented");
 		return 0.0;
 	}
 
 	// Get a distance estimate.
-	Cost d(State &s) {
+	Cost d(const State &s) const {
 		fatal("Unimplemented");
 		return 0.0;
 	}
 
 	// Is the given state a goal state?
-	bool isgoal(State &s) {
+	bool isgoal(const State &s) const {
 		fatal("Unimplemented");
 		return false;
 	}
 
-	// Get the number of operators that are
-	// applicable in the state.
-	//
-	// Some domains may need to compute the
-	// operators for a state.  A nice trick seems
-	// to be to compute the operators in nops
-	// and cache the result in the state.
-	//
-	// Because of the above trick, a search algorithm
-	// should compute nops() after each time a
-	// new state is unpacked.  Do not cache this
-	// value.
-	unsigned int nops(State &s) {
-		fatal("Unimplemented");
-		return 0;
-	}
+	// Operators implements an vector of the applicable
+	// operators for a given state.
+	struct Operators {
+		Operators(const DOMAIN&, const State&);
 
-	// Get the nth operator.  This should always be
-	// called after a call to nops on the given state.
-	Oper nthop(State &s, unsigned int n) {
-		fatal("Unimplemented");
-		return 0;
-	}
+		// size returns the number of applicable operatiors.
+		unsigned int size() const {
+			fatal("Unimplemented");
+			return 0;
+		}
+
+		// operator[] returns a specific operator.
+		Oper operator[] (unsigned int) const { 
+			fatal("Unimplemented");
+			return 0;
+		}
+	};
 
 	struct Edge {
 		Cost cost;
@@ -106,7 +100,7 @@ struct <DOMAIN> {
 		// Because of this, a search algorithm may not
 		// use the state passed to this constructor until
 		// after the Edge's destructor has been called!
-		Edge(DOMAIN&, State&, Oper) { }
+		Edge(const DOMAIN&, const State&, Oper) { }
 
 		// The destructor is expected to undo any changes
 		// that it may have made to the input state in
@@ -119,7 +113,7 @@ struct <DOMAIN> {
 	// Pack the state into the destination packed state.
 	// If PackedState is the same type as State then this
 	// should at least copy.
-	void pack(PackedState &dst, State &src) {
+	void pack(PackedState &dst, State &src) const {
 		fatal("Unimplemented");
 	}
 
@@ -128,13 +122,13 @@ struct <DOMAIN> {
 	// State are the same type then the packed state
 	// can just be immediately returned and used
 	// so that there is no need to copy.
-	State &unpack(State &buf, PackedState &pkd) {
+	State &unpack(State &buf, PackedState &pkd) const {
 		fatal("Unimplemented");
 		return buf;
 	}
 
 	// Print the state.
-	void dumpstate(FILE *out, State &s) {
+	void dumpstate(FILE *out, const State &s) const {
 		fatal("Unimplemented");
 	}
 };
