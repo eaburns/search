@@ -11,6 +11,7 @@ bench/data
 .drobot_test
 structs/test
 utils/test
+drobot/test
 rdb/pathfor
 rdb/withattrs
 rdb/dfcmplt
