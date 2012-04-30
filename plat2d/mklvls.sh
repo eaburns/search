@@ -1,7 +1,7 @@
 #!/bin/sh
 
-w=25
-h=25
+w=30
+h=30
 n=25
 lvlgen=/home/aifs2/eaburns/src/mid-game/cmd/lvlgen/lvlgen
 pathfor=/home/aifs2/eaburns/src/search/rdb/pathfor

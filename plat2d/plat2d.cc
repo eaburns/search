@@ -126,7 +126,11 @@ void Plat2d::drawmap(const char *file) const {
 	Image img(w * s, h * s);
 	graph.map.draw(img, 1);
 
-	int i = centers[2 * lvl.height() + 2];
+	int i = centers[x0 * lvl.height() + y0];
+	if (i < 0) {
+		img.saveeps(file);
+		return;
+	}
 	i = togoal[i].prev;
 	geom2d::Pt p0 = graph.verts[i].pt;
 	while (i >= 0) {
