@@ -5,7 +5,6 @@
 #include <string>
 #include <cstdio>
 
-void dfpair(FILE *, const char *, const char *, ...);
 void fatal(const char*, ...);
 extern "C" unsigned long hashbytes(unsigned char[], unsigned int);
 
@@ -166,6 +165,7 @@ struct Plat2d {
 	Cost pathcost(const std::vector<State>&, const std::vector<Oper>&);
 
 	unsigned int gx, gy;	// goal tile location
+	unsigned int x0, y0;	// initial location
 	Lvl lvl;
 
 private:

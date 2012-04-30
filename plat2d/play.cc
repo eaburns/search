@@ -18,27 +18,36 @@ static int nextctrl = -1;
 static std::vector<unsigned int> controls;
 
 SDL_Surface *screen;
+Lvl *lvl;
 geom2d::Pt tr(0, 0);
-Player p(2 * Tile::Width + Player::Offx, 2 * Tile::Height + Player::Offy,
-		Player::Width, Player::Height);
+unsigned int startx = 2;
+unsigned int starty = 2;
+Player p;
 
 static void parseargs(int, const char*[]);
 static void helpmsg(int);
-static Lvl *getlvl(void);
+static void readinput();
+static void findstart();
 static void dfline(std::vector<std::string>&, void*);
-static void initsdl(void);
-static unsigned int keys(void);
-static unsigned int sdlkeys(void);
+static void initsdl();
+static unsigned int keys();
+static unsigned int sdlkeys();
 static void scroll(const geom2d::Pt&, const geom2d::Pt&);
 static void draw(const Lvl&, const Player&);
 static void drawlvl(const Lvl&);
 static void drawplayer(const Player&);
-static void clear(void);
+static void clear();
 static void fillrect(SDL_Rect*, Color);
 
 int main(int argc, const char *argv[]) {
 	parseargs(argc, argv);
-	Lvl *lvl = getlvl();
+	readinput();
+	findstart();
+	p = Player(
+		startx * Tile::Width + Player::Offx,
+		starty * Tile::Height + Player::Offy,
+		Player::Width,
+		Player::Height);
 	initsdl();
 
 	SDL_Delay(delay);
@@ -89,14 +98,16 @@ static void helpmsg(int res) {
 	exit(res);
 }
 
-static Lvl *getlvl(void) {
+static void readinput() {
 	int c = fgetc(stdin);
 	if (c == EOF)
-		return NULL;
+		return;
 	ungetc(c, stdin);
 
-	if (c != '#')
-		return new Lvl(stdin);
+	if (c != '#') {
+		lvl = new Lvl(stdin);
+		return;
+	}
 
 	std::string path;
 	nextctrl = 0;
@@ -108,9 +119,8 @@ static Lvl *getlvl(void) {
 	if (!f)
 		fatalx(errno, "Failed to open %s for reading", path.c_str());
 
-	Lvl *lvl = new Lvl(f);
+	lvl = new Lvl(f);
 	fclose(f);
-	return lvl;
 }
 
 static void dfline(std::vector<std::string> &cols, void *_pathp) {
@@ -122,7 +132,18 @@ static void dfline(std::vector<std::string> &cols, void *_pathp) {
 	}
 }
 
-static void initsdl(void) {
+static void findstart() {
+	for (unsigned int x = 0; x < lvl->width(); x++) {
+	for (unsigned int y = 0; y < lvl->height(); y++) {
+		if (lvl->at(x, y).tile.flags & Tile::Up) {
+			startx = x;
+			starty = y;
+		}
+	}
+	}
+}
+
+static void initsdl() {
 	if (SDL_Init(SDL_INIT_VIDEO) < 0)
 		fatal("Failed to init SDL: %s\n", SDL_GetError());
 
@@ -134,7 +155,7 @@ static void initsdl(void) {
 	SDL_WM_SetCaption("play", "play");
 }
 
-static unsigned int keys(void) {
+static unsigned int keys() {
 	if (nextctrl < 0)
 		return sdlkeys();
 	if (nextctrl >= (int) controls.size()) {
@@ -145,7 +166,7 @@ static unsigned int keys(void) {
 }
 
 #if SDLVER == 13
-static unsigned int sdlkeys(void) {
+static unsigned int sdlkeys() {
 	int nkeys;
 	const Uint8 *state = SDL_GetKeyboardState(&nkeys);
 
@@ -162,7 +183,7 @@ static unsigned int sdlkeys(void) {
 	return keys;
 }
 #else
-static unsigned int sdlkeys(void) {
+static unsigned int sdlkeys() {
 	int nkeys;
 	const Uint8 *state = SDL_GetKeyState(&nkeys);
 
@@ -228,7 +249,7 @@ static void drawplayer(const Player &p) {
 	fillrect(&r, Image::green);
 }
 
-static void clear(void) {
+static void clear() {
 	SDL_Rect r;
 	r.x = r.y = 0;
 	r.w = Width;

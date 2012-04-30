@@ -13,16 +13,22 @@ const unsigned int Plat2d::Operators::Ops[] = {
 const unsigned int Plat2d::Operators::Nops = sizeof(Ops) / sizeof(Ops[0]);
 
 Plat2d::Plat2d(FILE *in) : lvl(in) {
-	gx = lvl.width();
-	gy = lvl.height();
+	gx = x0 = lvl.width();
+	gy = y0 = lvl.height();
 	for (unsigned int x = 0; x < lvl.width(); x++) {
 	for (unsigned int y = 0; y < lvl.height(); y++) {
-		if (!(lvl.at(x, y).tile.flags & Tile::Down))
-			continue;
-		if (gx < lvl.width() || gy < lvl.height())
-			fatal("There are multiple goal locations in the level");
-		gx = x;
-		gy = y;
+		if (lvl.at(x, y).tile.flags & Tile::Down) {
+			if (gx < lvl.width() || gy < lvl.height())
+				fatal("There are multiple goal locations in the level");
+			gx = x;
+			gy = y;
+		}
+		if (lvl.at(x, y).tile.flags & Tile::Up) {
+			if (x0 < lvl.width() || x0 < lvl.height())
+				fatal("There are multiple start locations in the level");
+			x0 = x;
+			y0 = y;
+		}
 	}
 	}
 	if (gx >= lvl.width() || gy >= lvl.height())
@@ -41,7 +47,7 @@ Plat2d::~Plat2d(void) {
 }
 
 Plat2d::State Plat2d::initialstate(void) {
-	return State(2 * Tile::Width + Player::Offx, 2 * Tile::Height + Player::Offy,
+	return State(x0 * Tile::Width + Player::Offx, y0 * Tile::Height + Player::Offy,
 		0, Player::Width, Player::Height);
 }
 
@@ -147,6 +153,8 @@ Plat2d::Cost Plat2d::pathcost(const std::vector<State> &path, const std::vector<
 	const Player &final = path[0].player;
 	assert(lvl.majorblk(final.body.bbox).tile.flags & Tile::Down);
 
+	dfpair(stdout, "initial x loc", "%u", x0);
+	dfpair(stdout, "initial y loc", "%u", y0);
 	dfpair(stdout, "final x loc", "%g", final.body.bbox.min.x);
 	dfpair(stdout, "final y loc", "%g", final.body.bbox.min.y);
 	dfpair(stdout, "controls", "%s", controlstr(controls).c_str());
