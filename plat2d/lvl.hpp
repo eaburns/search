@@ -1,3 +1,4 @@
+#pragma once
 #include "body.hpp"
 #include "tile.hpp"
 #include <cstdio>

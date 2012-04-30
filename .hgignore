@@ -27,7 +27,7 @@ visnav/disp
 visnav/mkgraph
 visnav/pbm2poly
 plat2d/draw
-plat2d/play
+plat2d/watch
 plat2d/2poly
 graphics/test
 bench/mark

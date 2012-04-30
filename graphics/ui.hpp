@@ -11,7 +11,7 @@ struct Ui {
 
 	// frame is called once per-frame to update
 	// the scene.
-	virtual void frame(void);
+	virtual void frame();
 
 	// key is called everytime a key is pressed or released.
 	// The first argument is the key code (from SDL).

@@ -2,8 +2,7 @@
 #include "../utils/utils.hpp"
 #include <cstdio>
 #include <SDL/SDL.h>
-#include <GL/gl.h>
-#include <GL/glu.h>
+#include <SDL/SDL_opengl.h>
 
 Ui::Ui(unsigned int w, unsigned int h) : scene(w, h) {
 	if (SDL_Init(SDL_INIT_EVERYTHING) != 0)
