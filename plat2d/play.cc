@@ -141,6 +141,9 @@ static void findstart() {
 		}
 	}
 	}
+	geom2d::Pt loc(startx * Tile::Width + Player::Offx,
+		starty * Tile::Height + Player::Offy);
+	scroll(geom2d::Pt(Width/2, Height/2), loc);
 }
 
 static void initsdl() {
