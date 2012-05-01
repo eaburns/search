@@ -77,6 +77,10 @@ struct Scene {
 	struct Img : public Renderable {
 		Img() { }
 
+		// This constructor loads an image from a file.  A typical use
+		// case will be to load an image from that is never added to a scene,
+		// and thus never destructed.  Instead, copies of the image can be
+		// added to the scene.
 		Img(const std::string&);
 
 		Img(const Img &o) : smin(o.smin), tmin(o.tmin),
