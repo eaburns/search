@@ -1,11 +1,16 @@
+#pragma once
 #include "../utils/image.hpp"
+#include <SDL/SDL_opengl.h>
 #include <vector>
+#include <string>
+
+void fatal(const char*, ...);
 
 struct Scene {
 
 	Scene(unsigned int w, unsigned int h) : width(w), height(h) { }
 
-	void render(void) const;
+	void render() const;
 
 	// clear clears the components of the scene.
 	void clear(void) {
@@ -20,7 +25,7 @@ struct Scene {
 	void save(const char *file) const;
 
 	struct Renderable : public Image::Drawable {
-		virtual void render(void) const = 0;
+		virtual void render() const = 0;
 	};
 
 	void add(Renderable *v) { comps.push_back(v); }
@@ -33,7 +38,7 @@ struct Scene {
 
 		virtual void writeeps(FILE *out) const { Image::Pt::writeeps(out); }
 
-		virtual void render(void) const;
+		virtual void render() const;
 	};
 
 	struct Line : public Renderable, public Image::Line {
@@ -43,7 +48,7 @@ struct Scene {
 
 		virtual void writeeps(FILE *out) const { Image::Line::writeeps(out); }
 
-		virtual void render(void) const;
+		virtual void render() const;
 	};
 
 	struct Arc : public Renderable, public Image::Arc {
@@ -52,7 +57,7 @@ struct Scene {
 
 		virtual void writeeps(FILE *out) const { Image::Arc::writeeps(out); }
 
-		virtual void render(void) const;
+		virtual void render() const;
 	private:
 		enum { Narcpts = 10 };
 
@@ -66,7 +71,42 @@ struct Scene {
 
 		virtual void writeeps(FILE *out) const { Image::Poly::writeeps(out); }
 
-		virtual void render(void) const;
+		virtual void render() const;
+	};
+
+	struct Img : public Renderable {
+		Img() { }
+
+		Img(const std::string&);
+
+		Img(const Img &o) : smin(o.smin), tmin(o.tmin),
+			smax(o.smax), tmax(o.tmax), x(o.x), y(o.y),
+			w(o.w), h(o.h), texw(o.texw), texh(o.texh), texid(o.texid) { }
+
+		// This constructor copies the image but moves it to
+		// a different x,y location.
+		Img(const Img &o, double x, double y) : smin(o.smin), tmin(o.tmin),
+			smax(o.smax), tmax(o.tmax), x(x), y(y),
+			w(o.w), h(o.h), texw(o.texw), texh(o.texh), texid(o.texid) { }
+
+		virtual void writeeps(FILE*) const {
+			fatal("Writing images to .eps is not supported");
+		}
+
+		virtual void render() const;
+
+		// These are the texture coordinates used to draw
+		// the image.
+		double smin, tmin, smax, tmax;
+
+		// x, y, w, and h define the image's rectangle.
+		double x, y, w, h;
+
+		// texw and texh are the width and height of the texture.
+		unsigned int texw, texh;
+
+	private:
+		GLuint texid;
 	};
 
 	unsigned int width, height;

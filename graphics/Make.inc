@@ -2,7 +2,7 @@ GRAPHICSOBJS:=\
 	graphics/scene.o\
 	graphics/ui.o\
 
-GRAPHICSLD:=-lSDL -lGLU -lGL
+GRAPHICSLD:=-lSDL -lSDL_image -lGLU -lGL
 
 include $(GRAPHICSOBJS:.o=.d)
 

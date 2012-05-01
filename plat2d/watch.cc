@@ -10,6 +10,19 @@
 
 struct Lvl;
 
+class Anim {
+public:
+	Anim() { }
+	Anim(Scene::Img&, int row, int len, int w, int h, int delay);
+	void update();
+	void reset();
+	void draw(Scene&, const geom2d::Pt&);
+private:
+	Scene::Img sheet;
+	int len, delay;
+	int f, d;
+};
+
 class WatchUi : public Ui {
 public:
 	WatchUi(unsigned int, unsigned int, Lvl*, std::vector<unsigned int>);
@@ -29,6 +42,16 @@ private:
 	unsigned int width, height;
 	std::vector<unsigned int> controls;
 	std::vector<unsigned int>::iterator iter;
+
+	// level images.
+	Scene::Img bkgnd, block, door;
+
+	// player animation.
+	enum { Stand, Walk, Jump, Nacts };
+	Scene::Img knight;
+	int act;
+	Anim leftas[Nacts], rightas[Nacts];
+	Anim *anim;
 };
 
 static unsigned long framerate = 20;	// in milliseconds
@@ -120,6 +143,34 @@ WatchUi::WatchUi(unsigned int w, unsigned int h, Lvl *l, std::vector<unsigned in
 	scroll(geom2d::Pt(width/2, height/2), startloc);
 
 	iter = controls.begin();
+
+	bkgnd = Scene::Img("plat2d/img/tiles.png");
+	bkgnd.w = Tile::Width;
+	bkgnd.h = Tile::Height;
+	bkgnd.smin = 0.0;
+	bkgnd.smax = (double)Tile::Width/bkgnd.texw;
+	bkgnd.tmin = 0.0;
+	bkgnd.tmax = (double)Tile::Height/bkgnd.texh;
+
+	block = Scene::Img(bkgnd);
+	block.smax = (double)Tile::Width/block.texw;
+	block.tmin = (double)Tile::Height/block.texh;
+	block.tmax = (double)(Tile::Height*2)/block.texh;
+
+	door = Scene::Img(bkgnd);
+	door.smax = (double)Tile::Width/door.texw;
+	door.tmin = (double)(Tile::Height*3)/door.texh;
+	door.tmax = (double)(Tile::Height*4)/door.texh;
+
+	knight = Scene::Img("plat2d/img/knight.png");
+	leftas[Stand] = Anim(knight, 0, 1, Tile::Width, Tile::Height, 1);
+	leftas[Walk] = Anim(knight, 1, 4, Tile::Width, Tile::Height, 100);
+	leftas[Jump] = Anim(knight, 2, 1, Tile::Width, Tile::Height, 1);
+	rightas[Stand] = Anim(knight, 3, 1, Tile::Width, Tile::Height, 1);
+	rightas[Walk] = Anim(knight, 4, 4, Tile::Width, Tile::Height, 100);
+	rightas[Jump] = Anim(knight, 5, 1, Tile::Width, Tile::Height, 1);
+	act = Stand;
+	anim = rightas;
 }
 
 void WatchUi::frame() {
@@ -136,8 +187,26 @@ void WatchUi::move() {
 	if (iter == controls.end())
 		exit(0);
 
+	unsigned int keys = *iter++;
 	geom2d::Pt p0(p.loc());
-	p.act(*lvl, *iter++);
+	p.act(*lvl, keys);
+
+	Anim *prevanim = anim;
+	anim = rightas;
+	if (keys & Player::Left)
+		anim = leftas;
+
+	act = Stand;
+	if (p.body.fall)
+		act = Jump;
+	else if (keys & (Player::Left | Player::Right))
+		act = Walk;
+
+	if (anim != prevanim)
+		anim[act].reset();
+	else
+		anim[act].update();
+
 	scroll(p0, p.loc());
 }
 
@@ -154,30 +223,70 @@ void WatchUi::scroll(const geom2d::Pt &p0, const geom2d::Pt &p1) {
 void WatchUi::draw() {
 	scene.clear();
 
-	for (unsigned int x = 0; x < lvl->width(); x++) {
-	for (unsigned int y = 0; y < lvl->height(); y++) {
-		Lvl::Blkinfo bi(lvl->at(x, y));
-
-		geom2d::Poly rect(4,
-			x*Tile::Width + tr.x, y*Tile::Height + tr.y,
-			(x+1)*Tile::Width + tr.x, y*Tile::Height + tr.y,
-			(x+1)*Tile::Width + tr.x, (y+1)*Tile::Height + tr.y,
-			x*Tile::Width + tr.x, (y+1)*Tile::Height + tr.y);
-
-		if (bi.tile.flags & Tile::Collide)
-			scene.add(new Scene::Poly(rect, Image::black, -1));
-		else if (bi.tile.flags & Tile::Water)
-			scene.add(new Scene::Poly(rect, Image::blue, -1));
-		else if (bi.tile.flags & Tile::Down)
-			scene.add(new Scene::Poly(rect, Image::red, -1));
-	}
-	}
-
-	Bbox b = p.body.bbox;
 	geom2d::Poly rect(4,
-		b.min.x + tr.x, b.min.y + tr.y,
-		b.max.x + tr.x, b.min.y + tr.y,
-		b.max.x + tr.x, b.max.y + tr.y,
-		b.min.x + tr.x, b.max.y + tr.y);
-	scene.add(new Scene::Poly(rect, Image::green, -1));
+		tr.x, tr.y,
+		tr.x + lvl->width()*Tile::Width, tr.y,
+		tr.x + lvl->width()*Tile::Width, tr.y + lvl->height()*Tile::Height,
+		tr.x, tr.y + lvl->height()*Tile::Height);
+	scene.add(new Scene::Poly(rect, Image::black, -1));
+
+	for (unsigned int i = 0; i < lvl->width(); i++) {
+	for (unsigned int j = 0; j < lvl->height(); j++) {
+		Lvl::Blkinfo bi(lvl->at(i, j));
+
+		double x = i*Tile::Width + tr.x;
+		double y = j*Tile::Height + tr.y;
+
+
+		Scene::Img *img;
+		if (bi.tile.flags & Tile::Collide) {
+			img = new Scene::Img(block, x, y);
+			scene.add(img);
+			continue;
+		}
+
+		img = new Scene::Img(bkgnd, x, y);
+		scene.add(img);
+
+		if (bi.tile.flags & Tile::Down) {
+			img = new Scene::Img(door, x, y);
+			scene.add(img);
+		}
+
+	}
+	}
+
+	geom2d::Pt loc(p.body.bbox.min);
+	loc.translate(tr.x, tr.y);
+	anim[act].draw(scene, loc);
+}
+
+Anim::Anim(Scene::Img &img, int r, int l, int w, int h, int d) :
+		sheet(img), len(l), delay(d), f(0), d(delay) {
+	sheet.w = w;
+	sheet.h = h;
+	sheet.tmin = r*sheet.h / sheet.texh;
+	sheet.tmax = (r+1)*sheet.h / sheet.texh;
+}
+
+void Anim::update() {
+	d--;
+	if (d > 0)
+		return;
+	d = delay;
+	f++;
+	if (f == len)
+		f = 0;
+}
+
+void Anim::reset() {
+	f = 0;
+	d = delay;
+}
+
+void Anim::draw(Scene &s, const geom2d::Pt &pt) {
+	Scene::Img *img = new Scene::Img(sheet, pt.x, pt.y);
+	img->smin = f*sheet.w / sheet.texw;
+	img->smax = (f+1)*sheet.w / sheet.texw;
+	s.add(img);
 }

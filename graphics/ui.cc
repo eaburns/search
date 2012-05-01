@@ -2,23 +2,40 @@
 #include "../utils/utils.hpp"
 #include <cstdio>
 #include <SDL/SDL.h>
+#include <SDL/SDL_image.h>
 #include <SDL/SDL_opengl.h>
 
 Ui::Ui(unsigned int w, unsigned int h) : scene(w, h) {
 	if (SDL_Init(SDL_INIT_EVERYTHING) != 0)
 		fatal("failed to initialiaze SDL: %s", SDL_GetError());
 
-	int flags = SDL_HWSURFACE | SDL_GL_DOUBLEBUFFER | SDL_OPENGL;
+	int flags = IMG_INIT_PNG;
+	int inited = IMG_Init(flags);
+	if ((inited & flags) != flags)
+		fatal("Failed to initialize .png support");
+
+	flags = SDL_GL_DOUBLEBUFFER | SDL_OPENGL;
 	unsigned int color = 32;
 	screen = SDL_SetVideoMode(scene.width, scene.height, color, flags);
 	if (!screen)
 		fatal("failed to create a window: %s", SDL_GetError());
 
-	glEnable(GL_DEPTH_TEST);
+	fprintf(stderr, "Vendor: %s\nRenderer: %s\nVersion: %s\nShade Lang. Version: %s\n",
+		glGetString(GL_VENDOR),
+		glGetString(GL_RENDERER),
+		glGetString(GL_VERSION),
+		glGetString(GL_SHADING_LANGUAGE_VERSION));
+
+
+	glDisable(GL_DEPTH_TEST);
 	glEnable(GL_POINT_SMOOTH);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 	glTranslated(-1.0, -1.0, 0.0);
 	glScaled(2.0 / scene.width, 2.0 / scene.height, 0.0);
 	glClearColor(1.0, 1.0, 1.0, 0.0);
+	chkerror("after initialization");
 }
 
 void Ui::run(unsigned long rate) {
@@ -31,6 +48,7 @@ void Ui::run(unsigned long rate) {
 		scene.render();
 		glFlush();
 		SDL_GL_SwapBuffers();
+		chkerror("after swap buffers");
 
 		if (handleevents())
 			break;
@@ -38,6 +56,38 @@ void Ui::run(unsigned long rate) {
 		long delay = tick + rate - SDL_GetTicks();
 		if (delay > 0)
 			SDL_Delay(delay);
+	}
+}
+
+void Ui::chkerror(const char *str) {
+	GLenum err = glGetError();
+	switch (err) {
+	case GL_NO_ERROR:
+		break;
+
+	case GL_INVALID_ENUM:
+		fatal("GL error %s: GL_INVALID_ENUM (%d)", str, err);
+
+	case GL_INVALID_VALUE:
+		fatal("GL error %s: GL_INVALID_VALUE (%d)", str, err);
+
+	case GL_INVALID_OPERATION:
+		fatal("GL error %s: GL_INVALID_OPERATION (%d)", str, err);
+
+	case GL_STACK_OVERFLOW:
+		fatal("GL error %s: GL_STACK_OVERFLOW (%d)", str, err);
+
+	case GL_STACK_UNDERFLOW:
+		fatal("GL error %s: GL_STACK_UNDERFLOW (%d)", str, err);
+
+	case GL_OUT_OF_MEMORY:
+		fatal("GL error %s: GL_OUT_OF_MEMORY (%d)", str, err);
+
+	case GL_TABLE_TOO_LARGE:
+		fatal("GL error %s: GL_TABLE_TOO_LARGE (%d)", str, err);
+
+	default:
+		fatal("Unknow GL error %s: %d\n", err);
 	}
 }
 
