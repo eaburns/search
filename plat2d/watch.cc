@@ -78,7 +78,7 @@ int main(int argc, const char *argv[]) {
 	Lvl lvl(f);
 	fclose(f);
 
-	WatchUi ui(640, 480, &lvl, controls);
+	WatchUi ui(800, 600, &lvl, controls);
 	ui.run(framerate);	
 }
 
@@ -184,8 +184,10 @@ void WatchUi::frame() {
 }
 
 void WatchUi::move() {
-	if (iter == controls.end())
+	if (iter == controls.end()) {
+		sleep(1);
 		exit(0);
+	}
 
 	unsigned int keys = *iter++;
 	geom2d::Pt p0(p.loc());
