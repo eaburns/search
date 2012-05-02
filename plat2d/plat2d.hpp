@@ -5,7 +5,6 @@
 #include <string>
 #include <cstdio>
 
-void dfpair(FILE *, const char *, const char *, ...);
 void fatal(const char*, ...);
 extern "C" unsigned long hashbytes(unsigned char[], unsigned int);
 
@@ -32,9 +31,6 @@ static const double W = Tile::Width / Maxx;
 static const double H = Tile::Height /  Maxy;
 
 struct Plat2d {
-
-	static const unsigned int Ops[];
-	static const unsigned int Nops;
 
 	typedef int Cost;
 	typedef int Oper;
@@ -98,20 +94,31 @@ struct Plat2d {
 		return bi.x == gx && bi.y == gy;
 	}
 
-	unsigned int nops(State &s) {
- 		// If jumping will have no effect then allow left, right and jump.
-		// This is a bit of a hack, but the 'jump' action that is allowed
-		// here will end up being a 'do nothing' and just fall action.
-		// Effectively, we prune off the jump/left and jump/right actions
-		// since they are the same as just doing left and right in this case.
-		if (!s.player.canjump())
-			return 3;
-		return Nops;
-	}
+	struct Operators {
+		Operators(const Plat2d&, const State &s) : n(Nops) {
+	 		// If jumping will have no effect then allow left, right and jump.
+			// This is a bit of a hack, but the 'jump' action that is allowed
+			// here will end up being a 'do nothing' and just fall action.
+			// Effectively, we prune off the jump/left and jump/right actions
+			// since they are the same as just doing left and right in this case.
+			if (!s.player.canjump())
+				n = 3;
+		}
 
-	Oper nthop(State &s, unsigned int n) {
-		return Ops[n];
-	}
+		unsigned int size() const {
+			return n;
+		}
+
+		Oper operator[](unsigned int i) const {
+			return Ops[i];
+		}
+
+	private:
+		unsigned int n;
+
+		static const unsigned int Ops[];
+		static const unsigned int Nops;
+	};
 
 	struct Edge {
 		Cost cost;
@@ -158,6 +165,7 @@ struct Plat2d {
 	Cost pathcost(const std::vector<State>&, const std::vector<Oper>&);
 
 	unsigned int gx, gy;	// goal tile location
+	unsigned int x0, y0;	// initial location
 	Lvl lvl;
 
 private:

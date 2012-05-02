@@ -7,7 +7,8 @@ PLAT2DOBJS=\
 include $(PLAT2DOBJS:.o=.d)
 CLEAN+=$(PLAT2DOBJS)
 
-plat2d: plat2d/plat2d_solver plat2d/draw plat2d/play plat2d/2poly
+plat2d: plat2d/plat2d_solver plat2d/draw\
+	plat2d/2poly plat2d/watch
 
 EVERYTHING+=plat2d
 
@@ -31,11 +32,10 @@ plat2d/2poly: $(PLAT2DOBJS) plat2d/2poly.o visnav/visgraph.a utils/utils.a
 include plat2d/2poly.d
 CLEAN+=plat2d/2poly plat2d/2poly.o
 
-SDLVER=$(shell sdl-config --version | sed 's/\([0-9]\)\.\([0-9]\).*/\1\2/')
+plat2d/watch: $(PLAT2DOBJS) plat2d/watch.cc\
+	plat2d/plat2d.o visnav/visgraph.a\
+	graphics/graphics.a utils/utils.a
+	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) $(GRAPHICSLD) -o $@
 
-plat2d/play: $(PLAT2DOBJS) plat2d/play.cc\
-	plat2d/plat2d.o visnav/visgraph.a utils/utils.a
-	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -DSDLVER=$(SDLVER) -lSDL -o $@
-
-include plat2d/play.d
-CLEAN+=plat2d/play plat2d/play.o
+include plat2d/watch.d
+CLEAN+=plat2d/watch plat2d/watch.o

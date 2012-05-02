@@ -1,6 +1,7 @@
 #include "../search/search.hpp"
 #include "../utils/utils.hpp"
 #include <algorithm>
+#include <forward_list>
 
 template <class D> struct Rtastar : public SearchAlgorithm<D> {
 	typedef typename D::State State;
@@ -30,7 +31,9 @@ template <class D> struct Rtastar : public SearchAlgorithm<D> {
 		nodes = new Pool<Node>();
 	}
 
-	~Rtastar(void) { delete nodes; }
+	~Rtastar(void) {
+		delete nodes;
+	}
 
 	struct Current {
 		Current(const State &s, Oper o, Oper p, Cost e, Cost _f) :
@@ -47,26 +50,34 @@ template <class D> struct Rtastar : public SearchAlgorithm<D> {
 		seen.init(d);
 		Current cur(s0, D::Nop, D::Nop, typename D::Cost(0), d.h(s0));
 		Cost *curh = storenode(d, cur.state, cur.f);
-		this->res.path.push_back(cur.state);
 
-		while (!d.isgoal(cur.state) && !SearchAlgorithm<D>::limit()) {
+		while (!d.isgoal(cur.state) && !this->limit()) {
 			std::vector<Current> bests = bestkids(d, cur, *curh);
-			if (bests.size() == 0)
+			if (bests.size() == 0) {
+				this->res.ops.clear();
 				break;	// deadend;
+			}
 			cur = bests.at(randgen.integer(0, bests.size()-1));
 			this->res.ops.push_back(cur.op);
-			this->res.path.push_back(cur.state);
 			curh = storenode(d, cur.state, cur.f);
 		}
 
 		this->finish();
 
-		// Reverse the path and operators since all other
-		// search algorithms build them in reverse.
-		std::reverse(SearchAlgorithm<D>::res.ops.begin(),
-			SearchAlgorithm<D>::res.ops.end());
-		std::reverse(SearchAlgorithm<D>::res.path.begin(),
-			SearchAlgorithm<D>::res.path.end());
+		if (this->res.ops.empty())	// deadend
+			return;
+
+		// Rebuild the path from the operators to avoid storing very long
+		// paths as we go.
+		seen.clear();
+		this->res.path.push_back(s0);
+		for (auto it = this->res.ops.begin(); it != this->res.ops.end(); it++) {
+			State copy = this->res.path.back();
+			typename D::Edge e(d, copy, *it);
+			this->res.path.push_back(e.state);
+		}
+		std::reverse(this->res.ops.begin(), this->res.ops.end());
+		std::reverse(this->res.path.begin(), this->res.path.end());
 	}
 
 	virtual void reset(void) {
@@ -95,14 +106,14 @@ private:
 		sndf = Cost(-1);
 		std::vector<Current> bests;
 
-		SearchAlgorithm<D>::res.expd++;
-		for (unsigned int n = 0; n < d.nops(cur.state); n++) {
-			Oper op = d.nthop(cur.state, n);
-			if (op == cur.pop)
+		this->res.expd++;
+		typename D::Operators ops(d, cur.state);
+		for (unsigned int n = 0; n < ops.size(); n++) {
+			if (ops[n] == cur.pop)
 				continue;
 
-			SearchAlgorithm<D>::res.gend++;
-			typename D::Edge e(d, cur.state, op);
+			this->res.gend++;
+			typename D::Edge e(d, cur.state, ops[n]);
 			Cost h = heuristic(d, e.state, e.revop);
 			Cost f = h == Cost(-1) ? h : h + e.cost;
 
@@ -110,10 +121,10 @@ private:
 				if (!bests.empty())
 					sndf = bests[0].f;
 				bests.clear();
-				bests.push_back(Current(e.state, op, e.revop, e.cost, f));
+				bests.push_back(Current(e.state, ops[n], e.revop, e.cost, f));
 			} else if (bests[0].f == f) {
 				assert (!bests.empty());
-				bests.push_back(Current(e.state, op, e.revop, e.cost, f));
+				bests.push_back(Current(e.state, ops[n], e.revop, e.cost, f));
 			} else if (better(f, sndf)) {
 				sndf = f;
 			}
@@ -153,13 +164,13 @@ private:
 
 		this->res.expd++;
 		Cost bestf = Cost(-1);
-		for (unsigned int n = 0; n < d.nops(state); n++) {
-			Oper op = d.nthop(state, n);
-			if (op == pop)
+		typename D::Operators ops(d, state);
+		for (unsigned int n = 0; n < ops.size(); n++) {
+			if (ops[n] == pop)
 				continue;
 
 			this->res.gend++;
-			typename D::Edge e(d, state, op);
+			typename D::Edge e(d, state, ops[n]);
 			f = look(d, e.state, alpha, e.revop, g + e.cost, left-1);
 			if (better(f, bestf))
 				bestf = f;

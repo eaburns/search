@@ -248,7 +248,8 @@ bool compute_moves_test() {
 	s.locs.resize(3);
 	s.rloc = 0;
 
-	unsigned int n = dr.nops(s);
+	DockRobot::Operators ops(dr, s);
+	unsigned int n = ops.size();
 	if (n != 2) {
 		testpr("Expected 2 move operations but got %u\n", n);
 		ok = false;
@@ -256,7 +257,7 @@ bool compute_moves_test() {
 
 	std::vector<bool> seen(3, false);
 	for (unsigned int i = 0; i < n; i++) {
-		unsigned int dst = dr.nthop(s, i).x;
+		unsigned int dst = ops[i].x;
 		if (dst > seen.size()) {
 			testpr("Move to out of bound location %u\n", dst);
 			ok = false;
@@ -294,7 +295,8 @@ bool compute_loads_test() {
 	s.locs[0].cranes.push_back(0);
 	s.locs[0].cranes.push_back(1);
 
-	unsigned int n = dr.nops(s);
+	DockRobot::Operators ops(dr, s);
+	unsigned int n = ops.size();
 	if (n != 2) {
 		testpr("Expected 2 operators but got %u\n", n);
 		ok = false;
@@ -302,7 +304,7 @@ bool compute_loads_test() {
 
 	std::vector<bool> seen(2, false);
 	for (unsigned int i = 0; i < n; i++) {
-		unsigned int cr = dr.nthop(s, i).x;
+		unsigned int cr = ops[i].x;
 		if (cr > seen.size()) {
 			testpr("Load from out of bound crane %u", cr);
 			ok = false;
@@ -321,9 +323,8 @@ bool compute_loads_test() {
 
 	// what if the robot isn't empty?
 	s.rbox = 0;
-	s.hasops = false;
-	s.ops.clear();
-	n = dr.nops(s);
+	ops = DockRobot::Operators(dr, s);
+	n = ops.size();
 	if (n != 0) {
 		testpr("Loaded into a full robot");
 		ok = false;

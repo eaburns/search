@@ -73,12 +73,12 @@ private:
 	void expand(D &d, Node *n, State &state) {
 		SearchAlgorithm<D>::res.expd++;
 
-		for (unsigned int i = 0; i < d.nops(state); i++) {
-			Oper op = d.nthop(state, i);
-			if (op == n->pop)
+		typename D::Operators ops(d, state);
+		for (unsigned int i = 0; i < ops.size(); i++) {
+			if (ops[i] == n->pop)
 				continue;
 			SearchAlgorithm<D>::res.gend++;
-			considerkid(d, n, state, op);
+			considerkid(d, n, state, ops[i]);
 		}
 	}
 

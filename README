@@ -4,5 +4,5 @@ work then it is a bug so please tell me.
 Ubuntu package dependencies:
 	libboost-dev
 
-The plat2d/play binary and graphics code also need:
-	libsdl1.2-dev
+The plat2d/watch binary and graphics code also need:
+	libsdl1.2-dev libsdl-image1.2-dev

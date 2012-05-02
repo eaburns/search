@@ -63,13 +63,21 @@ struct VisNav {
 		return (unsigned int) s.vert == finish;
 	}
 
-	unsigned int nops(State &s) {
-		return g.verts[s.vert].edges.size();
-	}
+	struct Operators {
+		Operators(const VisNav &d, const State &s) :
+			edges(d.g.verts[s.vert].edges) { }
 
-	Oper nthop(State &s, unsigned int n) {
-		return Oper(&g.verts[s.vert].edges[n]);
-	}
+		unsigned int size() const {
+			return edges.size();
+		}
+
+		Oper operator[](unsigned int i) const {
+			return Oper(&edges[i]);
+		}
+
+	private:
+		const std::vector<VisGraph::Edge> &edges;
+	};
 
 	struct Edge {
 		Cost cost;

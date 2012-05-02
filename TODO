@@ -12,22 +12,13 @@
 
 • plat2d:
 
-	- random start locations
-
-	- better transposition
-	breaking.  Should be easier
-	because the new Edge
-	code has access to both the
-	current and next state when
-	setting revop.
-
 	- drawing of the solution
 	path and the set of expanded
 	nodes
 
-• visnav:
+• drobot:
 
-	- specific closed list
+	- implement a heuristic
 
 • tiles:
 
@@ -40,6 +31,10 @@
 • pancake:
 
 	- bit-packed states
+
+• visnav:
+
+	- specific closed list
 
 • More domains:
 
@@ -70,5 +65,4 @@
 
 	- Red/black tree
 
-	- Skip list (compare with RB
-	tree)
+	- Skip list (compare with RB tree)

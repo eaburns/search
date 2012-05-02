@@ -119,17 +119,16 @@ private:
 	// expand expands the node, adding its children to the
 	// open and closed lists as appropriate.
 	void expand(D &d, Node *n, State &state) {
-		SearchAlgorithm<D>::res.expd++;
+		this->res.expd++;
 		Kidinfo bestinfo;
 
-		for (unsigned int i = 0; i < d.nops(state); i++) {
-			Oper op = d.nthop(state, i);
-			if (op == n->pop)
+		typename D::Operators ops(d, state);
+		for (unsigned int i = 0; i < ops.size(); i++) {
+			if (ops[i] == n->pop)
 				continue;
 
-			SearchAlgorithm<D>::res.gend++;
-			Kidinfo kinfo = considerkid(d, n, state, op);
-
+			this->res.gend++;
+			Kidinfo kinfo = considerkid(d, n, state, ops[i]);
 			if (bestinfo.f < Cost(0) || kinfo.f < bestinfo.f)
 				bestinfo = kinfo;
 		}

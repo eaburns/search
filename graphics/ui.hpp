@@ -11,7 +11,7 @@ struct Ui {
 
 	// frame is called once per-frame to update
 	// the scene.
-	virtual void frame(void);
+	virtual void frame();
 
 	// key is called everytime a key is pressed or released.
 	// The first argument is the key code (from SDL).
@@ -34,6 +34,11 @@ struct Ui {
 	// was an up-click.
 	virtual void click(int, int, int, bool);
 
+	// chkerror checks for open GL errors and bails if
+	// one was encountered with the error name and
+	// the argument string.
+	static void chkerror(const char*);
+
 protected:
 
 	SDL_Surface *screen;
@@ -43,5 +48,5 @@ private:
 
 	// handleevents handles events and returns
 	// true if it is time to quit.
-	bool handleevents(void);
+	bool handleevents();
 };

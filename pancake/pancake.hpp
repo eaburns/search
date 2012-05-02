@@ -51,30 +51,34 @@ public:
 
 	State initialstate(void);
 
-	unsigned long hash(PackedState &p) {
+	unsigned long hash(const PackedState &p) const {
 		return hashbytes((unsigned char *) p.cakes,
 					Ncakes * sizeof(Cake));
 	}
 
-	Cost h(State &s) {
+	Cost h(const State &s) const {
 		return s.h;
 	}
 
-	Cost d(State &s) {
+	Cost d(const State &s) const {
 		return s.h;
 	}
 
-	bool isgoal(State &s) {
+	bool isgoal(const State &s) const {
 		return s.h == 0;
 	}
 
-	unsigned int nops(State &s) {
-		return Ncakes - 1;
-	}
+	struct Operators {
+		Operators(const Pancake&, const State&) { }
 
-	Oper nthop(State &s, unsigned int n) {
-		return n + 1;
-	}
+		unsigned int size() const {
+			return Ncakes -1 ;
+		}
+
+		Oper operator[](unsigned int i) const {
+			return i + 1;
+		}
+	};
 
 	struct Edge {
 		Cost cost;
@@ -102,15 +106,15 @@ public:
 		Cost oldh;
 	};
 
-	void pack(PackedState &dst, State &s) {
+	void pack(PackedState &dst, const State &s) const {
 		dst = s;
 	}
 
-	State &unpack(State &dst, PackedState &pkd) {
+	State &unpack(const State &dst, PackedState &pkd) const {
 		return pkd;
 	}
 
-	void dumpstate(FILE *out, State &s) {
+	void dumpstate(FILE *out, State &s) const {
 		for (unsigned int i = 0; i < Ncakes; i++) {
 			fprintf(out, "%u", s.cakes[i]);
 			if (i < Ncakes - 1)

@@ -118,9 +118,6 @@ struct DockRobot {
 	DockRobot(FILE*);
 
 	struct State {
-
-		State() : hasops(false) { }
-
 		std::vector<Loc> locs;
 		int rbox;	// the robot's contents (-1 is empty)
 		unsigned int rloc;	// the robot's location
@@ -129,9 +126,6 @@ struct DockRobot {
 
 		// nleft is the number of packages out of their goal location.
 		unsigned int nleft;
-
-		bool hasops;
-		std::vector<Oper> ops;
 
 		bool operator==(const State &o) const {
 			if (rloc != o.rloc)
@@ -170,32 +164,40 @@ struct DockRobot {
 		return s.nleft == 0;
 	}
 
-	unsigned int nops(State &s) const {
-		if (!s.hasops) {
-			computeops(s);
-			s.hasops = true;
-		}
-		return s.ops.size();
-	}
+	struct Operators {
+		Operators(const DockRobot&, const State&);
 
-	Oper nthop(const State &s, unsigned int n) const {
-		return s.ops[n];
-	}
+		unsigned int size() const {
+			return ops.size();
+		}
+
+		Oper operator[](unsigned int i) const {
+			return ops[i];
+		}
+
+	private:
+		std::vector<Oper> ops;
+	};
 
 	struct Edge {
 		Cost cost;
 		Oper revop;
-		State state;
+		State &state;
 
-		Edge(DockRobot&, State&, const Oper&);
-		~Edge() { }
+		Edge(const DockRobot &d, State &s, const Oper &o) : state(s), dom(d) {
+			apply(state, o);
+		}
+
+		~Edge() {
+			apply(state, revop);
+		}
 
 	private:
 
 		void apply(State&, const Oper&);
 
 		// needed to reverse an operator application.
-		DockRobot &dom;
+		const DockRobot &dom;
 	};
 
 	void pack(PackedState &dst, const State &src) {

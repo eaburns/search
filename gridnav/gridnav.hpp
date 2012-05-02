@@ -88,21 +88,18 @@ struct GridNav {
 	struct State {
 		State &operator=(const State &o) {
  			loc = o.loc;
-			nops = -1;
  			return *this;
 		}
 
-		State(void) :nops(-1) { }
+		State(void) { }
 
-		State (const State &o) : loc(o.loc), nops(-1) { }
+		State (const State &o) : loc(o.loc) { }
 
-		State(unsigned int l) : loc(l), nops(-1) { }
+		State(unsigned int l) : loc(l) { }
 
 	private:
 		friend struct GridNav;
 		unsigned int loc;
-		int nops;
-		Oper ops[8];
 	};
 
 	struct PackedState {
@@ -135,21 +132,26 @@ struct GridNav {
 		return s.loc == finish;
 	}
 
-	unsigned int nops(State &s) const {
-		if (s.nops >= 0)
-			return s.nops;
-
-		s.nops = 0;
-		for (unsigned int i = 0; i < map->nmvs; i++) {
-			if (map->ok(s.loc, map->mvs[i]))
-				s.ops[s.nops++] = i;
+	struct Operators {
+		Operators(const GridNav &d, const State &s) : n(0) {
+			for (unsigned int i = 0; i < d.map->nmvs; i++) {
+				if (d.map->ok(s.loc, d.map->mvs[i]))
+					ops[n++] = i;
+			}
 		}
-		return s.nops;
-	}
 
-	Oper nthop(State &s, unsigned int n) const {
-		return s.ops[n];
-	}
+		unsigned int size() const {
+			return n;
+		}
+
+		Oper operator[](unsigned int i) const {
+			return ops[i];
+		}
+
+	private:
+		unsigned int n;
+		Oper ops[8];
+	};
 
 	struct Edge {
 		Cost cost;

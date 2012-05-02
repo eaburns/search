@@ -38,6 +38,9 @@ template<class D> Result<D> search(D &d, int argc, const char *argv[]) {
 	try {
 		srch->search(d, s0);
 	} catch (std::bad_alloc&) {
+		dfpair(stdout, "out of memory", "%s", "true");
+		srch->res.path.clear();
+		srch->res.ops.clear();
 		srch->finish();
 	}
 	if (srch->res.path.size() > 0) {

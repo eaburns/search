@@ -82,7 +82,7 @@ DockRobot::DockRobot(FILE *in) {
 	while (line) {
 		std::vector<std::string> toks = tokens(*line);
 		if (toks.size() == 0)
-			continue;
+			goto reloop;
 
 		if (toks[0] == "location") {
 			loc = strtol(toks[1].c_str(), NULL, 10);
@@ -118,7 +118,7 @@ DockRobot::DockRobot(FILE *in) {
 
 			line = readline(in);
 			if (!line)
-				continue;
+				goto reloop;
 			toks = tokens(*line);
 			Pile p;
 			for (unsigned int i = 0; i < toks.size(); i++) {
@@ -144,7 +144,7 @@ DockRobot::DockRobot(FILE *in) {
 
 			goal[box] = dest;
 		}
-
+reloop:
 		line = readline(in);
 	}
 }
@@ -157,28 +157,15 @@ DockRobot::State DockRobot::initialstate() {
 	st.h = st.d = 0;
 
 	st.nleft = 0;
-	for (unsigned int g = 0; g < goal.size(); g++) {
-		if (goal[g] < 0)
-			continue;
-		for (unsigned int l = 0; l < st.locs.size(); l++) {
-		for (unsigned int p = 0; p < st.locs[l].piles.size(); p++) {
-		for (unsigned int s = 0; s < st.locs[l].piles[p].stack.size(); s++) {
-			if ((unsigned int) goal[st.locs[l].piles[p].stack[s]] != l)
-				st.nleft++;
-		}
-		}
-		}
+	for (unsigned int l = 0; l < st.locs.size(); l++) {
+	for (unsigned int p = 0; p < st.locs[l].piles.size(); p++) {
+	for (unsigned int s = 0; s < st.locs[l].piles[p].stack.size(); s++) {
+		if ((unsigned int) goal[st.locs[l].piles[p].stack[s]] != l)
+			st.nleft++;
 	}
-
-	st.hasops = false;
-
+	}
+	}
 	return st;
-}
-
-DockRobot::Edge::Edge(DockRobot &d, State &s, const Oper &o) : state(s), dom(d) {
-	state.hasops = false;
-	state.ops.clear();
-	apply(state, o);
 }
 
 void DockRobot::Edge::apply(State &s, const Oper &o) {
@@ -273,40 +260,40 @@ void DockRobot::Edge::apply(State &s, const Oper &o) {
 
 }
 
-void DockRobot::computeops(State &s) const {
+DockRobot::Operators::Operators(const DockRobot &d, const State &s) {
 	const Loc &l = s.locs[s.rloc];
 
 	// Push cranes onto piles.
 	int lastpile = l.piles.size();
-	if ((unsigned int) lastpile >= maxpiles[s.rloc])
-		lastpile = maxpiles[s.rloc] - 1;
+	if ((unsigned int) lastpile >= d.maxpiles[s.rloc])
+		lastpile = d.maxpiles[s.rloc] - 1;
 	for (unsigned int c = 0; c < l.cranes.size(); c++) {
 		for (int p = 0; p <= lastpile; p++)
-			s.ops.push_back(Oper(Oper::Push, c, p));
+			ops.push_back(Oper(Oper::Push, c, p));
 	}
 
-	if (l.cranes.size() < maxcranes[s.rloc]) {	// empty cranes?
+	if (l.cranes.size() < d.maxcranes[s.rloc]) {	// empty cranes?
 
 		// Pop piles onto a crane
 		for (unsigned int p = 0; p < l.piles.size(); p++)
-			s.ops.push_back(Oper(Oper::Pop, p));
+			ops.push_back(Oper(Oper::Pop, p));
 
 		// Unload the robot
 		if (s.rbox >= 0)
-			s.ops.push_back(Oper(Oper::Unload));	
+			ops.push_back(Oper(Oper::Unload));	
 	}
 
 	// Load the robot
 	if (s.rbox < 0) {
 		for (unsigned int c = 0; c < l.cranes.size(); c++)
-			s.ops.push_back(Oper(Oper::Load, c));
+			ops.push_back(Oper(Oper::Load, c));
 	}
 
 	// Move the robot
-	for (unsigned int i = 0; i < nlocs; i++) {
+	for (unsigned int i = 0; i < d.nlocs; i++) {
 		if (i == s.rloc)
 			continue;
-		s.ops.push_back(Oper(Oper::Move, i));
+		ops.push_back(Oper(Oper::Move, i));
 	}
 }
 
