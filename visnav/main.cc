@@ -4,6 +4,7 @@
 #include <cerrno>
 
 int main(int argc, const char *argv[]) {
+	dfheader(stdout);
 	VisGraph g(stdin);
 	double x0, y0, x1, y1;
 	if (fscanf(stdin, " %lg %lg %lg %lg", &x0, &y0, &x1, &y1) != 4)
@@ -16,6 +17,7 @@ int main(int argc, const char *argv[]) {
 	VisNav d(g, x0, y0, x1, y1);
 	Result<VisNav> res = search<VisNav>(d, argc, argv);
 	d.save("path.eps", res.path);
+	dffooter(stdout);
 
 	return 0;
 }

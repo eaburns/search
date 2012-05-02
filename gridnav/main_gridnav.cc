@@ -4,6 +4,7 @@
 #include <cstdio>
 
 int main(int argc, const char *argv[]) {
+	dfheader(stdout);
 	GridMap map(stdin);
 
 	unsigned int x0, y0, xg, yg;
@@ -12,6 +13,7 @@ int main(int argc, const char *argv[]) {
 
 	GridNav d(&map, x0, y0, xg, yg);
 	search<GridNav>(d, argc, argv);
+	dffooter(stdout);
 
 	return 0;
 }

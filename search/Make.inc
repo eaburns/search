@@ -1,6 +1,5 @@
 SEARCHOBJS:=\
 	search/search.o\
-	search/main.o\
 
 include $(SEARCHOBJS:.o=.d)
 

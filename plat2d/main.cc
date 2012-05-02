@@ -11,6 +11,7 @@ static void parseargs(int, const char*[]);
 
 int main(int argc, const char *argv[]) {
 	parseargs(argc, argv);
+	dfheader(stdout);
 
 	FILE *infile = stdin;
 	if (lvl) {
@@ -25,6 +26,7 @@ int main(int argc, const char *argv[]) {
 		fclose(infile);
 
 	search<Plat2d>(d, argc, argv);
+	dffooter(stdout);
 
 	return 0;
 }
