@@ -13,7 +13,7 @@ struct Lvl;
 class Anim {
 public:
 	Anim() { }
-	Anim(Scene::Img&, int row, int len, int w, int h, int delay);
+	Anim(Scene::Img&, int row, int w, int h, int len, int delay);
 	void update();
 	void reset();
 	void draw(Scene&, const geom2d::Pt&);
@@ -163,12 +163,12 @@ WatchUi::WatchUi(unsigned int w, unsigned int h, Lvl *l, std::vector<unsigned in
 	door.tmax = (double)(Tile::Height*4)/door.texh;
 
 	knight = Scene::Img("plat2d/img/knight.png");
-	leftas[Stand] = Anim(knight, 0, 1, Tile::Width, Tile::Height, 1);
-	leftas[Walk] = Anim(knight, 1, 4, Tile::Width, Tile::Height, 100);
-	leftas[Jump] = Anim(knight, 2, 1, Tile::Width, Tile::Height, 1);
-	rightas[Stand] = Anim(knight, 3, 1, Tile::Width, Tile::Height, 1);
-	rightas[Walk] = Anim(knight, 4, 4, Tile::Width, Tile::Height, 100);
-	rightas[Jump] = Anim(knight, 5, 1, Tile::Width, Tile::Height, 1);
+	leftas[Stand] = Anim(knight, 0, Tile::Width, Tile::Height, 1, 1);
+	leftas[Walk] = Anim(knight, 1, Tile::Width, Tile::Height, 4, 10);
+	leftas[Jump] = Anim(knight, 2, Tile::Width, Tile::Height, 1, 1);
+	rightas[Stand] = Anim(knight, 3, Tile::Width, Tile::Height, 1, 1);
+	rightas[Walk] = Anim(knight, 4, Tile::Width, Tile::Height, 4, 10);
+	rightas[Jump] = Anim(knight, 5, Tile::Width, Tile::Height, 1, 1);
 	act = Stand;
 	anim = rightas;
 }
@@ -261,7 +261,7 @@ void WatchUi::draw() {
 	anim[act].draw(scene, loc);
 }
 
-Anim::Anim(Scene::Img &img, int r, int l, int w, int h, int d) :
+Anim::Anim(Scene::Img &img, int r, int w, int h, int l, int d) :
 		sheet(img), len(l), delay(d), f(0), d(delay) {
 	sheet.w = w;
 	sheet.h = h;
