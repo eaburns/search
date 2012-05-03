@@ -30,7 +30,7 @@ template <class D> struct Bugsy : public SearchAlgorithm<D> {
 
 	Bugsy(int argc, const char *argv[]) :
 			SearchAlgorithm<D>(argc, argv),
-			navgh(0), navgd(0), herror(0), derror(0),
+			navg(0), herror(0), derror(0),
 			timeper(0.0), nresort(0), batchsize(20), nexp(0), state(WaitTick),
 			closed(30000001) {
 		wf = wt = -1;
@@ -88,7 +88,7 @@ template <class D> struct Bugsy : public SearchAlgorithm<D> {
 		batchsize = 20;
 		nexp = 0;
 		nresort = 0;
-		navgh = navgd = 0;
+		navg = 0;
 		herror = derror = 0;
 		nodes = new Pool<Node>();
 	}
@@ -130,6 +130,7 @@ private:
 				continue;
 
 			this->res.gend++;
+
 			Kidinfo kinfo = considerkid(d, n, state, ops[i]);
 			if (bestinfo.f < Cost(0) || kinfo.f < bestinfo.f)
 				bestinfo = kinfo;
@@ -138,25 +139,35 @@ private:
 		if (bestinfo.f < Cost(0))
 			return;
 
+		navg++;
 		double herr = bestinfo.f - n->f;
-		if (herr >= 0) {
-			navgh++;
-			herror = herror + (herr - herror)/navgh;
-		}
+		assert (herr >= 0);
+		herror = herror + (herr - herror)/navg;
 		double derr = bestinfo.d + 1 - n->d;
-		if (derr >= 0) {
-			navgd++;
-			derror = derror + (derr - derror)/navgd;
-		}
+		assert (derr >= 0);
+		derror = derror + (derr - derror)/navg;
 	}
 
-	// considers adding the child generated via the given
-	// operator to the open and closed lists.  The return is
-	// the info struct for the generated child.
+	// considers adding the child to the open and closed lists.
 	Kidinfo considerkid(D &d, Node *parent, State &state, Oper op) {
 		Node *kid = nodes->construct();
 		typename D::Edge e(d, state, op);
 		kid->g = parent->g + e.cost;
+
+		// single step path-max on d
+		kid->d = d.d(e.state);
+		if (kid->d < parent->d - Cost(1))
+			kid->d = parent->d - Cost(1);
+
+		// single step path-max on h
+		kid->h = d.h(e.state);
+		if (kid->h < parent->h - e.cost)
+			kid->h = parent->h - e.cost;
+
+		kid->f = kid->g + kid->h;
+
+		Kidinfo kinfo(kid->g, kid->h, kid->d);
+
 		d.pack(kid->packed, e.state);
 
 		unsigned long hash = d.hash(kid->packed);
@@ -170,28 +181,14 @@ private:
 				computeutil(dup);
 				open.pushupdate(dup, dup->ind);
 			}
-			Kidinfo kinfo(kid->g, dup->h, dup->d);
 			nodes->destruct(kid);
-			return kinfo;
+		} else {
+			kid->update(kid->g, parent, op, e.revop);
+			computeutil(kid);
+			closed.add(kid, hash);
+			open.push(kid);
 		}
-
-		kid->d = d.d(e.state);
-		if (parent->d - Cost(1) > kid->d)
-			kid->d = parent->d - Cost(1);
-
-		kid->h = d.h(e.state);
-		// Force h to be consistent along a path so that
-		// f is always increasing and the corrections never
-		// go negative.
-		if (parent->h - e.cost > kid->h)
-			kid->h = parent->h - e.cost;
-
-		kid->f = kid->g + kid->h;
-		kid->update(kid->g, parent, op, e.revop);
-		computeutil(kid);
-		closed.add(kid, hash);
-		open.push(kid);
-		return Kidinfo(kid->g, kid->h, kid->d);
+		return kinfo;
 	}
 
 	Node *init(D &d, State &s0) {
@@ -271,7 +268,7 @@ private:
 	double wf, wt;
 
 	// heuristic correction
-	unsigned long navgh, navgd;
+	unsigned long navg;
 	double herror, derror;
 
 	// for nodes-per-second estimation
