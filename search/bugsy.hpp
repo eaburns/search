@@ -30,7 +30,7 @@ template <class D> struct Bugsy : public SearchAlgorithm<D> {
 
 	Bugsy(int argc, const char *argv[]) :
 			SearchAlgorithm<D>(argc, argv),
-			navg(0), herror(0), derror(0),
+			navgh(0), navgd(0), herror(0), derror(0),
 			timeper(0.0), nresort(0), batchsize(20), nexp(0), state(WaitTick),
 			closed(30000001) {
 		wf = wt = -1;
@@ -88,6 +88,8 @@ template <class D> struct Bugsy : public SearchAlgorithm<D> {
 		batchsize = 20;
 		nexp = 0;
 		nresort = 0;
+		navgh = navgd = 0;
+		herror = derror = 0;
 		nodes = new Pool<Node>();
 	}
 
@@ -136,11 +138,16 @@ private:
 		if (bestinfo.f < Cost(0))
 			return;
 
-		navg++;
 		double herr = bestinfo.f - n->f;
-		herror = herror + (herr - herror)/navg;
+		if (herr >= 0) {
+			navgh++;
+			herror = herror + (herr - herror)/navgh;
+		}
 		double derr = bestinfo.d + 1 - n->d;
-		derror = derror + (derr - derror)/navg;
+		if (derr >= 0) {
+			navgd++;
+			derror = derror + (derr - derror)/navgd;
+		}
 	}
 
 	// considers adding the child generated via the given
@@ -169,7 +176,16 @@ private:
 		}
 
 		kid->d = d.d(e.state);
+		if (parent->d - Cost(1) > kid->d)
+			kid->d = parent->d - Cost(1);
+
 		kid->h = d.h(e.state);
+		// Force h to be consistent along a path so that
+		// f is always increasing and the corrections never
+		// go negative.
+		if (parent->h - e.cost > kid->h)
+			kid->h = parent->h - e.cost;
+
 		kid->f = kid->g + kid->h;
 		kid->update(kid->g, parent, op, e.revop);
 		computeutil(kid);
@@ -255,7 +271,7 @@ private:
 	double wf, wt;
 
 	// heuristic correction
-	unsigned long navg;
+	unsigned long navgh, navgd;
 	double herror, derror;
 
 	// for nodes-per-second estimation
