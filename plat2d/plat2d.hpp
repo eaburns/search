@@ -41,12 +41,13 @@ struct Plat2d {
 	~Plat2d(void);
 
 	struct State {
-		State(void) { }
+		State(void) : h(-1) { }
 
 		State(unsigned int x, unsigned int y, unsigned int z,
 			unsigned int w, unsigned int h) : player(x, y, w, h) { }
 
 		Player player;
+		Cost h;
 	};
 
 	struct PackedState {
@@ -85,9 +86,15 @@ struct Plat2d {
 		return hashbytes(bytes, i);
 	}
 
-	Cost h(State &s) { return hvis(s); }
+	Cost h(State &s) {
+		if (s.h < 0)
+			s.h = hvis(s);
+		return s.h;
+	}
 
-	Cost d(State &s) { return hvis(s); }
+	Cost d(State &s) {
+		return h(s);
+	}
 
 	bool isgoal(State &s) {
 		Lvl::Blkinfo bi = lvl.majorblk(s.player.body.bbox);
