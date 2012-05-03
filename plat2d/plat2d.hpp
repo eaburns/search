@@ -44,7 +44,7 @@ struct Plat2d {
 		State(void) : h(-1) { }
 
 		State(unsigned int x, unsigned int y, unsigned int z,
-			unsigned int w, unsigned int h) : player(x, y, w, h) { }
+			unsigned int w, unsigned int h) : player(x, y, w, h), h(-1) { }
 
 		Player player;
 		Cost h;
