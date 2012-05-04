@@ -16,6 +16,9 @@
 	path and the set of expanded
 	nodes
 
+	- in the heuristic: prune legs that
+	go up by further than you can jump.
+
 • drobot:
 
 	- implement a heuristic
