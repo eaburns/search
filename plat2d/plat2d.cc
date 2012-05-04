@@ -131,7 +131,6 @@ void Plat2d::drawmap(const char *file) const {
 		img.saveeps(file);
 		return;
 	}
-	i = togoal[i].prev;
 	geom2d::Pt p0 = graph.verts[i].pt;
 	while (i >= 0) {
 		const geom2d::Pt &p1 = graph.verts[i].pt;
