@@ -1,5 +1,4 @@
-#ifndef _CLOSEDLIST_HPP_
-#define _CLOSEDLIST_HPP_
+#pragma once
 
 #include <cstdio>
 #include <typeinfo>
@@ -113,5 +112,3 @@ private:
 	unsigned int nresize, nbins;
 	Node** bins;
 };
-
-#endif	// _CLOSEDLIST_HPP_

@@ -1,5 +1,4 @@
-#ifndef _HTABLE_HPP_
-#define _HTABLE_HPP_
+#pragma once
 
 #include <cstring>
 #include <cstdio>
@@ -110,5 +109,3 @@ private:
 	unsigned int nresize, nbins;
 	Elm **bins;
 };
-
-#endif	// _HTABLE_HPP_

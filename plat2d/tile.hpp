@@ -1,5 +1,4 @@
-#ifndef _TILE_HPP_
-#define _TILE_HPP_
+#pragma once
 
 #include <cstdio>
 #include <cassert>
@@ -73,5 +72,3 @@ private:
 };
 
 extern const Tiles tiles;
-
-#endif	// _TILE_HPP_

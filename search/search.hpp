@@ -1,5 +1,4 @@
-#ifndef _SEARCH_HPP_
-#define _SEARCH_HPP_
+#pragma once
 
 #include <cstdio>
 #include <vector>
@@ -366,5 +365,3 @@ public:
 protected:
 	bool limit(void) { return lim.reached(res); }
 };
-
-#endif	// _SEARCH_HPP_

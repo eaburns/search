@@ -1,5 +1,4 @@
-#ifndef _POOL_HPP_
-#define _POOL_HPP_
+#pragma once
 
 #include <vector>
 #include <cstdlib>
@@ -62,5 +61,3 @@ private:
 	Ent *freed;
 	std::vector<Ent*> blks;
 };
-
-#endif	// _POOL_HPP_

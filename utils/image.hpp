@@ -1,5 +1,4 @@
-#ifndef _IMAGE_HPP_
-#define _IMAGE_HPP_
+#pragma once
 
 #include <cmath>
 #include <cstdio>
@@ -155,5 +154,3 @@ private:
 	void write_epsdata(FILE*) const;
 	std::string encode_epsdata(void) const;
 };
-
-#endif	// _IMAGE_HPP_

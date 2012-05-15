@@ -1,5 +1,4 @@
-#ifndef _GRIDMAP_HPP_
-#define _GRIDMAP_HPP_
+#pragma once
 
 #include <vector>
 #include <climits>
@@ -111,5 +110,3 @@ private:
 	// fourway computes four-way grid operators.
 	void fourway(void);
 };
-
-#endif	// _GRIDMAP_HPP_

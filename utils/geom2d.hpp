@@ -1,5 +1,4 @@
-#ifndef _GEOM2D_HPP_
-#define _GEOM2D_HPP_
+#pragma once
 
 #include <vector>
 #include <limits>
@@ -521,5 +520,3 @@ namespace geom2d {
 		void initsides(void);
 	};
 };
-
-#endif	// _GEOM2D_HPP_

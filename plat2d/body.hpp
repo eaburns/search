@@ -1,5 +1,4 @@
-#ifndef _BODY_HPP_
-#define _BODY_HPP_
+#pragma once
 
 #include <cassert>
 #include "../utils/geom2d.hpp"
@@ -86,5 +85,3 @@ private:
 
 	void dofall(const Lvl&, const Isect&);
 };
-
-#endif	// _BODY_HPP_

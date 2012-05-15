@@ -1,5 +1,4 @@
-#ifndef _UTILS_HPP_
-#define _UTILS_HPP_
+#pragma once
 
 #include <cstdio>
 #include <string>
@@ -271,5 +270,3 @@ unsigned long ipow(unsigned int, unsigned int);
 
 // fallfact returns `x to the n falling.'
 unsigned long fallfact(unsigned int x, unsigned int n);
-
-#endif	// _UTILS_HPP_

@@ -1,5 +1,4 @@
-#ifndef _INTPQ_HPP_
-#define _INTPQ_HPP_
+#pragma once
 
 #include <cassert>
 #include <cstdlib>
@@ -121,5 +120,3 @@ private:
 	unsigned int nresize, end, nbins;
 	Elm **bins;
 };
-
-#endif	// _INTPQ_HPP_
