@@ -6,7 +6,7 @@
 struct Lvl;
 
 struct Line1d {
-	Line1d(double _a, double _b) : a(_a), b(_b) { }
+	Line1d(double a, double b) : a(a), b(b) { }
 
 	double isect(const Line1d &o) const {
 		if (geom2d::between(o.a, o.b, b))
@@ -22,7 +22,7 @@ struct Line1d {
 struct Isect {
 	Isect(void) : is(false), dx(0.0), dy(0.0) { }
 
-	Isect(double _dx, double _dy) : is(true), dx(_dx), dy(_dy) { }
+	Isect(double dx, double dy) : is(true), dx(dx), dy(dy) { }
 
 	Isect(const Isect &o) : is(o.is), dx(o.dx), dy(o.dy) { }
 

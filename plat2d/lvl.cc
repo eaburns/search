@@ -7,7 +7,7 @@
 #include <cerrno>
 #include <limits>
 
-Lvl::Lvl(unsigned int _w, unsigned int _h) : w(_w), h(_h) {
+Lvl::Lvl(unsigned int w, unsigned int h) : w(w), h(h) {
 	blks = new Blk[safe::mul(w, h)];
 }
 

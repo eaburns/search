@@ -134,13 +134,13 @@ public:
 	}
 
 	// update updates the corresponding fields of the given node.
-	void update(const typename D::Cost &_g, SearchNode *_parent,
-			const typename D::Oper &_op,
-			const typename D::Oper &_pop) {
-		g = _g;
-		parent = _parent;
-		op = _op;
-		pop = _pop;
+	void update(const typename D::Cost &g, SearchNode *parent,
+			const typename D::Oper &op,
+			const typename D::Oper &pop) {
+		this->g = g;
+		this->parent = parent;
+		this->op = op;
+		this->pop = pop;
 	}
 };
 

@@ -1,7 +1,3 @@
-• remove _ arguments as they are
-	apparently reserved for the
-	implementation…
-
 • change all (void) to ()
 
 • utils

@@ -30,7 +30,7 @@ struct Tile {
 
 	Tile(void) : c(0) { }
 
-	Tile(char _c, unsigned int f) : c(_c), flags(f) { }
+	Tile(char c, unsigned int f) : c(c), flags(f) { }
 
 	Isect isect(unsigned int x, unsigned int y, const Bbox & r) const {
 		if (!(flags & Collide))
