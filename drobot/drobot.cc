@@ -153,23 +153,41 @@ reloop:
 }
 
 DockRobot::State DockRobot::initialstate() {
-	return State(*this, initlocs, -1, 0);
+	State s(*this, initlocs, -1, 0);
+	PackedState pkd;
+	pack(pkd, s);
+	State buf;
+	State &s1 = unpack(buf, pkd);
+	assert (s == s1);
+	return s;
 }
 
 DockRobot::State::State(const DockRobot &dr, const std::vector<Loc> &ls,
 	int rb, unsigned int rl) : locs(ls), rbox(rb), rloc(rl), h(-1), d(-1), nleft(0) {
 
-	boxlocs.resize(dr.nboxes);
+	boxlocs.resize(dr.nboxes, dr.nlocs+1);
 
 	for (unsigned int l = 0; l < locs.size(); l++) {
-	for (unsigned int p = 0; p < locs[l].piles.size(); p++) {
-	for (unsigned int s = 0; s < locs[l].piles[p].stack.size(); s++) {
-		unsigned int box = locs[l].piles[p].stack[s];
-		if ((unsigned int) dr.goal[box] != l)
+		for (unsigned int c = 0; c < locs[l].cranes.size(); c++) {
+			unsigned int box = locs[l].cranes[c];
+			if ((unsigned int) dr.goal[box] != l)
+				nleft++;
+			boxlocs[box] = l;
+		}
+		for (unsigned int p = 0; p < locs[l].piles.size(); p++) {
+		for (unsigned int s = 0; s < locs[l].piles[p].stack.size(); s++) {
+			unsigned int box = locs[l].piles[p].stack[s];
+			assert (box < dr.nboxes);
+			if ((unsigned int) dr.goal[box] != l)
+				nleft++;
+			boxlocs[box] = l;
+		}
+		}
+	}
+	if (rbox >= 0) {
+		if ((unsigned int) dr.goal[rbox] != rloc)
 			nleft++;
-		boxlocs[box] = l;
-	}
-	}
+		boxlocs[rbox] = rloc;
 	}
 }
 
@@ -307,6 +325,12 @@ DockRobot::Cost DockRobot::pathcost(const std::vector<State> &path, const std::v
 	for (int i = ops.size() - 1; i >= 0; i--) {
 		State copy(state);
 		Edge e(*this, copy, ops[i]);
+		if (!(e.state == path[i])) {
+			fprintf(stderr, "e.state:\n");
+			dumpstate(stderr, e.state);
+			fprintf(stderr, "\npath[%u]:\n", i);
+			dumpstate(stderr, path[i]);
+		}
 		assert (e.state == path[i]);
 		state = e.state;
 		cost += e.cost;
@@ -315,9 +339,9 @@ DockRobot::Cost DockRobot::pathcost(const std::vector<State> &path, const std::v
 	return cost;
 }
 
-// pos must be at least nboxes in size.
-void DockRobot::boxpos(const State &s, unsigned int pos[]) const {
-	for (unsigned int i = 0; i < nboxes; i++)
+void DockRobot::pack(PackedState  &dst, const State &s) {
+	unsigned int *pos = new unsigned int[nboxes+1];
+	for (unsigned int i = 0; i < nboxes+1; i++)
 		pos[i] = 0;
 
 	unsigned int cur = 0;
@@ -336,6 +360,76 @@ void DockRobot::boxpos(const State &s, unsigned int pos[]) const {
 			}
 		}
 		cur += maxpiles[i]*nboxes;
+	}
+	pos[nboxes] = s.rloc;
+	dst.pos = pos;
+	dst.sz = nboxes+1;
+}
+
+DockRobot::State &DockRobot::unpack(State &buf, const PackedState &pkd) {
+	unsigned int rloc = pkd.pos[nboxes];
+	int rbox = -1;
+	std::vector<Loc> locs(nlocs);
+
+	for (unsigned int b = 0; b < nboxes; b++) {
+		unsigned int p = pkd.pos[b];
+		if (p == 0) {
+			rbox = b;
+			goto nextbox;
+		}
+		p--;
+
+		for (unsigned int l = 0; l < nlocs; l++) {
+			Loc &loc = locs[l];
+
+			if (p < maxcranes[l]) {
+				if (loc.cranes.size() <= p)
+					loc.cranes.resize(p+1, nboxes+1);
+				loc.cranes[p] = b;
+				goto nextbox;
+			}
+			p -= maxcranes[l];
+
+			if (p < maxpiles[l]*nboxes) {
+				unsigned int pid = p/nboxes;
+				unsigned int ht = p%nboxes;
+
+				if (loc.piles.size() <= pid)
+					loc.piles.resize(pid+1);
+				Pile &pile = loc.piles[pid];
+				if (pile.stack.size() <= ht)
+					pile.stack.resize(ht+1, nboxes+1);
+				pile.stack[ht] = b;
+				goto nextbox;
+			}
+			p -= maxpiles[l]*nboxes;
+		}
+		fatal("unreachable");
+nextbox:;
+	}
+
+	buf = State(*this, locs, rbox, rloc);
+	return buf;
+}
+
+void DockRobot::dumpstate(FILE *out, const State &s) const {
+	fprintf(out, "h: %g\n", s.h);
+	fprintf(out, "d: %g\n", s.d);
+	fprintf(out, "robot location: %u\n", s.rloc);
+	fprintf(out, "robot contents: %d\n", s.rbox);
+	fprintf(out, "out of place boxes: %d\n", s.nleft);
+	for (unsigned int l = 0; l < s.locs.size(); l++) {
+		fprintf(out, "loc %u:\n", l);
+		const Loc &loc = s.locs[l];
+		for (unsigned int c = 0; c < loc.cranes.size(); c++)
+			fprintf(out, "	crane: %u\n", loc.cranes[c]);
+		for (unsigned int p = 0; p < loc.piles.size(); p++) {
+			const Pile &pile = loc.piles[p];
+			fprintf(out, "	pile:");
+			for (unsigned int h = 0; h < pile.stack.size(); h++)
+				fprintf(out, " %u", pile.stack[h]);
+			fprintf(out, "\n");
+		}
 	}
 }
 

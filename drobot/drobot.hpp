@@ -117,8 +117,8 @@ struct DockRobot {
 
 	DockRobot(FILE*);
 
-	struct State {
-
+	class State {
+	public:
 		State() { }
 
 		State(const DockRobot&, const std::vector<Loc>&, int, unsigned int);
@@ -137,27 +137,41 @@ struct DockRobot {
 		unsigned int nleft;
 
 		bool operator==(const State &o) const {
-			if (rloc != o.rloc)
+			if (rloc != o.rloc || rbox != o.rbox || nleft != o.nleft)
 				return false;
 			for (unsigned int i = 0; i < locs.size(); i++) {
 				if (locs[i] != o.locs[i])
 					return false;
-			}
+			}				
 			return true;
 		}
 	};
 
-	typedef State PackedState;
+	class PackedState {
+	public:
+		PackedState() : sz(0), pos(0) { }
+
+		~PackedState() {
+			if (pos) delete[] pos;
+		}
+
+		bool operator==(const PackedState &o) const {
+			for (unsigned int i = 0; i < sz; i++) {
+				if (pos[i] != o.pos[i])
+					return false;
+			}
+			return true;
+		}
+
+		unsigned int sz;
+		unsigned int *pos;
+	};
 
 	State initialstate();
 
 	unsigned long hash(const PackedState &p) const {
-		unsigned int pos[nboxes+1];
-		boxpos(p, pos);
-		pos[nboxes] = p.rloc;
-
-		return hashbytes(reinterpret_cast<unsigned char*>(&pos[0]),
-			sizeof(pos[0])*(nboxes+1));
+		return hashbytes(reinterpret_cast<unsigned char*>(p.pos),
+			sizeof(p.pos[0])*(nboxes+1));
 	}
 
 	Cost h(State &s) const {
@@ -226,29 +240,18 @@ struct DockRobot {
 		const DockRobot &dom;
 	};
 
-	void pack(PackedState &dst, const State &src) {
-		dst = src;
-	}
+	void pack(PackedState&, const State&);
 
-	State &unpack(const State &buf, PackedState &pkd) {
-		return pkd;
-	}
+	State &unpack(State&, const PackedState&);
 
-	void dumpstate(FILE *out, State &s) {
-		fatal("Unimplemented");
-	}
+	void dumpstate(FILE*, const State&) const;
 
 	Cost pathcost(const std::vector<State>&, const std::vector<Oper>&);
 
 private:
-	friend struct State;
+	friend class State;
 	friend bool compute_moves_test();
 	friend bool compute_loads_test();
-
-	// boxlocs computes the position for each box where
-	// position 0 is on the robot, and each subsequent position
-	// is based on the available positions at each location.
-	void boxpos(const State&, unsigned int[]) const;
 
 	// initheuristic initializes the heuristic values by computing
 	// the shortest path between all locations.
