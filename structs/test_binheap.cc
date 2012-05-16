@@ -9,7 +9,7 @@ struct UIntOps {
 
 enum { N = 1000 };
 
-bool binheap_push_test(void) {
+bool binheap_push_test() {
 	bool res = true;
 	BinHeap<UIntOps, unsigned int> pq;
 	unsigned int ints[N];
@@ -26,7 +26,7 @@ bool binheap_push_test(void) {
 	return res;
 }
 
-bool binheap_pop_test(void) {
+bool binheap_pop_test() {
 	bool res = true;
 	BinHeap<UIntOps, unsigned int> pq;
 	unsigned int ints[N];

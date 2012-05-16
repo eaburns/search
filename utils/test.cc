@@ -1,24 +1,24 @@
 #include "utils.hpp"
 
-bool test_commas(void);
-bool test_doubleeq(void);
-bool test_doubleneq(void);
-bool test_point_angle(void);
-bool test_line_isect(void);
-bool test_line_isabove(void);
-bool test_lineseg_midpt(void);
-bool test_lineseg_along(void);
-bool test_lineseg_length(void);
-bool test_lineseg_isect(void);
-bool test_poly_contains(void);
-bool test_poly_isects(void);
-bool test_poly_minisect(void);
-bool test_poly_hits(void);
-bool test_base64enc(void);
-bool test_base64dec(void);
-bool test_encdec(void);
-bool test_basename(void);
-bool test_dirname(void);
+bool test_commas();
+bool test_doubleeq();
+bool test_doubleneq();
+bool test_point_angle();
+bool test_line_isect();
+bool test_line_isabove();
+bool test_lineseg_midpt();
+bool test_lineseg_along();
+bool test_lineseg_length();
+bool test_lineseg_isect();
+bool test_poly_contains();
+bool test_poly_isects();
+bool test_poly_minisect();
+bool test_poly_hits();
+bool test_base64enc();
+bool test_base64dec();
+bool test_encdec();
+bool test_basename();
+bool test_dirname();
 
 static const Test tests[] = {
 	Test("commas test", test_commas),

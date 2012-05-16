@@ -11,7 +11,7 @@ template<typename Ops, typename Node> struct ClosedList<Ops, Node, GridNav> {
 		nodes = new Node*[cap];
 	}
 
-	~ClosedList(void) { delete[] nodes; }
+	~ClosedList() { delete[] nodes; }
 
 	void init(GridNav &d) {
 		len = d.map->sz;
@@ -27,7 +27,7 @@ template<typename Ops, typename Node> struct ClosedList<Ops, Node, GridNav> {
 			nodes[i] = NULL;
 	}
 
-	void clear(void) {
+	void clear() {
 		for (unsigned int i = 0; i < cap; i++)
 			nodes[i] = NULL;
 	}

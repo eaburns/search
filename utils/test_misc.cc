@@ -1,7 +1,7 @@
 #include "../utils/utils.hpp"
 #include <cstring>
 
-bool test_commas(void) {
+bool test_commas() {
 	struct { std::string str; int num; } ints[] = {
 		{ "1", 1 },
 		{ "10", 10 },

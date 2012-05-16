@@ -11,16 +11,16 @@ static void settimer(int, unsigned long);
 static void stoptimer(int);
 static int timersig(int);
 
-SearchStats::SearchStats(void) : 
+SearchStats::SearchStats() : 
 	wallstrt(0), cpustrt(0), wallend(0), cpuend(0),
 	expd(0), gend(0), reopnd(0), dups(0) { }
 
-void SearchStats::strt(void) {
+void SearchStats::strt() {
 	wallstrt = walltime();
 	cpustrt = cputime();
 }
 
-void SearchStats::fin(void) {
+void SearchStats::fin() {
 	wallend = walltime();
 	cpuend = cputime();
 }
@@ -34,7 +34,7 @@ void SearchStats::output(FILE *f) {
 	dfpair(f, "total nodes reopened", "%lu", reopnd);
 }
 
-Limit::Limit(void) :
+Limit::Limit() :
 	expd(0), gend(0), mem(0), cputime(0), walltime(0), timeup(0) { }
 
 Limit::Limit(int argc, const char *argv[]) :
@@ -92,7 +92,7 @@ void Limit::timelimit(const char *tstr) {
 	timed = this;
 }
 
-void Limit::start(void) {
+void Limit::start() {
 	if (walltime == 0 && cputime == 0)
 		return;
 	if (!timed)
@@ -105,7 +105,7 @@ void Limit::start(void) {
 		settimer(ITIMER_PROF, cputime);
 }
 
-void Limit::finish(void) {
+void Limit::finish() {
 	if (walltime == 0 && cputime == 0)
 		return;
 	if (walltime > 0)

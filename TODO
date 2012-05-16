@@ -1,7 +1,3 @@
-• change latches to #pragma once
-
-• change all (void) to ()
-
 • utils
 
 	- change fatal to be an exception
@@ -15,6 +11,9 @@
 	- drawing of the solution
 	path and the set of expanded
 	nodes
+
+	- in the heuristic: prune legs that
+	go up by further than you can jump.
 
 • drobot:
 

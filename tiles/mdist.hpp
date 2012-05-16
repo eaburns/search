@@ -27,7 +27,7 @@ public:
 
 	TilesMdist(FILE*);
 
-	State initialstate(void);
+	State initialstate();
 
 	unsigned long hash(PackedState &p) {
 		return p.hash();
@@ -69,7 +69,7 @@ public:
 			state.b = op;
 		}
 
-		~Edge(void) {
+		~Edge() {
 			state.ts[state.b] = state.ts[revop];
 			state.b = revop;
 			state.h = oldh;
@@ -102,8 +102,8 @@ protected:
 	unsigned int md[Ntiles][Ntiles];
 
 private:
-	void initmd(void);
-	void initincr(void);
+	void initmd();
+	void initincr();
 
 	int incr[Ntiles][Ntiles][Ntiles];
 };

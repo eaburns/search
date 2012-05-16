@@ -1,5 +1,4 @@
-#ifndef _GRIDMAP_HPP_
-#define _GRIDMAP_HPP_
+#pragma once
 
 #include <vector>
 #include <climits>
@@ -14,7 +13,7 @@ struct GridMap {
 
 	GridMap(FILE *f) : nmvs(0) { load(f); }
 
-	~GridMap(void);
+	~GridMap();
 
 	// coord returns x,y coordinate for the given array index.
 	std::pair<int,int> coord(int loc) const { return std::pair<int,int>(loc%w, loc / w); }
@@ -26,7 +25,7 @@ struct GridMap {
 	bool blkd(int l) const { return !(flags[l] & Passable); }
 
 	struct Move {
-		Move(void) : n(0) { }
+		Move() : n(0) { }
 
 		Move(const GridMap&, int, int, unsigned int, ...);
 
@@ -102,14 +101,12 @@ private:
 	// octile computes octile grid operators. Octile operators
 	// disallow diagonal movements unless the two adjacent
 	// cells are also unblocked.
-	void octile(void);
+	void octile();
 
 	// eightway computes eight-way grid operators.  Eight-way
 	// operators allow diagonal even if the adjacent cells are blocked.
-	void eightway(void);
+	void eightway();
 
 	// fourway computes four-way grid operators.
-	void fourway(void);
+	void fourway();
 };
-
-#endif	// _GRIDMAP_HPP_

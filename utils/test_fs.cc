@@ -22,7 +22,7 @@ static Strings strs[] = {
 	{ "hello/.", "hello", "." },
 	{ "././.", "./.", "." },};
 
-bool test_basename(void) {
+bool test_basename() {
 	bool ok = true;
 	for (unsigned int i = 0; i < sizeof(strs) / sizeof(strs[0]); i++) {
 		std::string b = basename(strs[i].path);
@@ -35,7 +35,7 @@ bool test_basename(void) {
 	return ok;
 }
 
-bool test_dirname(void) {
+bool test_dirname() {
 	bool ok = true;
 	for (unsigned int i = 0; i < sizeof(strs) / sizeof(strs[0]); i++) {
 		std::string d = dirname(strs[i].path);

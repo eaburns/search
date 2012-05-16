@@ -31,13 +31,13 @@ template <class D> struct Rtastar : public SearchAlgorithm<D> {
 		nodes = new Pool<Node>();
 	}
 
-	~Rtastar(void) {
+	~Rtastar() {
 		delete nodes;
 	}
 
 	struct Current {
-		Current(const State &s, Oper o, Oper p, Cost e, Cost _f) :
-			state(s), op(o), pop(p), edgecost(e), f(_f) { }
+		Current(const State &s, Oper o, Oper p, Cost e, Cost f) :
+			state(s), op(o), pop(p), edgecost(e), f(f) { }
 
 		State state;
 		Oper op, pop;
@@ -80,7 +80,7 @@ template <class D> struct Rtastar : public SearchAlgorithm<D> {
 		std::reverse(this->res.path.begin(), this->res.path.end());
 	}
 
-	virtual void reset(void) {
+	virtual void reset() {
 		seen.clear();
 		delete nodes;
 		nodes = new Pool<Node>();

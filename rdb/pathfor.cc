@@ -4,7 +4,7 @@
 
 void fatal(const char*, ...);
 
-void usage(void);
+void usage();
 int nextpair(int, char *[], std::string&, std::string&);
 
 int main(int argc, const char *argv[]) {
@@ -18,6 +18,6 @@ int main(int argc, const char *argv[]) {
 	return 0;
 }
 
-void usage(void) {
+void usage() {
 	fatal("Usage: pathfor <root> <key>=<value>*\n");
 }

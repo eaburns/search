@@ -9,7 +9,7 @@ void dfpair(FILE *, const char *key, const char *fmt, ...);
 // AnyProf holds an anytime algorithm's performance profile.
 struct AnyProf {
 
-	AnyProf(void) : cbins(0), tbins(0) { }
+	AnyProf() : cbins(0), tbins(0) { }
 
 	AnyProf(unsigned int cbins, double cmax, unsigned int tbins, double tmax);
 
@@ -45,7 +45,7 @@ struct AnyProf {
 // by Eric A. Hansen and Shlomo Zilberstein, 2001.
 struct MonPolicy {
 
-	MonPolicy(void) { }
+	MonPolicy() { }
 
 	MonPolicy(const AnyProf&, double wcost, double wtime);
 
@@ -75,7 +75,7 @@ struct MonPolicy {
 	double wcost, wtime;
 
 	struct Entry {
-		Entry(void) : set(false) { }
+		Entry() : set(false) { }
 
 		Entry(double v, double d, bool s) :
 			set(true), value(v), delta(d), stop(s) { }

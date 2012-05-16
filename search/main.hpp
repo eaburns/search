@@ -19,7 +19,6 @@ void dfprocstatus(FILE*);
 void fatal(const char*, ...);
 
 template<class D> SearchAlgorithm<D> *getsearch(int argc, const char *argv[]);
-bool headerfooter(int, const char*[]);
 
 template<class D> Result<D> search(D &d, int argc, const char *argv[]) {
 	SearchAlgorithm<D> *srch = getsearch<D>(argc, argv);
@@ -29,8 +28,6 @@ template<class D> Result<D> search(D &d, int argc, const char *argv[]) {
 		fatal("Must specify a search algorithm");
 
 	typename D::State s0 = d.initialstate();
-	if (headerfooter(argc, argv))
-		dfheader(stdout);
 	dfpair(stdout, "initial heuristic", "%g", (double) d.h(s0));
 	dfpair(stdout, "initial distance", "%g", (double) d.d(s0));
 	dfpair(stdout, "algorithm", argv[1]);
@@ -50,8 +47,6 @@ template<class D> Result<D> search(D &d, int argc, const char *argv[]) {
 		dfpair(stdout, "final sol cost", "%g", -1.0);
 	}
 	srch->output(stdout);
-	if (headerfooter(argc, argv))
-		dffooter(stdout);
 
 	Result<D> res = srch->res;
 	delete srch;

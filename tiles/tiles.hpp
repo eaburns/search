@@ -1,5 +1,4 @@
-#ifndef _TILES_HPP_
-#define _TILES_HPP_
+#pragma once
 
 #include <cstdio>
 #include <cassert>
@@ -19,7 +18,7 @@ public:
 	typedef int Oper;
 	enum { Nop = -1 };
 
-	Tiles(void);
+	Tiles();
 
 	Tiles(FILE*);
 
@@ -53,11 +52,9 @@ public:
 
 private:
 	void readruml(FILE*);
-	void initops(void);
+	void initops();
 
-	void inithashvec(void);
+	void inithashvec();
 	static bool hashvecinit;
 	static unsigned long hashvec[Ntiles][Ntiles];
 };
-
-#endif	// _TILES_HPP_

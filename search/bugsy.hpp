@@ -49,7 +49,7 @@ template <class D> struct Bugsy : public SearchAlgorithm<D> {
 		nodes = new Pool<Node>();
 	}
 
-	~Bugsy(void) {
+	~Bugsy() {
 		delete nodes;
 	}
 
@@ -78,7 +78,7 @@ template <class D> struct Bugsy : public SearchAlgorithm<D> {
 		this->finish();
 	}
 
-	virtual void reset(void) {
+	virtual void reset() {
 		SearchAlgorithm<D>::reset();
 		open.clear();
 		closed.clear();
@@ -88,6 +88,8 @@ template <class D> struct Bugsy : public SearchAlgorithm<D> {
 		batchsize = 20;
 		nexp = 0;
 		nresort = 0;
+		navg = 0;
+		herror = derror = 0;
 		nodes = new Pool<Node>();
 	}
 
@@ -109,9 +111,9 @@ private:
 	// Kidinfo holds information about a node used for
 	// correcting the heuristic estimates.
 	struct Kidinfo {
-		Kidinfo(void) : f(-1), h(-1), d(-1) { }
+		Kidinfo() : f(-1), h(-1), d(-1) { }
 
-		Kidinfo(Cost g, Cost _h, Cost _d) : f(g + _h), h(_h), d(_d) { }
+		Kidinfo(Cost g, Cost h, Cost d) : f(g + h), h(h), d(d) { }
 
 		Cost f, h, d;
 	};
@@ -128,6 +130,7 @@ private:
 				continue;
 
 			this->res.gend++;
+
 			Kidinfo kinfo = considerkid(d, n, state, ops[i]);
 			if (bestinfo.f < Cost(0) || kinfo.f < bestinfo.f)
 				bestinfo = kinfo;
@@ -138,18 +141,33 @@ private:
 
 		navg++;
 		double herr = bestinfo.f - n->f;
+		assert (herr >= 0);
 		herror = herror + (herr - herror)/navg;
 		double derr = bestinfo.d + 1 - n->d;
+		assert (derr >= 0);
 		derror = derror + (derr - derror)/navg;
 	}
 
-	// considers adding the child generated via the given
-	// operator to the open and closed lists.  The return is
-	// the info struct for the generated child.
+	// considers adding the child to the open and closed lists.
 	Kidinfo considerkid(D &d, Node *parent, State &state, Oper op) {
 		Node *kid = nodes->construct();
 		typename D::Edge e(d, state, op);
 		kid->g = parent->g + e.cost;
+
+		// single step path-max on d
+		kid->d = d.d(e.state);
+		if (kid->d < parent->d - Cost(1))
+			kid->d = parent->d - Cost(1);
+
+		// single step path-max on h
+		kid->h = d.h(e.state);
+		if (kid->h < parent->h - e.cost)
+			kid->h = parent->h - e.cost;
+
+		kid->f = kid->g + kid->h;
+
+		Kidinfo kinfo(kid->g, kid->h, kid->d);
+
 		d.pack(kid->packed, e.state);
 
 		unsigned long hash = d.hash(kid->packed);
@@ -163,19 +181,14 @@ private:
 				computeutil(dup);
 				open.pushupdate(dup, dup->ind);
 			}
-			Kidinfo kinfo(kid->g, dup->h, dup->d);
 			nodes->destruct(kid);
-			return kinfo;
+		} else {
+			kid->update(kid->g, parent, op, e.revop);
+			computeutil(kid);
+			closed.add(kid, hash);
+			open.push(kid);
 		}
-
-		kid->d = d.d(e.state);
-		kid->h = d.h(e.state);
-		kid->f = kid->g + kid->h;
-		kid->update(kid->g, parent, op, e.revop);
-		computeutil(kid);
-		closed.add(kid, hash);
-		open.push(kid);
-		return Kidinfo(kid->g, kid->h, kid->d);
+		return kinfo;
 	}
 
 	Node *init(D &d, State &s0) {
@@ -202,7 +215,7 @@ private:
 
 	// updatetime runs a simple state machine (from Wheeler's BUGSY
 	// implementation) that estimates the node expansion rate.
-	void updatetime(void) {
+	void updatetime() {
 		double now;
 
 		switch (state) {
@@ -245,7 +258,7 @@ private:
 		}
 	}
 
-	void updateopen(void) {
+	void updateopen() {
 		nresort++;
 		for (int i = 0; i < open.size(); i++)
 			computeutil(open.at(i));

@@ -1,9 +1,9 @@
 #include "../utils/utils.hpp"
 
-bool test_pathfor_newpath(void);
-bool test_pathfor_samepath(void);
-bool test_pathfor_shareprefix(void);
-bool test_pathfor_existing(void);
+bool test_pathfor_newpath();
+bool test_pathfor_samepath();
+bool test_pathfor_shareprefix();
+bool test_pathfor_existing();
 
 static const Test tests[] = {
 	Test("pathfor newpath test", test_pathfor_newpath),

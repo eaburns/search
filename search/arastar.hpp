@@ -43,9 +43,9 @@ template <class D> struct Arastar : public SearchAlgorithm<D> {
 			incons.push_back(n);
 		}
 	
-		std::vector<Node*> &nodes(void) { return incons; }
+		std::vector<Node*> &nodes() { return incons; }
 	
-		void clear(void) {
+		void clear() {
 			mem.clear();
 			incons.clear();
 		}
@@ -76,7 +76,7 @@ template <class D> struct Arastar : public SearchAlgorithm<D> {
 		nodes = new Pool<Node>();
 	}
 
-	virtual ~Arastar(void) {
+	~Arastar() {
 		delete nodes;
 	}
 
@@ -110,7 +110,7 @@ template <class D> struct Arastar : public SearchAlgorithm<D> {
 		this->finish();
 	}
 
-	virtual void reset(void) {
+	virtual void reset() {
 		SearchAlgorithm<D>::reset();
 		wt = wt0;
 		open.clear();
@@ -132,14 +132,14 @@ template <class D> struct Arastar : public SearchAlgorithm<D> {
 protected:
 
 	// nextwt decrements the weight by the given value.
-	void nextwt(void) {
+	void nextwt() {
 		wt = wt - dwt > 1.0 ? wt - dwt : 1.0;
 		if (wt < 1.0 + sqrt(std::numeric_limits<double>::epsilon()))
 			wt = 1.0;
 	}
 
 	// rowhdr outputs the incumbent solution row header line.
-	void rowhdr(void) {
+	void rowhdr() {
 		dfrowhdr(stdout, "sol", 7, "num", "nodes expanded",
 			"nodes generated", "weight", "solution bound", "solution cost",
 			"wall time");
@@ -175,7 +175,7 @@ protected:
 
 	// findbound finds and returns the tightest bound for
 	// the current incumbent.
-	double findbound(void) {
+	double findbound() {
 		double min = std::numeric_limits<double>::infinity();
 
 		std::vector<Node*> &inodes = incons.nodes();
@@ -210,7 +210,7 @@ protected:
 
 	// updateopen updates the f' values of nodes in incons and
 	// on the open list, then incons is added to the open list.
-	void updateopen(void) {
+	void updateopen() {
 		std::vector<Node*> &nodes = incons.nodes();
 		for (unsigned long i = 0; i < nodes.size(); i++) {
 			Node *n = nodes[i];
@@ -403,7 +403,7 @@ private:
 	// TODO: don't compute walltime on each call to
 	// mon.  Try to learn a good frequency at which to
 	// re-check the time.
-	void mon(void) {
+	void mon() {
 		double wallt = walltime();
 		double t = wallt - this->res.wallstrt;
 		if (wallt < nextmon || this->cost  < 0)

@@ -1,5 +1,4 @@
-#ifndef _BODY_HPP_
-#define _BODY_HPP_
+#pragma once
 
 #include <cassert>
 #include "../utils/geom2d.hpp"
@@ -7,7 +6,7 @@
 struct Lvl;
 
 struct Line1d {
-	Line1d(double _a, double _b) : a(_a), b(_b) { }
+	Line1d(double a, double b) : a(a), b(b) { }
 
 	double isect(const Line1d &o) const {
 		if (geom2d::between(o.a, o.b, b))
@@ -21,13 +20,13 @@ struct Line1d {
 };
 
 struct Isect {
-	Isect(void) : is(false), dx(0.0), dy(0.0) { }
+	Isect() : is(false), dx(0.0), dy(0.0) { }
 
-	Isect(double _dx, double _dy) : is(true), dx(_dx), dy(_dy) { }
+	Isect(double dx, double dy) : is(true), dx(dx), dy(dy) { }
 
 	Isect(const Isect &o) : is(o.is), dx(o.dx), dy(o.dy) { }
 
-	double area(void) { return dx * dy; }
+	double area() { return dx * dy; }
 
 	bool is;
 	double dx, dy;
@@ -35,7 +34,7 @@ struct Isect {
 
 struct Bbox : public geom2d::Bbox {
 
-	Bbox(void) { }
+	Bbox() { }
 
 	Bbox(unsigned int x0, unsigned int y0, unsigned int x1,
 			unsigned int y1) : geom2d::Bbox(x0, y0, x1, y1) { }
@@ -50,15 +49,15 @@ struct Bbox : public geom2d::Bbox {
 		return Isect();
 	}
 
-	Line1d projx(void) const { return Line1d(min.x, max.x); }
+	Line1d projx() const { return Line1d(min.x, max.x); }
 
-	Line1d projy(void) const { return Line1d(min.y, max.y); }
+	Line1d projy() const { return Line1d(min.y, max.y); }
 };
 
 struct Body {
 	enum { Maxdy = 12 };
 
-	Body(void) { }
+	Body() { }
 
 	Body(unsigned int x, unsigned int y, unsigned int w, unsigned int h) :
 		bbox(x, y, x + w, y + h), dy(0), fall(false) { }
@@ -86,5 +85,3 @@ private:
 
 	void dofall(const Lvl&, const Isect&);
 };
-
-#endif	// _BODY_HPP_

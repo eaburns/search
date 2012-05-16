@@ -1,5 +1,4 @@
-#ifndef _HTABLE_HPP_
-#define _HTABLE_HPP_
+#pragma once
 
 #include <cstring>
 #include <cstdio>
@@ -24,7 +23,7 @@ public:
 		nresize = 0;	// don't count the initial resize
 	}
 
-	~Htable(void) {
+	~Htable() {
 		if (bins)
 			delete[] bins;
 	}
@@ -68,7 +67,7 @@ public:
 		dfpair(f, key, "%lu", nresize);
 	}
 
-	void clear(void) {
+	void clear() {
 		fill = ncollide = 0;
 		nresize = 0;
 		for (unsigned int i = 0; i < nbins; i++)
@@ -104,11 +103,9 @@ private:
 		nresize++;
 	}
 
-	friend bool htable_add_test(void);
+	friend bool htable_add_test();
 
 	unsigned long fill, ncollide;
 	unsigned int nresize, nbins;
 	Elm **bins;
 };
-
-#endif	// _HTABLE_HPP_

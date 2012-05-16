@@ -26,7 +26,7 @@ struct Player {
 		Offy = 2,
 	};
 
-	Player(void) { }
+	Player() { }
 
 	Player(unsigned int x, unsigned int y, unsigned int w, unsigned int h) :
 		body(x, y, w, h), jframes(0) { }
@@ -40,11 +40,11 @@ struct Player {
 	void act(const Lvl&, unsigned int);
 
 	// bottom left
-	geom2d::Pt loc(void) { return body.bbox.min; }
+	geom2d::Pt loc() { return body.bbox.min; }
 
 	// canjump returns true if the jump action can
 	// actually do anything.
-	bool canjump(void) const {
+	bool canjump() const {
 		return !body.fall || (jframes == 0 && body.dy <= 0) || jframes > 0;
 	}
 

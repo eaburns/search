@@ -1,5 +1,4 @@
-#ifndef _TILE_HPP_
-#define _TILE_HPP_
+#pragma once
 
 #include <cstdio>
 #include <cassert>
@@ -29,9 +28,9 @@ struct Tile {
 
 	static void draw(Image&, unsigned int, unsigned int, Color);
 
-	Tile(void) : c(0) { }
+	Tile() : c(0) { }
 
-	Tile(char _c, unsigned int f) : c(_c), flags(f) { }
+	Tile(char c, unsigned int f) : c(c), flags(f) { }
 
 	Isect isect(unsigned int x, unsigned int y, const Bbox & r) const {
 		if (!(flags & Collide))
@@ -39,12 +38,12 @@ struct Tile {
 		return r.isect(bbox(x, y));
 	}
 
-	double gravity(void) const {
+	double gravity() const {
 		static const double Grav = 0.5;
 		return flags & Water ? 0.5 * Grav : Grav;
 	}
 
-	double drag(void) const {
+	double drag() const {
 		return flags & Water ? 0.7 : 1.0;
 	}
 
@@ -54,7 +53,7 @@ struct Tile {
 
 struct Tiles {
 
-	Tiles(void);
+	Tiles();
 
 	bool istile(int t) const {
 		return t >= 0 && t < Ntiles && tiles[t].c != 0;
@@ -73,5 +72,3 @@ private:
 };
 
 extern const Tiles tiles;
-
-#endif	// _TILE_HPP_

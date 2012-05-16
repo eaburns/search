@@ -13,7 +13,7 @@ struct Scene {
 	void render() const;
 
 	// clear clears the components of the scene.
-	void clear(void) {
+	void clear() {
 		while (!comps.empty()) {
 			Renderable *r = comps.back();
 			comps.pop_back();

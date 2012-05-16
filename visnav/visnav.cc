@@ -3,13 +3,13 @@
 
 const VisNav::Oper VisNav::Nop;
 
-VisNav::VisNav(const VisGraph &_g, double _x0, double _y0, double _x1, double _y1) :
-		x0(_x0), y0(_y0), x1(_x1), y1(_y1), g(_g) {
-	start = g.add(geom2d::Pt(x0, y0));
-	finish = g.add(geom2d::Pt(x1, y1));
+VisNav::VisNav(const VisGraph &g, double x0, double y0, double x1, double y1) :
+		x0(x0), y0(y0), x1(x1), y1(y1), g(g) {
+	start = this->g.add(geom2d::Pt(x0, y0));
+	finish = this->g.add(geom2d::Pt(x1, y1));
 }
 
-VisNav::State VisNav::initialstate(void) {
+VisNav::State VisNav::initialstate() {
 	return State(start);
 }
 

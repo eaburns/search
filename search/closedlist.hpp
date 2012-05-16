@@ -1,5 +1,4 @@
-#ifndef _CLOSEDLIST_HPP_
-#define _CLOSEDLIST_HPP_
+#pragma once
 
 #include <cstdio>
 #include <typeinfo>
@@ -31,7 +30,7 @@ template<typename Ops, typename Node, typename D> struct ClosedList {
 
 	void init(D &d) { dom = &d; }
 
-	void clear(void) {
+	void clear() {
 		fill = ncollide = 0;
 		nresize = 0;
 		for (unsigned int i = 0; i < nbins; i++)
@@ -113,5 +112,3 @@ private:
 	unsigned int nresize, nbins;
 	Node** bins;
 };
-
-#endif	// _CLOSEDLIST_HPP_

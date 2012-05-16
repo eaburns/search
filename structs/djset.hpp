@@ -2,17 +2,17 @@
 struct Djset {
 
 	// Djset creates a new set.
-	Djset(void) : aux(NULL), rank(0) { parent = this; }
+	Djset() : aux(NULL), rank(0) { parent = this; }
 
 	// clear resets the set as though it has just been freshly
 	// created.
-	void clear(void) {
+	void clear() {
 		rank = 0;
 		parent = this;
 	}
 
 	// find returns the canonical representation of this set.
-	Djset *find(void) {
+	Djset *find() {
 		if (parent == this)
 			return parent;
 		parent = parent->find();

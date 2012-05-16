@@ -91,7 +91,7 @@ void Ui::chkerror(const char *str) {
 	}
 }
 
-bool Ui::handleevents(void) {
+bool Ui::handleevents() {
 	for ( ; ; ) {
 		SDL_Event e;
 		int p = SDL_PollEvent(&e);
@@ -123,7 +123,7 @@ bool Ui::handleevents(void) {
 	return false;
 }
 
-void Ui::frame(void) {
+void Ui::frame() {
 	scene.clear();
 	geom2d::Pt center(scene.width / 2, scene.height / 2);
 

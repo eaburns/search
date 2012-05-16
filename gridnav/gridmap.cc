@@ -17,7 +17,7 @@ GridMap::GridMap(std::string &fname) : map(NULL),  file(fname), nmvs(0), flags(N
 	fclose(f);
 }
 
-GridMap::~GridMap(void) {
+GridMap::~GridMap() {
 	if (map)
 		delete[] map;
 	if (flags)
@@ -207,8 +207,8 @@ void GridMap::setsize(unsigned int width, unsigned int height) {
 	}
 }
 
-GridMap::Move::Move(const GridMap &m, int _dx, int _dy, unsigned int _n, ...) :
-			dx(_dx), dy(_dy), delta(dx + m.w * dy), cost(1.0), n(_n + 1) {
+GridMap::Move::Move(const GridMap &m, int dx, int dy, unsigned int num, ...) :
+			dx(dx), dy(dy), delta(dx + m.w * dy), cost(1.0), n(num + 1) {
 	if (n > sizeof(chk) / sizeof(chk[0]))
 		fatal("Cannot create a move with %d checks\n", n);
 
@@ -216,7 +216,7 @@ GridMap::Move::Move(const GridMap &m, int _dx, int _dy, unsigned int _n, ...) :
 		cost = sqrt(2.0);
 
 	va_list ap;
-	va_start(ap, _n);
+	va_start(ap, num);
 	chk[0].dx = dx;
 	chk[0].dy = dy;
 	chk[0].delta = delta;
@@ -228,7 +228,7 @@ GridMap::Move::Move(const GridMap &m, int _dx, int _dy, unsigned int _n, ...) :
 	va_end(ap);
 }
 
-void GridMap::octile(void) {
+void GridMap::octile() {
 	// This operator ordering seems to give more accurate
 	// path-costs (compared to Nathan's scenario costs)
 	// when simply using doubles as the cost type.
@@ -242,7 +242,7 @@ void GridMap::octile(void) {
 	mvs[nmvs++] = Move(*this, 1,1, 2, 1,0, 0,1);
 }
 
-void GridMap::eightway(void) {
+void GridMap::eightway() {
 	mvs[nmvs++] = Move(*this, 1,1, 0);
 	mvs[nmvs++] = Move(*this, 1,-1, 0);
 	mvs[nmvs++] = Move(*this, -1,1, 0);
@@ -250,7 +250,7 @@ void GridMap::eightway(void) {
 	fourway();
 }
 
-void GridMap::fourway(void) {
+void GridMap::fourway() {
 	mvs[nmvs++] = Move(*this, 0,1, 0);
 	mvs[nmvs++] = Move(*this, 0,-1, 0);
 	mvs[nmvs++] = Move(*this, -1,0, 0);

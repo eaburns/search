@@ -99,8 +99,8 @@ struct DockRobot {
 	struct Oper {
 		enum OpType { None, Push, Pop, Load, Unload, Move };
 
-		Oper(OpType t = None, unsigned int _x = 0, unsigned int _y = 0) :
-			type(t), x(_x), y(_y) { }
+		Oper(OpType t = None, unsigned int x = 0, unsigned int y = 0) :
+			type(t), x(x), y(y) { }
 
 		bool operator==(const Oper &o) const {
 			return x == o.x && type == o.type && y == o.y;
@@ -140,7 +140,7 @@ struct DockRobot {
 
 	typedef State PackedState;
 
-	State initialstate(void);
+	State initialstate();
 
 	unsigned long hash(const PackedState &p) const {
 		unsigned int pos[nboxes+1];

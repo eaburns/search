@@ -20,7 +20,7 @@ int Tile::read(FILE *f)
 	return c;
 }
 
-Tiles::Tiles(void) {
+Tiles::Tiles() {
 	tiles[(int) ' '] = Tile(' ', 0);
 	tiles[(int) '#'] = Tile('#', Tile::Collide | Tile::Opaque);
 	tiles[(int) 'w'] = Tile('w', Tile::Water);

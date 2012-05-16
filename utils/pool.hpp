@@ -1,5 +1,4 @@
-#ifndef _POOL_HPP_
-#define _POOL_HPP_
+#pragma once
 
 #include <vector>
 #include <cstdlib>
@@ -11,12 +10,12 @@ public:
 		newblk();
 	}
 
-	~Pool(void) {
+	~Pool() {
 		for (unsigned int i = 0; i < blks.size(); i++)
 			delete[] blks[i];
 	}
 
-	Obj *get(void) {
+	Obj *get() {
 		if (freed) {
 			Ent *res = freed;
 			freed = freed->nxt;
@@ -35,7 +34,7 @@ public:
 		freed = e;
 	}
 
-	Obj *construct(void) {
+	Obj *construct() {
 		Obj *o = get();
 		return new (o) Obj();
 	}
@@ -47,7 +46,7 @@ public:
 
 private:
 
-	void newblk(void) {
+	void newblk() {
 		Ent *blk = new Ent[blksz];
 		blks.push_back(blk);
 		nxt = 0;
@@ -62,5 +61,3 @@ private:
 	Ent *freed;
 	std::vector<Ent*> blks;
 };
-
-#endif	// _POOL_HPP_

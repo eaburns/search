@@ -67,11 +67,11 @@ private:
 
 	// build bulids the visibility graph for the
 	// polygons.
-	void build(void);
+	void build();
 
 	// popverts populates the vertex vector and
 	// adds edges between adjacent vertices.
-	void populateverts(void);
+	void populateverts();
 
 	// addpoly adds the vertices specified by the index vector
 	//  for the given polygon to the graph.
@@ -79,7 +79,7 @@ private:
 
 	// visedges adds edges between each pair of
 	// vertices that are visible from eachother.
-	void visedges(void);
+	void visedges();
 
 	// consideredge considers adding an edge between
 	// the two vertices specified by their vertex IDs.

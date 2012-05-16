@@ -177,7 +177,7 @@ bool Stn::Undo::eq(const Undo &o) const {
 	return true;
 }
 
-void Stn::undo(void) {
+void Stn::undo() {
 	Undo &undo = undos.back();
 	for (unsigned int i = 0; i < undo.popout.size(); i++) {
 		Node &u = *undo.popout[i];

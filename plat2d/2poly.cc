@@ -1,7 +1,7 @@
 #include "plat2d.hpp"
 #include <cstdio>
 
-int main(void) {
+int main() {
 	Lvl lvl(stdin);
 	bool *blkd = new bool[lvl.width() * lvl.height()];
 	for (unsigned int i = 0; i < lvl.width() * lvl.height(); i++)

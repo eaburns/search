@@ -39,7 +39,7 @@ enum {
 
 // Result holds results from a run.
 struct Result {
-	Result(void) : time(-1), len(0), nruns(0), stdev(-1) { }
+	Result() : time(-1), len(0), nruns(0), stdev(-1) { }
 
 	double time;	// time or mean time
 	unsigned int len;	// solution length
@@ -234,8 +234,8 @@ static Result readresult(FILE *f) {
 	return res;
 }
 
-static void dfline(std::vector<std::string> &toks, void *_res) {
-	Result *res = static_cast<Result*>(_res);
+static void dfline(std::vector<std::string> &toks, void *r) {
+	Result *res = static_cast<Result*>(r);
 	if (toks[1] == "total wall time") {
 		res->time = strtod(toks[2].c_str(), NULL);
 	} else if (toks[1] == "final sol length") {

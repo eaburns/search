@@ -49,7 +49,7 @@ public:
 
 	Pancake(FILE*);
 
-	State initialstate(void);
+	State initialstate();
 
 	unsigned long hash(const PackedState &p) const {
 		return hashbytes((unsigned char *) p.cakes,
@@ -97,7 +97,7 @@ public:
 				state.h++;
 		}
 
-		~Edge(void) {
+		~Edge() {
 			state.h = oldh;
 			state.flip(revop);
 		}

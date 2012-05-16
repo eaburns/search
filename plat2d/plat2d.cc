@@ -42,16 +42,16 @@ Plat2d::Plat2d(FILE *in) : lvl(in) {
 	initvg();
 }
 
-Plat2d::~Plat2d(void) {
+Plat2d::~Plat2d() {
 	delete vg;
 }
 
-Plat2d::State Plat2d::initialstate(void) {
+Plat2d::State Plat2d::initialstate() {
 	return State(x0 * Tile::Width + Player::Offx, y0 * Tile::Height + Player::Offy,
 		0, Player::Width, Player::Height);
 }
 
-void Plat2d::initvg(void) {
+void Plat2d::initvg() {
 	double strt = walltime();
 	bool *blkd = new bool[lvl.width() * lvl.height()];
 	for (unsigned int i = 0; i < lvl.width() * lvl.height(); i++)
@@ -131,7 +131,6 @@ void Plat2d::drawmap(const char *file) const {
 		img.saveeps(file);
 		return;
 	}
-	i = togoal[i].prev;
 	geom2d::Pt p0 = graph.verts[i].pt;
 	while (i >= 0) {
 		const geom2d::Pt &p1 = graph.verts[i].pt;

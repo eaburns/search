@@ -2,7 +2,7 @@
 #include "visgraph.hpp"
 #include <cstdio>
 
-int main(void) {
+int main() {
 	PolyMap map(stdin);
 	VisGraph graph(map);
 	graph.output(stdout);

@@ -1,12 +1,11 @@
-#ifndef _INTPQ_HPP_
-#define _INTPQ_HPP_
+#pragma once
 
 #include <cassert>
 #include <cstdlib>
 
 template<class Elm> struct IntpqEntry {
 	Elm *nxt, *prev;
-	IntpqEntry(void) : prev(NULL) {}
+	IntpqEntry() : prev(NULL) {}
 };
 
 template <class Ops, class Elm> class Intpq {
@@ -19,7 +18,7 @@ public:
 		resize(sz);
 	}
 
-	~Intpq(void) {
+	~Intpq() {
 		if (bins)
 			delete[] bins;
 	}
@@ -39,7 +38,7 @@ public:
 		fill++;
 	}
 
-	Elm *pop(void) {
+	Elm *pop() {
 		if (fill == 0)
 			return NULL;
 
@@ -76,7 +75,7 @@ public:
 		fill--;
 	}
 
-	bool empty(void) {
+	bool empty() {
 		return fill == 0;
 	}
 
@@ -84,7 +83,7 @@ public:
 		return Ops::entry(e).prev != NULL;
 	}
 
-	void clear(void) {
+	void clear() {
 		fill = 0;
 		nresize = end = 0;
 		for (unsigned int i = 0; i < nbins; i++)
@@ -114,12 +113,10 @@ private:
 		nresize++;
 	}
 
-	friend bool intpq_push_test(void);
-	friend bool intpq_pop_test(void);
+	friend bool intpq_push_test();
+	friend bool intpq_pop_test();
 
 	unsigned long fill;
 	unsigned int nresize, end, nbins;
 	Elm **bins;
 };
-
-#endif	// _INTPQ_HPP_

@@ -126,12 +126,12 @@ unsigned int VisGraph::add(const geom2d::Pt &pt) {
 	return vid;
 }
 
-void VisGraph::build(void) {
+void VisGraph::build() {
 	populateverts();
 	visedges();
 }
 
-void VisGraph::populateverts(void) {
+void VisGraph::populateverts() {
 	std::vector<unsigned int> vs;
 	for (unsigned int i = 0; i < map.polys.size(); i++) {
 		vs.clear();
@@ -172,7 +172,7 @@ void VisGraph::addpoly(const geom2d::Poly &p, const std::vector<unsigned int> &v
 	}
 }
 
-void VisGraph::visedges(void) {
+void VisGraph::visedges() {
 	for (unsigned int i = 0; i < verts.size() - 1; i++) {
 	for (unsigned int j = i + 1; j < verts.size(); j++)
 		consideredge(i, j);

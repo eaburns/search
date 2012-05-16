@@ -23,7 +23,7 @@ const Color somecolors[] = {
 
 const unsigned int Nsomecolors = sizeof(somecolors) / sizeof(somecolors[0]);
 
-Image::~Image(void) {
+Image::~Image() {
 	while (!comps.empty()) {
 		delete comps.back();
 		comps.pop_back();
@@ -114,7 +114,7 @@ void Image::write_epsdata(FILE *out) const {
 	fputs("grestore\n", out);
 }
 
-std::string Image::encode_epsdata(void) const {
+std::string Image::encode_epsdata() const {
 	std::string cs;
 	for (unsigned int i = 0; i < width * height; i++) {
 		cs.push_back(pixels[i].getred255());

@@ -9,7 +9,7 @@
 bool Tiles::hashvecinit = false;
 unsigned long Tiles::hashvec[Ntiles][Ntiles];
 
-Tiles::Tiles(void) {
+Tiles::Tiles() {
 	initops();
 	if (!hashvecinit)
 		inithashvec();
@@ -56,7 +56,7 @@ void Tiles::readruml(FILE *in) {
 	}
 }
 
-void Tiles::initops(void) {
+void Tiles::initops() {
 	for (unsigned int i = 0; i < Ntiles; i++) {
 		ops[i].n = 0;
 		if (i >= Width)
@@ -70,7 +70,7 @@ void Tiles::initops(void) {
 	}
 }
 
-void Tiles::inithashvec(void) {
+void Tiles::inithashvec() {
 	hashvecinit = true;
 	Rand r(time(NULL));
 	for (int i = 0; i < Ntiles; i++) {

@@ -5,8 +5,8 @@
 #include <limits>
 
 struct Comp {
-	Comp(unsigned int _w, unsigned int _h) :
-		w(_w), h(_h), n(0), blkd(w * h, false) { }
+	Comp(unsigned int w, unsigned int h) :
+		w(w), h(h), n(0), blkd(w * h, false) { }
 
 	void add(unsigned int x, unsigned int y) {
 		if (n == 0 || x < minx) {
@@ -19,7 +19,7 @@ struct Comp {
 		blkd[x*h + y] = true;
 	}
 
-	geom2d::Poly poly(void) {
+	geom2d::Poly poly() {
 		std::vector<geom2d::Pt> pts;
 		Pose cur(minx, miny, Pose::Up);
 		pts.push_back(geom2d::Pt(minx, miny));
@@ -60,8 +60,8 @@ struct Comp {
 	struct Pose {
 		enum Dir { Up, Down, Left, Right };
 
-		Pose(unsigned int _x, unsigned int _y, Dir _dir) :
-			x(_x), y(_y), dir(_dir) { }
+		Pose(unsigned int x, unsigned int y, Dir dir) :
+			x(x), y(y), dir(dir) { }
 
 		unsigned int x, y;
 		Dir dir;
@@ -104,7 +104,7 @@ struct Comp {
 	// of the component instead of the outside.  It is sufficient
 	// to move the starting point (minx, miny) to a block on the
 	// inside, right most edge of the polygon.
-	void invert(void) {
+	void invert() {
 		for (unsigned int y = miny; y < h; y++) {
 			unsigned int startx, endx, x;
 			for (startx = minx; startx < w && !blocked(startx, y); startx++)
