@@ -207,8 +207,8 @@ void GridMap::setsize(unsigned int width, unsigned int height) {
 	}
 }
 
-GridMap::Move::Move(const GridMap &m, int dx, int dy, unsigned int num, ...) :
-			dx(dx), dy(dy), delta(dx + m.w * dy), cost(1.0), n(num + 1) {
+GridMap::Move::Move(const GridMap &m, int _dx, int _dy, unsigned int _n, ...) :
+			dx(_dx), dy(_dy), delta(dx + m.w * dy), cost(1.0), n(_n + 1) {
 	if (n > sizeof(chk) / sizeof(chk[0]))
 		fatal("Cannot create a move with %d checks\n", n);
 
@@ -216,7 +216,7 @@ GridMap::Move::Move(const GridMap &m, int dx, int dy, unsigned int num, ...) :
 		cost = sqrt(2.0);
 
 	va_list ap;
-	va_start(ap, num);
+	va_start(ap, _n);
 	chk[0].dx = dx;
 	chk[0].dy = dy;
 	chk[0].delta = delta;

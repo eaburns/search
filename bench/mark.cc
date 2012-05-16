@@ -234,8 +234,8 @@ static Result readresult(FILE *f) {
 	return res;
 }
 
-static void dfline(std::vector<std::string> &toks, void *r) {
-	Result *res = static_cast<Result*>(r);
+static void dfline(std::vector<std::string> &toks, void *_res) {
+	Result *res = static_cast<Result*>(_res);
 	if (toks[1] == "total wall time") {
 		res->time = strtod(toks[2].c_str(), NULL);
 	} else if (toks[1] == "final sol length") {

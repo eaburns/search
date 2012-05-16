@@ -113,7 +113,7 @@ private:
 	struct Kidinfo {
 		Kidinfo() : f(-1), h(-1), d(-1) { }
 
-		Kidinfo(Cost g, Cost h, Cost d) : f(g + h), h(h), d(d) { }
+		Kidinfo(Cost g, Cost _h, Cost _d) : f(g + _h), h(_h), d(_d) { }
 
 		Cost f, h, d;
 	};
