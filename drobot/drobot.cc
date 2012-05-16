@@ -153,25 +153,24 @@ reloop:
 }
 
 DockRobot::State DockRobot::initialstate() {
-	State st;
-	st.locs = initlocs;
-	st.rbox = -1;
-	st.rloc = 0;
-	st.h = st.d = Cost(-1);
-	st.boxlocs.resize(nboxes);
+	return State(*this, initlocs, -1, 0);
+}
 
-	st.nleft = 0;
-	for (unsigned int l = 0; l < st.locs.size(); l++) {
-	for (unsigned int p = 0; p < st.locs[l].piles.size(); p++) {
-	for (unsigned int s = 0; s < st.locs[l].piles[p].stack.size(); s++) {
-		unsigned int box = st.locs[l].piles[p].stack[s];
-		if ((unsigned int) goal[box] != l)
-			st.nleft++;
-		st.boxlocs[box] = l;
+DockRobot::State::State(const DockRobot &dr, const std::vector<Loc> &ls,
+	int rb, unsigned int rl) : locs(ls), rbox(rb), rloc(rl), h(-1), d(-1), nleft(0) {
+
+	boxlocs.resize(dr.nboxes);
+
+	for (unsigned int l = 0; l < locs.size(); l++) {
+	for (unsigned int p = 0; p < locs[l].piles.size(); p++) {
+	for (unsigned int s = 0; s < locs[l].piles[p].stack.size(); s++) {
+		unsigned int box = locs[l].piles[p].stack[s];
+		if ((unsigned int) dr.goal[box] != l)
+			nleft++;
+		boxlocs[box] = l;
 	}
 	}
 	}
-	return st;
 }
 
 void DockRobot::Edge::apply(State &s, const Oper &o) {
@@ -302,8 +301,22 @@ DockRobot::Operators::Operators(const DockRobot &d, const State &s) {
 	}
 }
 
+DockRobot::Cost DockRobot::pathcost(const std::vector<State> &path, const std::vector<Oper> &ops) {
+	State state = initialstate();
+	Cost cost(0);
+	for (int i = ops.size() - 1; i >= 0; i--) {
+		State copy(state);
+		Edge e(*this, copy, ops[i]);
+		assert (e.state == path[i]);
+		state = e.state;
+		cost += e.cost;
+	}
+	assert (isgoal(state));
+	return cost;
+}
+
 // pos must be at least nboxes in size.
-void DockRobot::boxlocs(const State &s, unsigned int pos[]) const {
+void DockRobot::boxpos(const State &s, unsigned int pos[]) const {
 	for (unsigned int i = 0; i < nboxes; i++)
 		pos[i] = 0;
 
@@ -324,20 +337,6 @@ void DockRobot::boxlocs(const State &s, unsigned int pos[]) const {
 		}
 		cur += maxpiles[i]*nboxes;
 	}
-}
-
-DockRobot::Cost DockRobot::pathcost(const std::vector<State> &path, const std::vector<Oper> &ops) {
-	State state = initialstate();
-	Cost cost(0);
-	for (int i = ops.size() - 1; i >= 0; i--) {
-		State copy(state);
-		Edge e(*this, copy, ops[i]);
-		assert (e.state == path[i]);
-		state = e.state;
-		cost += e.cost;
-	}
-	assert (isgoal(state));
-	return cost;
 }
 
 void DockRobot::initheuristic() {

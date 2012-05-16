@@ -118,13 +118,21 @@ struct DockRobot {
 	DockRobot(FILE*);
 
 	struct State {
+
+		State() { }
+
+		State(const DockRobot&, const std::vector<Loc>&, int, unsigned int);
+
+		// locs is the state of each location.
 		std::vector<Loc> locs;
-		std::vector<unsigned int> boxlocs;	// location of each box
-		int rbox;	// the robot's contents (-1 is empty)
-		unsigned int rloc;	// the robot's location
-
+		// boxlocs is the location of each box.
+		std::vector<unsigned int> boxlocs;
+		// rbox is the robot's contents (-1 is empty).
+		int rbox;
+		// rloc is the robot's location.
+		unsigned int rloc;
+		// h and d are the heuristic and distance estimates.
 		Cost h, d;
-
 		// nleft is the number of packages out of their goal location.
 		unsigned int nleft;
 
@@ -145,7 +153,7 @@ struct DockRobot {
 
 	unsigned long hash(const PackedState &p) const {
 		unsigned int pos[nboxes+1];
-		boxlocs(p, pos);
+		boxpos(p, pos);
 		pos[nboxes] = p.rloc;
 
 		return hashbytes(reinterpret_cast<unsigned char*>(&pos[0]),
@@ -233,12 +241,19 @@ struct DockRobot {
 	Cost pathcost(const std::vector<State>&, const std::vector<Oper>&);
 
 private:
+	friend struct State;
 	friend bool compute_moves_test();
 	friend bool compute_loads_test();
 
-	void computeops(State&) const;
-	void boxlocs(const State&, unsigned int[]) const;
+	// boxlocs computes the position for each box where
+	// position 0 is on the robot, and each subsequent position
+	// is based on the available positions at each location.
+	void boxpos(const State&, unsigned int[]) const;
+
+	// initheuristic initializes the heuristic values by computing
+	// the shortest path between all locations.
 	void initheuristic();
+
 	std::pair<float, float> hd(const State&) const;
 
 	// paths holds shortest path information between
