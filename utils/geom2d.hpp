@@ -75,7 +75,7 @@ namespace geom2d {
 	
 		Pt(const Pt &o) : x(o.x), y(o.y) { }
 	
-		Pt(double _x, double _y) : x(_x), y(_y) { }
+		Pt(double i, double j) : x(i), y(j) { }
 	
 		bool isinf() { return std::isinf(x) || std::isinf(y); }
 	
@@ -249,8 +249,8 @@ namespace geom2d {
 	struct LineSg : public Line {
 		LineSg() { }
 	
-		LineSg(const Pt &_p0, const Pt &_p1) :
-			Line(_p0, _p1), p0(_p0), p1(_p1), bbox(p0.x, p0.y, p1.x, p1.y)
+		LineSg(const Pt &pt0, const Pt &pt1) :
+			Line(pt0, pt1), p0(pt0), p1(pt1), bbox(p0.x, p0.y, p1.x, p1.y)
 			{ }
 	
 		// length returns the length of the line segment.
@@ -316,7 +316,7 @@ namespace geom2d {
 	struct QuadEq {
 		QuadEq() { }
 	
-		QuadEq(double _a, double _b, double _c) : a(_a), b(_b), c(_c) { }
+		QuadEq(double avl, double bvl, double cvl) : a(avl), b(bvl), c(cvl) { }
 	
 		double discriminant() const { return b*b - 4*a*c; }
 	
@@ -342,8 +342,8 @@ namespace geom2d {
 		// Arc constructs a new arc with the given center
 		// radius, initial angle and final angle.  Angles are
 		// given in radians.
-		Arc(const Pt &_c, double _r, double _t0, double _t1) :
-			c(_c), r(_r), t0(_t0), t1(_t1),
+		Arc(const Pt &cvl, double rvl, double t0vl, double t1vl) :
+			c(cvl), r(rvl), t0(t0vl), t1(t1vl),
 			bbox(c.x - r, c.y - r, c.x + r, c.y + r)
 			{ }
 	

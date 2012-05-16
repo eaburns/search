@@ -99,8 +99,8 @@ struct DockRobot {
 	struct Oper {
 		enum OpType { None, Push, Pop, Load, Unload, Move };
 
-		Oper(OpType t = None, unsigned int _x = 0, unsigned int _y = 0) :
-			type(t), x(_x), y(_y) { }
+		Oper(OpType t = None, unsigned int x0 = 0, unsigned int y0 = 0) :
+			type(t), x(x0), y(y0) { }
 
 		bool operator==(const Oper &o) const {
 			return x == o.x && type == o.type && y == o.y;
