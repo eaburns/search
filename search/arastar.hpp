@@ -400,9 +400,6 @@ private:
 		return goal;
 	}
 
-	// TODO: don't compute walltime on each call to
-	// mon.  Try to learn a good frequency at which to
-	// re-check the time.
 	void mon() {
 		double wallt = walltime();
 		double t = wallt - this->res.wallstrt;
