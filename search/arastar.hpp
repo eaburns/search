@@ -53,7 +53,7 @@ template <class D> struct Arastar : public SearchAlgorithm<D> {
 
 	Arastar(int argc, const char *argv[]) :
 			SearchAlgorithm<D>(argc, argv), closed(30000001),
-			incons(30000001) {
+			incons(30000001), cost(-1) {
 
 		wt0 = dwt = -1;
 		for (int i = 0; i < argc; i++) {
@@ -126,6 +126,7 @@ template <class D> struct Arastar : public SearchAlgorithm<D> {
 		incons.clear();
 		delete nodes;
 		nodes = new Pool<Node>();
+		cost = Cost(-1);
 	}
 
 	virtual void output(FILE *out) {
@@ -147,6 +148,7 @@ private:
 
 			if (d.isgoal(state)) {
 				cost = (double) n->g;
+				fprintf(stderr, "got a goal\n");
 				this->res.goal(d, n);
 				goal = true;
 			}
