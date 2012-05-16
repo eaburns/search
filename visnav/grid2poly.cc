@@ -5,8 +5,8 @@
 #include <limits>
 
 struct Comp {
-	Comp(unsigned int _w, unsigned int _h) :
-		w(_w), h(_h), n(0), blkd(w * h, false) { }
+	Comp(unsigned int width, unsigned int height) :
+		w(width), h(height), n(0), blkd(w * h, false) { }
 
 	void add(unsigned int x, unsigned int y) {
 		if (n == 0 || x < minx) {
@@ -60,8 +60,8 @@ struct Comp {
 	struct Pose {
 		enum Dir { Up, Down, Left, Right };
 
-		Pose(unsigned int _x, unsigned int _y, Dir _dir) :
-			x(_x), y(_y), dir(_dir) { }
+		Pose(unsigned int i, unsigned int j, Dir d) :
+			x(i), y(j), dir(d) { }
 
 		unsigned int x, y;
 		Dir dir;

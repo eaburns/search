@@ -1,7 +1,3 @@
-• remove _ arguments as they are
-	apparently reserved for the
-	implementation…
-
 • utils
 
 	- change fatal to be an exception

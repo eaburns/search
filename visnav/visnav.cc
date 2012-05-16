@@ -3,8 +3,8 @@
 
 const VisNav::Oper VisNav::Nop;
 
-VisNav::VisNav(const VisGraph &_g, double _x0, double _y0, double _x1, double _y1) :
-		x0(_x0), y0(_y0), x1(_x1), y1(_y1), g(_g) {
+VisNav::VisNav(const VisGraph &gr, double x0vl, double y0vl, double x1vl, double y1vl) :
+		x0(x0vl), y0(y0vl), x1(x1vl), y1(y1vl), g(gr) {
 	start = g.add(geom2d::Pt(x0, y0));
 	finish = g.add(geom2d::Pt(x1, y1));
 }

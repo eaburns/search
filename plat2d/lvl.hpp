@@ -37,8 +37,8 @@ struct Lvl {
 
 	// Blkinfo contains information on a specific level block.
 	struct Blkinfo {
-		Blkinfo(const Blk &b, unsigned int _x, unsigned int _y) :
-			blk(b), tile(tiles[b.tile]), x(_x), y(_y) { }
+		Blkinfo(const Blk &b, unsigned int i, unsigned int j) :
+			blk(b), tile(tiles[b.tile]), x(i), y(j) { }
 
 		const Blk &blk;
 		const Tile &tile;
