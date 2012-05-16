@@ -29,8 +29,7 @@ template <class D> struct Bugsy : public SearchAlgorithm<D> {
 	};
 
 	Bugsy(int argc, const char *argv[]) :
-			SearchAlgorithm<D>(argc, argv),
-			navg(0), herror(0), derror(0),
+			SearchAlgorithm<D>(argc, argv), navg(0), herror(0), derror(0),
 			timeper(0.0), nresort(0), batchsize(20), nexp(0), state(WaitTick),
 			closed(30000001) {
 		wf = wt = -1;

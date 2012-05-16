@@ -119,7 +119,7 @@ template <class D> struct Arastar : public SearchAlgorithm<D> {
 		} while(!this->limit() && !open.empty());
 
 		this->finish();
-		dfpair(stdout, "optimality proven", "%s", optimal ? "yes" : "no");
+		dfpair(stdout, "converged", "%s", optimal ? "yes" : "no");
 	}
 
 	virtual void reset() {
