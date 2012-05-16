@@ -77,6 +77,7 @@ template <class D> struct Arastar : public SearchAlgorithm<D> {
 	}
 
 	void search(D &d, typename D::State &s0) {
+		bool optimal = false;
 		this->start();
 		closed.init(d);
 		incons.init(d);
@@ -103,8 +104,10 @@ template <class D> struct Arastar : public SearchAlgorithm<D> {
 					walltime() - this->res.wallstrt);
 			}
 
-			if (wt <= 1.0)
+			if (wt <= 1.0) {
+				optimal = true;
 				break;
+			}
 
 			wt = wt - dwt > 1.0 ? wt - dwt : 1.0;
 			if (wt < 1.0 + sqrt(std::numeric_limits<double>::epsilon()))
@@ -116,6 +119,7 @@ template <class D> struct Arastar : public SearchAlgorithm<D> {
 		} while(!this->limit() && !open.empty());
 
 		this->finish();
+		dfpair(stdout, "optimality proven", "%s", optimal ? "yes" : "no");
 	}
 
 	virtual void reset() {
