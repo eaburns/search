@@ -119,6 +119,7 @@ struct DockRobot {
 
 	struct State {
 		std::vector<Loc> locs;
+		std::vector<unsigned int> boxlocs;	// location of each box
 		int rbox;	// the robot's contents (-1 is empty)
 		unsigned int rloc;	// the robot's location
 
@@ -151,11 +152,21 @@ struct DockRobot {
 			sizeof(pos[0])*(nboxes+1));
 	}
 
-	Cost h(const State &s) const {
+	Cost h(State &s) const {
+		if (s.h < Cost(0)) {
+			std::pair<float,float> p = hd(s);
+			s.h = p.first;
+			s.d = p.second;
+		}
 		return s.h;
 	}
 
-	Cost d(const State &s) const {
+	Cost d(State &s) const {
+		if (s.d < Cost(0)) {
+			std::pair<float,float> p = hd(s);
+			s.h = p.first;
+			s.d = p.second;
+		}
 		return s.d;
 	}
 
@@ -184,12 +195,19 @@ struct DockRobot {
 		Oper revop;
 		State &state;
 
+		Cost oldh, oldd;
+
 		Edge(const DockRobot &d, State &s, const Oper &o) : state(s), dom(d) {
 			apply(state, o);
+			oldh = state.h;
+			oldd = state.d;
+			state.h = state.d = Cost(-1);
 		}
 
 		~Edge() {
 			apply(state, revop);
+			state.h = oldh;
+			state.d = oldd;
 		}
 
 	private:
@@ -220,6 +238,12 @@ private:
 
 	void computeops(State&) const;
 	void boxlocs(const State&, unsigned int[]) const;
+	void initheuristic();
+	std::pair<float, float> hd(const State&) const;
+
+	// paths holds shortest path information between
+	// locations used for computing the heuristic.
+	std::vector< std::pair<float, float> > shortest;
 
 	// The number of various things in the dockyard.
 	unsigned int nlocs, nboxes;

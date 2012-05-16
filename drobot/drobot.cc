@@ -1,5 +1,6 @@
 #include "drobot.hpp"
 #include <limits>
+#include <cmath>
 
 unsigned int DockRobot::Loc::pop(unsigned int p) {
 	assert (p < piles.size());
@@ -147,6 +148,8 @@ DockRobot::DockRobot(FILE *in) {
 reloop:
 		line = readline(in);
 	}
+
+	initheuristic();
 }
 
 DockRobot::State DockRobot::initialstate() {
@@ -154,14 +157,17 @@ DockRobot::State DockRobot::initialstate() {
 	st.locs = initlocs;
 	st.rbox = -1;
 	st.rloc = 0;
-	st.h = st.d = 0;
+	st.h = st.d = Cost(-1);
+	st.boxlocs.resize(nboxes);
 
 	st.nleft = 0;
 	for (unsigned int l = 0; l < st.locs.size(); l++) {
 	for (unsigned int p = 0; p < st.locs[l].piles.size(); p++) {
 	for (unsigned int s = 0; s < st.locs[l].piles[p].stack.size(); s++) {
-		if ((unsigned int) goal[st.locs[l].piles[p].stack[s]] != l)
+		unsigned int box = st.locs[l].piles[p].stack[s];
+		if ((unsigned int) goal[box] != l)
 			st.nleft++;
+		st.boxlocs[box] = l;
 	}
 	}
 	}
@@ -169,8 +175,6 @@ DockRobot::State DockRobot::initialstate() {
 }
 
 void DockRobot::Edge::apply(State &s, const Oper &o) {
-	s.h = s.d = 0;
-
 	switch (o.type) {
 	case Oper::Push: {
 		unsigned int c = o.x;
@@ -246,6 +250,7 @@ void DockRobot::Edge::apply(State &s, const Oper &o) {
 				s.nleft++;
 			else if ((unsigned int) dom.goal[s.rbox] == dst)
 				s.nleft--;
+			s.boxlocs[s.rbox] = dst;
 		}
 
 		s.rloc = dst;
@@ -333,4 +338,47 @@ DockRobot::Cost DockRobot::pathcost(const std::vector<State> &path, const std::v
 	}
 	assert (isgoal(state));
 	return cost;
+}
+
+void DockRobot::initheuristic() {
+	shortest.resize(nlocs*nlocs);
+	for (unsigned int i = 0; i < nlocs; i++) {
+	for (unsigned int j = 0; j < nlocs; j++) {
+		float cost = adj[i][j];
+		if (i == j)
+			shortest[i*nlocs + j] = std::pair<float, float>(0, 0);
+		else if (isinf(cost))
+			shortest[i*nlocs + j] = std::pair<float, float>(cost, cost);
+		else
+			shortest[i*nlocs + j] = std::pair<float, float>(cost, 1);
+	}
+	}
+
+	for (unsigned int k = 0; k < nlocs; k++) {
+	for (unsigned int i = 0; i < nlocs; i++) {
+	for (unsigned int j = 0; j < nlocs; j++) {
+		float c = shortest[i*nlocs + k].first + shortest[k*nlocs + j].first;
+		if (c < shortest[i*nlocs + j].first)
+			shortest[i*nlocs + j].first = c;
+
+		float d = shortest[i*nlocs + k].second + shortest[k*nlocs + j].second;
+		if (c < shortest[i*nlocs + j].second)
+			shortest[i*nlocs + j].second = d;
+	}
+	}
+	}
+}
+
+std::pair<float, float> DockRobot::hd(const State &s) const {
+	float h = 0, d = 0;
+
+	for (unsigned int b = 0; b < goal.size(); b++) {
+		if (goal[b] < 0)
+			continue;
+		const std::pair<float,float> &p = shortest[s.boxlocs[b]*nlocs + goal[b]];
+		h += p.first;
+		d += p.second;
+	}
+
+	return std::pair<float,float>(h, d);
 }
