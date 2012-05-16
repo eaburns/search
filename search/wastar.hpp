@@ -36,7 +36,7 @@ template <class D> struct Wastar : public SearchAlgorithm<D> {
 		nodes = new Pool<Node>();
 	}
 
-	~Wastar(void) {
+	~Wastar() {
 		delete nodes;
 	}
 
@@ -62,7 +62,7 @@ template <class D> struct Wastar : public SearchAlgorithm<D> {
 		this->finish();
 	}
 
-	virtual void reset(void) {
+	virtual void reset() {
 		SearchAlgorithm<D>::reset();
 		open.clear();
 		closed.clear();

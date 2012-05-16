@@ -59,7 +59,7 @@ bool RdbAttrs::rm(const std::string &key) {
 	return true;	
 }
 
-std::string RdbAttrs::string(void) const {
+std::string RdbAttrs::string() const {
 	std::string r;
 
 	for (std::deque<std::string>::const_iterator it = keys.begin(); it != keys.end(); it++) {

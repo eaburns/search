@@ -85,14 +85,14 @@ char *gettoken(char*, unsigned int lineno = 0);
 std::vector<std::string> tokens(const std::string&);
 
 // walltime returns the current wall-cloce time in seconds
-double walltime(void);
+double walltime();
 
 // cputime returns the current CPU time in seconds.
-double cputime(void);
+double cputime();
 
 // virtmem returns the maximum virtual memory usage
 // of the current program in Kilobytes.
-unsigned long virtmem(void);
+unsigned long virtmem();
 
 // dfpair writes a datafile-formatted key/value pair to the
 // given output file.
@@ -139,9 +139,9 @@ void dfread(FILE*, Dfhandler, void *priv = NULL, FILE *echo = NULL);
 // via the testing framework.
 struct Test {
 	const char *name;
-	bool (*run)(void);
+	bool (*run)();
 
-	Test(const char *n, bool (*r)(void)) : name(n), run(r) {}
+	Test(const char *n, bool (*r)()) : name(n), run(r) {}
 };
 
 // A benchmark holds information on a benchmark that
@@ -192,7 +192,7 @@ public:
 	Rand(unsigned long);
 
 	// bits returns the next 64 pseudo-random bits.
-	unsigned long bits(void);
+	unsigned long bits();
 
 	// integer returns a pseudo-random integer between min
 	// and max, inclusive.
@@ -200,9 +200,9 @@ public:
 
 	// real returns the a pseudo-random double between
 	// 0 and 1 (not sure if it's inclusive).
-	double real(void);
+	double real();
 
-	unsigned long seed(void) const { return theseed; }
+	unsigned long seed() const { return theseed; }
 private:
 	unsigned long theseed;
 	uint64_t v;
@@ -240,7 +240,7 @@ struct Ranker {
 	// constructor cannot be unranked!  This is one-way.
 	Ranker(unsigned int sz, unsigned int n);
 
-	~Ranker(void);
+	~Ranker();
 
 	// rank returns the permutation rank for the given
 	// permutation. The array must have ≤ sz elements.

@@ -16,7 +16,7 @@ public:
 
 	// pop pops the front element from the heap and
 	// returns it in O(lg n) time.
-	boost::optional<Elm> pop(void) {
+	boost::optional<Elm> pop() {
 		if (heap.size() == 0)
 			return boost::optional<Elm>();
 
@@ -36,7 +36,7 @@ public:
 	// front returns the front element of the heap if it is
 	// not empty and an empty option if the heap is empty.
 	// O(1) time.
-	boost::optional<Elm> front(void) {
+	boost::optional<Elm> front() {
 		if (heap.size() == 0)
 			return boost::optional<Elm>();
 		return boost::optional<Elm>(heap[0]);
@@ -65,14 +65,14 @@ public:
 
 	// empty returns true if the heap is empty and
 	// false otherwise.
-	bool empty(void) { return heap.empty(); }
+	bool empty() { return heap.empty(); }
 
 	// clear clears all of the elements from the heap
 	// leaving it empty.
-	void clear(void) { heap.clear(); }
+	void clear() { heap.clear(); }
 
  	// size returns the number of entries in the heap.
-	long size(void) { return heap.size(); }
+	long size() { return heap.size(); }
 
 	// at returns the element of the heap at the given
 	// index.
@@ -85,10 +85,10 @@ public:
 	// heap.  If you mess with this then you must
 	// reinit the heap afterwards to ensure that the
 	// heap property still holds.
-	std::vector<Elm> &data(void) { return heap; }
+	std::vector<Elm> &data() { return heap; }
 
 	// reinit reinitialize the heap property in O(n) time.
-	void reinit(void) {
+	void reinit() {
 		if (heap.size() <= 0)
 			return;
 
@@ -107,8 +107,8 @@ public:
 	}
 
 private:
-	friend bool binheap_push_test(void);
-	friend bool binheap_pop_test(void);
+	friend bool binheap_push_test();
+	friend bool binheap_pop_test();
 
 	long parent(long i) { return (i - 1) / 2; }
 

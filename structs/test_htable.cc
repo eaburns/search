@@ -19,7 +19,7 @@ struct Ops {
 
 enum { N = 1000 };
 
-bool htable_add_test(void) {
+bool htable_add_test() {
 	bool res = true;
 	Htable<Ops, Key, Ent> ht;
 	Ent ents[N];
@@ -41,7 +41,7 @@ bool htable_add_test(void) {
 	return res;
 }
 
-bool htable_find_test(void) {
+bool htable_find_test() {
 	bool res = true;
 	Htable<Ops, Key, Ent> ht;
 	Ent ents[N];
@@ -65,7 +65,7 @@ bool htable_find_test(void) {
 	return res;
 }
 
-bool htable_find_rand_test(void) {
+bool htable_find_rand_test() {
 	bool res = true;
 	Htable<Ops, Key, Ent> ht;
 	Rand r(time(NULL));

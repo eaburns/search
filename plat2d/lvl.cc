@@ -15,7 +15,7 @@ Lvl::Lvl(FILE *in) {
 	read(in);
 }
 
-Lvl::~Lvl(void) {
+Lvl::~Lvl() {
 	delete[] blks;
 }
 

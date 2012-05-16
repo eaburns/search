@@ -39,7 +39,7 @@ enum {
 
 // Result holds results from a run.
 struct Result {
-	Result(void) : time(-1), len(0), nruns(0), stdev(-1) { }
+	Result() : time(-1), len(0), nruns(0), stdev(-1) { }
 
 	double time;	// time or mean time
 	unsigned int len;	// solution length

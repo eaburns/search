@@ -28,7 +28,7 @@ struct Tile {
 
 	static void draw(Image&, unsigned int, unsigned int, Color);
 
-	Tile(void) : c(0) { }
+	Tile() : c(0) { }
 
 	Tile(char c, unsigned int f) : c(c), flags(f) { }
 
@@ -38,12 +38,12 @@ struct Tile {
 		return r.isect(bbox(x, y));
 	}
 
-	double gravity(void) const {
+	double gravity() const {
 		static const double Grav = 0.5;
 		return flags & Water ? 0.5 * Grav : Grav;
 	}
 
-	double drag(void) const {
+	double drag() const {
 		return flags & Water ? 0.7 : 1.0;
 	}
 
@@ -53,7 +53,7 @@ struct Tile {
 
 struct Tiles {
 
-	Tiles(void);
+	Tiles();
 
 	bool istile(int t) const {
 		return t >= 0 && t < Ntiles && tiles[t].c != 0;

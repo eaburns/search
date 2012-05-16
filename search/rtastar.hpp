@@ -31,7 +31,7 @@ template <class D> struct Rtastar : public SearchAlgorithm<D> {
 		nodes = new Pool<Node>();
 	}
 
-	~Rtastar(void) {
+	~Rtastar() {
 		delete nodes;
 	}
 
@@ -80,7 +80,7 @@ template <class D> struct Rtastar : public SearchAlgorithm<D> {
 		std::reverse(this->res.path.begin(), this->res.path.end());
 	}
 
-	virtual void reset(void) {
+	virtual void reset() {
 		seen.clear();
 		delete nodes;
 		nodes = new Pool<Node>();

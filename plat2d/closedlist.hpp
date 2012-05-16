@@ -8,11 +8,11 @@ template<class Ops, class Node> struct ClosedList<Ops, Node, Plat2d> {
 
 	ClosedList(unsigned long) { }
 
-	~ClosedList(void) { }
+	~ClosedList() { }
 
 	void init(Plat2d&) { }
 
-	void clear(void) { }
+	void clear() { }
 
 	void add(Node*) { }
 

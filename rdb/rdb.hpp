@@ -17,17 +17,17 @@ struct RdbAttrs {
 
 	// pop_front removes the first attribute that was added to the
 	// list.
-	void pop_front(void) {
+	void pop_front() {
 		const std::string &k = keys.front();
 		pairs.erase(pairs.find(k));
 		keys.pop_front();
 	}
 
 	// front returns the key for the next attribute pair.
-	const std::string &front(void) { return keys.front(); }
+	const std::string &front() { return keys.front(); }
 
 	// size returns the number of key=value pairs.
-	unsigned int size(void) const { return keys.size(); }
+	unsigned int size() const { return keys.size(); }
 
 	// rm removes the pair for the given key.
 	bool rm(const std::string &key);
@@ -44,7 +44,7 @@ struct RdbAttrs {
 
 	// string returns the string representation of this attribute
 	// list.
-	std::string string(void) const;
+	std::string string() const;
 
 private:
 	std::map<std::string, std::string> pairs;

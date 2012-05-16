@@ -196,7 +196,7 @@ namespace geom2d {
 		return M_PI - fmod(atan2(b.x*a.y - a.x*b.y, b.x*a.x + b.y*a.y), 2 * M_PI);
 	}
 	
-	void Poly::removecolinear(void) {
+	void Poly::removecolinear() {
 		for (unsigned int i = 0; i < verts.size(); ) {
 			if (fabs(interangle(i) - M_PI) < Epsilon)
 				verts.erase(verts.begin() + i);
@@ -205,7 +205,7 @@ namespace geom2d {
 		}
 	}
 	
-	void Poly::initsides(void) {
+	void Poly::initsides() {
 		sides.clear();
 		for (unsigned int i = 1; i < verts.size(); i++)
 			sides.push_back(LineSg(verts[i-1], verts[i]));

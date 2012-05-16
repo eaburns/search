@@ -9,8 +9,8 @@
 
 #include "closedlist.hpp"
 
-double walltime(void);
-double cputime(void);
+double walltime();
+double cputime();
 void dfpair(FILE *f, const char *key, const char *fmt, ...);
 
 // A SearchStats structure contains statistical information
@@ -20,15 +20,15 @@ struct SearchStats {
 	double wallend, cpuend;
 	unsigned long expd, gend, reopnd, dups;
 
-	SearchStats(void);
+	SearchStats();
 
 	// start must be called by the search in order to
 	// begin collecting statistical information.
-	void strt(void);
+	void strt();
 
 	// finish must be called by the search in order to
 	// stop collecting information.
-	void fin(void);
+	void fin();
 
 	// output prints the statistical information to the given
 	// file in datafile format.
@@ -55,7 +55,7 @@ struct SearchStats {
 // hit a user specified limit.
 struct Limit {
 
-	Limit(void);
+	Limit();
 
 	Limit(int, const char*[]);
 
@@ -73,11 +73,11 @@ struct Limit {
 
 	// start must be called at the beginning of a search
 	// that would like to use the limit.
-	void start(void);
+	void start();
 
 	// finish must be called when a search, using the limit
 	// has finished.
-	void finish(void);
+	void finish();
 
 	unsigned long expd, gend, mem, cputime, walltime;
 	volatile sig_atomic_t timeup;
@@ -103,7 +103,7 @@ public:
 	typename D::Oper pop;
 	SearchNode *parent;
 
-	SearchNode(void) : ind(-1) { }
+	SearchNode() : ind(-1) { }
 
 	// setind sets index field to the given value.
 	static void setind(SearchNode *n, int i) { n->ind = i; }
@@ -150,11 +150,11 @@ public:
 // of the second.
 template <class Ops, class Node, class Cost> class OpenList {
 public:
-	const char *kind(void) { return "binary heap"; }
+	const char *kind() { return "binary heap"; }
 
 	void push(Node *n) { heap.push(n); }
 
-	Node *pop(void) {
+	Node *pop() {
 		boost::optional<Node*> p = heap.pop();
 		if (!p)
 			return NULL;
@@ -170,11 +170,11 @@ public:
 			heap.update(Ops::getind(n));
 	}
 
-	bool empty(void) { return heap.empty(); }
+	bool empty() { return heap.empty(); }
 
 	bool mem(Node *n) { return n->ind != -1; }
 
-	void clear(void) { heap.clear(); }
+	void clear() { heap.clear(); }
 
 private:
 	struct Heapops {
@@ -194,7 +194,7 @@ typedef int IntOpenCost;
 template <class Ops, class Node> class OpenList <Ops, Node, IntOpenCost> {
 
 	struct Maxq {
-		Maxq(void) : fill(0), max(0), bkts(100)  { }
+		Maxq() : fill(0), max(0), bkts(100)  { }
 
 		void push(Node *n, unsigned long p) {
 			if (bkts.size() <= p)
@@ -208,7 +208,7 @@ template <class Ops, class Node> class OpenList <Ops, Node, IntOpenCost> {
 			fill++;
 		}
 
-		Node *pop(void) {
+		Node *pop() {
 			for ( ; bkts[max].empty() && max > 0; max--)
 				;
 			Node *n = bkts[max].back();
@@ -235,7 +235,7 @@ template <class Ops, class Node> class OpenList <Ops, Node, IntOpenCost> {
 			fill--;
 		}
 
-		bool empty(void) { return fill == 0; }
+		bool empty() { return fill == 0; }
 
 		unsigned long fill;
 		unsigned int max;
@@ -247,9 +247,9 @@ template <class Ops, class Node> class OpenList <Ops, Node, IntOpenCost> {
 	std::vector<Maxq> qs;
 
 public:
-	OpenList(void) : fill(0), min(0), qs(100) { }
+	OpenList() : fill(0), min(0), qs(100) { }
 
-	static const char *kind(void) { return "2d bucketed"; }
+	static const char *kind() { return "2d bucketed"; }
 
 	void push(Node *n) {
 		unsigned long p0 = Ops::prio(n);
@@ -264,7 +264,7 @@ public:
 		fill++;
 	}
 
-	Node *pop(void) {
+	Node *pop() {
 		for ( ; min < qs.size() && qs[min].empty() ; min++)
 			;
 		fill--;
@@ -284,11 +284,11 @@ public:
 		push(n);
 	}
 
-	bool empty(void) { return fill == 0; }
+	bool empty() { return fill == 0; }
 
 	bool mem(Node *n) { return Ops::getind(n) >= 0; }
 
-	void clear(void) {
+	void clear() {
 		qs.clear();
 		min = 0;
 	}
@@ -301,7 +301,7 @@ template <class D> struct Result : public SearchStats {
 	std::vector<typename D::State> path;
 	std::vector<typename D::Oper> ops;
 
-	Result(void) { }
+	Result() { }
 
 	// Sets the cost and solution path of the result to that of
 	// the given goal node.
@@ -340,7 +340,7 @@ public:
 
 	virtual void search(D &, typename D::State &) = 0;
 
-	virtual void reset(void) {
+	virtual void reset() {
 		res = Result<D>();
 	}
 
@@ -349,12 +349,12 @@ public:
 		res.output(f);
 	}
 
-	void start(void) {
+	void start() {
 		res.strt();
 		lim.start();
 	}
 
-	void finish(void) {
+	void finish() {
 		res.fin();
 		lim.finish();
 	}
@@ -363,5 +363,5 @@ public:
 	Limit lim;
 
 protected:
-	bool limit(void) { return lim.reached(res); }
+	bool limit() { return lim.reached(res); }
 };

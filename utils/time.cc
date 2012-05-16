@@ -4,7 +4,7 @@
 
 #include "../utils/utils.hpp"
 
-double walltime(void) {
+double walltime() {
 	struct timeval tv;
 
 	if (gettimeofday(&tv, NULL) == -1)
@@ -13,6 +13,6 @@ double walltime(void) {
 	return (double) tv.tv_sec + (double) tv.tv_usec / 1000000.0;
 }
 
-double cputime(void) {
+double cputime() {
 	return clock() / CLOCKS_PER_SEC;
 }

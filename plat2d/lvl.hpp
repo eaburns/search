@@ -14,14 +14,14 @@ struct Lvl {
 	// This constructor loads a level from a file.
 	Lvl(FILE*);
 
-	~Lvl(void);
+	~Lvl();
 
 	// width returns the width of the level in number of blocks.
-	unsigned int width(void) const { return w; }
+	unsigned int width() const { return w; }
 
 	// height returns the height of the level in number of
 	// blocks.
-	unsigned int height(void) const { return h; }
+	unsigned int height() const { return h; }
 
 	// draw draws the level on an image.
 	void draw(Image&) const;
@@ -31,7 +31,7 @@ struct Lvl {
 	Isect isect(const Bbox&, const geom2d::Pt&) const;
 
 	struct Blk {
-		Blk(void) : tile(0) { }
+		Blk() : tile(0) { }
 		unsigned int tile;
 	};
 

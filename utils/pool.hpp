@@ -10,12 +10,12 @@ public:
 		newblk();
 	}
 
-	~Pool(void) {
+	~Pool() {
 		for (unsigned int i = 0; i < blks.size(); i++)
 			delete[] blks[i];
 	}
 
-	Obj *get(void) {
+	Obj *get() {
 		if (freed) {
 			Ent *res = freed;
 			freed = freed->nxt;
@@ -34,7 +34,7 @@ public:
 		freed = e;
 	}
 
-	Obj *construct(void) {
+	Obj *construct() {
 		Obj *o = get();
 		return new (o) Obj();
 	}
@@ -46,7 +46,7 @@ public:
 
 private:
 
-	void newblk(void) {
+	void newblk() {
 		Ent *blk = new Ent[blksz];
 		blks.push_back(blk);
 		nxt = 0;

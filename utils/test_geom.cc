@@ -17,7 +17,7 @@ static struct { double a, b; bool eq; } eqtst[] = {
 	{ M_PI, M_PI + Threshold + 2 * Epsilon, false },
 };
 
-bool test_doubleeq(void) {
+bool test_doubleeq() {
 	bool ok = true;
 	for (unsigned int i = 0; i < sizeof(eqtst) / sizeof(eqtst[0]); i++) {
 		if (doubleneq(eqtst[i].a, eqtst[i].b) != eqtst[i].eq)
@@ -32,7 +32,7 @@ bool test_doubleeq(void) {
 	return ok;
 }
 
-bool test_doubleneq(void) {
+bool test_doubleneq() {
 	bool ok = true;
 	for (unsigned int i = 0; i < sizeof(eqtst) / sizeof(eqtst[0]); i++) {
 		if (doubleeq(eqtst[i].a, eqtst[i].b) == eqtst[i].eq)
@@ -47,7 +47,7 @@ bool test_doubleneq(void) {
 	return ok;
 }
 
-bool test_point_angle(void) {
+bool test_point_angle() {
 	struct { double x, y, theta; } tst[] = {
 		{ 1, 0, 0 },
 		{ 0, 1, M_PI / 2 },
@@ -73,7 +73,7 @@ bool test_point_angle(void) {
 	return ok;
 }
 
-bool test_line_isect(void) {
+bool test_line_isect() {
 	struct { double x00, y00, x01, y01, x10, y10, x11, y11, xi, yi; } tst[] = {
 		// same line
 		{ 0, 0, 1, 0,	0, 0, 1, 0,	Infinity, Infinity },
@@ -115,7 +115,7 @@ bool test_line_isect(void) {
 	return ok;
 }
 
-bool test_line_isabove(void) {
+bool test_line_isabove() {
 	struct { double x0, y0, x1, y1, x, y; bool above; } tst[] = {
 		{ -1, 0, 1, 0,	0, 1,	true },
 		{ -1, 0, 1, 0,	0, -1,	false },
@@ -141,7 +141,7 @@ bool test_line_isabove(void) {
 	return ok;
 }
 
-bool test_lineseg_length(void) {
+bool test_lineseg_length() {
 	struct { double x0, y0, x1, y1, len; } tst[] = {
 		{ 0, 0, 1, 0,	1 },
 		{ 0, 0, -1, 0,	1 },
@@ -170,7 +170,7 @@ bool test_lineseg_length(void) {
 	return ok;
 }
 
-bool test_lineseg_midpt(void) {
+bool test_lineseg_midpt() {
 	struct { double x0, y0, x1, y1, x, y; } tst[] = {
 		{ -1, 0, 1, 0,	0, 0 },
 		{ 1, 0, -1, 0,	0, 0 },
@@ -197,7 +197,7 @@ bool test_lineseg_midpt(void) {
 }
 
 
-bool test_lineseg_along(void) {
+bool test_lineseg_along() {
 	struct { double x0, y0, x1, y1, dist, x, y; } tst[] = {
 		{ 0, 0, 1, 0,	0.5,	 0.5, 0 },
 		{ 0, 0, 0, 1,	0.5,	 0, 0.5 },
@@ -229,7 +229,7 @@ bool test_lineseg_along(void) {
 	return ok;
 }
 
-bool test_lineseg_isect(void) {
+bool test_lineseg_isect() {
 	struct { double x00, y00, x01, y01, x10, y10, x11, y11, xi, yi; } tst[] = {
 		// same line
 		{ 0, 0, 1, 0,	0, 0, 1, 0,	Infinity, Infinity },
@@ -278,7 +278,7 @@ bool test_lineseg_isect(void) {
 	return ok;
 }
 
-bool test_poly_contains(void) {
+bool test_poly_contains() {
 	bool ok = true;
 
 	Poly sq(4,
@@ -315,7 +315,7 @@ bool test_poly_contains(void) {
 	return ok;
 }
 
-bool test_poly_isects(void) {
+bool test_poly_isects() {
 	bool ok = true;
 
 	std::vector<Pt> is;
@@ -345,7 +345,7 @@ bool test_poly_isects(void) {
 	return ok;
 }
 
-bool test_poly_minisect(void) {
+bool test_poly_minisect() {
 	bool ok = true;
 
 	Poly sq(4, 0.0, 0.0, 100.0, 0.0, 100.0, 100.0, 0.0, 100.0);
@@ -381,7 +381,7 @@ bool test_poly_minisect(void) {
 	return ok;
 }
 
-bool test_poly_hits(void) {
+bool test_poly_hits() {
 	struct { Poly p; LineSg l; bool hit; } tst[] = {
 
 		{ Poly(4, 7.0, 11.0, 7.0, 12.0, 19.0, 12.0, 19.0, 11.0),

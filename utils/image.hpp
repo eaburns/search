@@ -9,7 +9,7 @@
 #include "geom2d.hpp"
 
 struct Color {
-	Color(void) : r(1), g(1), b(1) { }
+	Color() : r(1), g(1), b(1) { }
 	Color(double r, double g, double b) {
 		setred(r);
 		setgreen(g);
@@ -18,12 +18,12 @@ struct Color {
 	void setred(double d) { r = clamp(d); }
 	void setgreen(double d) { g = clamp(d); }
 	void setblue(double d) { b = clamp(d); }
-	double getred(void) const { return r; }
-	double getgreen(void) const { return g; }
-	double getblue(void) const { return b; }
-	unsigned char getred255(void) const { return 255 * r; }
-	unsigned char getgreen255(void) const { return 255 * g; }
-	unsigned char getblue255(void) const { return 255 * b; }
+	double getred() const { return r; }
+	double getgreen() const { return g; }
+	double getblue() const { return b; }
+	unsigned char getred255() const { return 255 * r; }
+	unsigned char getgreen255() const { return 255 * g; }
+	unsigned char getblue255() const { return 255 * b; }
 private:
 	static double clamp(double d) {
 		if (d < 0.0) return 0.0;
@@ -46,14 +46,14 @@ struct Image {
 		width(w), height(h), title(t), pixels(NULL)
 		{ }
 
-	~Image(void);
+	~Image();
 
 	void saveeps(const char *, bool usletter = false, int marginpt = -1) const;
 
 	void writeeps(FILE*, bool usletter = false, int marginpt = -1) const;
 
 	struct Drawable {
-		Drawable(void) { }
+		Drawable() { }
 		virtual void writeeps(FILE*) const = 0;
 	};
 
@@ -152,5 +152,5 @@ private:
 	void write_epshdrletter(FILE*, unsigned int marginpt = 72/2) const;
 	void write_epshdr(FILE*, unsigned int marginpt = 0) const;
 	void write_epsdata(FILE*) const;
-	std::string encode_epsdata(void) const;
+	std::string encode_epsdata() const;
 };

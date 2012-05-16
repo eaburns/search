@@ -39,11 +39,11 @@ struct PolyMap {
 
 	// min returns the minimum x and y coordinate
 	// in the map;
-	geom2d::Pt min(void) const;
+	geom2d::Pt min() const;
 
 	// max returns the maximum x and y coordinate
 	// in the map.
-	geom2d::Pt max(void) const;
+	geom2d::Pt max() const;
 
 	// obstructed returns true if the given point lies
 	// within one of the obstacles.

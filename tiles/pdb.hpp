@@ -5,9 +5,9 @@
 struct Pdb {
 	Pdb(unsigned long, unsigned int, const Tiles::Pos[]);
 
-	virtual ~Pdb(void) { delete[] costs; }
+	virtual ~Pdb() { delete[] costs; }
 
-	unsigned long numentries(void) const { return nents; }
+	unsigned long numentries() const { return nents; }
 
 	// poscost gets a pointer to the cost entry for the given
 	// of pattern tile positions.

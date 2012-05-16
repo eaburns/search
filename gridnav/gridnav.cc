@@ -10,13 +10,13 @@ GridNav::GridNav(GridMap *m, unsigned int x0, unsigned int y0,
 	reverseops();
 }
 
-GridNav::State GridNav::initialstate(void) const {
+GridNav::State GridNav::initialstate() const {
 	State s;
 	s.loc = start;
 	return s;
 }
 
-void GridNav::reverseops(void) {
+void GridNav::reverseops() {
 	unsigned int nrev = 0;
 	for (unsigned int i = 0; i < map->nmvs; i++) {
 	for (unsigned int j = 0; j < map->nmvs; j++) {

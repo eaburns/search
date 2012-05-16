@@ -7,7 +7,7 @@ TilesMdist::TilesMdist(FILE *in) : Tiles(in) {
 	initincr();
 }
 
-TilesMdist::State TilesMdist::initialstate(void) {
+TilesMdist::State TilesMdist::initialstate() {
 	State s;
 	s.h = 0;
 	for (unsigned int i = 0; i < Ntiles; i++) {
@@ -20,7 +20,7 @@ TilesMdist::State TilesMdist::initialstate(void) {
 	return s;
 }
 
-void TilesMdist::initmd(void) {
+void TilesMdist::initmd() {
 	for (unsigned int t = 1; t < Ntiles; t++) {
 		unsigned int row = goalpos[t] / Width;
 		unsigned int col = goalpos[t] % Width;
@@ -32,7 +32,7 @@ void TilesMdist::initmd(void) {
 	}
 }
 
-void TilesMdist::initincr(void) {
+void TilesMdist::initincr() {
 	for (unsigned int t = 1; t < Ntiles; t++) {
 	for (unsigned int nw = 0; nw < Ntiles; nw++) {
 		unsigned int next = md[t][nw];

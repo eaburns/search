@@ -13,19 +13,19 @@ public:
 
 	void grow(unsigned int);
 
-	void undo(void);
+	void undo();
 
 	Time lower(unsigned int n) const { return nodes[n].tozero; }
 
 	Time upper(unsigned int n) const { return nodes[n].fromzero; }
 
-	unsigned int nnodes(void) const { return nodes.size(); }
+	unsigned int nnodes() const { return nodes.size(); }
 
 	struct Constraint {
 		unsigned int i, j;
 		Time a, b;
 
-		Constraint(void) { }
+		Constraint() { }
 
 		Constraint(unsigned int i, unsigned int j, Time a, Time b) :
 			i(i), j(j), a(a), b(b) { }
@@ -60,13 +60,13 @@ public:
 
 	bool eq(const Stn &) const;
 
-	static Time inf(void) {
+	static Time inf() {
 		if (std::numeric_limits<Time>::has_infinity)
 			return std::numeric_limits<Time>::infinity();
 		return std::numeric_limits<Time>::max();
 	}
 
-	static Time neginf(void) {
+	static Time neginf() {
 		if (std::numeric_limits<Time>::has_infinity)
 			return -std::numeric_limits<Time>::infinity();
 		return std::numeric_limits<Time>::min();
@@ -109,7 +109,7 @@ private:
 		Time tozero;
 		Time fromzero;
 
-		Node(void) {
+		Node() {
 			tozero = Stn::neginf();
 			fromzero = Stn::inf();
 		}

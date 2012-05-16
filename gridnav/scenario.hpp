@@ -29,7 +29,7 @@ private:
 struct Scenario {
 
 	Scenario(int, const char *[]);
-	~Scenario(void);
+	~Scenario();
 
 	void run(std::istream&);
 	GridMap *getmap(std::string);

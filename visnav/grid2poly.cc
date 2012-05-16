@@ -19,7 +19,7 @@ struct Comp {
 		blkd[x*h + y] = true;
 	}
 
-	geom2d::Poly poly(void) {
+	geom2d::Poly poly() {
 		std::vector<geom2d::Pt> pts;
 		Pose cur(minx, miny, Pose::Up);
 		pts.push_back(geom2d::Pt(minx, miny));
@@ -104,7 +104,7 @@ struct Comp {
 	// of the component instead of the outside.  It is sufficient
 	// to move the starting point (minx, miny) to a block on the
 	// inside, right most edge of the polygon.
-	void invert(void) {
+	void invert() {
 		for (unsigned int y = miny; y < h; y++) {
 			unsigned int startx, endx, x;
 			for (startx = minx; startx < w && !blocked(startx, y); startx++)

@@ -140,7 +140,7 @@ struct DockRobot {
 
 	typedef State PackedState;
 
-	State initialstate(void);
+	State initialstate();
 
 	unsigned long hash(const PackedState &p) const {
 		unsigned int pos[nboxes+1];

@@ -34,7 +34,7 @@ public:
 		return 0;
 	}
 
-	unsigned long hash(void) {
+	unsigned long hash() {
 		return hashbytes(bytes, sizeof(bytes));
 	}
 
@@ -88,7 +88,7 @@ public:
 		return b;
 	}
 
-	unsigned long hash(void) {
+	unsigned long hash() {
 		return word;
 	}
 

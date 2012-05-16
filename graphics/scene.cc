@@ -3,7 +3,7 @@
 #include <SDL/SDL.h>
 #include <SDL/SDL_image.h>
 
-void Scene::render(void) const {
+void Scene::render() const {
 	for (unsigned int i = 0; i < comps.size(); i++)
 		comps[i]->render();
 }
@@ -15,7 +15,7 @@ void Scene::save(const char *file) const {
 	img.saveeps(file);
 }
 
-void Scene::Pt::render(void) const {
+void Scene::Pt::render() const {
 	glColor3d(c.getred(), c.getgreen(), c.getblue());
 	if (w > 0)
 		glLineWidth(w);
@@ -26,7 +26,7 @@ void Scene::Pt::render(void) const {
 	glEnd();
 }
 
-void Scene::Line::render(void) const {
+void Scene::Line::render() const {
 	glColor3f(c.getred(), c.getgreen(), c.getblue());
 	if (w > 0)
 		glLineWidth(w);
@@ -48,7 +48,7 @@ Scene::Arc::Arc(const geom2d::Arc &a, const Color &c, double w) : Image::Arc(a, 
 	assert (pts[Narcpts-1] == end());
 }
 
-void Scene::Arc::render(void) const {
+void Scene::Arc::render() const {
 	glColor3f(c.getred(), c.getgreen(), c.getblue());
 	if (w > 0)
 		glLineWidth(w);
@@ -58,7 +58,7 @@ void Scene::Arc::render(void) const {
 	glEnd();
 }
 
-void Scene::Poly::render(void) const {
+void Scene::Poly::render() const {
 	glColor3d(c.getred(), c.getgreen(), c.getblue());
 	if (w > 0) {
 		glLineWidth(w);

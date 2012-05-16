@@ -6,7 +6,7 @@ struct VisNav {
 	typedef double Cost;
 
 	struct Oper {
-		Oper(void) : edge(NULL) { }
+		Oper() : edge(NULL) { }
 		Oper(const VisGraph::Edge *e) : edge(e) { }
 		bool operator==(const Oper &other) const {
 			if (!edge)
@@ -25,7 +25,7 @@ struct VisNav {
 	struct Undo;
 
 	struct State {
-		State(void) { }
+		State() { }
 
 		State(int v) : vert(v) { }
 
@@ -41,7 +41,7 @@ struct VisNav {
 
 	typedef State PackedState;
 
-	State initialstate(void);
+	State initialstate();
 
 	unsigned long hash(PackedState &p) {
 		return p.vert;

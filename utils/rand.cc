@@ -16,7 +16,7 @@ Rand::Rand(unsigned long seed) : theseed(seed) {
 	v = bits();
 }
 
-unsigned long Rand::bits(void)
+unsigned long Rand::bits()
 {
 	v ^= v >> 21;
 	v ^= v << 35;
@@ -33,6 +33,6 @@ long Rand::integer(long min, long max)
 	return bits() % ((max+1) - min) + min;
 }
 
-double Rand::real(void) {
+double Rand::real() {
 	return bits() * Fl;
 }

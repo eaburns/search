@@ -49,7 +49,7 @@ template <class D> struct Bugsy : public SearchAlgorithm<D> {
 		nodes = new Pool<Node>();
 	}
 
-	~Bugsy(void) {
+	~Bugsy() {
 		delete nodes;
 	}
 
@@ -78,7 +78,7 @@ template <class D> struct Bugsy : public SearchAlgorithm<D> {
 		this->finish();
 	}
 
-	virtual void reset(void) {
+	virtual void reset() {
 		SearchAlgorithm<D>::reset();
 		open.clear();
 		closed.clear();
@@ -111,7 +111,7 @@ private:
 	// Kidinfo holds information about a node used for
 	// correcting the heuristic estimates.
 	struct Kidinfo {
-		Kidinfo(void) : f(-1), h(-1), d(-1) { }
+		Kidinfo() : f(-1), h(-1), d(-1) { }
 
 		Kidinfo(Cost g, Cost h, Cost d) : f(g + h), h(h), d(d) { }
 
@@ -215,7 +215,7 @@ private:
 
 	// updatetime runs a simple state machine (from Wheeler's BUGSY
 	// implementation) that estimates the node expansion rate.
-	void updatetime(void) {
+	void updatetime() {
 		double now;
 
 		switch (state) {
@@ -258,7 +258,7 @@ private:
 		}
 	}
 
-	void updateopen(void) {
+	void updateopen() {
 		nresort++;
 		for (int i = 0; i < open.size(); i++)
 			computeutil(open.at(i));

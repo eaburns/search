@@ -54,11 +54,11 @@ namespace geom2d {
 		}
 	
 		// inf returns a point with infinite values for both x and y.
-		static Pt inf(void) { return Pt(Infinity, Infinity); }
+		static Pt inf() { return Pt(Infinity, Infinity); }
 	
 		// neginf returns a point with negative infinity values for
 		// both x and y.
-		static Pt neginf(void) { return Pt(-Infinity, -Infinity); }
+		static Pt neginf() { return Pt(-Infinity, -Infinity); }
 	
 		// angle returns the angle to the point off of the positive x axis.
 		// The value is between 0 and 2π.
@@ -71,13 +71,13 @@ namespace geom2d {
 			return -atan2(a.x*b.y - a.y*b.x, a.x*b.x+a.y*b.y);
 		}
 	
-		Pt(void) { }
+		Pt() { }
 	
 		Pt(const Pt &o) : x(o.x), y(o.y) { }
 	
 		Pt(double x, double y) : x(x), y(y) { }
 	
-		bool isinf(void) { return std::isinf(x) || std::isinf(y); }
+		bool isinf() { return std::isinf(x) || std::isinf(y); }
 	
 		bool operator==(const Pt &p) const {
 			return doubleeq(x, p.x) && doubleeq(y, p.y);
@@ -87,7 +87,7 @@ namespace geom2d {
 	
 		// angle returns the angle to the point off of the positive x axis.
 		// The value is between 0 and 2π.
-		double angle(void) const {
+		double angle() const {
 			double angle = atan2(y, x);
 			if (angle < 0)
 				return 2 * M_PI + angle;
@@ -130,7 +130,7 @@ namespace geom2d {
 	};
 	
 	struct Bbox {
-		Bbox(void) : min(Pt::inf()), max(Pt::neginf()) { }
+		Bbox() : min(Pt::inf()), max(Pt::neginf()) { }
 	
 		Bbox(double x0, double y0, double x1, double y1) :
 				min(x0, y0), max(x1, y1) {
@@ -184,7 +184,7 @@ namespace geom2d {
 		}
 	
 		// center returns the center point of the rectangle.
-		Pt center(void) const {
+		Pt center() const {
 			double dx = max.x - min.x;
 			double dy = max.y - min.y;
 			return Pt(min.x + dx/2, min.y + dy/2);
@@ -194,7 +194,7 @@ namespace geom2d {
 	
 	protected:
 	
-		void normalize(void) {
+		void normalize() {
 			if (min.x > max.x) {
 				double t = min.x;
 				min.x = max.x;
@@ -210,7 +210,7 @@ namespace geom2d {
 	
 	// The Line struct represents an infinite line in Euclidean space.
 	struct Line {
-		Line(void) { }
+		Line() { }
 	
 		// Line(Pt,Pt) creates a line defined by the two points.
 		Line(const Pt &p0, const Pt &p1) {
@@ -247,20 +247,20 @@ namespace geom2d {
 	};
 	
 	struct LineSg : public Line {
-		LineSg(void) { }
+		LineSg() { }
 	
 		LineSg(const Pt &p0, const Pt &p1) :
 			Line(p0, p1), p0(p0), p1(p1), bbox(p0.x, p0.y, p1.x, p1.y)
 			{ }
 	
 		// length returns the length of the line segment.
-		double length(void) const {
+		double length() const {
 			return Pt::distance(p0, p1);
 		}
 	
 		// midpt returns the point directly in the middle of the
 		// line segment.
-		Pt midpt(void) const {
+		Pt midpt() const {
 			return Pt((p0.x + p1.x) / 2, (p0.y + p1.y) / 2);
 		}
 	
@@ -307,18 +307,18 @@ namespace geom2d {
 		}
 	
 		// isvertical returns true if the line is a vertical line.
-		bool isvertical(void) const { return doubleeq(p0.x, p1.x); }
+		bool isvertical() const { return doubleeq(p0.x, p1.x); }
 	
 		Pt p0, p1;
 		Bbox bbox;
 	};
 	
 	struct QuadEq {
-		QuadEq(void) { }
+		QuadEq() { }
 	
 		QuadEq(double a, double b, double c) : a(a), b(b), c(c) { }
 	
-		double discriminant(void) const { return b*b - 4*a*c; }
+		double discriminant() const { return b*b - 4*a*c; }
 	
 		unsigned int solutions(double s[]) const {
 			double d = discriminant();
@@ -398,12 +398,12 @@ namespace geom2d {
 		}
 	
 		// start returns the starting point of the arc.
-		Pt start(void) const {
+		Pt start() const {
 			return Pt(c.x + cos(t0) * r, c.y + sin(t0) * r);
 		}
 	
 		// end returns the ending point of the arc.
-		Pt end(void) const {
+		Pt end() const {
 			return Pt(c.x + cos(t1) * r, c.y + sin(t1) * r);
 		}
 	
@@ -516,7 +516,7 @@ namespace geom2d {
 	
 	private:
 		double interangle(unsigned int) const;
-		void removecolinear(void);
-		void initsides(void);
+		void removecolinear();
+		void initsides();
 	};
 };

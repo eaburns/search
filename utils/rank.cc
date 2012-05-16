@@ -18,7 +18,7 @@ Ranker::Ranker(unsigned int sz, unsigned int n) :
 	tree = new unsigned int[treesz];
 }
 
-Ranker::~Ranker(void) {
+Ranker::~Ranker() {
 	delete tree;
 }
 

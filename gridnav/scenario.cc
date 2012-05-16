@@ -24,7 +24,7 @@ Scenario::Scenario(int ac, const char *av[]) :
 		maproot += '/';
 }
 
-Scenario::~Scenario(void) {
+Scenario::~Scenario() {
 	if (lastmap)
 		delete lastmap;
 }

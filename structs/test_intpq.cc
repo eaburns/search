@@ -11,7 +11,7 @@ struct Elm {
 
 enum { N = 1000 };
 
-bool intpq_push_test(void) {
+bool intpq_push_test() {
 	bool res = true;
 	Intpq<Elm, Elm> pq;
 	Elm elms[N];
@@ -28,7 +28,7 @@ bool intpq_push_test(void) {
 	return res;
 }
 
-bool intpq_pop_test(void) {
+bool intpq_pop_test() {
 	bool res = true;
 	Intpq<Elm, Elm> pq;
 	Elm elms[N];

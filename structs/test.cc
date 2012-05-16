@@ -2,17 +2,17 @@
 #include <cstdlib>
 #include <ctime>
 
-bool htable_add_test(void);
-bool htable_find_test(void);
-bool htable_find_rand_test(void);
-bool intpq_push_test(void);
-bool intpq_pop_test(void);
-bool binheap_push_test(void);
-bool binheap_pop_test(void);
-bool stn_copy_eq_test(void);
-bool stn_add_one_ok_test(void);
-bool stn_add_one_incons_test(void);
-bool stn_undo_one_test(void);
+bool htable_add_test();
+bool htable_find_test();
+bool htable_find_rand_test();
+bool intpq_push_test();
+bool intpq_pop_test();
+bool binheap_push_test();
+bool binheap_pop_test();
+bool stn_copy_eq_test();
+bool stn_add_one_ok_test();
+bool stn_add_one_incons_test();
+bool stn_undo_one_test();
 
 static const Test tests[] = {
 	Test("htable add test", htable_add_test),

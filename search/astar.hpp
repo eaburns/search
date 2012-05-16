@@ -27,7 +27,7 @@ template <class D> struct Astar : public SearchAlgorithm<D> {
 		nodes = new Pool<Node>();
 	}
 
-	~Astar(void) {
+	~Astar() {
 		delete nodes;
 	}
 
@@ -53,7 +53,7 @@ template <class D> struct Astar : public SearchAlgorithm<D> {
 		this->finish();
 	}
 
-	virtual void reset(void) {
+	virtual void reset() {
 		SearchAlgorithm<D>::reset();
 		open.clear();
 		closed.clear();

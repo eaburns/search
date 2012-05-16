@@ -65,7 +65,7 @@ void PolyMap::translate(double dx, double dy) {
 		bound->translate(dx, dy);
 }
 
-geom2d::Pt PolyMap::min(void) const {
+geom2d::Pt PolyMap::min() const {
 	if (bound)
 		return bound->bbox.min;
 
@@ -79,7 +79,7 @@ geom2d::Pt PolyMap::min(void) const {
 	return min;
 }
 
-geom2d::Pt PolyMap::max(void) const {
+geom2d::Pt PolyMap::max() const {
 	if (bound)
 		return bound->bbox.max;
 

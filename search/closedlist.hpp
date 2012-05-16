@@ -30,7 +30,7 @@ template<typename Ops, typename Node, typename D> struct ClosedList {
 
 	void init(D &d) { dom = &d; }
 
-	void clear(void) {
+	void clear() {
 		fill = ncollide = 0;
 		nresize = 0;
 		for (unsigned int i = 0; i < nbins; i++)

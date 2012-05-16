@@ -9,7 +9,7 @@ VisNav::VisNav(const VisGraph &g, double x0, double y0, double x1, double y1) :
 	finish = this->g.add(geom2d::Pt(x1, y1));
 }
 
-VisNav::State VisNav::initialstate(void) {
+VisNav::State VisNav::initialstate() {
 	return State(start);
 }
 

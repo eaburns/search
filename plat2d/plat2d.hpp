@@ -38,10 +38,10 @@ struct Plat2d {
 
 	Plat2d(FILE*);
 
-	~Plat2d(void);
+	~Plat2d();
 
 	struct State {
-		State(void) : h(-1) { }
+		State() : h(-1) { }
 
 		State(unsigned int x, unsigned int y, unsigned int z,
 			unsigned int w, unsigned int h) : player(x, y, w, h), h(-1) { }
@@ -65,7 +65,7 @@ struct Plat2d {
 		unsigned char jframes;
 	};
 
-	State initialstate(void);
+	State initialstate();
 
 	unsigned long hash(PackedState &pkd) {
 		static const unsigned int sz = sizeof(pkd.x) +
@@ -187,7 +187,7 @@ private:
 		static bool pred(const Node *a, const Node *b) { return a->d < b->d; }
 	};
 
-	void initvg(void);
+	void initvg();
 
 	Cost hvis(const State &s) const {
 		const Lvl::Blkinfo &bi = lvl.majorblk(s.player.body.bbox);

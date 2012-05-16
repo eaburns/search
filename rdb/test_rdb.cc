@@ -9,7 +9,7 @@
 static bool hassuffix(const std::string&, const char*);
 static void touch(const std::string&);
 
-bool test_pathfor_newpath(void) {
+bool test_pathfor_newpath() {
 	char dir[] = "rdb-XXXXXX";
 	const char *root = mkdtemp(dir);
 
@@ -27,7 +27,7 @@ bool test_pathfor_newpath(void) {
 	return ok;		
 }
 
-bool test_pathfor_samepath(void) {
+bool test_pathfor_samepath() {
 	char dir[] = "rdb-XXXXXX";
 	const char *root = mkdtemp(dir);
 
@@ -46,7 +46,7 @@ bool test_pathfor_samepath(void) {
 	return ok;		
 }
 
-bool test_pathfor_shareprefix(void) {
+bool test_pathfor_shareprefix() {
 	bool ok = true;
 	char dir[] = "rdb-XXXXXX";
 	const char *root = mkdtemp(dir);
@@ -85,7 +85,7 @@ bool test_pathfor_shareprefix(void) {
 	return ok;		
 }
 
-bool test_pathfor_existing(void) {
+bool test_pathfor_existing() {
 	bool ok = true;
 	char dir[] = "rdb-XXXXXX";
 	const char *root = mkdtemp(dir);

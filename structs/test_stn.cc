@@ -2,7 +2,7 @@
 #include "stn.hpp"
 #include <cstdlib>
 
-bool stn_copy_eq_test(void) {
+bool stn_copy_eq_test() {
 	Stn stn(1);
 	Stn copy(stn);
 	Stn stn2(2);
@@ -23,7 +23,7 @@ bool stn_copy_eq_test(void) {
 	return true;
 }
 
-bool stn_add_one_ok_test(void) {
+bool stn_add_one_ok_test() {
 	Stn stn(1);
 
 	if (!stn.add(Stn::NoEarlier(1, 1))) {
@@ -54,7 +54,7 @@ bool stn_add_one_ok_test(void) {
 	return true;
 }
 
-bool stn_add_one_incons_test(void) {
+bool stn_add_one_incons_test() {
 	Stn stn(1);
 
 	if (!stn.add(Stn::NoEarlier(1, 5))) {
@@ -82,7 +82,7 @@ bool stn_add_one_incons_test(void) {
 	return true;
 }
 
-bool stn_undo_one_test(void) {
+bool stn_undo_one_test() {
 	Stn stn(1);
 	Stn copy(stn);
 

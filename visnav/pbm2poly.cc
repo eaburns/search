@@ -9,7 +9,7 @@ static unsigned int w, h;
 static void readpbm(FILE*);
 static void junkcomment(FILE*);
 
-int main(void) {
+int main() {
 	readpbm(stdin);
 	PolyMap p(blkd, w, h);
 	p.output(stdout);

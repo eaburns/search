@@ -10,7 +10,7 @@
 struct GridNav {
 
 	struct Cost {
-		Cost(void) { }
+		Cost() { }
 
 		explicit Cost(int u, int s = 0) : units(u), sqrts(s) { compute(); }
 
@@ -71,7 +71,7 @@ struct GridNav {
 
 	private:
 
-		void compute(void) {
+		void compute() {
 			val = units + sqrts * sqrt(2);
 		}
 
@@ -91,7 +91,7 @@ struct GridNav {
  			return *this;
 		}
 
-		State(void) { }
+		State() { }
 
 		State (const State &o) : loc(o.loc) { }
 
@@ -110,7 +110,7 @@ struct GridNav {
 		}
 	};
 
-	State initialstate(void) const;
+	State initialstate() const;
 
 	unsigned long hash(PackedState &p) {
 		return p.loc;
@@ -219,5 +219,5 @@ private:
 	}
 
 	// reverseops computes the reverse operators
-	void reverseops(void);
+	void reverseops();
 };

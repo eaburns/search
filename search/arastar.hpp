@@ -39,9 +39,9 @@ template <class D> struct Arastar : public SearchAlgorithm<D> {
 			incons.push_back(n);
 		}
 	
-		std::vector<Node*> &nodes(void) { return incons; }
+		std::vector<Node*> &nodes() { return incons; }
 	
-		void clear(void) {
+		void clear() {
 			mem.clear();
 			incons.clear();
 		}
@@ -72,7 +72,7 @@ template <class D> struct Arastar : public SearchAlgorithm<D> {
 		nodes = new Pool<Node>();
 	}
 
-	~Arastar(void) {
+	~Arastar() {
 		delete nodes;
 	}
 
@@ -118,7 +118,7 @@ template <class D> struct Arastar : public SearchAlgorithm<D> {
 		this->finish();
 	}
 
-	virtual void reset(void) {
+	virtual void reset() {
 		SearchAlgorithm<D>::reset();
 		wt = wt0;
 		open.clear();
@@ -161,7 +161,7 @@ private:
 	}
 
 	// Find the tightest bound for the current incumbent.
-	double findbound(void) {
+	double findbound() {
 		double min = std::numeric_limits<double>::infinity();
 
 		std::vector<Node*> &inodes = incons.nodes();
@@ -196,7 +196,7 @@ private:
 
 	// Update the open list: update f' values and add INCONS
 	// and re-heapify.
-	void updateopen(void) {
+	void updateopen() {
 		std::vector<Node*> &nodes = incons.nodes();
 		for (unsigned long i = 0; i < nodes.size(); i++) {
 			Node *n = nodes[i];

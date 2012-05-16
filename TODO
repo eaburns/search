@@ -1,5 +1,3 @@
-• change all (void) to ()
-
 • utils
 
 	- change fatal to be an exception

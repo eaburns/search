@@ -18,7 +18,7 @@ public:
 	typedef int Oper;
 	enum { Nop = -1 };
 
-	Tiles(void);
+	Tiles();
 
 	Tiles(FILE*);
 
@@ -52,9 +52,9 @@ public:
 
 private:
 	void readruml(FILE*);
-	void initops(void);
+	void initops();
 
-	void inithashvec(void);
+	void inithashvec();
 	static bool hashvecinit;
 	static unsigned long hashvec[Ntiles][Ntiles];
 };

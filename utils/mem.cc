@@ -6,7 +6,7 @@
 
 enum { Bufsz = 256 };
 
-unsigned long virtmem(void) {
+unsigned long virtmem() {
 	static const char *field = "VmPeak:";
 	char buf[Bufsz];
 
