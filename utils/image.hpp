@@ -10,10 +10,10 @@
 
 struct Color {
 	Color() : r(1), g(1), b(1) { }
-	Color(double r, double g, double b) {
-		setred(r);
-		setgreen(g);
-		setblue(b);
+	Color(double _r, double _g, double _b) {
+		setred(_r);
+		setgreen(_g);
+		setblue(_b);
 	}
 	void setred(double d) { r = clamp(d); }
 	void setgreen(double d) { g = clamp(d); }
@@ -61,14 +61,14 @@ struct Image {
 
 		enum Position { Left, Right, Centered };
 
-		Text(const char *text, const geom2d::Pt &p) :
+		Text(const char *_text, const geom2d::Pt &p) :
 			loc(p), sz(12), pos(Centered), font("Times-Roman"),
-			text(text), c(black)
+			text(_text), c(black)
 			{ }
 
-		Text(const char *text, double x, double y) :
+		Text(const char *_text, double x, double y) :
 			loc(x, y), sz(12), pos(Centered), font("Times-Roman"),
-			text(text), c(black)
+			text(_text), c(black)
 			{ }
 
 		virtual void writeeps(FILE*) const;
@@ -82,8 +82,8 @@ struct Image {
 
 	struct Pt : public Drawable, public geom2d::Pt {
 
-		Pt(const geom2d::Pt &p, const Color &c, double r, double w) : 
-			geom2d::Pt(p), r(r), w(w), c(c)
+		Pt(const geom2d::Pt &p, const Color &_c, double _r, double _w) : 
+			geom2d::Pt(p), r(_r), w(_w), c(_c)
 			{ }
 
 		virtual void writeeps(FILE*) const;
@@ -95,12 +95,12 @@ struct Image {
 	struct Line : public Drawable, public geom2d::LineSg {
 
 		Line(const geom2d::Pt &p0, const geom2d::Pt &p1,
-				const Color &c, double w) :
-			geom2d::LineSg(p0, p1), w(w), c(c)
+				const Color &_c, double _w) :
+			geom2d::LineSg(p0, p1), w(_w), c(_c)
 			{ }
 
-		Line(const geom2d::LineSg &l, const Color &c, double w) :
-			geom2d::LineSg(l), w(w), c(c)
+		Line(const geom2d::LineSg &l, const Color &_c, double _w) :
+			geom2d::LineSg(l), w(_w), c(_c)
 			{ }
 
 		virtual void writeeps(FILE*) const;
@@ -111,8 +111,8 @@ struct Image {
 	
 	struct Arc : public Drawable, public geom2d::Arc {
 
-		Arc(const geom2d::Arc &a, const Color &c, double w) :
-			geom2d::Arc(a), w(w), c(c)
+		Arc(const geom2d::Arc &a, const Color &_c, double _w) :
+			geom2d::Arc(a), w(_w), c(_c)
 			{ }
 
 		virtual void writeeps(FILE*) const;
@@ -123,8 +123,8 @@ struct Image {
 
 	struct Poly : public Drawable, public geom2d::Poly  {
 
-		Poly(const geom2d::Poly &p, const Color &c, double w) :
-			geom2d::Poly(p), w(w), c(c)
+		Poly(const geom2d::Poly &p, const Color &_c, double _w) :
+			geom2d::Poly(p), w(_w), c(_c)
 			{ }
 
 		virtual void writeeps(FILE*) const;

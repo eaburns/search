@@ -27,8 +27,8 @@ public:
 
 		Constraint() { }
 
-		Constraint(unsigned int i, unsigned int j, Time a, Time b) :
-			i(i), j(j), a(a), b(b) { }
+		Constraint(unsigned int _i, unsigned int _j, Time _a, Time _b) :
+			i(_i), j(_j), a(_a), b(_b) { }
 	};
 
 	struct Before : Constraint {
