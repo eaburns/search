@@ -123,6 +123,17 @@ struct DockRobot {
 
 		State(const DockRobot&, const std::vector<Loc>&&, int, unsigned int);
 
+		State &operator = (State &&o) {
+			std::swap(locs, o.locs);
+			std::swap(boxlocs, o.boxlocs);
+			rbox = o.rbox;
+			rloc = o.rloc;
+			h = o.h;
+			d = o.d;
+			nleft = o.nleft;
+			return *this;
+		}
+
 		// locs is the state of each location.
 		std::vector<Loc> locs;
 		// boxlocs is the location of each box.
@@ -171,7 +182,7 @@ struct DockRobot {
 
 	unsigned long hash(const PackedState &p) const {
 		return hashbytes(reinterpret_cast<unsigned char*>(p.pos),
-			sizeof(p.pos[0])*(nboxes+1));
+			sizeof(p.pos[0])*p.sz);
 	}
 
 	Cost h(State &s) const {
