@@ -15,10 +15,6 @@
 	- in the heuristic: prune legs that
 	go up by further than you can jump.
 
-• drobot:
-
-	- improve the heuristic
-
 • tiles:
 
 	- PDBs

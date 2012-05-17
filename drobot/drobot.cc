@@ -170,7 +170,7 @@ DockRobot::State::State(const DockRobot &dr, const std::vector<Loc> &&ls,
 	for (unsigned int l = 0; l < locs.size(); l++) {
 		for (unsigned int c = 0; c < locs[l].cranes.size(); c++) {
 			unsigned int box = locs[l].cranes[c];
-			if ((unsigned int) dr.goal[box] != l)
+			if (dr.goal[box] >= 0 && (unsigned int) dr.goal[box] != l)
 				nleft++;
 			boxlocs[box] = l;
 		}
@@ -178,18 +178,25 @@ DockRobot::State::State(const DockRobot &dr, const std::vector<Loc> &&ls,
 		for (unsigned int s = 0; s < locs[l].piles[p].stack.size(); s++) {
 			unsigned int box = locs[l].piles[p].stack[s];
 			assert (box < dr.nboxes);
-			if ((unsigned int) dr.goal[box] != l)
+			if (dr.goal[box] >= 0 && (unsigned int) dr.goal[box] != l)
 				nleft++;
 			boxlocs[box] = l;
 		}
 		}
 	}
 	if (rbox >= 0) {
-		if ((unsigned int) dr.goal[rbox] != rloc)
+		if (dr.goal[rbox] >= 0 && (unsigned int) dr.goal[rbox] != rloc)
 			nleft++;
 		boxlocs[rbox] = rloc;
 	}
 }
+
+// LoadCost is the cost of loading and unloading the robot.
+const double LoadCost = 0.01;
+
+// PopCostFact is the cost of poping from a stack, given as a
+// factor of the stack's height.
+const double PopCostFact = 0.05;
 
 void DockRobot::Edge::apply(State &s, const Oper &o) {
 	switch (o.type) {
@@ -210,7 +217,7 @@ void DockRobot::Edge::apply(State &s, const Oper &o) {
 		p = l.findpile(bottom);
 		assert (p >= 0);
 		revop = Oper(Oper::Pop, p);
-		cost = 0.05 * (sz + 1);	// from the OCaml code
+		cost = PopCostFact * (sz + 1);	// from the OCaml code
 
 		break;
 	}
@@ -230,7 +237,7 @@ void DockRobot::Edge::apply(State &s, const Oper &o) {
 		else
 			p = l.findpile(bottom);
 		revop = Oper(Oper::Push, c, p);
-		cost = 0.05 * (sz + 1);	// from the OCaml code
+		cost = PopCostFact * (sz + 1);	// from the OCaml code
 		break;
 	}
 	case Oper::Load: {
@@ -240,7 +247,7 @@ void DockRobot::Edge::apply(State &s, const Oper &o) {
 		s.rbox = l.rmcrane(c);
 
 		revop = Oper(Oper::Unload);
-		cost = 0.01;	// from the OCaml code
+		cost = LoadCost;
 		break;
 	}
 	case Oper::Unload: {
@@ -254,7 +261,7 @@ void DockRobot::Edge::apply(State &s, const Oper &o) {
 		int c = l.findcrane(box);
 		assert (c >= 0);
 		revop = Oper(Oper::Load, c);
-		cost = 0.01;	// from the OCaml code
+		cost = LoadCost;
 		break;
 	}
 	case Oper::Move: {
@@ -463,14 +470,50 @@ void DockRobot::initheuristic() {
 }
 
 std::pair<float, float> DockRobot::hd(const State &s) const {
+	if (s.nleft == 0)
+		return std::pair<float,float>(0, 0);
+
 	float h = 0, d = 0;
 
+	// Each out-of-place box must move to its goal.
 	for (unsigned int b = 0; b < goal.size(); b++) {
 		if (goal[b] < 0)
 			continue;
 		const std::pair<float,float> &p = shortest[s.boxlocs[b]*nlocs + goal[b]];
 		h += p.first;
 		d += p.second;
+	}
+
+	// All execpt for the last out-of-place box must be unloaded
+	// from the robot.
+	h += (s.nleft-1)*LoadCost;
+	d += s.nleft-1;
+
+	for (unsigned int l = 0; l < s.locs.size(); l++) {
+		const Loc &loc = s.locs[l];
+
+		// Each out-of-place box on a crane must be
+		// loaded onto the robot.
+		for (unsigned int c = 0; c < loc.cranes.size(); c++)  {
+			unsigned int box = loc.cranes[c];
+			if (goal[box] < 0 || (unsigned int) goal[box] == l)
+				continue;
+			h += LoadCost;
+			d += 1;
+		}
+
+		// Each out-of-place box on a stack must be popped
+		// onto a crane, then moved to the robot.
+		for (unsigned int p = 0; p < loc.piles.size(); p++) {
+			const Pile &pile = loc.piles[p];
+			for (unsigned int ht = 0; ht < pile.stack.size(); ht++) {
+				unsigned int box = pile.stack[ht];
+				if (goal[box] < 0 || (unsigned int) goal[box] == l)
+					continue;
+				h += PopCostFact*(ht + 2) + LoadCost;
+				d += 2;
+			}
+		}
 	}
 
 	return std::pair<float,float>(h, d);
