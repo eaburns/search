@@ -121,7 +121,7 @@ struct DockRobot {
 	public:
 		State() { }
 
-		State(const DockRobot&, const std::vector<Loc>&, int, unsigned int);
+		State(const DockRobot&, const std::vector<Loc>&&, int, unsigned int);
 
 		// locs is the state of each location.
 		std::vector<Loc> locs;

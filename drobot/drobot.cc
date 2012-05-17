@@ -153,7 +153,7 @@ reloop:
 }
 
 DockRobot::State DockRobot::initialstate() {
-	State s(*this, initlocs, -1, 0);
+	State s(*this, std::vector<Loc>(initlocs), -1, 0);
 	PackedState pkd;
 	pack(pkd, s);
 	State buf;
@@ -162,7 +162,7 @@ DockRobot::State DockRobot::initialstate() {
 	return s;
 }
 
-DockRobot::State::State(const DockRobot &dr, const std::vector<Loc> &ls,
+DockRobot::State::State(const DockRobot &dr, const std::vector<Loc> &&ls,
 	int rb, unsigned int rl) : locs(ls), rbox(rb), rloc(rl), h(-1), d(-1), nleft(0) {
 
 	boxlocs.resize(dr.nboxes, dr.nlocs+1);
@@ -248,7 +248,7 @@ void DockRobot::Edge::apply(State &s, const Oper &o) {
 		Loc &l = s.locs[s.rloc];
 		unsigned int box = s.rbox;
 		l.addcrane(box);
-		assert (l.cranes.size() <= dom.maxcranes[s.rloc]);	// not to many cranes, right?
+		assert (l.cranes.size() <= dom.maxcranes[s.rloc]);
 		s.rbox = -1;
 
 		int c = l.findcrane(box);
