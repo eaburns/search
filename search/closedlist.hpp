@@ -76,6 +76,9 @@ template<typename Ops, typename Node, typename D> struct ClosedList {
 
 		strcpy(key+strlen(prefix), "resizes");
 		dfpair(out, key, "%lu", nresize);
+
+		strcpy(key+strlen(prefix), "buckets");
+		dfpair(out, key, "%lu", nbins);
 	}
 
 private:
