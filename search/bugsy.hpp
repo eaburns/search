@@ -292,7 +292,7 @@ private:
 	double herror, derror;
 
 	// expansion delay
-	bool expdelay;	// should we even compute it?
+	bool expdelay;	// is it enabled?
 	double avgdelay;
 
 	// for nodes-per-second estimation
