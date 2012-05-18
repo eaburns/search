@@ -46,7 +46,7 @@ template <class D> struct Bugsy : public SearchAlgorithm<D> {
 			else if (i < argc - 1 && strcmp(argv[i], "-expdelay") == 0)
 				useexpdelay = true;
 			else if (i < argc - 1 && strcmp(argv[i], "-hhat") == 0)
-				usedhat = true;
+				usehhat = true;
 			else if (i < argc - 1 && strcmp(argv[i], "-dhat") == 0)
 				usedhat = true;
 		}
