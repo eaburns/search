@@ -1,17 +1,21 @@
 #include "scene.hpp"
+#include <vector>
+#include <string>
 
 struct SDL_Surface;
 
 struct Ui {
 
-	Ui(unsigned int width, unsigned int height);
+	Ui(unsigned int width, unsigned int height, bool record = false);
 
-	// run runs the Ui at the given frame rate.
+	// run runs the Ui at the given frame time, and returns
+	// after a call to frame returns false.
 	void run(unsigned long);
 
 	// frame is called once per-frame to update
-	// the scene.
-	virtual void frame();
+	// the scene.  If frame returns false, then the back
+	// buffer is not swapped and the ui stops running.
+	virtual bool frame();
 
 	// key is called everytime a key is pressed or released.
 	// The first argument is the key code (from SDL).
@@ -49,4 +53,11 @@ private:
 	// handleevents handles events and returns
 	// true if it is time to quit.
 	bool handleevents();
+
+	// saveframe saves a frame to a file, returning the
+	// filename.
+	std::string saveframe(unsigned long);
+
+	// If record is true then a video is created.
+	bool record;
 };

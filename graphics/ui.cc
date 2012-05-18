@@ -1,11 +1,12 @@
 #include "ui.hpp"
 #include "../utils/utils.hpp"
 #include <cstdio>
+#include <cerrno>
 #include <SDL/SDL.h>
 #include <SDL/SDL_image.h>
 #include <SDL/SDL_opengl.h>
 
-Ui::Ui(unsigned int w, unsigned int h) : scene(w, h) {
+Ui::Ui(unsigned int w, unsigned int h, bool r) : scene(w, h), record(r) {
 	if (SDL_Init(SDL_INIT_EVERYTHING) != 0)
 		fatal("failed to initialiaze SDL: %s", SDL_GetError());
 
@@ -38,24 +39,51 @@ Ui::Ui(unsigned int w, unsigned int h) : scene(w, h) {
 	chkerror("after initialization");
 }
 
-void Ui::run(unsigned long rate) {
-	for ( ; ; ) {
+void Ui::run(unsigned long frametime) {
+	std::vector<std::string> frames;
+
+	for (unsigned long n = 0; ; n++) {
 		long tick = SDL_GetTicks();
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		frame();
+		if (!frame())
+			break;
 		scene.render();
 		glFlush();
+
+ 		if (record)
+			frames.push_back(saveframe(n));
+
 		SDL_GL_SwapBuffers();
+
 		chkerror("after swap buffers");
 
 		if (handleevents())
 			break;
 
-		long delay = tick + rate - SDL_GetTicks();
+		long delay = tick + frametime - SDL_GetTicks();
 		if (delay > 0)
 			SDL_Delay(delay);
+	}
+
+	if (record) {
+		if (fileexists("anim.mp4"))
+			remove("anim.mp4");
+	
+		std::string cmd = "ffmpeg";
+	
+		char ratestr[128];
+		snprintf(ratestr, sizeof(ratestr), "%lu", 1000/frametime);
+		cmd += " -r " + std::string(ratestr);
+		cmd += " -b 4096k -i /tmp/%08d.ppm anim.mp4";
+	
+		printf("%s\n", cmd.c_str());
+	
+		if (system(cmd.c_str()) != 0)
+			fatal("%s failed", cmd.c_str());
+		for (auto f = frames.begin(); f != frames.end(); f++)
+			remove(f->c_str());
 	}
 }
 
@@ -123,7 +151,7 @@ bool Ui::handleevents() {
 	return false;
 }
 
-void Ui::frame() {
+bool Ui::frame() {
 	scene.clear();
 	geom2d::Pt center(scene.width / 2, scene.height / 2);
 
@@ -139,6 +167,7 @@ void Ui::frame() {
 
 	scene.add(new Scene::Pt(geom2d::Pt(0.0, 0.0), Image::blue, 10, 1));
 	scene.add(new Scene::Pt(geom2d::Pt(scene.width, scene.height), Image::green, 10, 1));
+	return true;
 }
 
 void Ui::key(int key, bool down) {
@@ -151,4 +180,34 @@ void Ui::motion(int x, int y, int dx, int dy) {
 
 void Ui::click(int x ,int y, int button, bool down) {
 	printf("mouse click: button %d at (%d, %d) %s\n", button, x, y, down ? "down" : "up");
+}
+
+std::string Ui::saveframe(unsigned long n) {
+	char name[128];
+	snprintf(name, sizeof(name), "/tmp/%08lu.ppm", n);
+
+	FILE *out = fopen(name, "w");
+	if (!out)
+		fatalx(errno, "Failed to open %s for writing", name);
+
+	fprintf(out, "P6\n");
+	fprintf(out, "%d %d\n", screen->w, screen->h);
+	fprintf(out, "255\n");
+
+	char *pixels = new char[3*screen->w];
+	for (int y = screen->h-1; y >= 0; y--) {
+		glReadPixels(0, y, screen->w, 1, GL_RGB, GL_UNSIGNED_BYTE, (GLvoid*)pixels);
+		size_t rem = screen->w;
+		do {
+			size_t n = fwrite(pixels, 3, rem, out);
+			if (n < rem && ferror(out))
+				fatal("Failed to write the pixel data");
+			rem -= n;
+		} while (rem > 0);
+		
+	}
+	delete pixels;
+
+	fclose(out);
+	return name;
 }

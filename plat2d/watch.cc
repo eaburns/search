@@ -25,8 +25,8 @@ private:
 
 class WatchUi : public Ui {
 public:
-	WatchUi(unsigned int, unsigned int, Lvl*, std::vector<unsigned int>);
-	virtual void frame();
+	WatchUi(unsigned int, unsigned int, bool, Lvl*, std::vector<unsigned int>);
+	virtual bool frame();
 	virtual void key(int, bool) { /* ignore */ }
 	virtual void motion(int, int, int, int) { /* ignore */ }
 	virtual void click(int, int, int, bool) { /* ignore */ }
@@ -54,9 +54,10 @@ private:
 	Anim *anim;
 };
 
-static unsigned long framerate = 20;	// in milliseconds
+static unsigned long frametime = 20;	// in milliseconds
 static unsigned long delay = 0;	// in milliseconds
 static bool echo;
+static bool save;
 static std::string level;
 static std::vector<unsigned int> controls;
 
@@ -78,8 +79,8 @@ int main(int argc, const char *argv[]) {
 	Lvl lvl(f);
 	fclose(f);
 
-	WatchUi ui(800, 600, &lvl, controls);
-	ui.run(framerate);	
+	WatchUi ui(800, 600, save, &lvl, controls);
+	ui.run(frametime);	
 }
 
 static void parseargs(int argc, const char *argv[]) {
@@ -87,7 +88,7 @@ static void parseargs(int argc, const char *argv[]) {
 		if (strcmp(argv[i], "-h") == 0) {
 			helpmsg(0);
 		} else if (strcmp(argv[i], "-f") == 0) {
-			framerate = strtol(argv[++i], NULL, 10);
+			frametime = strtol(argv[++i], NULL, 10);
 			i++;
 		} else if (strcmp(argv[i], "-d") == 0) {
 			delay = strtol(argv[++i], NULL, 10);
@@ -95,6 +96,8 @@ static void parseargs(int argc, const char *argv[]) {
 			i++;
 		} else if (strcmp(argv[i], "-e") == 0) {
 			echo = true;
+		} else if (strcmp(argv[i], "-s") == 0) {
+			save = true;
 		} else {
 			printf("Unknown option %s", argv[i]);
 			helpmsg(1);
@@ -109,6 +112,7 @@ static void helpmsg(int status) {
 	puts("	-d	delay in seconds before playing");
 	puts("	-f	frame rate in milliseconds (default 20)");
 	puts("	-e	echo the input to standard output");
+	puts("	-s	saves an mpeg");
 	exit(status);
 }
 
@@ -119,8 +123,10 @@ static void dfline(std::vector<std::string> &toks, void*) {
 		controls = controlvec(toks[2]);
 }
 
-WatchUi::WatchUi(unsigned int w, unsigned int h, Lvl *l, std::vector<unsigned int> cs) :
-		Ui(w, h), lvl(l), tr(0, 0), width(w), height(h), controls(cs) {
+WatchUi::WatchUi(unsigned int w, unsigned int h, bool save,
+		Lvl *l, std::vector<unsigned int> cs) :
+		Ui(w, h, save), lvl(l), tr(0, 0), width(w),
+		height(h), controls(cs) {
 
 	// flip everything over
 	glTranslated(0.0, height, 0.0);
@@ -173,22 +179,26 @@ WatchUi::WatchUi(unsigned int w, unsigned int h, Lvl *l, std::vector<unsigned in
 	anim = rightas;
 }
 
-void WatchUi::frame() {
-	if (delay > 0) {
-		delay -= framerate;
-		return;
+bool WatchUi::frame() {
+	if (iter == controls.end()) {
+		if (delay == 0)
+			delay = 1000;
+		else
+			delay -= frametime;
+		if (delay <= 0)
+			return false;
+		return true;
 	}
-
+	if (delay > 0) {
+		delay -= frametime;
+		return true;
+	}
 	move();
 	draw();
+	return true;
 }
 
 void WatchUi::move() {
-	if (iter == controls.end()) {
-		sleep(1);
-		exit(0);
-	}
-
 	unsigned int keys = *iter++;
 	geom2d::Pt p0(p.loc());
 	p.act(*lvl, keys);
