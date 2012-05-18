@@ -33,8 +33,9 @@ template <class D> struct Bugsy : public SearchAlgorithm<D> {
 	};
 
 	Bugsy(int argc, const char *argv[]) :
-			SearchAlgorithm<D>(argc, argv), navg(0), herror(0), derror(0),
-			expdelay(false), avgdelay(0), timeper(0.0), nresort(0),
+			SearchAlgorithm<D>(argc, argv), usehhat(false),
+			usedhat(false), navg(0), herror(0), derror(0),
+			useexpdelay(false), avgdelay(0), timeper(0.0), nresort(0),
 			batchsize(20), nexp(0), state(WaitTick), closed(30000001) {
 		wf = wt = -1;
 		for (int i = 0; i < argc; i++) {
@@ -43,7 +44,11 @@ template <class D> struct Bugsy : public SearchAlgorithm<D> {
 			else if (i < argc - 1 && strcmp(argv[i], "-wt") == 0)
 				wt = strtod(argv[++i], NULL);
 			else if (i < argc - 1 && strcmp(argv[i], "-expdelay") == 0)
-				expdelay = true;
+				useexpdelay = true;
+			else if (i < argc - 1 && strcmp(argv[i], "-hhat") == 0)
+				usedhat = true;
+			else if (i < argc - 1 && strcmp(argv[i], "-dhat") == 0)
+				usedhat = true;
 		}
 
 		if (wf < 0)
@@ -107,9 +112,11 @@ template <class D> struct Bugsy : public SearchAlgorithm<D> {
 		dfpair(stdout, "time weight", "%g", wt);
 		dfpair(stdout, "final time per expand", "%g", timeper);
 		dfpair(stdout, "number of resorts", "%lu", nresort);
-		dfpair(stdout, "mean single-step h error", "%g", herror);
-		dfpair(stdout, "mean single-step d error", "%g", derror);
-		if (expdelay)
+		if (usehhat)
+			dfpair(stdout, "mean single-step h error", "%g", herror);
+		if (usedhat)
+			dfpair(stdout, "mean single-step d error", "%g", derror);
+		if (useexpdelay)
 			dfpair(stdout, "mean expansion delay", "%g", avgdelay);
 	}
 
@@ -130,7 +137,7 @@ private:
 	void expand(D &d, Node *n, State &state) {
 		this->res.expd++;
 
-		if (expdelay) {
+		if (useexpdelay) {
 			unsigned long delay = this->res.expd - n->expct;
 			avgdelay = avgdelay + (delay - avgdelay)/this->res.expd;
 		}
@@ -152,12 +159,17 @@ private:
 			return;
 
 		navg++;
-		double herr = bestinfo.f - n->f;
-		assert (herr >= 0);
-		herror = herror + (herr - herror)/navg;
-		double derr = bestinfo.d + 1 - n->d;
-		assert (derr >= 0);
-		derror = derror + (derr - derror)/navg;
+		if (usehhat) {
+			double herr = bestinfo.f - n->f;
+			assert (herr >= 0);
+			herror = herror + (herr - herror)/navg;
+		}
+
+		if (usedhat) {
+			double derr = bestinfo.d + 1 - n->d;
+			assert (derr >= 0);
+			derror = derror + (derr - derror)/navg;
+		}
 	}
 
 	// considers adding the child to the open and closed lists.
@@ -178,7 +190,7 @@ private:
 
 		kid->f = kid->g + kid->h;
 
-		if (expdelay)
+		if (useexpdelay)
 			kid->expct = this->res.expd;
 
 		Kidinfo kinfo(kid->g, kid->h, kid->d);
@@ -222,15 +234,20 @@ private:
 	// compututil computes the utility value of the given node
 	// using corrected estimates of d and h.
 	void computeutil(Node *n) {
-		double dhat = n->d / (1 - derror);
+		double d = n->d;
+		if (usedhat)
+			d /= (1 - derror);
 
-		if (expdelay)
-			dhat *= avgdelay <= 0 ? 1 : avgdelay;
+		double h = n->h;
+		if (usehhat)
+			h += d * herror;
 
-		double hhat = n->h + dhat * herror;
-		double fhat = hhat + n->g;
-		n->t = timeper * dhat;
-		n->u = -(wf * fhat + wt * n->t);
+		if (useexpdelay)
+			d *= avgdelay <= 0 ? 1 : avgdelay;
+
+		double f = h + n->g;
+		n->t = timeper * d;
+		n->u = -(wf * f + wt * n->t);
 	}
 
 	// updatetime runs a simple state machine (from Wheeler's BUGSY
@@ -288,11 +305,12 @@ private:
 	double wf, wt;
 
 	// heuristic correction
+	bool usehhat, usedhat;
 	unsigned long navg;
 	double herror, derror;
 
 	// expansion delay
-	bool expdelay;	// is it enabled?
+	bool useexpdelay;	// is it enabled?
 	double avgdelay;
 
 	// for nodes-per-second estimation
