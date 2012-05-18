@@ -242,8 +242,8 @@ private:
 		if (usehhat)
 			h += d * herror;
 
-		if (useexpdelay)
-			d *= avgdelay <= 0 ? 1 : avgdelay;
+		if (useexpdelay && avgdelay > 0)
+			d *= avgdelay;
 
 		double f = h + n->g;
 		n->t = timeper * d;
