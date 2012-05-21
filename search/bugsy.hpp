@@ -32,11 +32,17 @@ template <class D> struct Bugsy : public SearchAlgorithm<D> {
 		}
 	};
 
+	enum {
+		// Resort1 is the number of expansions to perform
+		// before the 1st open list resort.
+		Resort1 = 128,
+	};
+
 	Bugsy(int argc, const char *argv[]) :
 			SearchAlgorithm<D>(argc, argv), usehhat(false),
 			usedhat(false), navg(0), herror(0), derror(0),
-			useexpdelay(false), avgdelay(0), timeper(0.0), nresort(0),
-			batchsize(20), nexp(0), state(WaitTick), closed(30000001) {
+			useexpdelay(false), avgdelay(0), timeper(0.0),
+			nextresort(Resort1), nresort(0), closed(30000001) {
 		wf = wt = -1;
 		for (int i = 0; i < argc; i++) {
 			if (i < argc - 1 && strcmp(argv[i], "-wf") == 0)
@@ -63,19 +69,15 @@ template <class D> struct Bugsy : public SearchAlgorithm<D> {
 		delete nodes;
 	}
 
-	enum { WaitTick, ExpandSome, WaitExpand };
-
 	void search(D &d, typename D::State &s0) {
 		this->start();
+		last = walltime();
 		closed.init(d);
 		Node *n0 = init(d, s0);
 		closed.add(n0);
 		open.push(n0);
 
-		lasttick = walltime();
 		while (!open.empty() && !SearchAlgorithm<D>::limit()) {
-			updatetime();
-
 			Node* n = *open.pop();
 			State buf, &state = d.unpack(buf, n->packed);
 			if (d.isgoal(state)) {
@@ -83,6 +85,8 @@ template <class D> struct Bugsy : public SearchAlgorithm<D> {
 				break;
 			}
 			expand(d, n, state);
+			updatetime();
+			updateopen();
 		}
 
 		this->finish();
@@ -94,10 +98,8 @@ template <class D> struct Bugsy : public SearchAlgorithm<D> {
 		closed.clear();
 		delete nodes;
 		timeper = 0.0;
-		state = WaitTick;
-		batchsize = 20;
-		nexp = 0;
 		nresort = 0;
+		nextresort = Resort1;
 		navg = 0;
 		herror = derror = 0;
 		nodes = new Pool<Node>();
@@ -253,49 +255,17 @@ private:
 	// updatetime runs a simple state machine (from Wheeler's BUGSY
 	// implementation) that estimates the node expansion rate.
 	void updatetime() {
-		double now;
-
-		switch (state) {
-		case WaitTick:	// wait until the clock ticks
-			now = walltime();
-			if (now <= lasttick)
-				break;
-			starttime = now;
-			state = ExpandSome;
-			break;
-
-		case ExpandSome:	// expand a batch of nodes
-			nexp++;
-			if (nexp < batchsize)
-				break;
-			lasttick = walltime();
-			state = WaitExpand;
-			break;
-
-		case WaitExpand:	// estimate the exps for the next tick and reset
-			nexp++;
-			now = walltime();
-			if (now <= lasttick)	// clock hasn't ticked yet
-				break;
-			updateopen();
-			timeper = (now - starttime) / nexp;
-			// Re-check the time after 1.8*nexp expansions.
-			// 1.8 is from Wheeler's bugsy_old.ml code.  This
-			// should be geometrically increasing in nexp to
-			// ensure that we only sort the open list a logarithmic
-			// number of times.
-			batchsize = nexp * 9 / 5;
-			nexp = 0;
-			starttime = now;
-			state = ExpandSome;
-			break;
-
-		default:
-			fatal("Unknown update time state: %d\n", state);
-		}
+		double t = walltime() - last;
+		timeper = timeper + (t - timeper)/this->res.expd;
+		last = walltime();
 	}
 
+	// updateopen updates the utilities of all nodes on open and
+	// reinitializes the heap every 2^i expansions.
 	void updateopen() {
+		if (this->res.expd < nextresort)
+			return;
+		nextresort *= 2;
 		nresort++;
 		for (int i = 0; i < open.size(); i++)
 			computeutil(open.at(i));
@@ -310,14 +280,15 @@ private:
 	double herror, derror;
 
 	// expansion delay
-	bool useexpdelay;	// is it enabled?
+	bool useexpdelay;
 	double avgdelay;
 
 	// for nodes-per-second estimation
-	double timeper;
-	unsigned long nresort, batchsize, nexp;
-	double starttime, lasttick;
-	int state;
+	double timeper, last;
+
+	// for resorting the open list
+	unsigned long nextresort;
+	unsigned int nresort;
 
 	BinHeap<Node, Node*> open;
  	ClosedList<SearchNode<D>, SearchNode<D>, D> closed;
