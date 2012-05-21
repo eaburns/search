@@ -272,6 +272,7 @@ private:
 		open.reinit();
 	}
 
+	// wf and wt are the cost and time weight respectively.
 	double wf, wt;
 
 	// heuristic correction
