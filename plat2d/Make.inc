@@ -15,19 +15,22 @@ EVERYTHING+=plat2d
 plat2d/plat2d_solver: $(PLAT2DOBJS) plat2d/main.o\
 	plat2d/plat2d.o visnav/visgraph.a utils/utils.a\
 	structs/structs.a search/search.a
-	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
+	@echo $@
+	@$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
 
 include plat2d/main.d plat2d/plat2d.d
 CLEAN+=plat2d/plat2d_solver plat2d/main.o plat2d/plat2d.o
 
 plat2d/draw: $(PLAT2DOBJS) plat2d/draw.o utils/utils.a
-	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
+	@echo $@
+	@$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
 
 include plat2d/draw.d
 CLEAN+=plat2d/draw plat2d/draw.o
 
 plat2d/2poly: $(PLAT2DOBJS) plat2d/2poly.o visnav/visgraph.a utils/utils.a
-	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
+	@echo $@
+	@$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
 
 include plat2d/2poly.d
 CLEAN+=plat2d/2poly plat2d/2poly.o
@@ -35,7 +38,8 @@ CLEAN+=plat2d/2poly plat2d/2poly.o
 plat2d/watch: $(PLAT2DOBJS) plat2d/watch.cc\
 	plat2d/plat2d.o visnav/visgraph.a\
 	graphics/graphics.a utils/utils.a
-	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) $(GRAPHICSLD) -o $@
+	@echo $@
+	@$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) $(GRAPHICSLD) -o $@
 
 include plat2d/watch.d
 CLEAN+=plat2d/watch plat2d/watch.o

@@ -13,13 +13,15 @@ TESTS+=.drobot_test
 CLEAN+=.drobot_test
 
 drobot/test: drobot/test.cc drobot/drobot.o utils/utils.a
-	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
+	@echo $@
+	@$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
 
 EVERYTHING+=drobot
 
 drobot/drobot_solver: $(DROBOTOBJ) drobot/main.o\
 	utils/utils.a structs/structs.a search/search.a
-	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
+	@echo $@
+	@$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
 
 include drobot/main.d
 CLEAN+=drobot/drobot_solver drobot/main.o

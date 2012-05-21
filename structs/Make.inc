@@ -22,9 +22,11 @@ structs/test:\
 	structs/test.cc\
 	utils/utils.a\
 	structs/structs.a
-	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
+	@echo $@
+	@$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
 
 structs/structs.a: $(STRUCTSOBJS)
-	$(AR) rsc $@ $(STRUCTSOBJS)
+	@echo $@
+	@$(AR) rsc $@ $(STRUCTSOBJS)
 
 CLEAN+=$(STRUCTSOBJS) structs/test structs/structs.a
