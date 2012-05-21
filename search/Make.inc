@@ -8,6 +8,7 @@ search: search/search.a
 EVERYTHING+=search
 
 search/search.a: $(SEARCHOBJS)
-	$(AR) rsc $@ $(SEARCHOBJS)
+	@echo $@
+	@$(AR) rsc $@ $(SEARCHOBJS)
 
 CLEAN+=$(SEARCHOBJS) search/search.a

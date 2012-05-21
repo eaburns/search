@@ -16,29 +16,36 @@ TESTS+=.rdb_test
 CLEAN+=.rdb_test
 
 rdb/rdb.a: $(RDBOBJS)
-	$(AR) rsc $@ $(RDBOBJS)
+	@echo $@
+	@$(AR) rsc $@ $(RDBOBJS)
 CLEAN+=rdb/rdb.a
 
 rdb/test: rdb/test.cc rdb/test_rdb.cc rdb/rdb.a utils/utils.a
-	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
+	@echo $@
+	@$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
 CLEAN+=rdb/test
 
 rdb/pathfor: rdb/pathfor.cc rdb/rdb.a  utils/utils.a
-	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
+	@echo $@
+	@$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
 CLEAN+=rdb/pathfor
 
 rdb/withattrs: rdb/withattrs.cc rdb/rdb.a  utils/utils.a
-	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
+	@echo $@
+	@$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
 CLEAN+=rdb/withattrs
 
 rdb/dfcmplt: rdb/dfcmplt.cc rdb/rdb.a  utils/utils.a
-	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
+	@echo $@
+	@$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
 CLEAN+=rdb/dfcmplt
 
 rdb/pathattrs: rdb/pathattrs.cc rdb/rdb.a  utils/utils.a
-	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
+	@echo $@
+	@$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
 CLEAN+=rdb/pathattrs
 
 rdb/addattrs: rdb/addattrs.cc rdb/rdb.a  utils/utils.a
-	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
+	@echo $@
+	@$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
 CLEAN+=rdb/addattrs

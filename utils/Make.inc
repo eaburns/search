@@ -29,11 +29,15 @@ TESTS+=.utils_test
 CLEAN+=.utils_test
 
 utils/utils.a: $(UTILOBJS)
-	$(AR) rsc $@ $(UTILOBJS)
+	@ echo $@
+	@ $(AR) rsc $@ $(UTILOBJS)
+
 CLEAN+=utils/utils.a
 
 utils/test: utils/test_geom.cc utils/test_encode.cc\
 	utils/bench_ops.cc utils/test_misc.cc\
 	utils/test_fs.cc utils/test.cc utils/utils.a
-	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
+	@echo $@
+	@$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
+
 CLEAN+=utils/test

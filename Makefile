@@ -37,11 +37,21 @@ everything: $(EVERYTHING)
 
 tests: $(TESTS)
 
+%.o: %.c
+	@echo $@
+	@$(CC) -c $(CFLAGS) -o $@ $<
+
+%.o: %.cc
+	@echo $@
+	@$(CXX) -c $(CXXFLAGS) -o $@ $<
+
 %.d: %.cc
-	./dep.sh $(CXX) $(shell dirname $*) $(CXXFLAGS) $*.cc > $@
+	@echo $@
+	@./dep.sh $(CXX) $(shell dirname $*) $(CXXFLAGS) $*.cc > $@
 
 %.d: %.c
-	./dep.sh $(CC) $(shell dirname $*) $(CFLAGS) $*.c > $@
+	@echo $@
+	@./dep.sh $(CC) $(shell dirname $*) $(CFLAGS) $*.c > $@
 
 clean:
 	rm -f $(CLEAN) $(BINS) $(TMPLS:.hpp=.hpp.gch)
