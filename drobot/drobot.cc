@@ -415,7 +415,7 @@ DockRobot::State &DockRobot::unpack(State &buf, const PackedState &pkd) {
 nextbox:;
 	}
 
-	buf = State(*this, locs, rbox, rloc);
+	buf = State(*this, std::move(locs), rbox, rloc);
 	return buf;
 }
 
