@@ -1,3 +1,8 @@
+• build
+
+	- figure out why clang won't compile
+	any more.
+
 • utils
 
 	- change fatal to be an exception
