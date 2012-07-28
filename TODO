@@ -1,7 +1,8 @@
 • build
 
-	- figure out why clang won't compile
-	any more.
+	-  clang 2.9 can't compile any more
+	for some reason.  Maybe clang 3
+	can…
 
 • utils
 
