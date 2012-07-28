@@ -34,7 +34,6 @@ include gridnav/Make.inc
 include visnav/Make.inc
 include plat2d/Make.inc
 include graphics/Make.inc
-include bench/Make.inc
 include rdb/Make.inc
 include drobot/Make.inc
 
