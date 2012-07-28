@@ -122,43 +122,26 @@ struct DockRobot {
 		State() { }
 
 		State(const DockRobot&, const std::vector<Loc>&&, int, unsigned int);
-
-		State(const State&);
-
-		State &operator = (State&o) {
-			locs = o.locs;
-			boxlocs = o.boxlocs;
-			rbox = o.rbox;
-			rloc = o.rloc;
-			h = o.h;
-			d = o.d;
-			nleft = o.nleft;
-			return *this;
+	
+		State(const State &o) :
+			locs(o.locs),
+			boxlocs(o.boxlocs),
+			rbox(o.rbox),
+			rloc(o.rloc),
+			h(o.h),
+			d(o.d),
+			nleft(o.nleft) {
 		}
-
-		State &operator = (State &&o) {
-			std::swap(locs, o.locs);
-			std::swap(boxlocs, o.boxlocs);
-			rbox = o.rbox;
-			rloc = o.rloc;
-			h = o.h;
-			d = o.d;
-			nleft = o.nleft;
-			return *this;
+	
+		State(const State &&o) :
+			locs(std::move(o.locs)),
+			boxlocs(std::move(o.boxlocs)),
+			rbox(o.rbox),
+			rloc(o.rloc),
+			h(o.h),
+			d(o.d),
+			nleft(o.nleft) {
 		}
-
-		// locs is the state of each location.
-		std::vector<Loc> locs;
-		// boxlocs is the location of each box.
-		std::vector<unsigned int> boxlocs;
-		// rbox is the robot's contents (-1 is empty).
-		int rbox;
-		// rloc is the robot's location.
-		unsigned int rloc;
-		// h and d are the heuristic and distance estimates.
-		Cost h, d;
-		// nleft is the number of packages out of their goal location.
-		unsigned int nleft;
 
 		bool operator==(const State &o) const {
 			if (rloc != o.rloc || rbox != o.rbox || nleft != o.nleft)
@@ -169,6 +152,24 @@ struct DockRobot {
 			}				
 			return true;
 		}
+
+		// locs is the state of each location.
+		std::vector<Loc> locs;
+
+		// boxlocs is the location of each box.
+		std::vector<unsigned int> boxlocs;
+
+		// rbox is the robot's contents (-1 is empty).
+		int rbox;
+
+		// rloc is the robot's location.
+		unsigned int rloc;
+
+		// h and d are the heuristic and distance estimates.
+		Cost h, d;
+
+		// nleft is the number of packages out of their goal location.
+		unsigned int nleft;
 	};
 
 	class PackedState {
