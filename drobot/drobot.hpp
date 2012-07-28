@@ -2,6 +2,7 @@
 #include <cstdio>
 #include <vector>
 #include <algorithm>
+#include <utility>
 
 struct DockRobot {
 
@@ -132,8 +133,8 @@ struct DockRobot {
 			d(o.d),
 			nleft(o.nleft) {
 		}
-	
-		State(const State &&o) :
+
+		State(State &&o) :
 			locs(std::move(o.locs)),
 			boxlocs(std::move(o.boxlocs)),
 			rbox(o.rbox),
@@ -141,6 +142,28 @@ struct DockRobot {
 			h(o.h),
 			d(o.d),
 			nleft(o.nleft) {
+		}
+
+		State &operator =(const State &o) {
+			locs = o.locs;
+			boxlocs = o.boxlocs;
+			rbox = o.rbox;
+			rloc = o.rloc;
+			h = o.h;
+			d = o.d;
+			nleft = o.nleft;
+			return *this;
+		}
+
+		State &operator =(State &&o) {
+			std::swap(locs, o.locs);
+			std::swap(boxlocs, o.boxlocs);
+			rbox = o.rbox;
+			rloc = o.rloc;
+			h = o.h;
+			d = o.d;
+			nleft = o.nleft;
+			return *this;
 		}
 
 		bool operator==(const State &o) const {
