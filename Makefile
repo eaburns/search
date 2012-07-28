@@ -1,8 +1,8 @@
-CXX:=clang++ -fno-color-diagnostics
-CC:=clang -fno-color-diagnostics
+#CXX:=clang++ -fno-color-diagnostics
+#CC:=clang -fno-color-diagnostics
 
-#CXX:=g++
-#CC:=gcc
+CXX:=g++
+CC:=gcc
 
 AR:=ar
 
