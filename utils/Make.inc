@@ -38,6 +38,6 @@ utils/test: utils/test_geom.cc utils/test_encode.cc\
 	utils/bench_ops.cc utils/test_misc.cc\
 	utils/test_fs.cc utils/test.cc utils/utils.a
 	@echo $@
-	@$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
+	@$(CXX) $^ $(LDFLAGS) -o $@
 
 CLEAN+=utils/test

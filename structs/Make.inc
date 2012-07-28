@@ -23,7 +23,7 @@ structs/test:\
 	utils/utils.a\
 	structs/structs.a
 	@echo $@
-	@$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
+	@$(CXX) $^ $(LDFLAGS) -o $@
 
 structs/structs.a: $(STRUCTSOBJS)
 	@echo $@

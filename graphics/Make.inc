@@ -20,7 +20,7 @@ CLEAN+=graphics.a
 
 graphics/test: $(GRAPHICSOBJS) graphics/test.o utils/utils.a
 	@echo $@
-	@$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) $(GRAPHICSLD) -o $@
+	@$(CXX) $^ $(LDFLAGS) $(GRAPHICSLD) -o $@
 
 include graphics/test.d
 CLEAN+=graphics/test.o graphics/test

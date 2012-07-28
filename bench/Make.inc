@@ -6,6 +6,6 @@ bench: bench/mark
 
 bench/mark: bench/mark.cc utils/utils.a
 	@echo $@
-	@$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
+	@$(CXX) $^ $(LDFLAGS) -o $@
 
 CLEAN+=bench/mark

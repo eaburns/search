@@ -54,6 +54,7 @@ struct Image {
 
 	struct Drawable {
 		Drawable() { }
+		virtual ~Drawable() { }
 		virtual void writeeps(FILE*) const = 0;
 	};
 

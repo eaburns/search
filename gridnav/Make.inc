@@ -13,7 +13,7 @@ EVERYTHING+=gridnav
 gridnav/scenario_solver: $(GRIDNAVOBJS) gridnav/main_scenario.o\
 	utils/utils.a structs/structs.a search/search.a
 	@echo $@
-	@$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
+	@$(CXX) $^ $(LDFLAGS) -o $@
 
 include gridnav/main_scenario.d
 CLEAN+=gridnav/scenario_solver gridnav/main_scenario.o
@@ -21,7 +21,7 @@ CLEAN+=gridnav/scenario_solver gridnav/main_scenario.o
 gridnav/gridnav_solver: $(GRIDNAVOBJS) gridnav/main_gridnav.o\
 	utils/utils.a structs/structs.a search/search.a
 	@echo $@
-	@$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
+	@$(CXX) $^ $(LDFLAGS) -o $@
 
 include gridnav/main_gridnav.d
 CLEAN+=gridnav/gridnav_solver gridnav/main_gridnav.o
@@ -29,7 +29,7 @@ CLEAN+=gridnav/gridnav_solver gridnav/main_gridnav.o
 gridnav/2poly: $(GRIDNAVOBJS) gridnav/2poly.cc visnav/visgraph.a\
 	utils/utils.a structs/structs.a search/search.a
 	@echo $@
-	@$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
+	@$(CXX) $^ $(LDFLAGS) -o $@
 
 include gridnav/2poly.d
 CLEAN+=gridnav/2poly gridnav/2poly.o

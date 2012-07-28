@@ -1,8 +1,8 @@
-• build
+• clang
 
-	-  clang 2.9 can't compile any more
-	for some reason.  Maybe clang 3
-	can…
+	- -stdlib=libc++
+	This probably requires getting rid of
+	a bunch of C stuff…
 
 • utils
 
@@ -11,6 +11,8 @@
 	- fix segfault in fatal
 
 	- unit test Steve's safeops
+
+	- move image code to graphics/
 
 • plat2d:
 

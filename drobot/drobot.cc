@@ -45,7 +45,7 @@ void DockRobot::Loc::addcrane(unsigned int box) {
 	std::sort(cranes.begin(), cranes.end());
 }
 
-const DockRobot::Oper DockRobot::Nop = { DockRobot::Oper::None, 0 };
+const DockRobot::Oper DockRobot::Nop = DockRobot::Oper(DockRobot::Oper::None);
 
 DockRobot::DockRobot(unsigned int n) :
 		nlocs(n),  nboxes(0), maxpiles(n, 0), maxcranes(n, 0), adj(n), initlocs(n) {
@@ -189,6 +189,16 @@ DockRobot::State::State(const DockRobot &dr, const std::vector<Loc> &&ls,
 			nleft++;
 		boxlocs[rbox] = rloc;
 	}
+}
+
+DockRobot::State::State(const State &s) :
+	locs(s.locs),
+	boxlocs(s.boxlocs),
+	rbox(s.rbox),
+	rloc(s.rloc),
+	h(s.h),
+	d(s.d),
+	nleft(s.nleft) {
 }
 
 // LoadCost is the cost of loading and unloading the robot.

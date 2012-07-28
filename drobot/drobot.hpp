@@ -123,6 +123,8 @@ struct DockRobot {
 
 		State(const DockRobot&, const std::vector<Loc>&&, int, unsigned int);
 
+		State(const State&);
+
 		State &operator = (State&o) {
 			locs = o.locs;
 			boxlocs = o.boxlocs;
