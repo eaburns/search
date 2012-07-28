@@ -1,4 +1,7 @@
+graphics: graphics/graphics.a graphics/test
+
 GRAPHICSOBJS:=\
+	graphics/image.o\
 	graphics/scene.o\
 	graphics/ui.o\
 
@@ -8,8 +11,6 @@ include $(GRAPHICSOBJS:.o=.d)
 
 CLEAN+=$(GRAPHICSOBJS)
 
-graphics: graphics/graphics.a graphics/test
-
 EVERYTHING+=graphics
 
 graphics/graphics.a: $(GRAPHICSOBJS)
@@ -18,7 +19,11 @@ graphics/graphics.a: $(GRAPHICSOBJS)
 
 CLEAN+=graphics.a
 
-graphics/test: $(GRAPHICSOBJS) graphics/test.o utils/utils.a
+# A simple test binary
+graphics/test:\
+	$(GRAPHICSOBJS)\
+	graphics/test.o\
+	utils/utils.a
 	@echo $@
 	@$(CXX) $^ $(LDFLAGS) $(GRAPHICSLD) -o $@
 

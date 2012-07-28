@@ -1,5 +1,5 @@
 #include "visgraph.hpp"
-#include "../utils/image.hpp"
+#include "../graphics/image.hpp"
 #include "../utils/utils.hpp"
 #include <cerrno>
 

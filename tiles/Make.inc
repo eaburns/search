@@ -1,3 +1,7 @@
+tiles:\
+	tiles/15md_solver\
+	tiles/24md_solver
+
 TILESSRC:=\
 	tiles/tiles.cc\
 	tiles/mdist.cc\
@@ -5,15 +9,17 @@ TILESSRC:=\
 
 CLEAN+=$(TILESSRC:.cc=.o)
 
-tiles: tiles/15md_solver tiles/24md_solver
-
 EVERYTHING+=tiles
 
 DEFS15=-DWIDTH=4 -DHEIGHT=4
 
 tiles/15md_solver: tiles/main_mdist.d
-tiles/15md_solver: $(TILESSRC) tiles/main_mdist.cc\
-	utils/utils.a structs/structs.a search/search.a
+tiles/15md_solver:\
+	$(TILESSRC)\
+	tiles/main_mdist.cc\
+	utils/utils.a\
+	structs/structs.a\
+	search/search.a
 	@echo $@
 	@$(CXX) $(TILESSRC) tiles/main_mdist.cc utils/utils.a structs/structs.a search/search.a $(LDFLAGS) $(DEFS15) -o $@
 
@@ -23,8 +29,12 @@ include tiles/main_mdist.d
 DEFS24=-DWIDTH=5 -DHEIGHT=5
 
 tiles/24md_solver: tiles/main_mdist.d
-tiles/24md_solver: $(TILESSRC) tiles/main_mdist.cc\
-	utils/utils.a structs/structs.a search/search.a
+tiles/24md_solver:\
+	$(TILESSRC)\
+	tiles/main_mdist.cc\
+	utils/utils.a\
+	structs/structs.a\
+	search/search.a
 	@echo $@
 	@$(CXX) $(TILESSRC) tiles/main_mdist.cc utils/utils.a structs/structs.a search/search.a $(LDFLAGS) $(DEFS24) -o $@
 

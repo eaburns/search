@@ -1,5 +1,10 @@
 • clang
 
+	- Better handling of linking
+	dependencies. Currently, you
+	have to figure them out yourself,
+	and it is a pain.
+
 	- -stdlib=libc++
 	This probably requires getting rid of
 	a bunch of C stuff…

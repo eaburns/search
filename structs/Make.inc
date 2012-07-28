@@ -1,9 +1,11 @@
+structs:\
+	structs/structs.a\
+	structs/test
+
 STRUCTSOBJS:=\
 	structs/stn.o\
 
 include $(STRUCTSOBJS:.o=.d)
-
-structs: structs/structs.a structs/test
 
 EVERYTHING+=structs
 
@@ -25,7 +27,8 @@ structs/test:\
 	@echo $@
 	@$(CXX) $^ $(LDFLAGS) -o $@
 
-structs/structs.a: $(STRUCTSOBJS)
+structs/structs.a:\
+	$(STRUCTSOBJS)
 	@echo $@
 	@$(AR) rsc $@ $(STRUCTSOBJS)
 

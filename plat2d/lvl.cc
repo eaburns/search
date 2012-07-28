@@ -2,7 +2,7 @@
 #include "tile.hpp"
 #include "../utils/utils.hpp"
 #include "../utils/safeops.hpp"
-#include "../utils/image.hpp"
+#include "../graphics/image.hpp"
 #include <cmath>
 #include <cerrno>
 #include <limits>

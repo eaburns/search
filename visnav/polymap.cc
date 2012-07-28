@@ -1,6 +1,6 @@
 #include "polymap.hpp"
 #include "../utils/utils.hpp"
-#include "../utils/image.hpp"
+#include "../graphics/image.hpp"
 #include <cerrno>
 #include <cstring>
 

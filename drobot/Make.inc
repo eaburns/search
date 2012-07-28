@@ -1,25 +1,32 @@
+drobot: drobot/drobot_solver
+
 DROBOTOBJ=\
 	drobot/drobot.o\
 
 include $(DROBOTOBJ:.o=.d)
 CLEAN+=$(DROBOTOBJ)
 
-drobot: drobot/drobot_solver
-
+# Test the dock robot domain
 TESTS+=.drobot_test
-
 .drobot_test: drobot/test
 	./drobot/test ".*test" && touch $@
 CLEAN+=.drobot_test
 
-drobot/test: drobot/test.cc drobot/drobot.o utils/utils.a
+drobot/test:\
+	drobot/test.cc\
+	drobot/drobot.o\
+	utils/utils.a
 	@echo $@
 	@$(CXX) $^ $(LDFLAGS) -o $@
 
 EVERYTHING+=drobot
 
-drobot/drobot_solver: $(DROBOTOBJ) drobot/main.o\
-	utils/utils.a structs/structs.a search/search.a
+drobot/drobot_solver:\
+	$(DROBOTOBJ)\
+	drobot/main.o\
+	utils/utils.a\
+	structs/structs.a\
+	search/search.a
 	@echo $@
 	@$(CXX) $^ $(LDFLAGS) -o $@
 
