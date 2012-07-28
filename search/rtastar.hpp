@@ -37,7 +37,11 @@ template <class D> struct Rtastar : public SearchAlgorithm<D> {
 
 	struct Current {
 		Current(const State &s, Oper o, Oper p, Cost e, Cost fval) :
-			state(s), op(o), pop(p), edgecost(e), f(fval) { }
+			state(s),
+			op(o),
+			pop(p),
+			edgecost(e),
+			f(fval) { }
 
 		State state;
 		Oper op, pop;

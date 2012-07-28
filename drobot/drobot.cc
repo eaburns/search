@@ -162,8 +162,13 @@ DockRobot::State DockRobot::initialstate() {
 	return s;
 }
 
-DockRobot::State::State(const DockRobot &dr, const std::vector<Loc> &&ls,
-	int rb, unsigned int rl) : locs(ls), rbox(rb), rloc(rl), h(-1), d(-1), nleft(0) {
+DockRobot::State::State(const DockRobot &dr, const std::vector<Loc> &&ls, int rb, unsigned int rl) :
+	locs(ls),
+	rbox(rb),
+	rloc(rl),
+	h(-1),
+	d(-1),
+	nleft(0) {
 
 	boxlocs.resize(dr.nboxes, dr.nlocs+1);
 
@@ -189,16 +194,6 @@ DockRobot::State::State(const DockRobot &dr, const std::vector<Loc> &&ls,
 			nleft++;
 		boxlocs[rbox] = rloc;
 	}
-}
-
-DockRobot::State::State(const State &s) :
-	locs(s.locs),
-	boxlocs(s.boxlocs),
-	rbox(s.rbox),
-	rloc(s.rloc),
-	h(s.h),
-	d(s.d),
-	nleft(s.nleft) {
 }
 
 // LoadCost is the cost of loading and unloading the robot.
