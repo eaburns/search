@@ -10,8 +10,8 @@ template <class D> struct Speediest : public SearchAlgorithm<D> {
 
 	struct Node : SearchNode<D> {
 		Cost d;
-		double sortval;
-		unsigned int depth;
+		float sortval;
+		unsigned long depth;
 
 		static bool pred(Node *a, Node *b) {
 			if (a->sortval == b->sortval) {
