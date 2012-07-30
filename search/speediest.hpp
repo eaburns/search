@@ -45,7 +45,7 @@ template <class D> struct Speediest : public SearchAlgorithm<D> {
 		open.push(n0);
 
 		while (!open.empty() && !SearchAlgorithm<D>::limit()) {
-			Node *n = open.pop();
+			Node *n = *open.pop();
 			State buf, &state = d.unpack(buf, n->packed);
 
 			if (d.isgoal(state)) {
@@ -69,7 +69,7 @@ template <class D> struct Speediest : public SearchAlgorithm<D> {
 	virtual void output(FILE *out) {
 		SearchAlgorithm<D>::output(out);
 		closed.prstats(stdout, "closed ");
-		dfpair(stdout, "open list type", "%s", open.kind());
+		dfpair(stdout, "open list type", "binheap");
 		dfpair(stdout, "node size", "%u", sizeof(Node));
 	}
 
@@ -120,7 +120,7 @@ private:
 		return n0;
 	}
 
-	OpenList<Node, Node, Cost> open;
+	BinHeap<Node, Node*> open;
  	ClosedList<SearchNode<D>, SearchNode<D>, D> closed;
 	Pool<Node> *nodes;
 };
