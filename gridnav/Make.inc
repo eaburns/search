@@ -38,7 +38,7 @@ gridnav/2poly:\
 	$(GRIDNAVOBJS)\
 	gridnav/2poly.cc\
 	visnav/visgraph.a\
-	graphics/graphics.a\
+	graphics/image.o\
 	utils/utils.a\
 	structs/structs.a\
 	search/search.a

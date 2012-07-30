@@ -19,7 +19,7 @@ CLEAN+=$(VISNAVOBJS)
 visnav/rand:\
 	$(VISNAVOBJS)\
 	visnav/rand.o\
-	graphics/graphics.a\
+	graphics/image.o\
 	utils/utils.a
 	@echo $@
 	@$(CXX) $^ $(LDFLAGS) -o $@
@@ -30,7 +30,7 @@ CLEAN+=visnav/rand visnav/rand.o
 visnav/draw:\
 	$(VISNAVOBJS)\
 	visnav/draw.o\
-	graphics/graphics.a\
+	graphics/image.o\
 	utils/utils.a
 	@echo $@
 	@$(CXX) $^ $(LDFLAGS) -o $@
@@ -41,7 +41,7 @@ CLEAN+=visnav/draw visnav/draw.o
 visnav/inst:\
 	$(VISNAVOBJS)\
 	visnav/inst.o\
-	graphics/graphics.a\
+	graphics/image.o\
 	utils/utils.a
 	@echo $@
 	@$(CXX) $^ $(LDFLAGS) -o $@
@@ -52,7 +52,7 @@ CLEAN+=visnav/inst visnav/inst.o
 visnav/visnav_solver:\
 	$(VISNAVOBJS)\
 	visnav/main.o\
-	graphics/graphics.a\
+	graphics/image.o\
 	utils/utils.a\
 	structs/structs.a\
 	search/search.a
@@ -65,7 +65,7 @@ CLEAN+=visnav/visnav_solver visnav/main.o
 visnav/mkgraph:\
 	$(VISNAVOBJS)\
 	visnav/mkgraph.o\
-	graphics/graphics.a\
+	graphics/image.o\
 	utils/utils.a\
 	structs/structs.a\
 	search/search.a
@@ -78,7 +78,7 @@ CLEAN+=visnav/mkgraph visnav/mkgraph.o
 visnav/pbm2poly:\
 	$(VISNAVOBJS)\
 	visnav/pbm2poly.o\
-	graphics/graphics.a\
+	graphics/image.o\
 	utils/utils.a
 	@echo $@
 	@$(CXX) $^ $(LDFLAGS) -o $@

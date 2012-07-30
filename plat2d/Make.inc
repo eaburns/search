@@ -16,7 +16,7 @@ plat2d/plat2d_solver:\
 	$(PLAT2DOBJS)\
 	plat2d/main.o\
 	plat2d/plat2d.o\
-	graphics/graphics.a\
+	graphics/image.o\
 	visnav/visgraph.a\
 	utils/utils.a\
 	structs/structs.a\
@@ -30,7 +30,7 @@ CLEAN+=plat2d/plat2d_solver plat2d/main.o plat2d/plat2d.o
 plat2d/draw:\
 	$(PLAT2DOBJS)\
 	plat2d/draw.o\
-	graphics/graphics.a\
+	graphics/image.o\
 	utils/utils.a
 	@echo $@
 	@$(CXX) $^ $(LDFLAGS) -o $@
@@ -41,7 +41,7 @@ CLEAN+=plat2d/draw plat2d/draw.o
 plat2d/2poly:\
 	$(PLAT2DOBJS)\
 	plat2d/2poly.o\
-	graphics/graphics.a\
+	graphics/image.o\
 	visnav/visgraph.a\
 	utils/utils.a
 	@echo $@
