@@ -10,7 +10,7 @@ template <class D> struct Speediest : public SearchAlgorithm<D> {
 
 	struct Node : SearchNode<D> {
 		Cost d;
-		float sortval;
+		double sortval;
 		unsigned long depth;
 
 		static bool pred(Node *a, Node *b) {
