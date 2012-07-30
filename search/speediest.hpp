@@ -13,7 +13,14 @@ template <class D> struct Speediest : public SearchAlgorithm<D> {
 		double sortval;
 		unsigned int depth;
 
-		static bool pred(Node *a, Node *b) { return a->sortval < b->sortval; }
+		static bool pred(Node *a, Node *b) {
+			if (a->sortval == b->sortval) {
+				if (a->d == b->d)
+					return a->g > b->g;
+				return a->d < b->d;
+			}
+			return a->sortval < b->sortval;
+		}
 
 		static typename D::Cost prio(Node *n) { return n->sortval; }
 
@@ -106,7 +113,7 @@ private:
 		d.pack(n0->packed, s0);
 		n0->g = Cost(0);
 		n0->d = d.d(s0);
-		n0->sortval = n0->d;
+		n0->sortval = 1;
 		n0->depth = 0;
 		n0->op = n0->pop = D::Nop;
 		n0->parent = NULL;
