@@ -41,8 +41,9 @@ template <class D> struct Bugsy : public SearchAlgorithm<D> {
 	Bugsy(int argc, const char *argv[]) :
 			SearchAlgorithm<D>(argc, argv), usehhat(false),
 			usedhat(false), navg(0), herror(0), derror(0),
-			useexpdelay(false), avgdelay(0), timeper(0.0),
-			nextresort(Resort1), nresort(0), closed(30000001) {
+			useexpdelay(false), avgdelay(0), dropdups(false),
+			timeper(0.0), nextresort(Resort1), nresort(0),
+			closed(30000001) {
 		wf = wt = -1;
 		for (int i = 0; i < argc; i++) {
 			if (i < argc - 1 && strcmp(argv[i], "-wf") == 0)
@@ -55,6 +56,8 @@ template <class D> struct Bugsy : public SearchAlgorithm<D> {
 				usehhat = true;
 			else if (i < argc - 1 && strcmp(argv[i], "-dhat") == 0)
 				usedhat = true;
+			else if (i < argc - 1 && strcmp(argv[i], "-dropdups") == 0)
+				dropdups = true;
 		}
 
 		if (wf < 0)
@@ -203,7 +206,7 @@ private:
 		Node *dup = static_cast<Node*>(closed.find(kid->packed, hash));
 		if (dup) {
 			this->res.dups++;
-			if (kid->g < dup->g) {
+			if (!dropdups && kid->g < dup->g) {
 				this->res.reopnd++;
 				dup->f = dup->f - dup->g + kid->g;
 				dup->update(kid->g, parent, op, e.revop);
@@ -283,6 +286,8 @@ private:
 	// expansion delay
 	bool useexpdelay;
 	double avgdelay;
+
+	bool dropdups;
 
 	// for nodes-per-second estimation
 	double timeper, last;
