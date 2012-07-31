@@ -21,6 +21,10 @@ template <class D> struct Bugsy : public SearchAlgorithm<D> {
 		// generated.
 		unsigned long expct;
 
+		// path-based mean expansion delay.
+		double avgdelay;
+		unsigned long depth;
+
 		static bool pred(Node *a, Node *b) {
 			if (a->u != b->u)
 				return a->u > b->u;
@@ -52,6 +56,8 @@ template <class D> struct Bugsy : public SearchAlgorithm<D> {
 				wt = strtod(argv[++i], NULL);
 			else if (i < argc - 1 && strcmp(argv[i], "-expdelay") == 0)
 				useexpdelay = true;
+			else if (i < argc - 1 && strcmp(argv[i], "-expdelay-path") == 0)
+				useexpdelay = delaypath = true;
 			else if (i < argc - 1 && strcmp(argv[i], "-hhat") == 0)
 				usehhat = true;
 			else if (i < argc - 1 && strcmp(argv[i], "-dhat") == 0)
@@ -121,7 +127,7 @@ template <class D> struct Bugsy : public SearchAlgorithm<D> {
 			dfpair(stdout, "mean single-step h error", "%g", herror);
 		if (usedhat)
 			dfpair(stdout, "mean single-step d error", "%g", derror);
-		if (useexpdelay)
+		if (useexpdelay && !delaypath)
 			dfpair(stdout, "mean expansion delay", "%g", avgdelay);
 	}
 
@@ -144,7 +150,11 @@ private:
 
 		if (useexpdelay) {
 			unsigned long delay = this->res.expd - n->expct;
-			avgdelay = avgdelay + (delay - avgdelay)/this->res.expd;
+
+			if (delaypath)
+				n->avgdelay = n->avgdelay + (delay - n->avgdelay)/n->depth;
+			else
+				avgdelay = avgdelay + (delay - avgdelay)/this->res.expd;
 		}
 
 		Kidinfo bestinfo;
@@ -184,6 +194,8 @@ private:
 		Node *kid = nodes->construct();
 		typename D::Edge e(d, state, op);
 		kid->g = parent->g + e.cost;
+		kid->depth = parent->depth + 1;
+		kid->avgdelay = parent->avgdelay;
 
 		// single step path-max on d
 		kid->d = d.d(e.state);
@@ -231,6 +243,8 @@ private:
 		n0->g = Cost(0);
 		n0->h = n0->f = d.h(s0);
 		n0->d = d.d(s0);
+		n0->depth = 0;
+		n0->avgdelay = 0;
 		computeutil(n0);
 		n0->op = n0->pop = D::Nop;
 		n0->parent = NULL;
@@ -249,8 +263,11 @@ private:
 		if (usehhat)
 			h += d * herror;
 
-		if (useexpdelay && avgdelay > 0)
-			d *= avgdelay;
+		if (useexpdelay) {
+			double avg = delaypath ? n->avgdelay : avgdelay;
+			if (avg > 0)
+				d *= avg;
+		}
 
 		double f = h + n->g;
 		n->t = timeper * d;
@@ -286,7 +303,7 @@ private:
 	double herror, derror;
 
 	// expansion delay
-	bool useexpdelay;
+	bool useexpdelay, delaypath;
 	double avgdelay;
 
 	bool dropdups;
