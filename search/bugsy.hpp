@@ -166,13 +166,15 @@ private:
 		navg++;
 		if (usehhat) {
 			double herr = bestinfo.f - n->f;
-			assert (herr >= 0);
+			if (herr < 0)	// floating point rounding
+				herr = 0;
 			herror = herror + (herr - herror)/navg;
 		}
 
 		if (usedhat) {
 			double derr = bestinfo.d + 1 - n->d;
-			assert (derr >= 0);
+			if (derr < 0)	// floating point rounding
+				derr = 0;
 			derror = derror + (derr - derror)/navg;
 		}
 	}
