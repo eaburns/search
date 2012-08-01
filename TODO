@@ -38,6 +38,10 @@
 
 	- random puzzle generator
 
+• gridnav
+
+	- cheapest & nearest h for life
+
 • pancake:
 
 	- bit-packed states
