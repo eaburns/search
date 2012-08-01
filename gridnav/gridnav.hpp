@@ -162,10 +162,17 @@ struct GridNav {
 				revop(d.rev[op]),
 				state(s.loc + d.map->mvs[op].delta) {
 			assert (state.loc < d.map->sz);
+			int mul = 1;
+			if (d.map->lifecost) {
+				// -2 because there is 1 layer of boarder
+				// around each side of the grid, thus
+				// height - y - 1 becomes height - y - 2.
+				mul = (int) d.map->h - d.map->ycoord(s.loc)-2;
+			}
 			if (d.map->mvs[op].cost == 1.0)
-				cost = Cost(1, 0);
+				cost = Cost(mul, 0);
 			else
-				cost = Cost(0, 1);
+				cost = Cost(0, mul);
 		}
 	};
 

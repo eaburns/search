@@ -16,13 +16,24 @@ struct GridMap {
 	~GridMap();
 
 	// coord returns x,y coordinate for the given array index.
-	std::pair<int,int> coord(int loc) const { return std::pair<int,int>(loc%w, loc / w); }
+	std::pair<int,int> coord(int loc) const {
+		return std::pair<int,int>(loc%w, loc / w);
+	}
+
+	// ycoord returns y coordinate for the given array index.
+	int ycoord(int loc) const {
+		return loc / w;
+	}
 
 	// loc returns the array index for the x,y coordinate.
-	int index(int x, int y) const { return y * w + x; }
+	int index(int x, int y) const {
+		return y * w + x;
+	}
 
 	// blkd returns true if the given location is blocked.
-	bool blkd(int l) const { return !(flags[l] & Passable); }
+	bool blkd(int l) const {
+		return !(flags[l] & Passable);
+	}
 
 	// A Move contains information for a single
 	// possible move to and adjacent cell of the
@@ -68,6 +79,12 @@ struct GridMap {
 	unsigned int w, h, sz;
 	unsigned char *map;
 	std::string file;
+
+	// lifecost is true for `life cost' grid maps.  In
+	// these maps, the cost of each move should
+	// be multiplied by the y coordinate of the
+	// cell from which the move is taking place.
+	bool lifecost;
 
 	unsigned int nmvs;
 	Move mvs[8];

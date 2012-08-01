@@ -42,10 +42,10 @@ template<class D> Result<D> search(D &d, int argc, const char *argv[]) {
 		srch->finish();
 	}
 	if (srch->res.path.size() > 0) {
-		dfpair(stdout, "final sol cost", "%g",
+		dfpair(stdout, "final sol cost", "%f",
 			(double) d.pathcost(srch->res.path, srch->res.ops));
 	} else {
-		dfpair(stdout, "final sol cost", "%g", -1.0);
+		dfpair(stdout, "final sol cost", "%f", -1.0);
 	}
 	srch->output(stdout);
 
