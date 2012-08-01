@@ -24,15 +24,34 @@ struct GridMap {
 	// blkd returns true if the given location is blocked.
 	bool blkd(int l) const { return !(flags[l] & Passable); }
 
+	// A Move contains information for a single
+	// possible move to and adjacent cell of the
+	// grid.
 	struct Move {
 		Move() : n(0) { }
 
 		Move(const GridMap&, int, int, unsigned int, ...);
 
-		int dx, dy, delta;
+		// dx, dy give the x and y displacement of
+		// this move.
+		int dx, dy;
+
+		// delta gives the loc displacement of
+		// this move.
+		int delta;
+
+		// cost is √2 for diagonal moves and 1 for
+		// both vertical and horizontal moves.
 		double cost;
-		unsigned int n;
+
+		// chk array contains the displacements
+		// for cells that must be unblocked in order
+		// for this move to be valid.
 		struct { int dx, dy, delta; } chk[3];
+
+		// n is the number of valid elements in
+		// the chk array.
+		unsigned int n;
 	};
 
 	// ok returns true if the given move is valid from the
