@@ -56,14 +56,14 @@ template <class D> struct Bugsy : public SearchAlgorithm<D> {
 				wt = strtod(argv[++i], NULL);
 			else if (i < argc - 1 && strcmp(argv[i], "-expdelay") == 0)
 				useexpdelay = true;
-			else if (i < argc - 1 && strcmp(argv[i], "-expdelay-path") == 0)
-				useexpdelay = delaypath = true;
 			else if (i < argc - 1 && strcmp(argv[i], "-hhat") == 0)
 				usehhat = true;
 			else if (i < argc - 1 && strcmp(argv[i], "-dhat") == 0)
 				usedhat = true;
 			else if (i < argc - 1 && strcmp(argv[i], "-dropdups") == 0)
 				dropdups = true;
+			else if (i < argc - 1 && strcmp(argv[i], "-interph") == 0)
+				interph = usehhat = true;
 		}
 
 		if (wf < 0)
@@ -127,7 +127,7 @@ template <class D> struct Bugsy : public SearchAlgorithm<D> {
 			dfpair(stdout, "mean single-step h error", "%g", herror);
 		if (usedhat)
 			dfpair(stdout, "mean single-step d error", "%g", derror);
-		if (useexpdelay && !delaypath)
+		if (useexpdelay)
 			dfpair(stdout, "mean expansion delay", "%g", avgdelay);
 	}
 
@@ -150,11 +150,7 @@ private:
 
 		if (useexpdelay) {
 			unsigned long delay = this->res.expd - n->expct;
-
-			if (delaypath)
-				n->avgdelay = n->avgdelay + (delay - n->avgdelay)/n->depth;
-			else
-				avgdelay = avgdelay + (delay - avgdelay)/this->res.expd;
+			avgdelay = avgdelay + (delay - avgdelay)/this->res.expd;
 		}
 
 		Kidinfo bestinfo;
@@ -260,14 +256,18 @@ private:
 			d /= (1 - derror);
 
 		double h = n->h;
-		if (usehhat)
-			h += d * herror;
-
-		if (useexpdelay) {
-			double avg = delaypath ? n->avgdelay : avgdelay;
-			if (avg > 0)
-				d *= avg;
+		if (usehhat) {
+			if (interph) {
+				double hhat = h + d*herror;
+				double w = wf/(wf+wt);
+				h = n->h*w + hhat*(1-w);
+			} else {
+				h += d * herror;
+			}
 		}
+
+		if (useexpdelay && avgdelay > 0)
+			d *= avgdelay;
 
 		double f = h + n->g;
 		n->t = timeper * d;
@@ -302,8 +302,13 @@ private:
 	unsigned long navg;
 	double herror, derror;
 
+	// interph — when using heuristic correction,
+	// interpolate between h and hhat depending
+	// on the ratio of wf to wt.
+	bool interph;
+
 	// expansion delay
-	bool useexpdelay, delaypath;
+	bool useexpdelay;
 	double avgdelay;
 
 	bool dropdups;
