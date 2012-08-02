@@ -88,18 +88,22 @@ struct GridNav {
 	struct State {
 		State &operator=(const State &o) {
  			loc = o.loc;
+			h = o.h;
+			d = o.d;
  			return *this;
 		}
 
-		State() { }
+		State() : d(-1) { }
 
-		State (const State &o) : loc(o.loc) { }
+		State (const State &o) : loc(o.loc), h(o.h), d(o.d) { }
 
-		State(unsigned int l) : loc(l) { }
+		State(unsigned int l) : loc(l), d(-1) { }
 
 	private:
 		friend struct GridNav;
 		unsigned int loc;
+		Cost h;
+		int d;
 	};
 
 	struct PackedState {
@@ -117,15 +121,27 @@ struct GridNav {
 	}
 
 	Cost h(State &s) const {
-		if (map->nmvs > 4)
-			return octiledist(s.loc, finish);
-		return manhattan(s.loc, finish);
+		computeh(s);
+		return s.h;
 	}
 
 	Cost d(State &s) const {
+		computeh(s);
+		return Cost(s.d);
+	}
+
+	void computeh(State &s) const {
+		if (s.d >= 0)
+			return;
+
+		std::pair<Cost, int> hd;
 		if (map->nmvs > 4)
-			return octilecells(s.loc, finish);
-		return manhattan(s.loc, finish);
+			hd = octiledist2(s.loc, finish);
+		else
+			hd = manhattan2(s.loc, finish);
+
+		s.h = hd.first;
+		s.d = hd.second;
 	}
 
 	bool isgoal(State &s) const {
@@ -201,28 +217,23 @@ struct GridNav {
 
 private:
 
-	// manhattan returns the Manhattan distance.
-	Cost manhattan(int l0, int l1) const {
+	// manhattan2 returns the Manhattan distance as
+	// both a cost and distance estimate.
+	std::pair<Cost, int> manhattan2(int l0, int l1) const {
 		std::pair<int,int> c0 = map->coord(l0), c1 = map->coord(l1);
-		return Cost(abs(c0.first - c1.first) + abs(c0.second - c1.second), 0);
+		unsigned int d = abs(c0.first - c1.first) + abs(c0.second - c1.second);
+		return std::make_pair(Cost(d, 0), d);
 	}
 
-	// octiledist returns an admissible heuristic estimate for eight-way grids.
-	Cost octiledist(int l0, int l1) const {
+	// octiledist2 returns an admissible heuristic estimate
+	// and cost estimate for eight-way grids.
+	std::pair<Cost, int> octiledist2(int l0, int l1) const {
 		std::pair<int,int> c0 = map->coord(l0), c1 = map->coord(l1);
 		int dx = abs(c0.first - c1.first);
 		int dy = abs(c0.second - c1.second);
-		int diag = dx < dy ? dx : dy;
-		int straight = dx < dy ? dy : dx;
-		return Cost(straight - diag, diag);
-	}
-
-	// octilecells returns an admissible distance estimate for eight-way grids.
-	Cost octilecells(unsigned int l0, unsigned int l1) const {
-		std::pair<int,int> c0 = map->coord(l0), c1 = map->coord(l1);
-		int dx = abs(c0.first - c1.first);
-		int dy = abs(c0.second - c1.second);
-		return Cost(dx < dy ? dy : dx, 0);
+		int shorter = dx < dy ? dx : dy;
+		int longer = dx < dy ? dy : dx;
+		return std::make_pair(Cost(longer - shorter, shorter), longer);
 	}
 
 	// reverseops computes the reverse operators
