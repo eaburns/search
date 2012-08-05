@@ -38,6 +38,10 @@
 
 	- random puzzle generator
 
+• gridnav
+
+	- cheapest & nearest h for life
+
 • pancake:
 
 	- bit-packed states
@@ -47,6 +51,8 @@
 	- specific closed list
 
 • More domains:
+
+	- Frank's pick-and-place
 
 	- Dynamic robot path finding
 
