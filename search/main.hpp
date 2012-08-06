@@ -29,8 +29,8 @@ template<class D> Result<D> search(D &d, int argc, const char *argv[]) {
 		fatal("Must specify a search algorithm");
 
 	typename D::State s0 = d.initialstate();
-	dfpair(stdout, "initial heuristic", "%g", (double) d.h(s0));
-	dfpair(stdout, "initial distance", "%g", (double) d.d(s0));
+	dfpair(stdout, "initial heuristic", "%f", (double) d.h(s0));
+	dfpair(stdout, "initial distance", "%f", (double) d.d(s0));
 	dfpair(stdout, "algorithm", argv[1]);
 
 	try {

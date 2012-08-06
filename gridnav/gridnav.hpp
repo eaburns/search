@@ -134,14 +134,22 @@ struct GridNav {
 		if (s.d >= 0)
 			return;
 
-		std::pair<Cost, int> hd;
-		if (map->nmvs > 4)
-			hd = octiledist2(s.loc, finish);
-		else
-			hd = manhattan2(s.loc, finish);
-
-		s.h = hd.first;
-		s.d = hd.second;
+		if (map->nmvs > 4 && !map->lifecost) {
+			auto hd = octiledist(s.loc, finish);
+			s.h = hd.first;
+			s.d = hd.second;
+		} else if (map->nmvs > 4 && map->lifecost) {
+			auto hd = life8cheap(s.loc, finish);
+			s.h = hd.first;
+			s.d = hd.second;
+		} else if (map->nmvs <= 4 && map->lifecost) {
+			auto hd = life4cheap(s.loc, finish);
+			s.h = hd.first;
+			s.d = hd.second;
+		} else {
+			s.d = manhattan(s.loc, finish);
+			s.h = Cost(s.d);
+		}
 	}
 
 	bool isgoal(State &s) const {
@@ -217,23 +225,69 @@ struct GridNav {
 
 private:
 
-	// manhattan2 returns the Manhattan distance as
-	// both a cost and distance estimate.
-	std::pair<Cost, int> manhattan2(int l0, int l1) const {
-		std::pair<int,int> c0 = map->coord(l0), c1 = map->coord(l1);
+	// manhattan returns the Manhattan distance.
+	int manhattan(int l0, int l1) const {
+		auto c0 = map->coord(l0), c1 = map->coord(l1);
 		unsigned int d = abs(c0.first - c1.first) + abs(c0.second - c1.second);
-		return std::make_pair(Cost(d, 0), d);
+		return d;
 	}
 
-	// octiledist2 returns an admissible heuristic estimate
+	// octiledist returns an admissible heuristic estimate
 	// and cost estimate for eight-way grids.
-	std::pair<Cost, int> octiledist2(int l0, int l1) const {
-		std::pair<int,int> c0 = map->coord(l0), c1 = map->coord(l1);
+	std::pair<Cost, int> octiledist(int l0, int l1) const {
+		auto c0 = map->coord(l0), c1 = map->coord(l1);
 		int dx = abs(c0.first - c1.first);
 		int dy = abs(c0.second - c1.second);
 		int shorter = dx < dy ? dx : dy;
 		int longer = dx < dy ? dy : dx;
 		return std::make_pair(Cost(longer - shorter, shorter), longer);
+	}
+
+	// lifecost is the cost of moving out of cell y.
+	int lifecost(int y) const {
+		return map->h - y - 3;
+	}
+
+	// sumbetween returns the sum of n numbers
+	// between a and b, inclusive.
+	int sumbetween(int a, int b, int n) const {
+		return (a + b)*n / 2;
+	}
+
+	// costfrom returns the life cost for moving between
+	// y0 and y1.
+	int costfrom(int y0, int y1) const {
+		int last = y1;
+		if (y0 > y1)
+			last++;
+		if (y0 < y1)
+			last--;
+		return sumbetween(lifecost(y0), lifecost(last), abs(y0 - y1));
+	}
+
+	// life4cheap returns an admissible heuristic cost
+	// estimate and distance estimate for four-way
+	// life-cost grids.
+	std::pair<Cost, int> life4cheap(int l0, int l1) const {
+		auto c0 = map->coord(l0), c1 = map->coord(l1);
+		int x = c0.first - 1, gx = c1.first - 1;
+		int y = c0.second - 1, gy = c1.second - 1;
+		int h = map->h - 2;
+		int dx = abs(gx - x);
+		int overcost = lifecost(y > gy ? y : gy);
+		int upover = dx*overcost + costfrom(y, gy);
+		int upoverdown = costfrom(y, h) + costfrom(h, gy);
+
+		if (upover < upoverdown)
+			return std::make_pair(upover, dx+abs(gy - y));
+
+		return std::make_pair(upoverdown, dx + h-1-y + h-1-gy);
+	}
+
+	// life8cheap returns an admissible heuristic cost
+	// and distance estimate for eight-way life-cost grids.
+	std::pair<Cost, int> life8cheap(int l0, int l1) const {
+		return std::make_pair(0, 0);
 	}
 
 	// reverseops computes the reverse operators
