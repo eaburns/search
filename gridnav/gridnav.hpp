@@ -287,7 +287,24 @@ private:
 	// life8cheap returns an admissible heuristic cost
 	// and distance estimate for eight-way life-cost grids.
 	std::pair<Cost, int> life8cheap(int l0, int l1) const {
-		return std::make_pair(0, 0);
+		auto c0 = map->coord(l0), c1 = map->coord(l1);
+		int x = c0.first - 1, gx = c1.first - 1;
+		int y = c0.second - 1, gy = c1.second - 1;
+		int dx = abs(gx - x);
+		int dy = abs(gy - y);
+
+		if (dx <= dy)
+			return std::make_pair(costfrom(y, gy), dy);
+
+		int h = map->h - 2;
+		int maxy = h - 1;
+		int maxup = (maxy-y) < (maxy-gy) ? maxy-y : maxy - gy;
+		int extra = dx - dy;
+		int up = maxup < extra/2 ? maxup : extra/2;
+		int highy = (y > gy ? y : gy) + up;
+		int across = extra - 2*up;
+		int c = costfrom(y, highy) + across*lifecost(highy) + costfrom(highy, gy);
+		return std::make_pair(c, dx);
 	}
 
 	// reverseops computes the reverse operators
