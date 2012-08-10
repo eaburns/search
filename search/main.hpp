@@ -4,6 +4,7 @@
 #include "wastar.hpp"
 #include "greedy.hpp"
 #include "bugsy.hpp"
+#include "bugsy-slim.hpp"
 #include "arastar.hpp"
 #include "rtastar.hpp"
 #include "speediest.hpp"
@@ -71,6 +72,8 @@ template<class D> SearchAlgorithm<D> *getsearch(int argc, const char *argv[]) {
 		return new Greedy<D, true>(argc, argv);
 	else if (strcmp(argv[1], "bugsy") == 0)
 		return new Bugsy<D>(argc, argv);
+	else if (strcmp(argv[1], "bugsy-slim") == 0)
+		return new Bugsy_slim<D>(argc, argv);
 	else if (strcmp(argv[1], "arastar") == 0)
 		return new Arastar<D>(argc, argv);
 	else if (strcmp(argv[1], "rtastar") == 0)
