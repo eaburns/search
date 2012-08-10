@@ -3,11 +3,6 @@
 
 • clang
 
-	- Better handling of linking
-	dependencies. Currently, you
-	have to figure them out yourself,
-	and it is a pain.
-
 	- -stdlib=libc++
 	This probably requires getting rid of
 	a bunch of C stuff…
@@ -19,8 +14,6 @@
 	- fix segfault in fatal
 
 	- unit test Steve's safeops
-
-	- move image code to graphics/
 
 • plat2d:
 
@@ -41,6 +34,10 @@
 
 	- random puzzle generator
 
+• gridnav
+
+	- cheapest & nearest h for life
+
 • pancake:
 
 	- bit-packed states
@@ -50,6 +47,8 @@
 	- specific closed list
 
 • More domains:
+
+	- Frank's pick-and-place
 
 	- Dynamic robot path finding
 
