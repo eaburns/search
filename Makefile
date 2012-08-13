@@ -36,6 +36,7 @@ include plat2d/Make.inc
 include graphics/Make.inc
 include rdb/Make.inc
 include drobot/Make.inc
+include segments/Make.inc
 
 everything: $(EVERYTHING)
 

@@ -338,6 +338,8 @@ namespace geom2d {
 	};
 	
 	struct Arc {
+
+		Arc() { }
 	
 		// Arc constructs a new arc with the given center
 		// radius, initial angle and final angle.  Angles are

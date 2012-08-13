@@ -9,9 +9,9 @@ rdb:\
 RDBOBJS:=\
 	rdb/rdb.o\
 
-include $(UTILOBJS:.o=.d)
+include $(RDBOBJS:.o=.d)
 
-CLEAN+=$(UTILOBJS)
+CLEAN+=$(RDBOBJS)
 
 EVERYTHING+=rdb
 

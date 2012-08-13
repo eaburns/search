@@ -40,9 +40,14 @@ struct <DOMAIN> {
 
 		// Functions for putting a packed state
 		// into a hash table.
-		unsigned long hash(void) { return -1; }
-		bool eq(PackedState &) const { return false; }
+		bool operator==(const PackedState &) const {
+			return false;
+		}
 	};
+
+	unsigned long hash(const PackedState&) const {
+		return -1;
+	}
 
 	// Get the initial state.
 	State initialstate(void) const;
