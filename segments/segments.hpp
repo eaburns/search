@@ -3,6 +3,7 @@
 #include <cstdio>
 #include <vector>
 #include <cmath>
+#include <utility>
 
 struct Segments {
 private:
@@ -77,9 +78,27 @@ public:
 			init(dom, pkd.poses);
 		}
 
+		State(const State &o) : x(o.x), y(o.y), poses(o.poses), lines(o.lines), nleft(o.nleft) { }
+
 		State(State &&o) : x(o.x), y(o.y), nleft(o.nleft) {
 			std::swap(poses, o.poses);
 			std::swap(lines, o.lines);
+		}
+
+		State& operator=(const State &o) {
+			x = o.x;
+			y = o.y;
+			poses = o.poses;
+			lines = o.lines;
+			return *this;
+		}
+
+		State& operator=(State &&o) {
+			x = o.x;
+			y = o.y;
+			std::swap(poses, o.poses);
+			std::swap(lines, o.lines);
+			return *this;
 		}
 
 		bool operator==(const State&) const;
@@ -112,6 +131,13 @@ public:
 
 		PackedState(PackedState &&o) : x(o.x), y(o.y) {
 			std::swap(poses, o.poses);
+		}
+
+		PackedState &operator=(PackedState &&o) {
+			x = o.x;
+			y = o.y;
+			std::swap(poses, o.poses);
+			return *this;
 		}
 
 		bool operator==(const PackedState &o) const {
