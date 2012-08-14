@@ -78,9 +78,11 @@ Segments::Segments(unsigned int w, unsigned int h, unsigned int t) :
 void Segments::State::init(const Segments &dom, const std::vector<Pose> &ps) {
 	nleft = 0;
 
+	poses.resize(ps.size());
+	lines.resize(ps.size());
 	for (unsigned int i = 0; i < ps.size(); i++) {
-		poses.push_back(ps[i]);
-		lines.push_back(dom.line(dom.segs[i], ps[i]));
+		poses[i] = ps[i];
+		lines[i] = dom.line(dom.segs[i], ps[i]);
 
 		if (ps[i] != dom.segs[i].goal)
 			nleft++;
@@ -175,7 +177,6 @@ bool Segments::Oper::ok(const Segments &dom, const State &s) const {
 		return true;
 
 	Sweep swp = sweep(dom, s);
-
 	for (unsigned int i = 0; i < 4; i++) {
 		if (swp.hits(dom.bounds[i]))
 			return false;
@@ -285,9 +286,11 @@ Segments::Cost Segments::h(const State &s) const {
 		if (s.poses[i] == segs[i].goal)
 			continue;
 
-		double dx = (double)segs[i].goal.x - s.poses[i].x;
-		double dy = (double)segs[i].goal.y - s.poses[i].y;
-		h += sqrt(dx*dx + dy*dy);
+		double dx = abs((int)segs[i].goal.x - (int)s.poses[i].x);
+		double dy = abs((int)segs[i].goal.y - (int)s.poses[i].y);
+		double shorter = dx < dy ? dx : dy;
+		double longer = dx > dy ? dx : dy;
+		h += (longer-shorter) + shorter*sqrt(2.0);
 
 		int adist = wrapind(segs[i].goal.rot - s.poses[i].rot, nangles);
 		int bdist = wrapind(s.poses[i].rot - segs[i].goal.rot, nangles);

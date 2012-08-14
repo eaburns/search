@@ -88,6 +88,7 @@ public:
 		State& operator=(const State &o) {
 			x = o.x;
 			y = o.y;
+			nleft = o.nleft;
 			poses = o.poses;
 			lines = o.lines;
 			return *this;
@@ -96,6 +97,7 @@ public:
 		State& operator=(State &&o) {
 			x = o.x;
 			y = o.y;
+			nleft = o.nleft;
 			std::swap(poses, o.poses);
 			std::swap(lines, o.lines);
 			return *this;
@@ -129,8 +131,7 @@ public:
 		PackedState(const State &s) : poses(s.poses), x(s.x), y(s.y) {
 		}
 
-		PackedState(PackedState &&o) : x(o.x), y(o.y) {
-			std::swap(poses, o.poses);
+		PackedState(PackedState &&o) : poses(std::move(o.poses)), x(o.x), y(o.y) {
 		}
 
 		PackedState &operator=(PackedState &&o) {

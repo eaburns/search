@@ -6,7 +6,7 @@
 using namespace geom2d;
 
 enum {
-	Nsegs = 2,
+	Nsegs = 1,
 	Width = 100,
 	Height = 100,
 	Nangles = 24,
