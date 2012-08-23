@@ -21,7 +21,7 @@ tiles/15md_solver:\
 	structs/structs.a\
 	search/search.a
 	@echo $@
-	@$(CXX) $(TILESSRC) tiles/main_mdist.cc utils/utils.a structs/structs.a search/search.a $(LDFLAGS) $(DEFS15) -o $@
+	@$(CXX) -static $(TILESSRC) tiles/main_mdist.cc utils/utils.a structs/structs.a search/search.a $(LDFLAGS) $(DEFS15) -o $@
 
 CLEAN+=tiles/15md_solver
 include tiles/main_mdist.d
@@ -36,7 +36,7 @@ tiles/24md_solver:\
 	structs/structs.a\
 	search/search.a
 	@echo $@
-	@$(CXX) $(TILESSRC) tiles/main_mdist.cc utils/utils.a structs/structs.a search/search.a $(LDFLAGS) $(DEFS24) -o $@
+	@$(CXX) -static $(TILESSRC) tiles/main_mdist.cc utils/utils.a structs/structs.a search/search.a $(LDFLAGS) $(DEFS24) -o $@
 
 CLEAN+=tiles/24md_solver
 include tiles/main_mdist.d
