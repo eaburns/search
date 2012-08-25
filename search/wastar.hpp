@@ -106,7 +106,7 @@ private:
 		if (dup) {
 			this->res.dups++;
 			if (dropdups && kid->g < dup->g)
-				dup->parent = kid->parent;
+				dup->parent = parent;
 			if (dropdups || kid->g >= dup->g) {
 				nodes->destruct(kid);
 				return;
