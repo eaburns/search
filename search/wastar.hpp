@@ -105,8 +105,6 @@ private:
 		Node *dup = static_cast<Node*>(closed.find(kid->packed, hash));
 		if (dup) {
 			this->res.dups++;
-			if (dropdups && kid->g < dup->g)
-				dup->parent = parent;
 			if (dropdups || kid->g >= dup->g) {
 				nodes->destruct(kid);
 				return;
