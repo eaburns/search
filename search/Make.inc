@@ -17,6 +17,11 @@ search/search.a:\
 
 CLEAN+=$(SEARCHOBJS) search/search.a
 
-search/mkprof: search/mkprof.cc $(SEARCHOBJS) rdb/rdb.a utils/utils.a
-	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
+search/mkprof:\
+	search/mkprof.cc\
+	$(SEARCHOBJS)\
+	rdb/rdb.a\
+	utils/utils.a
+	@echo $@
+	@$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
 CLEAN+=search/mkprof
