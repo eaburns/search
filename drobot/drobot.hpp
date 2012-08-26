@@ -2,6 +2,7 @@
 #include <cstdio>
 #include <vector>
 #include <algorithm>
+#include <utility>
 
 struct DockRobot {
 
@@ -117,45 +118,125 @@ struct DockRobot {
 
 	DockRobot(FILE*);
 
-	struct State {
-		std::vector<Loc> locs;
-		int rbox;	// the robot's contents (-1 is empty)
-		unsigned int rloc;	// the robot's location
+	class State {
+	public:
+		State() { }
 
-		Cost h, d;
+		State(const DockRobot&, const std::vector<Loc>&&, int, unsigned int);
+	
+		State(const State &o) :
+			locs(o.locs),
+			boxlocs(o.boxlocs),
+			rbox(o.rbox),
+			rloc(o.rloc),
+			h(o.h),
+			d(o.d),
+			nleft(o.nleft) {
+		}
 
-		// nleft is the number of packages out of their goal location.
-		unsigned int nleft;
+		State(State &&o) :
+			locs(std::move(o.locs)),
+			boxlocs(std::move(o.boxlocs)),
+			rbox(o.rbox),
+			rloc(o.rloc),
+			h(o.h),
+			d(o.d),
+			nleft(o.nleft) {
+		}
+
+		State &operator =(const State &o) {
+			locs = o.locs;
+			boxlocs = o.boxlocs;
+			rbox = o.rbox;
+			rloc = o.rloc;
+			h = o.h;
+			d = o.d;
+			nleft = o.nleft;
+			return *this;
+		}
+
+		State &operator =(State &&o) {
+			std::swap(locs, o.locs);
+			std::swap(boxlocs, o.boxlocs);
+			rbox = o.rbox;
+			rloc = o.rloc;
+			h = o.h;
+			d = o.d;
+			nleft = o.nleft;
+			return *this;
+		}
 
 		bool operator==(const State &o) const {
-			if (rloc != o.rloc)
+			if (rloc != o.rloc || rbox != o.rbox || nleft != o.nleft)
 				return false;
 			for (unsigned int i = 0; i < locs.size(); i++) {
 				if (locs[i] != o.locs[i])
 					return false;
+			}				
+			return true;
+		}
+
+		// locs is the state of each location.
+		std::vector<Loc> locs;
+
+		// boxlocs is the location of each box.
+		std::vector<unsigned int> boxlocs;
+
+		// rbox is the robot's contents (-1 is empty).
+		int rbox;
+
+		// rloc is the robot's location.
+		unsigned int rloc;
+
+		// h and d are the heuristic and distance estimates.
+		Cost h, d;
+
+		// nleft is the number of packages out of their goal location.
+		unsigned int nleft;
+	};
+
+	class PackedState {
+	public:
+		PackedState() : sz(0), pos(0) { }
+
+		~PackedState() {
+			if (pos) delete[] pos;
+		}
+
+		bool operator==(const PackedState &o) const {
+			for (unsigned int i = 0; i < sz; i++) {
+				if (pos[i] != o.pos[i])
+					return false;
 			}
 			return true;
 		}
-	};
 
-	typedef State PackedState;
+		unsigned int sz;
+		unsigned int *pos;
+	};
 
 	State initialstate();
 
 	unsigned long hash(const PackedState &p) const {
-		unsigned int pos[nboxes+1];
-		boxlocs(p, pos);
-		pos[nboxes] = p.rloc;
-
-		return hashbytes(reinterpret_cast<unsigned char*>(&pos[0]),
-			sizeof(pos[0])*(nboxes+1));
+		return hashbytes(reinterpret_cast<unsigned char*>(p.pos),
+			sizeof(p.pos[0])*p.sz);
 	}
 
-	Cost h(const State &s) const {
+	Cost h(State &s) const {
+		if (s.h < Cost(0)) {
+			std::pair<float,float> p = hd(s);
+			s.h = p.first;
+			s.d = p.second;
+		}
 		return s.h;
 	}
 
-	Cost d(const State &s) const {
+	Cost d(State &s) const {
+		if (s.d < Cost(0)) {
+			std::pair<float,float> p = hd(s);
+			s.h = p.first;
+			s.d = p.second;
+		}
 		return s.d;
 	}
 
@@ -184,12 +265,19 @@ struct DockRobot {
 		Oper revop;
 		State &state;
 
+		Cost oldh, oldd;
+
 		Edge(const DockRobot &d, State &s, const Oper &o) : state(s), dom(d) {
 			apply(state, o);
+			oldh = state.h;
+			oldd = state.d;
+			state.h = state.d = Cost(-1);
 		}
 
 		~Edge() {
 			apply(state, revop);
+			state.h = oldh;
+			state.d = oldd;
 		}
 
 	private:
@@ -200,26 +288,28 @@ struct DockRobot {
 		const DockRobot &dom;
 	};
 
-	void pack(PackedState &dst, const State &src) {
-		dst = src;
-	}
+	void pack(PackedState&, const State&);
 
-	State &unpack(const State &buf, PackedState &pkd) {
-		return pkd;
-	}
+	State &unpack(State&, const PackedState&);
 
-	void dumpstate(FILE *out, State &s) {
-		fatal("Unimplemented");
-	}
+	void dumpstate(FILE*, const State&) const;
 
 	Cost pathcost(const std::vector<State>&, const std::vector<Oper>&);
 
 private:
+	friend class State;
 	friend bool compute_moves_test();
 	friend bool compute_loads_test();
 
-	void computeops(State&) const;
-	void boxlocs(const State&, unsigned int[]) const;
+	// initheuristic initializes the heuristic values by computing
+	// the shortest path between all locations.
+	void initheuristic();
+
+	std::pair<float, float> hd(const State&) const;
+
+	// paths holds shortest path information between
+	// locations used for computing the heuristic.
+	std::vector< std::pair<float, float> > shortest;
 
 	// The number of various things in the dockyard.
 	unsigned int nlocs, nboxes;

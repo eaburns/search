@@ -1,9 +1,11 @@
+structs:\
+	structs/structs.a\
+	structs/test
+
 STRUCTSOBJS:=\
 	structs/stn.o\
 
 include $(STRUCTSOBJS:.o=.d)
-
-structs: structs/structs.a structs/test
 
 EVERYTHING+=structs
 
@@ -22,9 +24,12 @@ structs/test:\
 	structs/test.cc\
 	utils/utils.a\
 	structs/structs.a
-	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
+	@echo $@
+	@$(CXX) $^ $(LDFLAGS) -o $@
 
-structs/structs.a: $(STRUCTSOBJS)
-	$(AR) rsc $@ $(STRUCTSOBJS)
+structs/structs.a:\
+	$(STRUCTSOBJS)
+	@echo $@
+	@$(AR) rsc $@ $(STRUCTSOBJS)
 
 CLEAN+=$(STRUCTSOBJS) structs/test structs/structs.a

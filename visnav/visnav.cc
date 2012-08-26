@@ -1,5 +1,5 @@
 #include "visnav.hpp"
-#include "../utils/image.hpp"
+#include "../graphics/image.hpp"
 
 const VisNav::Oper VisNav::Nop;
 

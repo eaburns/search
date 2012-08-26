@@ -1,5 +1,5 @@
 #pragma once
-#include "../utils/image.hpp"
+#include "../graphics/image.hpp"
 #include <SDL/SDL_opengl.h>
 #include <vector>
 #include <string>

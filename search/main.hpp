@@ -4,8 +4,10 @@
 #include "wastar.hpp"
 #include "greedy.hpp"
 #include "bugsy.hpp"
+#include "bugsy-slim.hpp"
 #include "arastar.hpp"
 #include "rtastar.hpp"
+#include "speediest.hpp"
 #include <cstddef>
 #include <cstdio>
 
@@ -28,8 +30,8 @@ template<class D> Result<D> search(D &d, int argc, const char *argv[]) {
 		fatal("Must specify a search algorithm");
 
 	typename D::State s0 = d.initialstate();
-	dfpair(stdout, "initial heuristic", "%g", (double) d.h(s0));
-	dfpair(stdout, "initial distance", "%g", (double) d.d(s0));
+	dfpair(stdout, "initial heuristic", "%f", (double) d.h(s0));
+	dfpair(stdout, "initial distance", "%f", (double) d.d(s0));
 	dfpair(stdout, "algorithm", argv[1]);
 
 	try {
@@ -41,10 +43,10 @@ template<class D> Result<D> search(D &d, int argc, const char *argv[]) {
 		srch->finish();
 	}
 	if (srch->res.path.size() > 0) {
-		dfpair(stdout, "final sol cost", "%g",
+		dfpair(stdout, "final sol cost", "%f",
 			(double) d.pathcost(srch->res.path, srch->res.ops));
 	} else {
-		dfpair(stdout, "final sol cost", "%g", -1.0);
+		dfpair(stdout, "final sol cost", "%f", -1.0);
 	}
 	srch->output(stdout);
 
@@ -70,12 +72,16 @@ template<class D> SearchAlgorithm<D> *getsearch(int argc, const char *argv[]) {
 		return new Greedy<D, true>(argc, argv);
 	else if (strcmp(argv[1], "bugsy") == 0)
 		return new Bugsy<D>(argc, argv);
+	else if (strcmp(argv[1], "bugsy-slim") == 0)
+		return new Bugsy_slim<D>(argc, argv);
 	else if (strcmp(argv[1], "arastar") == 0)
 		return new Arastar<D>(argc, argv);
 	else if (strcmp(argv[1], "arastarmon") == 0)
 		return new ArastarMon<D>(argc, argv);
 	else if (strcmp(argv[1], "rtastar") == 0)
 		return new Rtastar<D>(argc, argv);
+	else if (strcmp(argv[1], "speediest") == 0)
+		return new Speediest<D>(argc, argv);
 
 	fatal("Unknown algorithm: %s", argv[1]);
 	return NULL;	// Unreachable

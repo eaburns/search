@@ -1,5 +1,5 @@
-#include "utils.hpp"
-#include "image.hpp"
+#include "../utils/utils.hpp"
+#include "../graphics/image.hpp"
 #include <cerrno>
 #include <cstdio>
 #include <cassert>

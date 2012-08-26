@@ -1,3 +1,12 @@
+• rdb/addpath.sh: accept multiple
+	arguments
+
+• clang
+
+	- -stdlib=libc++
+	This probably requires getting rid of
+	a bunch of C stuff…
+
 • utils
 
 	- change fatal to be an exception
@@ -15,17 +24,19 @@
 	- in the heuristic: prune legs that
 	go up by further than you can jump.
 
-• drobot:
-
-	- implement a heuristic
-
 • tiles:
 
 	- PDBs
 
 	- linear conflicts
 
-	- packed 24 puzzle states
+	- packed >15 puzzle states
+
+	- random puzzle generator
+
+• gridnav
+
+	- cheapest & nearest h for life
 
 • pancake:
 
@@ -36,6 +47,8 @@
 	- specific closed list
 
 • More domains:
+
+	- Frank's pick-and-place
 
 	- Dynamic robot path finding
 

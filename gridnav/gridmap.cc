@@ -9,7 +9,13 @@
 #include <cmath>
 #include <string>
 
-GridMap::GridMap(std::string &fname) : map(NULL),  file(fname), nmvs(0), flags(NULL) {
+GridMap::GridMap(std::string &fname) :
+	map(NULL),
+	file(fname),
+	lifecost(false),
+	nmvs(0),
+	flags(NULL) {
+
 	FILE *f = fopen(file.c_str(), "r");
 	if (!f)
 		fatalx(errno, "Unable to open %s for reading\n", file.c_str());
@@ -79,8 +85,14 @@ void GridMap::load_seedinst(FILE *in) {
 	else
 		readfail("Invalid movement type");
 
-	if (fscanf(in, " Unit\n") != 0)
-		readfail("Failed to scan Unit footer");
+	c = fgetc(in);
+	ungetc(c, in);
+	if (c == 'U' && fscanf(in, " Unit\n") == 0)
+		lifecost = false;
+	else if (c == 'L' && fscanf(in, " Life\n") == 0)
+		lifecost = true;
+	else
+		readfail("Invalid cost type");
 
 	Rand rng(seed);
 	for (unsigned int x = 1; x < w - 1; x++) {
@@ -127,10 +139,17 @@ void GridMap::load_ruml(FILE *in) {
 		if (fgetc(in) != '\n')
 			readfail("Expected a new line");
 	}
-	if (fscanf(in, " Unit\n") != 0)
-		readfail("Failed to scan Unit footer");
 
 	int c = fgetc(in);
+	ungetc(c, in);
+	if (c == 'U' && fscanf(in, " Unit\n") == 0)
+		lifecost = false;
+	else if (c == 'L' && fscanf(in, " Life\n") == 0)
+		lifecost = true;
+	else
+		readfail("Invalid cost type");
+
+	c = fgetc(in);
 	ungetc(c, in);
 	if (c == 'E' && fscanf(in, "Eight-way") == 0)
 		eightway();

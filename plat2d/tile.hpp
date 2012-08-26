@@ -3,7 +3,7 @@
 #include <cstdio>
 #include <cassert>
 #include "body.hpp"
-#include "../utils/image.hpp"
+#include "../graphics/image.hpp"
 
 struct Tile {
 	enum {

@@ -6,3 +6,5 @@ Ubuntu package dependencies:
 
 The plat2d/watch binary and graphics code also need:
 	libsdl1.2-dev libsdl-image1.2-dev
+
+Clang versions less than 3.0 do not seem to work.

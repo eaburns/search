@@ -1,8 +1,13 @@
-#CXX:=clang++ -fno-color-diagnostics
-#CC:=clang -fno-color-diagnostics
-
 CXX:=g++
 CC:=gcc
+
+#
+# clang 3.0 should work.
+# clang 2.9 is known to be broken, as it can't seem to
+#	compile the GNU header files…
+#
+#CXX:=clang++ -fno-color-diagnostics
+#CC:=clang -fno-color-diagnostics
 
 AR:=ar
 
@@ -12,7 +17,7 @@ CXXFLAGS:=$(FLAGS) -std=c++0x
 
 CFLAGS:=$(FLAGS) -std=c99
 
-LDFLAGS:=
+LDFLAGS:=$(FLAGS) -std=c++0x
 
 EVERYTHING:=
 
@@ -29,7 +34,6 @@ include gridnav/Make.inc
 include visnav/Make.inc
 include plat2d/Make.inc
 include graphics/Make.inc
-include bench/Make.inc
 include rdb/Make.inc
 include drobot/Make.inc
 
@@ -37,11 +41,21 @@ everything: $(EVERYTHING)
 
 tests: $(TESTS)
 
+%.o: %.c
+	@echo $@
+	@$(CC) -c $(CFLAGS) -o $@ $<
+
+%.o: %.cc
+	@echo $@
+	@$(CXX) -c $(CXXFLAGS) -o $@ $<
+
 %.d: %.cc
-	./dep.sh $(CXX) $(shell dirname $*) $(CXXFLAGS) $*.cc > $@
+	@echo $@
+	@./dep.sh $(CXX) $(shell dirname $*) $(CXXFLAGS) $*.cc > $@
 
 %.d: %.c
-	./dep.sh $(CC) $(shell dirname $*) $(CFLAGS) $*.c > $@
+	@echo $@
+	@./dep.sh $(CC) $(shell dirname $*) $(CFLAGS) $*.c > $@
 
 clean:
 	rm -f $(CLEAN) $(BINS) $(TMPLS:.hpp=.hpp.gch)

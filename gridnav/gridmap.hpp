@@ -16,23 +16,53 @@ struct GridMap {
 	~GridMap();
 
 	// coord returns x,y coordinate for the given array index.
-	std::pair<int,int> coord(int loc) const { return std::pair<int,int>(loc%w, loc / w); }
+	std::pair<int,int> coord(int loc) const {
+		return std::pair<int,int>(loc%w, loc / w);
+	}
+
+	// ycoord returns y coordinate for the given array index.
+	int ycoord(int loc) const {
+		return loc / w;
+	}
 
 	// loc returns the array index for the x,y coordinate.
-	int index(int x, int y) const { return y * w + x; }
+	int index(int x, int y) const {
+		return y * w + x;
+	}
 
 	// blkd returns true if the given location is blocked.
-	bool blkd(int l) const { return !(flags[l] & Passable); }
+	bool blkd(int l) const {
+		return !(flags[l] & Passable);
+	}
 
+	// A Move contains information for a single
+	// possible move to and adjacent cell of the
+	// grid.
 	struct Move {
 		Move() : n(0) { }
 
 		Move(const GridMap&, int, int, unsigned int, ...);
 
-		int dx, dy, delta;
+		// dx, dy give the x and y displacement of
+		// this move.
+		int dx, dy;
+
+		// delta gives the loc displacement of
+		// this move.
+		int delta;
+
+		// cost is √2 for diagonal moves and 1 for
+		// both vertical and horizontal moves.
 		double cost;
-		unsigned int n;
+
+		// chk array contains the displacements
+		// for cells that must be unblocked in order
+		// for this move to be valid.
 		struct { int dx, dy, delta; } chk[3];
+
+		// n is the number of valid elements in
+		// the chk array.
+		unsigned int n;
 	};
 
 	// ok returns true if the given move is valid from the
@@ -49,6 +79,12 @@ struct GridMap {
 	unsigned int w, h, sz;
 	unsigned char *map;
 	std::string file;
+
+	// lifecost is true for `life cost' grid maps.  In
+	// these maps, the cost of each move should
+	// be multiplied by the y coordinate of the
+	// cell from which the move is taking place.
+	bool lifecost;
 
 	unsigned int nmvs;
 	Move mvs[8];

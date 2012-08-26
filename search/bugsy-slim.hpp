@@ -7,7 +7,7 @@
 #include "../structs/binheap.hpp"
 #include "../utils/pool.hpp"
 
-template <class D> struct Bugsy : public SearchAlgorithm<D> {
+template <class D> struct Bugsy_slim : public SearchAlgorithm<D> {
 	typedef typename D::State State;
 	typedef typename D::PackedState PackedState;
 	typedef typename D::Cost Cost;
@@ -17,13 +17,8 @@ template <class D> struct Bugsy : public SearchAlgorithm<D> {
 		typename D::Cost f, h, d;
 		double u, t;
 
-		// The expansion count when this node was
-		// generated.
+		// The expansion count when this node was generated.
 		unsigned long expct;
-
-		// path-based mean expansion delay.
-		double avgdelay;
-		unsigned long depth;
 
 		static bool pred(Node *a, Node *b) {
 			if (a->u != b->u)
@@ -42,10 +37,9 @@ template <class D> struct Bugsy : public SearchAlgorithm<D> {
 		Resort1 = 128,
 	};
 
-	Bugsy(int argc, const char *argv[]) :
-			SearchAlgorithm<D>(argc, argv), usehhat(false),
-			usedhat(false), navg(0), herror(0), derror(0),
-			useexpdelay(false), avgdelay(0), dropdups(false),
+	Bugsy_slim(int argc, const char *argv[]) :
+			SearchAlgorithm<D>(argc, argv),
+			navg(0), herror(0), derror(0), avgdelay(0),
 			timeper(0.0), nextresort(Resort1), nresort(0),
 			closed(30000001) {
 		wf = wt = -1;
@@ -54,16 +48,6 @@ template <class D> struct Bugsy : public SearchAlgorithm<D> {
 				wf = strtod(argv[++i], NULL);
 			else if (i < argc - 1 && strcmp(argv[i], "-wt") == 0)
 				wt = strtod(argv[++i], NULL);
-			else if (i < argc - 1 && strcmp(argv[i], "-expdelay") == 0)
-				useexpdelay = true;
-			else if (i < argc - 1 && strcmp(argv[i], "-hhat") == 0)
-				usehhat = true;
-			else if (i < argc - 1 && strcmp(argv[i], "-dhat") == 0)
-				usedhat = true;
-			else if (i < argc - 1 && strcmp(argv[i], "-dropdups") == 0)
-				dropdups = true;
-			else if (i < argc - 1 && strcmp(argv[i], "-interph") == 0)
-				interph = usehhat = true;
 		}
 
 		if (wf < 0)
@@ -74,7 +58,7 @@ template <class D> struct Bugsy : public SearchAlgorithm<D> {
 		nodes = new Pool<Node>();
 	}
 
-	~Bugsy() {
+	~Bugsy_slim() {
 		delete nodes;
 	}
 
@@ -123,12 +107,9 @@ template <class D> struct Bugsy : public SearchAlgorithm<D> {
 		dfpair(stdout, "wt", "%g", wt);
 		dfpair(stdout, "final time per expand", "%g", timeper);
 		dfpair(stdout, "number of resorts", "%lu", nresort);
-		if (usehhat)
-			dfpair(stdout, "mean single-step h error", "%g", herror);
-		if (usedhat)
-			dfpair(stdout, "mean single-step d error", "%g", derror);
-		if (useexpdelay)
-			dfpair(stdout, "mean expansion delay", "%g", avgdelay);
+		dfpair(stdout, "mean single-step h error", "%g", herror);
+		dfpair(stdout, "mean single-step d error", "%g", derror);
+		dfpair(stdout, "mean expansion delay", "%g", avgdelay);
 	}
 
 private:
@@ -148,10 +129,8 @@ private:
 	void expand(D &d, Node *n, State &state) {
 		this->res.expd++;
 
-		if (useexpdelay) {
-			unsigned long delay = this->res.expd - n->expct;
-			avgdelay = avgdelay + (delay - avgdelay)/this->res.expd;
-		}
+		unsigned long delay = this->res.expd - n->expct;
+		avgdelay = avgdelay + (delay - avgdelay)/this->res.expd;
 
 		Kidinfo bestinfo;
 		typename D::Operators ops(d, state);
@@ -170,19 +149,11 @@ private:
 			return;
 
 		navg++;
-		if (usehhat) {
-			double herr = bestinfo.f - n->f;
-			if (herr < 0)	// floating point rounding
-				herr = 0;
-			herror = herror + (herr - herror)/navg;
-		}
+		double herr = bestinfo.f - n->f;
+		herror = herror + (herr - herror)/navg;
 
-		if (usedhat) {
-			double derr = bestinfo.d + 1 - n->d;
-			if (derr < 0)	// floating point rounding
-				derr = 0;
-			derror = derror + (derr - derror)/navg;
-		}
+		double derr = bestinfo.d + 1 - n->d;
+		derror = derror + (derr - derror)/navg;
 	}
 
 	// considers adding the child to the open and closed lists.
@@ -190,8 +161,7 @@ private:
 		Node *kid = nodes->construct();
 		typename D::Edge e(d, state, op);
 		kid->g = parent->g + e.cost;
-		kid->depth = parent->depth + 1;
-		kid->avgdelay = parent->avgdelay;
+		kid->expct = this->res.expd;
 
 		// single step path-max on d
 		kid->d = d.d(e.state);
@@ -205,9 +175,6 @@ private:
 
 		kid->f = kid->g + kid->h;
 
-		if (useexpdelay)
-			kid->expct = this->res.expd;
-
 		Kidinfo kinfo(kid->g, kid->h, kid->d);
 
 		d.pack(kid->packed, e.state);
@@ -216,13 +183,6 @@ private:
 		Node *dup = static_cast<Node*>(closed.find(kid->packed, hash));
 		if (dup) {
 			this->res.dups++;
-			if (!dropdups && kid->g < dup->g) {
-				this->res.reopnd++;
-				dup->f = dup->f - dup->g + kid->g;
-				dup->update(kid->g, parent, op, e.revop);
-				computeutil(dup);
-				open.pushupdate(dup, dup->ind);
-			}
 			nodes->destruct(kid);
 		} else {
 			kid->update(kid->g, parent, op, e.revop);
@@ -239,8 +199,6 @@ private:
 		n0->g = Cost(0);
 		n0->h = n0->f = d.h(s0);
 		n0->d = d.d(s0);
-		n0->depth = 0;
-		n0->avgdelay = 0;
 		computeutil(n0);
 		n0->op = n0->pop = D::Nop;
 		n0->parent = NULL;
@@ -251,24 +209,9 @@ private:
 	// compututil computes the utility value of the given node
 	// using corrected estimates of d and h.
 	void computeutil(Node *n) {
-		double d = n->d;
-		if (usedhat)
-			d /= (1 - derror);
-
-		double h = n->h;
-		if (usehhat) {
-			if (interph) {
-				double hhat = h + d*herror;
-				double w = wf/(wf+wt);
-				h = n->h*w + hhat*(1-w);
-			} else {
-				h += d * herror;
-			}
-		}
-
-		if (useexpdelay && avgdelay > 0)
-			d *= avgdelay;
-
+		double d = n->d / (1-derror);
+		double h = n->h + d*herror;
+		d *= avgdelay;
 		double f = h + n->g;
 		n->t = timeper * d;
 		n->u = -(wf * f + wt * n->t);
@@ -298,17 +241,10 @@ private:
 	double wf, wt;
 
 	// heuristic correction
-	bool usehhat, usedhat;
 	unsigned long navg;
 	double herror, derror;
 
-	// interph — when using heuristic correction,
-	// interpolate between h and hhat depending
-	// on the ratio of wf to wt.
-	bool interph;
-
 	// expansion delay
-	bool useexpdelay;
 	double avgdelay;
 
 	bool dropdups;

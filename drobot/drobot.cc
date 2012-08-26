@@ -1,5 +1,6 @@
 #include "drobot.hpp"
 #include <limits>
+#include <cmath>
 
 unsigned int DockRobot::Loc::pop(unsigned int p) {
 	assert (p < piles.size());
@@ -44,7 +45,7 @@ void DockRobot::Loc::addcrane(unsigned int box) {
 	std::sort(cranes.begin(), cranes.end());
 }
 
-const DockRobot::Oper DockRobot::Nop = { DockRobot::Oper::None, 0 };
+const DockRobot::Oper DockRobot::Nop = DockRobot::Oper(DockRobot::Oper::None);
 
 DockRobot::DockRobot(unsigned int n) :
 		nlocs(n),  nboxes(0), maxpiles(n, 0), maxcranes(n, 0), adj(n), initlocs(n) {
@@ -147,30 +148,62 @@ DockRobot::DockRobot(FILE *in) {
 reloop:
 		line = readline(in);
 	}
+
+	initheuristic();
 }
 
 DockRobot::State DockRobot::initialstate() {
-	State st;
-	st.locs = initlocs;
-	st.rbox = -1;
-	st.rloc = 0;
-	st.h = st.d = 0;
-
-	st.nleft = 0;
-	for (unsigned int l = 0; l < st.locs.size(); l++) {
-	for (unsigned int p = 0; p < st.locs[l].piles.size(); p++) {
-	for (unsigned int s = 0; s < st.locs[l].piles[p].stack.size(); s++) {
-		if ((unsigned int) goal[st.locs[l].piles[p].stack[s]] != l)
-			st.nleft++;
-	}
-	}
-	}
-	return st;
+	State s(*this, std::vector<Loc>(initlocs), -1, 0);
+	PackedState pkd;
+	pack(pkd, s);
+	State buf;
+	State &s1 = unpack(buf, pkd);
+	assert (s == s1);
+	return s;
 }
 
-void DockRobot::Edge::apply(State &s, const Oper &o) {
-	s.h = s.d = 0;
+DockRobot::State::State(const DockRobot &dr, const std::vector<Loc> &&ls, int rb, unsigned int rl) :
+	locs(ls),
+	rbox(rb),
+	rloc(rl),
+	h(-1),
+	d(-1),
+	nleft(0) {
 
+	boxlocs.resize(dr.nboxes, dr.nlocs+1);
+
+	for (unsigned int l = 0; l < locs.size(); l++) {
+		for (unsigned int c = 0; c < locs[l].cranes.size(); c++) {
+			unsigned int box = locs[l].cranes[c];
+			if (dr.goal[box] >= 0 && (unsigned int) dr.goal[box] != l)
+				nleft++;
+			boxlocs[box] = l;
+		}
+		for (unsigned int p = 0; p < locs[l].piles.size(); p++) {
+		for (unsigned int s = 0; s < locs[l].piles[p].stack.size(); s++) {
+			unsigned int box = locs[l].piles[p].stack[s];
+			assert (box < dr.nboxes);
+			if (dr.goal[box] >= 0 && (unsigned int) dr.goal[box] != l)
+				nleft++;
+			boxlocs[box] = l;
+		}
+		}
+	}
+	if (rbox >= 0) {
+		if (dr.goal[rbox] >= 0 && (unsigned int) dr.goal[rbox] != rloc)
+			nleft++;
+		boxlocs[rbox] = rloc;
+	}
+}
+
+// LoadCost is the cost of loading and unloading the robot.
+const double LoadCost = 0.01;
+
+// PopCostFact is the cost of poping from a stack, given as a
+// factor of the stack's height.
+const double PopCostFact = 0.05;
+
+void DockRobot::Edge::apply(State &s, const Oper &o) {
 	switch (o.type) {
 	case Oper::Push: {
 		unsigned int c = o.x;
@@ -189,7 +222,7 @@ void DockRobot::Edge::apply(State &s, const Oper &o) {
 		p = l.findpile(bottom);
 		assert (p >= 0);
 		revop = Oper(Oper::Pop, p);
-		cost = 0.05 * (sz + 1);	// from the OCaml code
+		cost = PopCostFact * (sz + 1);	// from the OCaml code
 
 		break;
 	}
@@ -209,7 +242,7 @@ void DockRobot::Edge::apply(State &s, const Oper &o) {
 		else
 			p = l.findpile(bottom);
 		revop = Oper(Oper::Push, c, p);
-		cost = 0.05 * (sz + 1);	// from the OCaml code
+		cost = PopCostFact * (sz + 1);	// from the OCaml code
 		break;
 	}
 	case Oper::Load: {
@@ -219,7 +252,7 @@ void DockRobot::Edge::apply(State &s, const Oper &o) {
 		s.rbox = l.rmcrane(c);
 
 		revop = Oper(Oper::Unload);
-		cost = 0.01;	// from the OCaml code
+		cost = LoadCost;
 		break;
 	}
 	case Oper::Unload: {
@@ -227,13 +260,13 @@ void DockRobot::Edge::apply(State &s, const Oper &o) {
 		Loc &l = s.locs[s.rloc];
 		unsigned int box = s.rbox;
 		l.addcrane(box);
-		assert (l.cranes.size() <= dom.maxcranes[s.rloc]);	// not to many cranes, right?
+		assert (l.cranes.size() <= dom.maxcranes[s.rloc]);
 		s.rbox = -1;
 
 		int c = l.findcrane(box);
 		assert (c >= 0);
 		revop = Oper(Oper::Load, c);
-		cost = 0.01;	// from the OCaml code
+		cost = LoadCost;
 		break;
 	}
 	case Oper::Move: {
@@ -246,6 +279,7 @@ void DockRobot::Edge::apply(State &s, const Oper &o) {
 				s.nleft++;
 			else if ((unsigned int) dom.goal[s.rbox] == dst)
 				s.nleft--;
+			s.boxlocs[s.rbox] = dst;
 		}
 
 		s.rloc = dst;
@@ -297,9 +331,29 @@ DockRobot::Operators::Operators(const DockRobot &d, const State &s) {
 	}
 }
 
-// pos must be at least nboxes in size.
-void DockRobot::boxlocs(const State &s, unsigned int pos[]) const {
-	for (unsigned int i = 0; i < nboxes; i++)
+DockRobot::Cost DockRobot::pathcost(const std::vector<State> &path, const std::vector<Oper> &ops) {
+	State state = initialstate();
+	Cost cost(0);
+	for (int i = ops.size() - 1; i >= 0; i--) {
+		State copy(state);
+		Edge e(*this, copy, ops[i]);
+		if (!(e.state == path[i])) {
+			fprintf(stderr, "e.state:\n");
+			dumpstate(stderr, e.state);
+			fprintf(stderr, "\npath[%u]:\n", i);
+			dumpstate(stderr, path[i]);
+		}
+		assert (e.state == path[i]);
+		state = e.state;
+		cost += e.cost;
+	}
+	assert (isgoal(state));
+	return cost;
+}
+
+void DockRobot::pack(PackedState  &dst, const State &s) {
+	unsigned int *pos = new unsigned int[nboxes+1];
+	for (unsigned int i = 0; i < nboxes+1; i++)
 		pos[i] = 0;
 
 	unsigned int cur = 0;
@@ -319,18 +373,153 @@ void DockRobot::boxlocs(const State &s, unsigned int pos[]) const {
 		}
 		cur += maxpiles[i]*nboxes;
 	}
+	pos[nboxes] = s.rloc;
+	dst.pos = pos;
+	dst.sz = nboxes+1;
 }
 
-DockRobot::Cost DockRobot::pathcost(const std::vector<State> &path, const std::vector<Oper> &ops) {
-	State state = initialstate();
-	Cost cost(0);
-	for (int i = ops.size() - 1; i >= 0; i--) {
-		State copy(state);
-		Edge e(*this, copy, ops[i]);
-		assert (e.state == path[i]);
-		state = e.state;
-		cost += e.cost;
+DockRobot::State &DockRobot::unpack(State &buf, const PackedState &pkd) {
+	unsigned int rloc = pkd.pos[nboxes];
+	int rbox = -1;
+	std::vector<Loc> locs(nlocs);
+
+	for (unsigned int b = 0; b < nboxes; b++) {
+		unsigned int p = pkd.pos[b];
+		if (p == 0) {
+			rbox = b;
+			goto nextbox;
+		}
+		p--;
+
+		for (unsigned int l = 0; l < nlocs; l++) {
+			Loc &loc = locs[l];
+
+			if (p < maxcranes[l]) {
+				if (loc.cranes.size() <= p)
+					loc.cranes.resize(p+1, nboxes+1);
+				loc.cranes[p] = b;
+				goto nextbox;
+			}
+			p -= maxcranes[l];
+
+			if (p < maxpiles[l]*nboxes) {
+				unsigned int pid = p/nboxes;
+				unsigned int ht = p%nboxes;
+
+				if (loc.piles.size() <= pid)
+					loc.piles.resize(pid+1);
+				Pile &pile = loc.piles[pid];
+				if (pile.stack.size() <= ht)
+					pile.stack.resize(ht+1, nboxes+1);
+				pile.stack[ht] = b;
+				goto nextbox;
+			}
+			p -= maxpiles[l]*nboxes;
+		}
+		fatal("unreachable");
+nextbox:;
 	}
-	assert (isgoal(state));
-	return cost;
+
+	buf = State(*this, std::move(locs), rbox, rloc);
+	return buf;
+}
+
+void DockRobot::dumpstate(FILE *out, const State &s) const {
+	fprintf(out, "h: %g\n", s.h);
+	fprintf(out, "d: %g\n", s.d);
+	fprintf(out, "robot location: %u\n", s.rloc);
+	fprintf(out, "robot contents: %d\n", s.rbox);
+	fprintf(out, "out of place boxes: %d\n", s.nleft);
+	for (unsigned int l = 0; l < s.locs.size(); l++) {
+		fprintf(out, "loc %u:\n", l);
+		const Loc &loc = s.locs[l];
+		for (unsigned int c = 0; c < loc.cranes.size(); c++)
+			fprintf(out, "	crane: %u\n", loc.cranes[c]);
+		for (unsigned int p = 0; p < loc.piles.size(); p++) {
+			const Pile &pile = loc.piles[p];
+			fprintf(out, "	pile:");
+			for (unsigned int h = 0; h < pile.stack.size(); h++)
+				fprintf(out, " %u", pile.stack[h]);
+			fprintf(out, "\n");
+		}
+	}
+}
+
+void DockRobot::initheuristic() {
+	shortest.resize(nlocs*nlocs);
+	for (unsigned int i = 0; i < nlocs; i++) {
+	for (unsigned int j = 0; j < nlocs; j++) {
+		float cost = adj[i][j];
+		if (i == j)
+			shortest[i*nlocs + j] = std::pair<float, float>(0, 0);
+		else if (isinf(cost))
+			shortest[i*nlocs + j] = std::pair<float, float>(cost, cost);
+		else
+			shortest[i*nlocs + j] = std::pair<float, float>(cost, 1);
+	}
+	}
+
+	for (unsigned int k = 0; k < nlocs; k++) {
+	for (unsigned int i = 0; i < nlocs; i++) {
+	for (unsigned int j = 0; j < nlocs; j++) {
+		float c = shortest[i*nlocs + k].first + shortest[k*nlocs + j].first;
+		if (c < shortest[i*nlocs + j].first)
+			shortest[i*nlocs + j].first = c;
+
+		float d = shortest[i*nlocs + k].second + shortest[k*nlocs + j].second;
+		if (c < shortest[i*nlocs + j].second)
+			shortest[i*nlocs + j].second = d;
+	}
+	}
+	}
+}
+
+std::pair<float, float> DockRobot::hd(const State &s) const {
+	if (s.nleft == 0)
+		return std::pair<float,float>(0, 0);
+
+	float h = 0, d = 0;
+
+	// Each out-of-place box must move to its goal.
+	for (unsigned int b = 0; b < goal.size(); b++) {
+		if (goal[b] < 0)
+			continue;
+		const std::pair<float,float> &p = shortest[s.boxlocs[b]*nlocs + goal[b]];
+		h += p.first;
+		d += p.second;
+	}
+
+	// All execpt for the last out-of-place box must be unloaded
+	// from the robot.
+	h += (s.nleft-1)*LoadCost;
+	d += s.nleft-1;
+
+	for (unsigned int l = 0; l < s.locs.size(); l++) {
+		const Loc &loc = s.locs[l];
+
+		// Each out-of-place box on a crane must be
+		// loaded onto the robot.
+		for (unsigned int c = 0; c < loc.cranes.size(); c++)  {
+			unsigned int box = loc.cranes[c];
+			if (goal[box] < 0 || (unsigned int) goal[box] == l)
+				continue;
+			h += LoadCost;
+			d += 1;
+		}
+
+		// Each out-of-place box on a stack must be popped
+		// onto a crane, then moved to the robot.
+		for (unsigned int p = 0; p < loc.piles.size(); p++) {
+			const Pile &pile = loc.piles[p];
+			for (unsigned int ht = 0; ht < pile.stack.size(); ht++) {
+				unsigned int box = pile.stack[ht];
+				if (goal[box] < 0 || (unsigned int) goal[box] == l)
+					continue;
+				h += PopCostFact*(ht + 2) + LoadCost;
+				d += 2;
+			}
+		}
+	}
+
+	return std::pair<float,float>(h, d);
 }

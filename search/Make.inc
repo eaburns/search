@@ -1,3 +1,5 @@
+search: search/search.a
+
 SEARCHOBJS:=\
 	search/search.o\
 	search/anyprof.o\
@@ -8,8 +10,10 @@ search: search/search.a search/mkprof
 
 EVERYTHING+=search
 
-search/search.a: $(SEARCHOBJS)
-	$(AR) rsc $@ $(SEARCHOBJS)
+search/search.a:\
+	$(SEARCHOBJS)
+	@echo $@
+	@$(AR) rsc $@ $(SEARCHOBJS)
 
 CLEAN+=$(SEARCHOBJS) search/search.a
 

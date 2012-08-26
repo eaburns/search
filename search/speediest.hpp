@@ -1,9 +1,7 @@
 #include "../search/search.hpp"
 #include "../utils/pool.hpp"
 
-void fatal(const char*, ...);	// utils.hpp
-
-template <class D> struct Wastar : public SearchAlgorithm<D> {
+template <class D> struct Speediest : public SearchAlgorithm<D> {
 
 	typedef typename D::State State;
 	typedef typename D::PackedState PackedState;
@@ -11,35 +9,30 @@ template <class D> struct Wastar : public SearchAlgorithm<D> {
 	typedef typename D::Oper Oper;
 
 	struct Node : SearchNode<D> {
-		double f, fprime;
+		Cost d;
+		double sortval;
+		unsigned long depth;
 
 		static bool pred(Node *a, Node *b) {
-			if (a->fprime == b->fprime) {
-				if (a->f == b->f)
+			if (a->sortval == b->sortval) {
+				if (a->d == b->d)
 					return a->g > b->g;
-				return a->f < b->f;
+				return a->d < b->d;
 			}
-			return a->fprime < b->fprime;
+			return a->sortval < b->sortval;
 		}
+
+		static typename D::Cost prio(Node *n) { return n->sortval; }
+
+		static typename D::Cost tieprio(Node *n) { return n->g; }
 	};
 
-	Wastar(int argc, const char *argv[]) :
-			SearchAlgorithm<D>(argc, argv), dropdups(false),
-			wt(-1.0), closed(30000001) {
-		for (int i = 0; i < argc; i++) {
-			if (i < argc - 1 && strcmp(argv[i], "-wt") == 0)
-				wt = strtod(argv[++i], NULL);
-			if (strcmp(argv[i], "-dropdups") == 0)
-				dropdups = true;
-		}
-
-		if (wt < 1)
-			fatal("Must specify a weight ≥1 weight using -wt");
-
+	Speediest(int argc, const char *argv[]) :
+		SearchAlgorithm<D>(argc, argv), closed(30000001) {
 		nodes = new Pool<Node>();
 	}
 
-	~Wastar() {
+	~Speediest() {
 		delete nodes;
 	}
 
@@ -76,9 +69,8 @@ template <class D> struct Wastar : public SearchAlgorithm<D> {
 	virtual void output(FILE *out) {
 		SearchAlgorithm<D>::output(out);
 		closed.prstats(stdout, "closed ");
-		dfpair(stdout, "open list type", "%s", "binary heap");
+		dfpair(stdout, "open list type", "binheap");
 		dfpair(stdout, "node size", "%u", sizeof(Node));
-		dfpair(stdout, "weight", "%g", wt);
 	}
 
 private:
@@ -98,27 +90,18 @@ private:
 	void considerkid(D &d, Node *parent, State &state, Oper op) {
 		Node *kid = nodes->construct();
 		typename D::Edge e(d, state, op);
-		kid->g = parent->g + e.cost;
 		d.pack(kid->packed, e.state);
 
 		unsigned long hash = d.hash(kid->packed);
-		Node *dup = static_cast<Node*>(closed.find(kid->packed, hash));
+		SearchNode<D> *dup = closed.find(kid->packed, hash);
 		if (dup) {
 			this->res.dups++;
-			if (dropdups || kid->g >= dup->g) {
-				nodes->destruct(kid);
-				return;
-			}
-			this->res.reopnd++;
-			dup->fprime = dup->fprime - dup->g + kid->g;
-			dup->f = dup->f - dup->g + kid->g;
-			dup->update(kid->g, parent, op, e.revop);
-			open.pushupdate(dup, dup->ind);
 			nodes->destruct(kid);
 		} else {
-			typename D::Cost h = d.h(e.state);
-			kid->f = kid->g + h;
-			kid->fprime = kid->g + wt * h;
+			kid->g = parent->g + e.cost;
+			kid->depth = parent->depth + 1;
+			kid->d = d.d(e.state);
+			kid->sortval = kid->d / (kid->d + kid->depth);
 			kid->update(kid->g, parent, op, e.revop);
 			closed.add(kid, hash);
 			open.push(kid);
@@ -129,16 +112,14 @@ private:
 		Node *n0 = nodes->construct();
 		d.pack(n0->packed, s0);
 		n0->g = Cost(0);
-		typename D::Cost h = d.h(s0);
-		n0->f = h;
-		n0->fprime = wt * h;
+		n0->d = d.d(s0);
+		n0->sortval = 1;
+		n0->depth = 0;
 		n0->op = n0->pop = D::Nop;
 		n0->parent = NULL;
 		return n0;
 	}
 
-	bool dropdups;
-	double wt;
 	BinHeap<Node, Node*> open;
  	ClosedList<SearchNode<D>, SearchNode<D>, D> closed;
 	Pool<Node> *nodes;

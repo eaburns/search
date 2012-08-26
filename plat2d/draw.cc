@@ -1,5 +1,5 @@
 #include "lvl.hpp"
-#include "../utils/image.hpp"
+#include "../graphics/image.hpp"
 #include <cstring>
 
 const char *outfile;

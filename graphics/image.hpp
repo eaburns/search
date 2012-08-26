@@ -6,7 +6,7 @@
 #include <vector>
 #include <string>
 #include <boost/optional.hpp>
-#include "geom2d.hpp"
+#include "../utils/geom2d.hpp"
 
 struct Color {
 	Color() : r(1), g(1), b(1) { }
@@ -54,6 +54,7 @@ struct Image {
 
 	struct Drawable {
 		Drawable() { }
+		virtual ~Drawable() { }
 		virtual void writeeps(FILE*) const = 0;
 	};
 
