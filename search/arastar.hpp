@@ -353,7 +353,7 @@ template <class D> struct ArastarMon : public Arastar<D> {
 		this->start();
 		this->closed.init(d);
 		this->incons.init(d);
-		Node *n0 = init(d, s0);
+		Node *n0 = this->init(d, s0);
 		this->closed.add(n0);
 		this->open.push(n0);
 

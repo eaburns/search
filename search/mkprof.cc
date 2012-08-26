@@ -83,7 +83,7 @@ static void readsols(const std::string &root, const RdbAttrs &attrs) {
 			fatalx(errno, "failed to open %s for reading", files[i].c_str());
 
 		Inst inst(files[i]);
-		dfread(f, dfline, &inst, false);
+		dfread(f, dfline, &inst, NULL);
 		fclose(f);
 
 		if (inst.tmax < 0)
