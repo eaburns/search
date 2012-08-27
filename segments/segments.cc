@@ -363,6 +363,17 @@ Segments::Cost Segments::pathcost(const std::vector<State> &path, const std::vec
 	return cost;
 }
 
+void Segments::prinitial(FILE *out) const {
+	dfrowhdr(out, "initial state", 4, "radius", "initial x", "initial y", "initial rot");
+	for (auto sg = segs.begin(); sg != segs.end(); sg++) {
+		dfrow(out, "initial state", "uuuu", (unsigned int) sg->radius,
+			(unsigned int) sg->start.x,
+			(unsigned int) sg->start.y,
+			(unsigned int) sg->start.rot);
+
+	}
+}
+
 static int wrapind(int i, int n) {
 	i %= n;
 	if (i < 0)

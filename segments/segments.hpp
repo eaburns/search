@@ -249,6 +249,10 @@ public:
 
 	Cost pathcost(const std::vector<State>&, const std::vector<Oper>&);
 
+	// prinitial prints the initial state to the given
+	// file in datafile format.
+	void prinitial(FILE*) const;
+
 private:
 
 	unsigned int width, height, nangles;
