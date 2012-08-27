@@ -59,8 +59,8 @@ Segments::Segments(FILE *in) {
 }
 
 
-Segments::Segments(unsigned int w, unsigned int h, unsigned int t) :
-	width(w), height(h), nangles(t) {
+Segments::Segments(unsigned int w, unsigned int h, unsigned int t, const std::vector<Seg> &s) :
+	width(w), height(h), nangles(t), segs(s) {
 
 	if (nangles % 2 != 0)
 		fatal("Angle step must partition a circle into an even number of segments");
@@ -363,14 +363,19 @@ Segments::Cost Segments::pathcost(const std::vector<State> &path, const std::vec
 }
 
 void Segments::prinitial(FILE *out) const {
-	dfrowhdr(out, "initial state", 4, "radius", "initial x", "initial y", "initial rot");
+	dfrowhdr(out, "instance", 7, "radius", "initial x", "initial y", "initial rot");
 	for (auto sg = segs.begin(); sg != segs.end(); sg++) {
-		dfrow(out, "initial state", "uuuu", (unsigned int) sg->radius,
+		dfrow(out, "instance", "uuuuuuu", (unsigned int) sg->radius,
 			(unsigned int) sg->start.x,
 			(unsigned int) sg->start.y,
-			(unsigned int) sg->start.rot);
-
+			(unsigned int) sg->start.rot,
+			(unsigned int) sg->goal.x,
+			(unsigned int) sg->goal.y,
+			(unsigned int) sg->goal.rot);
 	}
+	dfpair(stdout, "width", "%u", width);
+	dfpair(stdout, "height", "%u", height);
+	dfpair(stdout, "number of angles", "%u", nangles);
 }
 
 std::vector<Segments::Oper> scanops(const std::string &str) {
@@ -405,6 +410,42 @@ std::vector<Segments::Oper> scanops(const std::string &str) {
 	}
 
 	return ops;
+}
+
+static void dfline(std::vector<std::string> &line, void *aux) {
+	Solution *sol = static_cast<Solution*>(aux);
+
+	if (line.size() == 3 && line[0] == "#pair" && line[1] == "path") {
+		if (sol->ops.size() > 0)
+			warn("Multiple path keys in data file");
+		sol->ops = scanops(line[2]);
+
+	} else if (line.size() == 3 && line[0] == "#pair" && line[1] == "width") {
+		sol->width = strtol(line[2].c_str(), NULL, 10);
+
+	} else if (line.size() == 3 && line[0] == "#pair" && line[1] == "height") {
+		sol->height = strtol(line[2].c_str(), NULL, 10);
+
+	} else if (line.size() == 3 && line[0] == "#pair" && line[1] == "nangles") {
+		sol->nangles = strtol(line[2].c_str(), NULL, 10);
+
+	} else if (line.size() == 6 && line[0] == "#altrow" && line[1] == "instance") {
+		Segments::Seg s;
+		s.radius = strtol(line[2].c_str(), NULL, 10);
+		s.start.x = strtol(line[3].c_str(), NULL, 10);
+		s.start.y = strtol(line[4].c_str(), NULL, 10);
+		s.start.rot = strtol(line[5].c_str(), NULL, 10);
+		s.goal.x = strtol(line[6].c_str(), NULL, 10);
+		s.goal.y = strtol(line[7].c_str(), NULL, 10);
+		s.goal.rot = strtol(line[8].c_str(), NULL, 10);
+		sol->segs.push_back(s);
+	}
+}
+
+Solution readdf(FILE *in, FILE *echo) {
+	Solution sol;
+	dfread(in, dfline, &sol, echo);
+	return sol;	
 }
 
 static int wrapind(int i, int n) {

@@ -27,13 +27,6 @@ private:
 		unsigned int x, y, rot;
 	};
 
-	// Seg contains segment specific information.
-	struct Seg {
-		double radius;
-		Pose goal;
-		Pose start;
-	};
-
 	// Angle contains information about angles.
 	struct Angle {
 		Angle(double);
@@ -58,10 +51,16 @@ private:
 	};
 
 public:
+	// Seg contains segment specific information.
+	struct Seg {
+		double radius;
+		Pose goal;
+		Pose start;
+	};
 
 	Segments(FILE*);
 
-	Segments(unsigned int w, unsigned int h, unsigned int t);
+	Segments(unsigned int w, unsigned int h, unsigned int t, const std::vector<Seg>&);
 
 	struct PackedState;
 
@@ -255,11 +254,11 @@ public:
 
 private:
 
-	unsigned int width, height, nangles;
-
 	// line returns the line for the given segment
 	// in the given pose.
 	geom2d::LineSg line(const Seg&, const Pose&) const;
+
+	unsigned int width, height, nangles;
 
 	// segs is the segments.
 	std::vector<Seg> segs;
@@ -276,3 +275,15 @@ private:
 // scanops scans an operator vector from an
 // operator string. 
 std::vector<Segments::Oper> scanops(const std::string&);
+
+struct Solution {
+	int width, height, nangles;
+	std::vector<Segments::Seg> segs;
+	std::vector<Segments::Oper> ops;
+};
+
+// readdf reads the segments instance and
+// operators from a datafile.  If echo is
+// non-null then each line of the datafile is
+// echoed to the given FILE*.
+Solution readdf(FILE *in, FILE *echo);

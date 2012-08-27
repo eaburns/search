@@ -27,7 +27,7 @@ int main(int argc, char *argv[]) {
 }
 
 void mkinst(FILE *out) {
-	Segments dom(Width, Height, Nangles);
+	Segments dom(Width, Height, Nangles, std::vector<Segments::Seg>());
 
 	std::vector<LineSg> lines;
 	for (unsigned int i = 0; i < Nsegs; i++) {
