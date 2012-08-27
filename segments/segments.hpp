@@ -272,3 +272,7 @@ private:
 	// working space of the segments.
 	geom2d::LineSg bounds[4];
 };
+
+// scanops scans an operator vector from an
+// operator string. 
+std::vector<Segments::Oper> scanops(const std::string&);

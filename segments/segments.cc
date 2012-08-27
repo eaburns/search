@@ -359,7 +359,6 @@ Segments::Cost Segments::pathcost(const std::vector<State> &path, const std::vec
 			fatal("Invalid path operator: %d\n", ops[i].op);
 	}
 	dfpair(stdout, "path", "%s", s.str().c_str());
-
 	return cost;
 }
 
@@ -372,6 +371,40 @@ void Segments::prinitial(FILE *out) const {
 			(unsigned int) sg->start.rot);
 
 	}
+}
+
+std::vector<Segments::Oper> scanops(const std::string &str) {
+	std::vector<Segments::Oper> ops;
+
+	std::stringstream in(str);
+	while (!in.eof()) {
+		char tag;
+		int seg;
+		in >> tag >> seg;
+
+		switch (tag) {
+		case 'g':
+			ops.push_back(Segments::Oper(Segments::Oper::Gripper,
+				seg, 0, 0));
+			break;
+		case 'm':
+			int dx, dy;
+			in >> dx >> dy;
+			ops.push_back(Segments::Oper(Segments::Oper::Move,
+				seg, dx, dy));
+			break;
+		case 'r':
+			int delta;
+			in >> delta;
+			ops.push_back(Segments::Oper(Segments::Oper::Move,
+				seg, delta, 0));
+			break;
+		default:
+			fatal("Invalid operator tag: %c", tag);
+		}
+	}
+
+	return ops;
 }
 
 static int wrapind(int i, int n) {
