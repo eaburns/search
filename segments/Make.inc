@@ -1,6 +1,7 @@
 segments:\
 	segments/segments_solver\
 	segments/mkinst\
+	segments/watch\
 
 SEGMENTSOBJ=\
 	segments/segments.o\
@@ -16,7 +17,7 @@ segments/segments_solver:\
 	utils/utils.a\
 	search/search.a
 	@echo $@
-	@$(CXX) $^ $(LDFLAGS) -o $@
+	@$(CXX) $^ $(LDFLAGS) -static -o $@
 
 include segments/main.d
 CLEAN+=segments/segments_solver segments/main.o
@@ -30,3 +31,14 @@ segments/mkinst:\
 
 include segments/mkinst.d
 CLEAN+=segments/mkinst segments/mkinst.o
+
+segments/watch:\
+	$(SEGMENTSOBJ)\
+	segments/watch.cc\
+	graphics/graphics.a\
+	utils/utils.a
+	@echo $@
+	@$(CXX) $^ $(LDFLAGS) $(GRAPHICSLD) -o $@
+
+include segments/watch.d
+CLEAN+=segments/watch segments/watch.o

@@ -251,14 +251,14 @@ public:
 	// prinitial prints the initial state to the given
 	// file in datafile format.
 	void prinitial(FILE*) const;
-
+	unsigned int width, height, nangles;
 private:
 
 	// line returns the line for the given segment
 	// in the given pose.
 	geom2d::LineSg line(const Seg&, const Pose&) const;
 
-	unsigned int width, height, nangles;
+
 
 	// segs is the segments.
 	std::vector<Seg> segs;

@@ -245,8 +245,11 @@ Segments::Edge::Edge(const Segments &dom, const State &s, Oper op) {
 		Pose &p = state.poses[op.seg];
 		p.x += op.delta;
 		p.y += op.dy;
+ 		state.x = p.x;
+ 		state.y = p.y;
 		state.lines[op.seg] = dom.line(dom.segs[op.seg], p);
 	}
+
 
 	bool wasgoal = s.poses[op.seg] == dom.segs[op.seg].goal;
 	bool isgoal = state.poses[op.seg] == dom.segs[op.seg].goal;
@@ -348,7 +351,7 @@ Segments::Cost Segments::pathcost(const std::vector<State> &path, const std::vec
 	assert (isgoal(state));
 
 	std::stringstream s;
-	for (unsigned int i = 0; i < ops.size(); i++) {
+	for (int i = ops.size() - 1; i >= 0; i--) {
 		if (ops[i].op == Oper::Gripper)
 			s << "g " << ops[i].seg;
 		else if (ops[i].op == Oper::Rotate)
@@ -363,9 +366,9 @@ Segments::Cost Segments::pathcost(const std::vector<State> &path, const std::vec
 }
 
 void Segments::prinitial(FILE *out) const {
-	dfrowhdr(out, "instance", 7, "radius", "initial x", "initial y", "initial rot");
+  dfrowhdr(out, "instance", 7, "radius", "initial x", "initial y", "initial rot", "goal x", "goal y", "goal, rot");
 	for (auto sg = segs.begin(); sg != segs.end(); sg++) {
-		dfrow(out, "instance", "uuuuuuu", (unsigned int) sg->radius,
+		dfrow(out, "instance", "guuuuuu", (double) sg->radius,
 			(unsigned int) sg->start.x,
 			(unsigned int) sg->start.y,
 			(unsigned int) sg->start.rot,
@@ -401,7 +404,7 @@ std::vector<Segments::Oper> scanops(const std::string &str) {
 		case 'r':
 			int delta;
 			in >> delta;
-			ops.push_back(Segments::Oper(Segments::Oper::Move,
+			ops.push_back(Segments::Oper(Segments::Oper::Rotate,
 				seg, delta, 0));
 			break;
 		default:
@@ -426,12 +429,12 @@ static void dfline(std::vector<std::string> &line, void *aux) {
 	} else if (line.size() == 3 && line[0] == "#pair" && line[1] == "height") {
 		sol->height = strtol(line[2].c_str(), NULL, 10);
 
-	} else if (line.size() == 3 && line[0] == "#pair" && line[1] == "nangles") {
+	} else if (line.size() == 3 && line[0] == "#pair" && line[1] == "number of angles") {
 		sol->nangles = strtol(line[2].c_str(), NULL, 10);
 
-	} else if (line.size() == 6 && line[0] == "#altrow" && line[1] == "instance") {
+	} else if (line.size() == 9 && line[0] == "#altrow" && line[1] == "instance") {
 		Segments::Seg s;
-		s.radius = strtol(line[2].c_str(), NULL, 10);
+		s.radius = strtod(line[2].c_str(), NULL);
 		s.start.x = strtol(line[3].c_str(), NULL, 10);
 		s.start.y = strtol(line[4].c_str(), NULL, 10);
 		s.start.rot = strtol(line[5].c_str(), NULL, 10);

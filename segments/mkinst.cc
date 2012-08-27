@@ -6,18 +6,17 @@
 using namespace geom2d;
 
 enum {
-	Nsegs = 1,
+	Nsegs = 10,
 	Width = 100,
 	Height = 100,
-	Nangles = 24,
-	Seed = 0,
+	Nangles = 32,
 
 	// number of steps in the random walk
 	Nsteps = 100000,
 };
 
-const double MaxR = 5;
-const double MinR = 0.5;
+const double MaxR = 15;
+const double MinR = 1;
 
 void mkinst(FILE*);
 
