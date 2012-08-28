@@ -3,7 +3,7 @@
 #include <cmath>
 #include <cstdio>
 #include <cstring>
-
+#include <cassert>
 using namespace geom2d;
 
 static unsigned int Nsegs = 10;
@@ -77,21 +77,28 @@ void helpmsg(int status) {
 
 void mkinst(FILE *out) {
 	Rand rnd(Seed);
+	printf("# seed: %lu\n", Seed);
+
 	Segments dom(Width, Height, Nangles, std::vector<Segments::Seg>());
 
 	std::vector<LineSg> lines;
 	for (unsigned int i = 0; i < Nsegs; i++) {
-	redo:
+	redoseg:
 		Segments::Seg seg;
-		seg.radius = rnd.real()*(MaxR-MinR) + MinR;
+		double r = rnd.real()*(MaxR-MinR) + MinR;
+		seg.radius = r;
 		seg.start.rot = rnd.integer(0, Nangles-1);
-		seg.start.x = rnd.integer(1, Width - 2);
-		seg.start.y = rnd.integer(1, Height - 2);
+		seg.start.x = rnd.integer(ceil(r), Width - ceil(r));
+		seg.start.y = rnd.integer(ceil(r), Height - ceil(r));
 
 		LineSg line = dom.line(seg, seg.start);
 		for (auto l = lines.begin(); l != lines.end(); l++) {
 			if (l->hits(line))
-				goto redo;
+				goto redoseg;
+		}
+		for (int i = 0; i < 4; i++) {
+			if (dom.bounds[i].hits(line))
+				goto redoseg;
 		}
 
 		lines.push_back(line);
@@ -99,15 +106,23 @@ void mkinst(FILE *out) {
 	}
 
 	Segments::State st = dom.initialstate();
+	Segments::Oper rev = Segments::Nop;
+
 	for (unsigned long i = 0; i < Nsteps; i++) {
 		Segments::Operators ops(dom, st);
 		if (ops.size() == 0) {
 			warn("Only performed %lu steps", i);
 			break;
 		}
-
 		unsigned int n = rnd.integer(0, ops.size()-1);
+		if (ops[n] == rev && ops.size() > 2) {
+			unsigned int m = (n + rnd.integer(1, ops.size()-2)) % ops.size();
+			assert (m != n);
+			n = m;
+		}
+
 		Segments::Edge e(dom, st, ops[n]);
+		rev = e.revop;
 		st = e.state;
 	}
 

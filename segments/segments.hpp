@@ -251,7 +251,15 @@ public:
 	// prinitial prints the initial state to the given
 	// file in datafile format.
 	void prinitial(FILE*) const;
+
+	// width, height, and nangles give the discretization
+	// of this problem instance.
 	unsigned int width, height, nangles;
+
+	// bounds are the lines defining the boundaries on the
+	// working space of the segments.
+	geom2d::LineSg bounds[4];
+
 private:
 
 	// line returns the line for the given segment
@@ -266,10 +274,6 @@ private:
 	// angles holds information about the different angles
 	// at which a segment can be rotated.
 	std::vector<Angle> angles;
-
-	// bounds are the lines defining the boundaries on the
-	// working space of the segments.
-	geom2d::LineSg bounds[4];
 };
 
 // scanops scans an operator vector from an

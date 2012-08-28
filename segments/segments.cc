@@ -27,6 +27,16 @@ bool Segments::Sweep::hits(const LineSg &line) const {
 }
 
 Segments::Segments(FILE *in) {
+	// chomp away comments.
+	int c = fgetc(in);
+	while (c == '#') {
+		do { 
+			c = fgetc(in);
+		} while (c != '\n');
+		c = fgetc(in);
+	}
+	ungetc(c, in);
+
 	if (fscanf(in, "%u %u %u\n", &width, &height, &nangles) != 3)
 		fatal("Failed to read the turning angle step\n");
 
@@ -166,6 +176,7 @@ Segments::Sweep Segments::Oper::sweep(const Segments &dom, const State &s) const
 		return sweep;
 	}
 
+	// op == Move
 	Pose p0 = s.poses[seg];
 	Pose p1 = p0;
 	p1.x += delta;
@@ -383,6 +394,9 @@ std::vector<Segments::Oper> scanops(const std::string &str) {
 		char tag;
 		int seg;
 		in >> tag >> seg;
+
+		if (in.eof())
+			break;
 
 		switch (tag) {
 		case 'm':
