@@ -155,7 +155,7 @@ public:
 	typedef double Cost;
 
 	struct Oper {
-		enum Op { None = 0, Gripper, Rotate, Move };
+		enum Op { None = 0, Rotate, Move };
 
 		Oper() { }
 

@@ -108,7 +108,7 @@ bool Segments::State::operator==(const State &o) const {
 bool Segments::Oper::operator==(const Oper &o) const {
 	if (o.op != op)
 		return false;
-	if (op == None || op == Gripper)
+	if (op == None)
 		return true;
 	else if (op == Rotate)
 		return seg == o.seg && delta == o.delta;
@@ -118,8 +118,6 @@ bool Segments::Oper::operator==(const Oper &o) const {
 Segments::Oper Segments::Oper::reverse() const {
 	if (op == None)
 		return Nop;
-	if (op == Gripper)
-		return *this;
 	return Oper(op, seg, -delta, -dy);
 }
 
@@ -127,12 +125,18 @@ Segments::Cost Segments::Oper::cost(const State &state) const {
 	if (op == None)
 		return 0.0;
 
-	double x = (double)state.x - state.poses[seg].x;
-	double y = (double)state.y - state.poses[seg].y;
-	double c = sqrt(x*x + y*y);
+	double c = 0;
+
+	const Pose &p = state.poses[seg];
+	if (state.x != p.x || state.y != p.y) {
+		double x = (double)state.x - p.x;
+		double y = (double)state.y - p.y;
+		c += sqrt(x*x + y*y);
+	}
 
 	if (op == Rotate)
-		c++;
+		c += 1.0;
+
 	else if (op == Move)
 		c += (delta == 0 || dy == 0) ? 1.0 : sqrt(2);
 
@@ -143,7 +147,7 @@ Segments::Sweep Segments::Oper::sweep(const Segments &dom, const State &s) const
 	Sweep sweep;
 	sweep.nlines = sweep.narcs = 0;
 
-	if (op == None || op == Gripper)
+	if (op == None)
 		return sweep;
 
 	if (op == Rotate) {
@@ -176,7 +180,7 @@ Segments::Sweep Segments::Oper::sweep(const Segments &dom, const State &s) const
 }
 
 bool Segments::Oper::ok(const Segments &dom, const State &s) const {
-	if (op == None || op == Gripper)
+	if (op == None)
 		return true;
 
 	Sweep swp = sweep(dom, s);
@@ -196,14 +200,7 @@ bool Segments::Oper::ok(const Segments &dom, const State &s) const {
 }
 
 Segments::Operators::Operators(const Segments &dom, const State &s) {
-	bool onSegment = false;
-
 	for (unsigned int i = 0; i < s.poses.size(); i++) {
-		const Pose &p = s.poses[i];
-
-		if(p.x == s.x && p.y == s.y)
-			onSegment = true;
-
 		Oper cw(Oper::Rotate, i, -1, 0);
 		if (cw.ok(dom, s))
 			ops.push_back(cw);
@@ -222,16 +219,6 @@ Segments::Operators::Operators(const Segments &dom, const State &s) {
 		}
 		}
 	}
-
-	if(onSegment) return;
-
-	for (unsigned int i = 0; i < s.poses.size(); i++) {
-		Oper g(Oper::Gripper, i, 0, 0);
-		if (g.ok(dom, s))
-			ops.push_back(g);
-	}
-
-
 }
 
 Segments::Edge::Edge(const Segments &dom, const State &s, Oper op) {
@@ -242,25 +229,24 @@ Segments::Edge::Edge(const Segments &dom, const State &s, Oper op) {
 	if (op.op == Oper::None)
 		return;
 
-	state.x = state.poses[op.seg].x;
-	state.y = state.poses[op.seg].y;
-
-	if (op.op == Oper::Gripper)
-		return;
+	Pose &p = state.poses[op.seg];
 
 	if (op.op == Oper::Rotate) {
-		Pose &p = state.poses[op.seg];
 		p.rot = wrapind(p.rot+op.delta, dom.nangles);
 		state.lines[op.seg] = dom.line(dom.segs[op.seg], p);
+
 	} else if (op.op == Oper::Move) {
-		Pose &p = state.poses[op.seg];
 		p.x += op.delta;
 		p.y += op.dy;
 		state.lines[op.seg] = dom.line(dom.segs[op.seg], p);
 	}
 
+	// Move the gripper with the segment.
+	state.x = p.x;
+	state.y = p.y;
+
 	bool wasgoal = s.poses[op.seg] == dom.segs[op.seg].goal;
-	bool isgoal = state.poses[op.seg] == dom.segs[op.seg].goal;
+	bool isgoal = p == dom.segs[op.seg].goal;
 	if (wasgoal && !isgoal)
 		state.nleft++;
 	else if (!wasgoal && isgoal)
@@ -360,12 +346,12 @@ Segments::Cost Segments::pathcost(const std::vector<State> &path, const std::vec
 
 	std::stringstream s;
 	for (int i = ops.size() - 1; i >= 0; i--) {
-		if (ops[i].op == Oper::Gripper)
-			s << "g " << ops[i].seg;
-		else if (ops[i].op == Oper::Rotate)
+		if (ops[i].op == Oper::Rotate)
 			s << "r " << ops[i].seg << " " << ops[i].delta;
+
 		else if (ops[i].op == Oper::Move)
 			s << "m " << ops[i].seg << " " << ops[i].delta << " " << ops[i].dy;
+
 		else
 			fatal("Invalid path operator: %d\n", ops[i].op);
 	}
@@ -399,22 +385,20 @@ std::vector<Segments::Oper> scanops(const std::string &str) {
 		in >> tag >> seg;
 
 		switch (tag) {
-		case 'g':
-			ops.push_back(Segments::Oper(Segments::Oper::Gripper,
-				seg, 0, 0));
-			break;
 		case 'm':
 			int dx, dy;
 			in >> dx >> dy;
 			ops.push_back(Segments::Oper(Segments::Oper::Move,
 				seg, dx, dy));
 			break;
+
 		case 'r':
 			int delta;
 			in >> delta;
 			ops.push_back(Segments::Oper(Segments::Oper::Rotate,
 				seg, delta, 0));
 			break;
+
 		default:
 			fatal("Invalid operator tag: %c", tag);
 		}
