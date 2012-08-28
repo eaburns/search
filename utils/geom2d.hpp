@@ -238,9 +238,17 @@ namespace geom2d {
 			double x = (o.b - b) / (m - o.m);
 			return Pt(x, m * x + b);
 		}
+
+		// contains returns true if the given point is on
+		// the line.
+		bool contains(const Pt &p) const {
+			return doubleeq(p.y, p.x*m + b);
+		}
 	
 		// isabove returns true if the point is above the given line.
-		bool isabove(const Pt &p) const { return (m * p.x + b) < p.y; }
+		bool isabove(const Pt &p) const {
+			return (m * p.x + b) < p.y;
+		}
 	
 		// In case of a vertical line: m == ∞ and b = x
 		double m, b;
@@ -284,20 +292,41 @@ namespace geom2d {
 		// intersect.  If they do not intersect then Pt::inf() is
 		// returned.  If the Line (infinite line) corresponding to
 		// the two lines is the same then the return value is
-		// also Pt::inf().
+		// also Pt::inf().  If the lines segments are parallel
+		// and intersect then one of the many intersection
+		// points is returned.
 		Pt isect(const LineSg &o) const {
-			Pt p;
-			if (isvertical() && o.isvertical())
+			if (isvertical() && o.isvertical()) {
+				if (!doubleeq(p0.x, o.p0.x))
+					return Pt::inf();
+				if (within(o.p0))
+					return o.p0;
+				else if (within(o.p1))
+					return o.p1;
 				return Pt::inf();
-			else if (o.isvertical())
+			}
+			if (doubleeq(m, o.m)) {
+				if (!Line::contains(o.p0))
+					return Pt::inf();
+				if (within(o.p0))
+					return o.p0;
+				else if (within(o.p1))
+					return o.p1;
+				return Pt::inf();
+			}
+
+			Pt p;
+			if (o.isvertical()) {
 				p = Pt(o.p0.x, m * o.p0.x + b);
-			else if (isvertical())
+			} else if (isvertical()) {
 				p = Pt(p0.x, o.m * p0.x + o.b);
-			else
+			} else {
 				p = Line::isect(o);
+			}
 
 			if (within(p) && o.within(p))
 				return p;
+
 			return Pt::inf();
 		}
 	
@@ -307,7 +336,9 @@ namespace geom2d {
 		}
 	
 		// isvertical returns true if the line is a vertical line.
-		bool isvertical() const { return doubleeq(p0.x, p1.x); }
+		bool isvertical() const {
+			return doubleeq(p0.x, p1.x);
+		}
 	
 		Pt p0, p1;
 		Bbox bbox;
