@@ -416,9 +416,13 @@ namespace geom2d {
 				is[i].x = l.p0.x + u[j] * q.dx;
 				is[i].y = l.p0.y + u[j] * q.dy;
 				double t = Pt::angle(Pt(is[i].x - c.x, is[i].y - c.y));
-				// This between test is insufficient, what if
-				// the arc sweeps in a different direction‽
-				if (l.within(is[i]) && between(t0, t0+dt, t))
+				double tmin = t0;
+				double tmax = t0+dt;
+				if (tmin > tmax) {
+					tmin = t0+dt;
+					tmax = t0;
+				}
+				if (l.within(is[i]) && between(tmin, tmax, t))
 					i++;
 			}
 	

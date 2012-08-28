@@ -32,6 +32,7 @@ static unsigned long frametime = 20;	// in milliseconds
 static unsigned long delay = 0;	// in milliseconds
 static bool echo;
 static bool save;
+static int skip;
 static std::string level;
 static std::vector<unsigned int> controls;
 
@@ -53,17 +54,23 @@ static void parseargs(int argc, const char *argv[]) {
 	for (int i = 1; i < argc; i++) {
 		if (strcmp(argv[i], "-h") == 0) {
 			helpmsg(0);
-		} else if (strcmp(argv[i], "-f") == 0) {
+
+		} else if (i < argc-1 && strcmp(argv[i], "-f") == 0) {
 			frametime = strtol(argv[++i], NULL, 10);
-			i++;
-		} else if (strcmp(argv[i], "-d") == 0) {
+
+		} else if (i < argc-1 && strcmp(argv[i], "-d") == 0) {
 			delay = strtol(argv[++i], NULL, 10);
 			delay *= 1000;
-			i++;
+
 		} else if (strcmp(argv[i], "-e") == 0) {
 			echo = true;
+
 		} else if (strcmp(argv[i], "-s") == 0) {
 			save = true;
+
+		} else if (i < argc-1 && strcmp(argv[i], "-skip") == 0) {
+			skip = strtol(argv[++i], NULL, 10);
+
 		} else {
 			printf("Unknown option %s", argv[i]);
 			helpmsg(1);
@@ -79,6 +86,7 @@ static void helpmsg(int status) {
 	puts("	-f	frame rate in milliseconds (default 20)");
 	puts("	-e	echo the input to standard output");
 	puts("	-s	saves an mpeg");
+	puts("	-skip	 skips initial portion of the solution");
 	exit(status);
 }
 
@@ -89,6 +97,13 @@ WatchUi::WatchUi(unsigned int w, unsigned int h, bool save,
 	iter = ops.begin();
 	sweep.nlines = sweep.narcs = 0;
 	glScalef(w / instance->width, h / instance->height, 1);
+
+	for (int i = 0; i < skip; i++) {
+		sweep = iter->sweep(*instance, curState);
+		Segments::Edge e(*instance, curState, *iter);
+		curState = e.state;
+		iter++;
+	}
 }
 
 bool WatchUi::frame() {
