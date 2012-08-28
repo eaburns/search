@@ -24,10 +24,13 @@ template <class D> struct Wastar : public SearchAlgorithm<D> {
 	};
 
 	Wastar(int argc, const char *argv[]) :
-			SearchAlgorithm<D>(argc, argv), wt(-1.0), closed(30000001) {
+			SearchAlgorithm<D>(argc, argv), dropdups(false),
+			wt(-1.0), closed(30000001) {
 		for (int i = 0; i < argc; i++) {
 			if (i < argc - 1 && strcmp(argv[i], "-wt") == 0)
 				wt = strtod(argv[++i], NULL);
+			if (strcmp(argv[i], "-dropdups") == 0)
+				dropdups = true;
 		}
 
 		if (wt < 1)
@@ -102,7 +105,7 @@ private:
 		Node *dup = static_cast<Node*>(closed.find(kid->packed, hash));
 		if (dup) {
 			this->res.dups++;
-			if (kid->g >= dup->g) {
+			if (dropdups || kid->g >= dup->g) {
 				nodes->destruct(kid);
 				return;
 			}
@@ -134,6 +137,7 @@ private:
 		return n0;
 	}
 
+	bool dropdups;
 	double wt;
 	BinHeap<Node, Node*> open;
  	ClosedList<SearchNode<D>, SearchNode<D>, D> closed;

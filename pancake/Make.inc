@@ -15,7 +15,7 @@ pancake/50pancake_solver:\
 	structs/structs.a\
 	search/search.a
 	@echo $@
-	@$(CXX) $(PANCAKESRC) pancake/main.cc utils/utils.a structs/structs.a search/search.a $(LDFLAGS) -DNCAKES=50 -o $@
+	@$(CXX) -static $(PANCAKESRC) pancake/main.cc utils/utils.a structs/structs.a search/search.a $(LDFLAGS) -DNCAKES=50 -o $@
 
 CLEAN+=pancake/15pancake_solver
 
@@ -27,7 +27,7 @@ pancake/70pancake_solver:\
 	structs/structs.a\
 	search/search.a
 	@echo $@
-	@$(CXX) $(PANCAKESRC) pancake/main.cc utils/utils.a structs/structs.a search/search.a $(LDFLAGS) -DNCAKES=70  -o $@
+	@$(CXX) -static $(PANCAKESRC) pancake/main.cc utils/utils.a structs/structs.a search/search.a $(LDFLAGS) -DNCAKES=70  -o $@
 
 CLEAN+=pancake/70pancake_solver
 

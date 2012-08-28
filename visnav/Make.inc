@@ -57,7 +57,7 @@ visnav/visnav_solver:\
 	structs/structs.a\
 	search/search.a
 	@echo $@
-	@$(CXX) $^ $(LDFLAGS) -o $@
+	@$(CXX) -static $^ $(LDFLAGS) -o $@
 
 include visnav/main.d
 CLEAN+=visnav/visnav_solver visnav/main.o
