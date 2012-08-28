@@ -89,7 +89,7 @@ void Segments::State::init(const Segments &dom, const std::vector<Pose> &ps) {
 	}
 }
 
-geom2d::LineSg Segments::line(const Seg &s, const Pose &p) const {	
+geom2d::LineSg Segments::line(const Seg &s, const Pose &p) const {
 	const Angle &a0 = angles[p.rot];
 	const Angle &a1 = angles[wrapind(p.rot + nangles/2, nangles)];
 	Pt p0(p.x + s.radius*a0.cosine, p.y + s.radius*a0.sine);
@@ -115,7 +115,7 @@ bool Segments::Oper::operator==(const Oper &o) const {
 	return seg == o.seg && delta == o.delta && dy == o.dy;
 }
 
-Segments::Oper Segments::Oper::reverse() const {		
+Segments::Oper Segments::Oper::reverse() const {
 	if (op == None)
 		return Nop;
 	if (op == Gripper)
@@ -124,16 +124,19 @@ Segments::Oper Segments::Oper::reverse() const {
 }
 
 Segments::Cost Segments::Oper::cost(const State &state) const {
-	if (op == None) {
+	if (op == None)
 		return 0.0;
-	} else if (op == Gripper) {
-		double x = (double)state.x - state.poses[seg].x;
-		double y = (double)state.y - state.poses[seg].y;
-		return sqrt(x*x + y*y);
-	} else if (op == Rotate) {
-		return 1.0;
-	}
-	return (delta == 0 || dy == 0) ? 1.0 : sqrt(2);
+
+	double x = (double)state.x - state.poses[seg].x;
+	double y = (double)state.y - state.poses[seg].y;
+	double c = sqrt(x*x + y*y);
+
+	if (op == Rotate)
+		c++;
+	else if (op == Move)
+		c += (delta == 0 || dy == 0) ? 1.0 : sqrt(2);
+
+	return c;
 }
 
 Segments::Sweep Segments::Oper::sweep(const Segments &dom, const State &s) const {
@@ -193,15 +196,13 @@ bool Segments::Oper::ok(const Segments &dom, const State &s) const {
 }
 
 Segments::Operators::Operators(const Segments &dom, const State &s) {
+	bool onSegment = false;
+
 	for (unsigned int i = 0; i < s.poses.size(); i++) {
 		const Pose &p = s.poses[i];
 
-		if (p.x != s.x || p.y != s.y) {
-			Oper g(Oper::Gripper, i, 0, 0);
-			if (g.ok(dom, s))
-				ops.push_back(g);
-			continue;
-		}
+		if(p.x == s.x && p.y == s.y)
+			onSegment = true;
 
 		Oper cw(Oper::Rotate, i, -1, 0);
 		if (cw.ok(dom, s))
@@ -221,6 +222,16 @@ Segments::Operators::Operators(const Segments &dom, const State &s) {
 		}
 		}
 	}
+
+	if(onSegment) return;
+
+	for (unsigned int i = 0; i < s.poses.size(); i++) {
+		Oper g(Oper::Gripper, i, 0, 0);
+		if (g.ok(dom, s))
+			ops.push_back(g);
+	}
+
+
 }
 
 Segments::Edge::Edge(const Segments &dom, const State &s, Oper op) {
@@ -231,11 +242,11 @@ Segments::Edge::Edge(const Segments &dom, const State &s, Oper op) {
 	if (op.op == Oper::None)
 		return;
 
-	if (op.op == Oper::Gripper) {
- 		state.x = state.poses[op.seg].x;
- 		state.y = state.poses[op.seg].y;
+	state.x = state.poses[op.seg].x;
+	state.y = state.poses[op.seg].y;
+
+	if (op.op == Oper::Gripper)
 		return;
-	}
 
 	if (op.op == Oper::Rotate) {
 		Pose &p = state.poses[op.seg];
@@ -245,11 +256,8 @@ Segments::Edge::Edge(const Segments &dom, const State &s, Oper op) {
 		Pose &p = state.poses[op.seg];
 		p.x += op.delta;
 		p.y += op.dy;
- 		state.x = p.x;
- 		state.y = p.y;
 		state.lines[op.seg] = dom.line(dom.segs[op.seg], p);
 	}
-
 
 	bool wasgoal = s.poses[op.seg] == dom.segs[op.seg].goal;
 	bool isgoal = state.poses[op.seg] == dom.segs[op.seg].goal;
@@ -448,7 +456,7 @@ static void dfline(std::vector<std::string> &line, void *aux) {
 Solution readdf(FILE *in, FILE *echo) {
 	Solution sol;
 	dfread(in, dfline, &sol, echo);
-	return sol;	
+	return sol;
 }
 
 static int wrapind(int i, int n) {
