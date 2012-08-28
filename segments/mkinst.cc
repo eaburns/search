@@ -10,7 +10,6 @@ static unsigned int Nsegs = 10;
 static unsigned int Width = 100;
 static unsigned int Height = 100;
 static unsigned int Nangles = 32;
-static unsigned long Nsteps = 100000;
 static double MaxR = 15;
 static double MinR = 1;
 static unsigned long Seed = 0;
@@ -39,9 +38,6 @@ void parseargs(int argc, const char *argv[]) {
 		} else if (i < argc-1 && strcmp(argv[i], "-nangles") == 0) {
 			Nangles = strtol(argv[++i], NULL, 10);
 
-		} else if (i < argc-1 && strcmp(argv[i], "-steps") == 0) {
-			Nsteps = strtoul(argv[++i], NULL, 10);
-
 		} else if (i < argc-1 && strcmp(argv[i], "-maxr") == 0) {
 			MaxR = strtod(argv[++i], NULL);
 
@@ -68,7 +64,6 @@ void helpmsg(int status) {
 	printf("-width	width of the grid (default: %u)\n", Width);
 	printf("-height	height of the grid (default: %u)\n", Height);
 	printf("-nangles	the number of angles (must be even, default: %u)\n", Nangles);
-	printf("-nsteps	number of steps in the random walk (default: %lu)\n", Nsteps);
 	printf("-maxr	the max segment radius (default: %g)\n", MaxR);
 	printf("-minr	the min segment radius (default: %g)\n", MinR);
 	printf("-seed	specify the random seed\n");
@@ -83,56 +78,56 @@ void mkinst(FILE *out) {
 
 	std::vector<LineSg> lines;
 	for (unsigned int i = 0; i < Nsegs; i++) {
-	redoseg:
+	redostart:
 		Segments::Seg seg;
-		double r = rnd.real()*(MaxR-MinR) + MinR;
-		seg.radius = r;
+		seg.radius = rnd.real()*(MaxR-MinR) + MinR;
+		double r = ceil(seg.radius);
 		seg.start.rot = rnd.integer(0, Nangles-1);
-		seg.start.x = rnd.integer(ceil(r), Width - ceil(r));
-		seg.start.y = rnd.integer(ceil(r), Height - ceil(r));
+		seg.start.x = rnd.integer(r, Width - r);
+		seg.start.y = rnd.integer(r, Height - r);
 
 		LineSg line = dom.line(seg, seg.start);
 		for (auto l = lines.begin(); l != lines.end(); l++) {
 			if (l->hits(line))
-				goto redoseg;
+				goto redostart;
 		}
 		for (int i = 0; i < 4; i++) {
 			if (dom.bounds[i].hits(line))
-				goto redoseg;
+				goto redostart;
 		}
 
 		lines.push_back(line);
 		dom.segs.push_back(seg);
 	}
 
-	Segments::State st = dom.initialstate();
-	Segments::Oper rev = Segments::Nop;
+	lines.clear();
+	for (unsigned int i = 0; i < Nsegs; i++) {
+	redogoal:
+		Segments::Seg &seg = dom.segs[i];
+		double r = ceil(seg.radius);
+		seg.goal.rot = rnd.integer(0, Nangles-1);
+		seg.goal.x = rnd.integer(ceil(r), Width - ceil(r));
+		seg.goal.y = rnd.integer(ceil(r), Height - ceil(r));
 
-	for (unsigned long i = 0; i < Nsteps; i++) {
-		Segments::Operators ops(dom, st);
-		if (ops.size() == 0) {
-			warn("Only performed %lu steps", i);
-			break;
+		LineSg line = dom.line(seg, seg.goal);
+		for (auto l = lines.begin(); l != lines.end(); l++) {
+			if (l->hits(line))
+				goto redogoal;
 		}
-		unsigned int n = rnd.integer(0, ops.size()-1);
-		if (ops[n] == rev && ops.size() > 2) {
-			unsigned int m = (n + rnd.integer(1, ops.size()-2)) % ops.size();
-			assert (m != n);
-			n = m;
+		for (int i = 0; i < 4; i++) {
+			if (dom.bounds[i].hits(line))
+				goto redogoal;
 		}
 
-		Segments::Edge e(dom, st, ops[n]);
-		rev = e.revop;
-		st = e.state;
+		lines.push_back(line);
 	}
 
 	fprintf(out, "%u %u %u\n", Width, Height, Nangles);
 	fprintf(out, "%u\n", Nsegs);
 	for (unsigned int i = 0; i < dom.segs.size(); i++) {
-		const Segments::Pose &goal = st.poses[i];
 		const Segments::Seg &sg = dom.segs[i];
 		fprintf(out, "%g ", sg.radius);
 		fprintf(out, "%u %u %u ", sg.start.x, sg.start.y, sg.start.rot);
-		fprintf(out, "%u %u %u\n", goal.x, goal.y, goal.rot);
+		fprintf(out, "%u %u %u\n", sg.goal.x, sg.goal.y, sg.goal.rot);
 	}
 }
