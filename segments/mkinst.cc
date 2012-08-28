@@ -26,28 +26,28 @@ int main(int argc, const char *argv[]) {
 
 void parseargs(int argc, const char *argv[]) {
 	for (int i = 1; i < argc; i++) {
-		if (i < argc-1 && strcmp(argv[i], "nsegs") == 0) {
+		if (i < argc-1 && strcmp(argv[i], "-nsegs") == 0) {
 			Nsegs = strtol(argv[++i], NULL, 10);
 
-		} else if (i < argc-1 && strcmp(argv[i], "width") == 0) {
+		} else if (i < argc-1 && strcmp(argv[i], "-width") == 0) {
 			Width = strtol(argv[++i], NULL, 10);
 
-		} else if (i < argc-1 && strcmp(argv[i], "height") == 0) {
+		} else if (i < argc-1 && strcmp(argv[i], "-height") == 0) {
 			Height = strtol(argv[++i], NULL, 10);
 
-		} else if (i < argc-1 && strcmp(argv[i], "nangles") == 0) {
+		} else if (i < argc-1 && strcmp(argv[i], "-nangles") == 0) {
 			Nangles = strtol(argv[++i], NULL, 10);
 
-		} else if (i < argc-1 && strcmp(argv[i], "nsteps") == 0) {
+		} else if (i < argc-1 && strcmp(argv[i], "-nsteps") == 0) {
 			Nsteps = strtoul(argv[++i], NULL, 10);
 
-		} else if (i < argc-1 && strcmp(argv[i], "maxr") == 0) {
+		} else if (i < argc-1 && strcmp(argv[i], "-maxr") == 0) {
 			MaxR = strtod(argv[++i], NULL);
 
-		} else if (i < argc-1 && strcmp(argv[i], "minr") == 0) {
+		} else if (i < argc-1 && strcmp(argv[i], "-minr") == 0) {
 			MinR = strtod(argv[++i], NULL);
 
-		} else if (i < argc-1 && strcmp(argv[i], "h") == 0) {
+		} else if (i < argc-1 && strcmp(argv[i], "-h") == 0) {
 			helpmsg(0);
 
 		} else {
