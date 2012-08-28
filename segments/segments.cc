@@ -43,9 +43,9 @@ Segments::Segments(FILE *in) {
 	if (nangles % 2 != 0)
 		fatal("Angle step must partition a circle into an even number of segments");
 
-	double tstep = 2*M_PI / nangles;
+	dtheta = 2*M_PI / nangles;
 	for (unsigned int i = 0; i < nangles; i++)
-		angles.push_back(Angle(tstep*i));
+		angles.push_back(Angle(dtheta*i));
 
 	bounds[0] = LineSg(Pt(0, 0), Pt(0, width));
 	bounds[1] = LineSg(Pt(0, width), Pt(height, width));
@@ -75,9 +75,9 @@ Segments::Segments(unsigned int w, unsigned int h, unsigned int t, const std::ve
 	if (nangles % 2 != 0)
 		fatal("Angle step must partition a circle into an even number of segments");
 
-	double tstep = 2*M_PI / t;
+	dtheta = 2*M_PI / t;
 	for (unsigned int i = 0; i < nangles; i++)
-		angles.push_back(Angle(tstep*i));
+		angles.push_back(Angle(dtheta*i));
 
 	bounds[0] = LineSg(Pt(0, 0), Pt(w, 0));
 	bounds[1] = LineSg(Pt(w, 0), Pt(w, h));
@@ -163,12 +163,11 @@ Segments::Sweep Segments::Oper::sweep(const Segments &dom, const State &s) const
 	if (op == Rotate) {
 		Pose p = s.poses[seg];
 		Angle a0 = dom.angles[p.rot];
-		Angle a1 = dom.angles[wrapind(p.rot+delta, dom.nangles)];
 		double r = dom.segs[seg].radius;
 		sweep.narcs = 2;
 		Pt center(p.x, p.y);
-		sweep.arcs[0] = Arc(center, r, a0.theta, a1.theta);
-		sweep.arcs[1] = Arc(center, r, M_PI+a0.theta, M_PI+a1.theta);
+		sweep.arcs[0] = Arc(center, r, a0.theta, delta*dom.dtheta);
+		sweep.arcs[1] = Arc(center, r, M_PI+a0.theta, delta*dom.dtheta);
 
 		p.rot = wrapind(p.rot+delta, dom.nangles);
 		sweep.nlines = 1;

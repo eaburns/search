@@ -373,10 +373,10 @@ namespace geom2d {
 		Arc() { }
 	
 		// Arc constructs a new arc with the given center
-		// radius, initial angle and final angle.  Angles are
-		// given in radians.
-		Arc(const Pt &cvl, double rvl, double t0vl, double t1vl) :
-			c(cvl), r(rvl), t0(t0vl), t1(t1vl),
+		// radius, initial angle and the sweep angle.  Angles
+		// are given in radians.
+		Arc(const Pt &cvl, double rvl, double t0vl, double d) :
+			c(cvl), r(rvl), t0(t0vl), dt(d),
 			bbox(c.x - r, c.y - r, c.x + r, c.y + r)
 			{ }
 	
@@ -389,7 +389,6 @@ namespace geom2d {
 			c.translate(p.x, p.y);
 			bbox = Bbox(c.x - r, c.y - r, c.x + r, c.y + r);
 			t0 += t;
-			t1 += t;
 		}
 	
 		// translate translates the arc by the given amount in
@@ -417,7 +416,9 @@ namespace geom2d {
 				is[i].x = l.p0.x + u[j] * q.dx;
 				is[i].y = l.p0.y + u[j] * q.dy;
 				double t = Pt::angle(Pt(is[i].x - c.x, is[i].y - c.y));
-				if (l.within(is[i]) && between(t0, t1, t))
+				// This between test is insufficient, what if
+				// the arc sweeps in a different direction‽
+				if (l.within(is[i]) && between(t0, t0+dt, t))
 					i++;
 			}
 	
@@ -437,11 +438,11 @@ namespace geom2d {
 	
 		// end returns the ending point of the arc.
 		Pt end() const {
-			return Pt(c.x + cos(t1) * r, c.y + sin(t1) * r);
+			return Pt(c.x + cos(t0+dt) * r, c.y + sin(t0+dt) * r);
 		}
 	
 		Pt c;
-		double r, t0, t1;
+		double r, t0, dt;
 		Bbox bbox;
 	
 	private:

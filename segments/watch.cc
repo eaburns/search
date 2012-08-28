@@ -13,18 +13,19 @@ struct Lvl;
 
 class WatchUi : public Ui {
 public:
-  WatchUi(unsigned int, unsigned int, bool, Segments*, std::vector<Segments::Oper>);
+	WatchUi(unsigned int, unsigned int, bool, Segments*, std::vector<Segments::Oper>);
 	virtual bool frame();
 	virtual void key(int, bool) { /* ignore */ }
 	virtual void motion(int, int, int, int) { /* ignore */ }
 	virtual void click(int, int, int, bool) { /* ignore */ }
 private:
-  Segments* instance;
-  Segments::State curState;
-  std::vector<Segments::Oper> ops;
-  std::vector<Segments::Oper>::iterator iter;
-  void drawGrid();
-  void draw();
+	Segments* instance;
+	Segments::State curState;
+	Segments::Sweep sweep;
+	std::vector<Segments::Oper> ops;
+	std::vector<Segments::Oper>::iterator iter;
+	void drawGrid();
+	void draw();
 };
 
 static unsigned long frametime = 20;	// in milliseconds
@@ -84,10 +85,10 @@ static void helpmsg(int status) {
 WatchUi::WatchUi(unsigned int w, unsigned int h, bool save,
 		 Segments* segs, std::vector<Segments::Oper> o) :
   Ui(w, h, save), instance(segs), ops(o) {
-  curState = instance->initialstate();
-  iter = ops.begin();
-  
-  glScalef(w / instance->width, h / instance->height, 1);
+	curState = instance->initialstate();
+	iter = ops.begin();
+	sweep.nlines = sweep.narcs = 0;
+	glScalef(w / instance->width, h / instance->height, 1);
 }
 
 bool WatchUi::frame() {
@@ -107,6 +108,7 @@ bool WatchUi::frame() {
 
 	draw();
 
+	sweep = iter->sweep(*instance, curState);
 	Segments::Edge e(*instance, curState, *iter);
 	curState = e.state;
 	iter++;
@@ -115,31 +117,37 @@ bool WatchUi::frame() {
 }
 
 void WatchUi::draw() {
-  scene.clear();
+	scene.clear();
 
-  drawGrid();
+	drawGrid();
 
-  // add the segments
-  int i = 0;
-  for(auto line = curState.lines.begin(); line != curState.lines.end(); line++) {
-    scene.add(new Scene::Line(*line, somecolors[i % Nsomecolors], 2));
-    i++; 
-  }
-  
-  // add the gripper
-  Color red(1,0,0);
-  scene.add(new Scene::Pt(geom2d::Pt(curState.x, curState.y), red, 5, -1));
+	// add the segments
+	int i = 0;
+	for(auto line = curState.lines.begin(); line != curState.lines.end(); line++) {
+		scene.add(new Scene::Line(*line, somecolors[i % Nsomecolors], 4));
+		i++; 
+	}
+
+	for (unsigned int i = 0; i < sweep.nlines; i++)
+		scene.add(new Scene::Line(sweep.lines[i], Image::red, 1));
+
+	for (unsigned int i = 0; i < sweep.narcs; i++)
+		scene.add(new Scene::Arc(sweep.arcs[i], Image::red, 1));
+	
+	// add the gripper
+	Color red(1,0,0);
+	scene.add(new Scene::Pt(geom2d::Pt(curState.x, curState.y), red, 8, -1));
 }
 
 void WatchUi::drawGrid() {
-  Color gray(0.9,0.9,0.9);
-  for(int i = 0; i <= (int)instance->width; i++) {
-    geom2d::LineSg seg(geom2d::Pt(i,0),geom2d::Pt(i,instance->height));
-    scene.add(new Scene::Line(seg, gray, 1));
-  }
-  
-  for(int i = 0; i <= (int)instance->height; i++) {
-    geom2d::LineSg seg(geom2d::Pt(0,i),geom2d::Pt(instance->width,i));
-    scene.add(new Scene::Line(seg, gray, 1));
-  }
+	Color gray(0.9,0.9,0.9);
+	for(int i = 0; i <= (int)instance->width; i++) {
+		geom2d::LineSg seg(geom2d::Pt(i,0),geom2d::Pt(i,instance->height));
+		scene.add(new Scene::Line(seg, gray, 1));
+	}
+	
+	for(int i = 0; i <= (int)instance->height; i++) {
+		geom2d::LineSg seg(geom2d::Pt(0,i),geom2d::Pt(instance->width,i));
+		scene.add(new Scene::Line(seg, gray, 1));
+	}
 }

@@ -36,6 +36,8 @@ private:
 		double cosine;
 	};
 
+public:
+
 	// A Sweep contains the geometry primitives that
 	// represent a segment sweeping through space.
 	struct Sweep {
@@ -50,7 +52,6 @@ private:
 		geom2d::Arc arcs[2];
 	};
 
-public:
 	// Seg contains segment specific information.
 	struct Seg {
 		double radius;
@@ -266,14 +267,15 @@ private:
 	// in the given pose.
 	geom2d::LineSg line(const Seg&, const Pose&) const;
 
-
-
 	// segs is the segments.
 	std::vector<Seg> segs;
 
 	// angles holds information about the different angles
 	// at which a segment can be rotated.
 	std::vector<Angle> angles;
+
+	// dtheta is the change in angle for each rotation.
+	double dtheta;
 };
 
 // scanops scans an operator vector from an

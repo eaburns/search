@@ -180,9 +180,16 @@ void Image::Arc::writeeps(FILE *out) const {
 	fputs("newpath\n", out);
 	geom2d::Pt p(start());
 	fprintf(out, "%g %g moveto\n", p.x, p.y);
-	double d0 = t0 * (180 / M_PI), d1 = t1 * (180 / M_PI);
-	fprintf(out, "%g %g %g %g %g arc\n",
-		geom2d::Arc::c.x, geom2d::Arc::c.y, r, d0, d1);
+
+	double d0 = t0 * (180 / M_PI);
+	double d1 = (t0+dt) * (180 / M_PI);
+	if (dt > 0) {
+		fprintf(out, "%g %g %g %g %g arc\n",
+			geom2d::Arc::c.x, geom2d::Arc::c.y, r, d0, d1);
+	} else {
+		fprintf(out, "%g %g %g %g %g arcn\n",
+			geom2d::Arc::c.x, geom2d::Arc::c.y, r, d0, d1);
+	}
 	fputs("stroke\n", out);
 }
 
