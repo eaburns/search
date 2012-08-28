@@ -13,6 +13,7 @@ static unsigned int Nangles = 32;
 static unsigned long Nsteps = 1000000;
 static double MaxR = 15;
 static double MinR = 1;
+static unsigned long Seed = 0;
 
 void parseargs(int, const char*[]);
 void helpmsg(int);
@@ -38,7 +39,7 @@ void parseargs(int argc, const char *argv[]) {
 		} else if (i < argc-1 && strcmp(argv[i], "-nangles") == 0) {
 			Nangles = strtol(argv[++i], NULL, 10);
 
-		} else if (i < argc-1 && strcmp(argv[i], "-nsteps") == 0) {
+		} else if (i < argc-1 && strcmp(argv[i], "-steps") == 0) {
 			Nsteps = strtoul(argv[++i], NULL, 10);
 
 		} else if (i < argc-1 && strcmp(argv[i], "-maxr") == 0) {
@@ -47,6 +48,9 @@ void parseargs(int argc, const char *argv[]) {
 		} else if (i < argc-1 && strcmp(argv[i], "-minr") == 0) {
 			MinR = strtod(argv[++i], NULL);
 
+		} else if (i < argc-1 && strcmp(argv[i], "-seed") == 0) {
+			Seed = strtoul(argv[++i], NULL, 10);
+
 		} else if (i < argc-1 && strcmp(argv[i], "-h") == 0) {
 			helpmsg(0);
 
@@ -54,6 +58,8 @@ void parseargs(int argc, const char *argv[]) {
 			helpmsg(1);
 		}
 	}
+	if (Seed == 0)
+		Seed = walltime() * 1e9;
 }
 
 void helpmsg(int status) {
@@ -65,20 +71,22 @@ void helpmsg(int status) {
 	printf("-nsteps	number of steps in the random walk (default: %lu)\n", Nsteps);
 	printf("-maxr	the max segment radius (default: %g)\n", MaxR);
 	printf("-minr	the min segment radius (default: %g)\n", MinR);
+	printf("-seed	specify the random seed\n");
 	exit(status);
 }
 
 void mkinst(FILE *out) {
+	Rand rnd(Seed);
 	Segments dom(Width, Height, Nangles, std::vector<Segments::Seg>());
 
 	std::vector<LineSg> lines;
 	for (unsigned int i = 0; i < Nsegs; i++) {
 	redo:
 		Segments::Seg seg;
-		seg.radius = randgen.real()*(MaxR-MinR) + MinR;
-		seg.start.rot = randgen.integer(0, Nangles-1);
-		seg.start.x = randgen.integer(1, Width - 2);
-		seg.start.y = randgen.integer(1, Height - 2);
+		seg.radius = rnd.real()*(MaxR-MinR) + MinR;
+		seg.start.rot = rnd.integer(0, Nangles-1);
+		seg.start.x = rnd.integer(1, Width - 2);
+		seg.start.y = rnd.integer(1, Height - 2);
 
 		LineSg line = dom.line(seg, seg.start);
 		for (auto l = lines.begin(); l != lines.end(); l++) {
@@ -95,7 +103,8 @@ void mkinst(FILE *out) {
 		Segments::Operators ops(dom, st);
 		if (ops.size() == 0)
 			break;
-		unsigned int n = randgen.integer(0, ops.size()-1);
+
+		unsigned int n = rnd.integer(0, ops.size()-1);
 		Segments::Edge e(dom, st, ops[n]);
 		st = e.state;
 	}
