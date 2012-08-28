@@ -2,27 +2,70 @@
 #include "../utils/utils.hpp"
 #include <cmath>
 #include <cstdio>
+#include <cstring>
 
 using namespace geom2d;
 
-enum {
-	Nsegs = 10,
-	Width = 100,
-	Height = 100,
-	Nangles = 32,
+static unsigned int Nsegs = 10;
+static unsigned int Width = 100;
+static unsigned int Height = 100;
+static unsigned int Nangles = 32;
+static unsigned long Nsteps = 1000000;
+static double MaxR = 15;
+static double MinR = 1;
 
-	// number of steps in the random walk
-	Nsteps = 100000,
-};
-
-const double MaxR = 15;
-const double MinR = 1;
-
+void parseargs(int, const char*[]);
+void helpmsg(int);
 void mkinst(FILE*);
 
-int main(int argc, char *argv[]) {
+int main(int argc, const char *argv[]) {
+	parseargs(argc, argv);
 	mkinst(stdout);
 	return 0;
+}
+
+void parseargs(int argc, const char *argv[]) {
+	for (int i = 1; i < argc; i++) {
+		if (i < argc-1 && strcmp(argv[i], "nsegs") == 0) {
+			Nsegs = strtol(argv[++i], NULL, 10);
+
+		} else if (i < argc-1 && strcmp(argv[i], "width") == 0) {
+			Width = strtol(argv[++i], NULL, 10);
+
+		} else if (i < argc-1 && strcmp(argv[i], "height") == 0) {
+			Height = strtol(argv[++i], NULL, 10);
+
+		} else if (i < argc-1 && strcmp(argv[i], "nangles") == 0) {
+			Nangles = strtol(argv[++i], NULL, 10);
+
+		} else if (i < argc-1 && strcmp(argv[i], "nsteps") == 0) {
+			Nsteps = strtoul(argv[++i], NULL, 10);
+
+		} else if (i < argc-1 && strcmp(argv[i], "maxr") == 0) {
+			MaxR = strtod(argv[++i], NULL);
+
+		} else if (i < argc-1 && strcmp(argv[i], "minr") == 0) {
+			MinR = strtod(argv[++i], NULL);
+
+		} else if (i < argc-1 && strcmp(argv[i], "h") == 0) {
+			helpmsg(0);
+
+		} else {
+			helpmsg(1);
+		}
+	}
+}
+
+void helpmsg(int status) {
+	puts("Usage: mkinst [options]");
+	printf("-nsegs	the number of segments (default: %u)\n", Nsegs);
+	printf("-width	width of the grid (default: %u)\n", Width);
+	printf("-height	height of the grid (default: %u)\n", Height);
+	printf("-nangles	the number of angles (must be even, default: %u)\n", Nangles);
+	printf("-nsteps	number of steps in the random walk (default: %lu)\n", Nsteps);
+	printf("-maxr	the max segment radius (default: %g)\n", MaxR);
+	printf("-minr	the min segment radius (default: %g)\n", MinR);
+	exit(status);
 }
 
 void mkinst(FILE *out) {
