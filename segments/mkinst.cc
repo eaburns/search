@@ -10,7 +10,7 @@ static unsigned int Nsegs = 10;
 static unsigned int Width = 100;
 static unsigned int Height = 100;
 static unsigned int Nangles = 32;
-static unsigned long Nsteps = 1000000;
+static unsigned long Nsteps = 100000;
 static double MaxR = 15;
 static double MinR = 1;
 static unsigned long Seed = 0;
@@ -99,10 +99,12 @@ void mkinst(FILE *out) {
 	}
 
 	Segments::State st = dom.initialstate();
-	for (unsigned int i = 0; i < Nsteps; i++) {
+	for (unsigned long i = 0; i < Nsteps; i++) {
 		Segments::Operators ops(dom, st);
-		if (ops.size() == 0)
+		if (ops.size() == 0) {
+			warn("Only performed %lu steps", i);
 			break;
+		}
 
 		unsigned int n = rnd.integer(0, ops.size()-1);
 		Segments::Edge e(dom, st, ops[n]);
@@ -118,5 +120,4 @@ void mkinst(FILE *out) {
 		fprintf(out, "%u %u %u ", sg.start.x, sg.start.y, sg.start.rot);
 		fprintf(out, "%u %u %u\n", goal.x, goal.y, goal.rot);
 	}
-
 }
