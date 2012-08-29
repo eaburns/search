@@ -31,3 +31,4 @@ plat2d/watch
 plat2d/2poly
 graphics/test
 bench/mark
+search/mkprof

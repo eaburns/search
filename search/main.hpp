@@ -76,6 +76,8 @@ template<class D> SearchAlgorithm<D> *getsearch(int argc, const char *argv[]) {
 		return new Bugsy_slim<D>(argc, argv);
 	else if (strcmp(argv[1], "arastar") == 0)
 		return new Arastar<D>(argc, argv);
+	else if (strcmp(argv[1], "arastarmon") == 0)
+		return new ArastarMon<D>(argc, argv);
 	else if (strcmp(argv[1], "rtastar") == 0)
 		return new Rtastar<D>(argc, argv);
 	else if (strcmp(argv[1], "speediest") == 0)
