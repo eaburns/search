@@ -237,6 +237,8 @@ public:
 
 	State initialstate() const;
 
+	State goalstate() const;
+
 	unsigned long hash(const PackedState&) const;
 
 	Cost h(const State&) const;
@@ -288,7 +290,7 @@ private:
 };
 
 // scanops scans an operator vector from an
-// operator string. 
+// operator string.
 std::vector<Segments::Oper> scanops(const std::string&);
 
 struct Solution {

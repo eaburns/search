@@ -49,7 +49,7 @@ Segments::Segments(FILE *in) {
 	// chomp away comments.
 	int c = fgetc(in);
 	while (c == '#') {
-		do { 
+		do {
 			c = fgetc(in);
 		} while (c != '\n');
 		c = fgetc(in);
@@ -319,6 +319,13 @@ Segments::State Segments::initialstate() const {
 	std::vector<Pose> poses;
 	for (auto sg = segs.begin(); sg != segs.end(); sg++)
 		poses.push_back(sg->start);
+	return State(*this, poses, 0, 0);
+}
+
+Segments::State Segments::goalstate() const {
+	std::vector<Pose> poses;
+	for (auto sg = segs.begin(); sg != segs.end(); sg++)
+		poses.push_back(sg->goal);
 	return State(*this, poses, 0, 0);
 }
 
