@@ -47,6 +47,8 @@ public:
 		// the sweep;
 		bool hits(const geom2d::LineSg&) const;
 
+		geom2d::Bbox bbox;
+
 		unsigned int narcs, nlines, npolys;
 		geom2d::Arc arcs[2];
 		geom2d::LineSg lines[3];

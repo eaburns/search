@@ -14,6 +14,9 @@ Segments::Angle::Angle(double t) : theta(t), sine(sin(t)), cosine(cos(t)) {
 }
 
 bool Segments::Sweep::hits(const LineSg &line) const {
+	if (!bbox.hits(line.bbox))
+		return false;
+
 	for (unsigned int i = 0; i < narcs; i++) {
 		if (arcs[i].hits(line) || slicecontains(arcs[i], line.p0))
 			return true;
@@ -191,6 +194,24 @@ Segments::Sweep Segments::Oper::rotatesweep(const Segments &dom, const State &s)
 	sweep.nlines = 1;
 	p.rot = wrapind(p.rot+delta, dom.nangles);
 	sweep.lines[0] = dom.line(dom.segs[seg], p);
+
+	Pt min = sweep.arcs[0].start();
+	Pt max = min;
+
+	Pt pts[] = { sweep.arcs[0].end(), sweep.arcs[1].start(), sweep.arcs[1].end() };
+
+	for (int i = 0; i < 3; i++) {
+		if (pts[i].x < min.x)
+			min.x = pts[i].x;
+		if (pts[i].y < min.y)
+			min.y = pts[i].y;
+		if (pts[i].x > max.x)
+			max.x = pts[i].x;
+		if (pts[i].y > max.y)
+			max.y = pts[i].y;
+	}
+	sweep.bbox = Bbox(min, max);
+
 	return sweep;
 }
 
@@ -214,6 +235,8 @@ Segments::Sweep Segments::Oper::movesweep(const Segments &dom, const State &s) c
 		l1.p0.x, l1.p0.y,
 		l1.p1.x, l1.p1.y,
 		l0.p1.x, l0.p1.y);
+ 
+	sweep.bbox = sweep.polys[0].bbox;
 
 	return sweep;
 }
