@@ -481,6 +481,8 @@ namespace geom2d {
 		// given angle.
 		static Poly triangle(const Pt&, double h, double w, double r);
 	
+		Poly() { }
+
 		Poly(const std::vector<Pt>&);
 	
 		Poly(unsigned int, ...);

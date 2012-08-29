@@ -14,12 +14,16 @@ Segments::Angle::Angle(double t) : theta(t), sine(sin(t)), cosine(cos(t)) {
 }
 
 bool Segments::Sweep::hits(const LineSg &line) const {
+	for (unsigned int i = 0; i < narcs; i++) {
+		if (arcs[i].hits(line) || slicecontains(arcs[i], line.p0))
+			return true;
+	}
 	for (unsigned int i = 0; i < nlines; i++) {
 		if (lines[i].hits(line))
 			return true;
 	}
-	for (unsigned int i = 0; i < narcs; i++) {
-		if (arcs[i].hits(line) || slicecontains(arcs[i], line.p0))
+	for (unsigned int i = 0; i < npolys; i++) {
+		if (polys[i].contains(line.p0))
 			return true;
 	}
 	return false;
@@ -167,22 +171,22 @@ Segments::Cost Segments::Oper::cost(const State &state) const {
 
 Segments::Sweep Segments::Oper::sweep(const Segments &dom, const State &s) const {
 	Sweep sweep;
-	sweep.nlines = sweep.narcs = 0;
 
 	if (op == None)
 		return sweep;
 
 	if (op == Rotate) {
 		Pose p = s.poses[seg];
+
+		sweep.narcs = 2;
 		Angle a0 = dom.angles[p.rot];
 		double r = dom.segs[seg].radius;
-		sweep.narcs = 2;
 		Pt center(p.x, p.y);
 		sweep.arcs[0] = Arc(center, r, a0.theta, delta*dom.dtheta);
 		sweep.arcs[1] = Arc(center, r, M_PI+a0.theta, delta*dom.dtheta);
 
-		p.rot = wrapind(p.rot+delta, dom.nangles);
 		sweep.nlines = 1;
+		p.rot = wrapind(p.rot+delta, dom.nangles);
 		sweep.lines[0] = dom.line(dom.segs[seg], p);
 		return sweep;
 	}
@@ -192,12 +196,21 @@ Segments::Sweep Segments::Oper::sweep(const Segments &dom, const State &s) const
 	Pose p1 = p0;
 	p1.x += delta;
 	p1.y += dy;
+
 	sweep.nlines = 3;
 	sweep.lines[0] = dom.line(dom.segs[seg], p1);
 	const LineSg &l0 = s.lines[seg];
 	const LineSg &l1 = sweep.lines[0];
 	sweep.lines[1] = LineSg(l0.p0, l1.p0);
 	sweep.lines[2] = LineSg(l0.p1, l1.p1);
+
+	sweep.npolys = 1;
+	sweep.polys[0] = Poly(4,
+		l0.p0.x, l0.p0.y,
+		l1.p0.x, l1.p0.y,
+		l1.p1.x, l1.p1.y,
+		l0.p1.x, l0.p1.y);
+
 	return sweep;
 }
 

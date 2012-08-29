@@ -41,15 +41,16 @@ public:
 	// A Sweep contains the geometry primitives that
 	// represent a segment sweeping through space.
 	struct Sweep {
+		Sweep() : narcs(0), nlines(0), npolys(0) { }
+
 		// hits returns true if the line segment hits
 		// the sweep;
 		bool hits(const geom2d::LineSg&) const;
 
-		unsigned int nlines;
-		geom2d::LineSg lines[3];
-
-		unsigned int narcs;
+		unsigned int narcs, nlines, npolys;
 		geom2d::Arc arcs[2];
+		geom2d::LineSg lines[3];
+		geom2d::Poly polys[1];
 	};
 
 	// Seg contains segment specific information.

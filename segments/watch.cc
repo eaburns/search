@@ -95,7 +95,6 @@ WatchUi::WatchUi(unsigned int w, unsigned int h, bool save,
   Ui(w, h, save), instance(segs), ops(o) {
 	curState = instance->initialstate();
 	iter = ops.begin();
-	sweep.nlines = sweep.narcs = 0;
 	glScalef(w / instance->width, h / instance->height, 1);
 
 	for (int i = 0; i < skip; i++) {
