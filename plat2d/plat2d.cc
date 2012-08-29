@@ -33,6 +33,8 @@ Plat2d::Plat2d(FILE *in) : lvl(in) {
 	}
 	if (gx >= lvl.width() || gy >= lvl.height())
 		fatal("No goal location in the level");
+	if (x0 >= lvl.width() || y0 >= lvl.height())
+		fatal("No start location in the level");
 
 	gleft = gx * W;
 	gright = (gx + 1) * W;
