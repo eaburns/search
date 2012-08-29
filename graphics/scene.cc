@@ -30,10 +30,19 @@ void Scene::Line::render() const {
 	glColor3f(c.getred(), c.getgreen(), c.getblue());
 	if (w > 0)
 		glLineWidth(w);
+	if(pattern != SOLID) {
+		glEnable(GL_LINE_STIPPLE);
+		if(pattern == DASHED)
+			glLineStipple(1, 0x00FF);
+		else
+			glLineStipple(1, 0x0101);
+	}
 	glBegin(GL_LINES);
 	glVertex2d(p0.x, p0.y);
 	glVertex2d(p1.x, p1.y);
 	glEnd();
+	if(pattern != SOLID)
+		glDisable(GL_LINE_STIPPLE);
 }
 
 Scene::Arc::Arc(const geom2d::Arc &a, const Color &c, double w) : Image::Arc(a, c, w) {
