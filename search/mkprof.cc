@@ -6,6 +6,7 @@
 #include <limits>
 #include <cerrno>
 #include <cmath>
+#include <sstream>
 
 static void usage(int);
 static void readsols(const std::string&, const RdbAttrs&);
@@ -28,6 +29,7 @@ struct Inst {
 
 static std::vector<Inst> insts;
 static double tmax, cmax;
+static unsigned long nsols;
 
 int main(int argc, const char *argv[]) {
 	if (argc < 4)
@@ -42,6 +44,9 @@ int main(int argc, const char *argv[]) {
 		fatal("must specify the alg attribute");
 
 	readsols(root, attrs);
+	if (nsols == 0)
+		fatal("No solutions to profile");
+
 	AnyProf p = profile(cbins, tbins);
 
 	RdbAttrs dstattrs;
@@ -53,6 +58,14 @@ int main(int argc, const char *argv[]) {
 			vl += ".profile";
 		dstattrs.push_back(key, vl);
 	}
+
+	std::stringstream s;
+	s << cbins;
+	dstattrs.push_back("cost bins", s.str());
+
+	std::stringstream s2;
+	s2 << tbins;
+	dstattrs.push_back("time bins", s2.str());
 
 	std::string file = pathfor(root, dstattrs);
 	printf("saving profile to %s\n", file.c_str());
@@ -92,6 +105,7 @@ static void readsols(const std::string &root, const RdbAttrs &attrs) {
 		insts.push_back(inst);
 	}
 	printf("%lu datafiles\n", (unsigned long) files.size());
+	printf("%lu solutions\n", nsols);
 }
 
 // 0: #altrow 
@@ -115,6 +129,8 @@ static void dfline(std::vector<std::string> &toks, void *aux) {
 
 	if (toks.size() != 9 || toks[0] != "#altrow" || toks[1] != "sol")
 		return;
+
+	nsols++;
 
 	double c = strtod(toks[7].c_str(), NULL);
 	if (c > cmax)
