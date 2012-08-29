@@ -5,9 +5,8 @@
 
 using namespace geom2d;
 
-// wrapind returns an index into an n element array
-// that wraps around.
 static int wrapind(int i, int n);
+static bool slicecontains(const Arc&, const Pt&);
 
 Segments::Oper Segments::Nop(Oper::None, 0, 0, 0);
 
@@ -20,10 +19,23 @@ bool Segments::Sweep::hits(const LineSg &line) const {
 			return true;
 	}
 	for (unsigned int i = 0; i < narcs; i++) {
-		if (arcs[i].hits(line))
+		if (arcs[i].hits(line) || slicecontains(arcs[i], line.p0))
 			return true;
 	}
 	return false;
+}
+
+// slicecontains returns true if the slice defined by the arc
+// contains the given point.
+static bool slicecontains(const Arc &a, const Pt &p) {
+	double t = Pt::angle(Pt(p.x - a.c.x, p.y - a.c.y));
+	double tmin = a.t0;
+	double tmax = a.t0+a.dt;
+	if (tmin > tmax) {
+		tmin = a.t0+a.dt;
+		tmax = a.t0;
+	}
+	return between(tmin, tmax, t) && Pt::distance(a.c, p) <= a.r;
 }
 
 Segments::Segments(FILE *in) {
@@ -456,6 +468,8 @@ Solution readdf(FILE *in, FILE *echo) {
 	return sol;
 }
 
+// wrapind returns an index into an n element array
+// that wraps around.
 static int wrapind(int i, int n) {
 	i %= n;
 	if (i < 0)
