@@ -5,8 +5,7 @@
 #include <cmath>
 #include <utility>
 
-struct Segments {
-private:
+class Segments {
 	friend void mkinst(FILE*);
 
 	// A Pose gives the pose of a particular segment.
