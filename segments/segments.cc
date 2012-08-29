@@ -170,28 +170,32 @@ Segments::Cost Segments::Oper::cost(const State &state) const {
 }
 
 Segments::Sweep Segments::Oper::sweep(const Segments &dom, const State &s) const {
-	Sweep sweep;
-
 	if (op == None)
-		return sweep;
+		return Sweep();
+	if (op == Rotate)
+		return rotatesweep(dom, s);
+	return movesweep(dom, s);
+}
 
-	if (op == Rotate) {
-		Pose p = s.poses[seg];
+Segments::Sweep Segments::Oper::rotatesweep(const Segments &dom, const State &s) const {
+	Sweep sweep;
+	Pose p = s.poses[seg];
 
-		sweep.narcs = 2;
-		Angle a0 = dom.angles[p.rot];
-		double r = dom.segs[seg].radius;
-		Pt center(p.x, p.y);
-		sweep.arcs[0] = Arc(center, r, a0.theta, delta*dom.dtheta);
-		sweep.arcs[1] = Arc(center, r, M_PI+a0.theta, delta*dom.dtheta);
+	sweep.narcs = 2;
+	Angle a0 = dom.angles[p.rot];
+	double r = dom.segs[seg].radius;
+	Pt center(p.x, p.y);
+	sweep.arcs[0] = Arc(center, r, a0.theta, delta*dom.dtheta);
+	sweep.arcs[1] = Arc(center, r, M_PI+a0.theta, delta*dom.dtheta);
 
-		sweep.nlines = 1;
-		p.rot = wrapind(p.rot+delta, dom.nangles);
-		sweep.lines[0] = dom.line(dom.segs[seg], p);
-		return sweep;
-	}
+	sweep.nlines = 1;
+	p.rot = wrapind(p.rot+delta, dom.nangles);
+	sweep.lines[0] = dom.line(dom.segs[seg], p);
+	return sweep;
+}
 
-	// op == Move
+Segments::Sweep Segments::Oper::movesweep(const Segments &dom, const State &s) const {
+	Sweep sweep;
 	Pose p0 = s.poses[seg];
 	Pose p1 = p0;
 	p1.x += delta;

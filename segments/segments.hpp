@@ -187,6 +187,12 @@ public:
 		// this operator in the given state.
 		Sweep sweep(const Segments&, const State&) const;
 
+		// rotatesweep returns the Sweep for a rotation.
+		Sweep rotatesweep(const Segments&, const State&) const;
+
+		// moveweep returns the Sweep for a move.
+		Sweep movesweep(const Segments&, const State&) const;
+
 		// ok returns true if the operator is applicable
 		// in the given state.
 		bool ok(const Segments&, const State&) const;
