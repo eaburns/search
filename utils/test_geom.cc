@@ -324,21 +324,21 @@ bool test_poly_isects() {
 	LineSg l(Pt(50, 50), Pt(150, 50));
 	is = sq.isects(l);
 	if (!samepts(is, 1, 100.0, 50.0)) {
-		testpr("Unexpected collisions for 50,50 → 150,50: ");
+		testpr("Unexpected collisions for 50,50 → 150,50: %g,%g\n", is[0].x, is[0].y);
 		ok = false;
 	}
 
 	l = LineSg(Pt(-50, 50), Pt(150, 50));
 	is = sq.isects(l);
 	if (!samepts(is, 2, 0.0, 50.0, 100.0, 50.0)) {
-		testpr("Unexpected collisions for -50,50 → 150,50: ");
+		testpr("Unexpected collisions for -50,50 → 150,50: %g,%g\n", is[0].x, is[0].y);
 		ok = false;
 	}
 
 	l = LineSg(Pt(150, 50), Pt(250, 50));
 	is = sq.isects(l);
 	if (!samepts(is, 0)) {
-		testpr("Unexpected collisions for 150,50 → 250,50: ");
+		testpr("Unexpected collisions for 150,50 → 250,50\n");
 		ok = false;
 	}
 

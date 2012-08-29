@@ -42,13 +42,15 @@ struct Scene {
 	};
 
 	struct Line : public Renderable, public Image::Line {
+		enum Pattern { SOLID, DASHED, DOTTED } pattern;
 
-		Line(const geom2d::LineSg &l, const Color &c, double w = 1) :
-			Image::Line(l, c, w) { }
+		Line(const geom2d::LineSg &l, const Color &c, double w = 1, enum Pattern p = SOLID) :
+			Image::Line(l, c, w), pattern(p) { }
 
 		virtual void writeeps(FILE *out) const { Image::Line::writeeps(out); }
 
 		virtual void render() const;
+
 	};
 
 	struct Arc : public Renderable, public Image::Arc {

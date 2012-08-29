@@ -238,9 +238,17 @@ namespace geom2d {
 			double x = (o.b - b) / (m - o.m);
 			return Pt(x, m * x + b);
 		}
+
+		// contains returns true if the given point is on
+		// the line.
+		bool contains(const Pt &p) const {
+			return doubleeq(p.y, p.x*m + b);
+		}
 	
 		// isabove returns true if the point is above the given line.
-		bool isabove(const Pt &p) const { return (m * p.x + b) < p.y; }
+		bool isabove(const Pt &p) const {
+			return (m * p.x + b) < p.y;
+		}
 	
 		// In case of a vertical line: m == ∞ and b = x
 		double m, b;
@@ -284,20 +292,41 @@ namespace geom2d {
 		// intersect.  If they do not intersect then Pt::inf() is
 		// returned.  If the Line (infinite line) corresponding to
 		// the two lines is the same then the return value is
-		// also Pt::inf().
+		// also Pt::inf().  If the lines segments are parallel
+		// and intersect then one of the many intersection
+		// points is returned.
 		Pt isect(const LineSg &o) const {
-			Pt p;
-			if (isvertical() && o.isvertical())
+			if (isvertical() && o.isvertical()) {
+				if (!doubleeq(p0.x, o.p0.x))
+					return Pt::inf();
+				if (within(o.p0))
+					return o.p0;
+				else if (within(o.p1))
+					return o.p1;
 				return Pt::inf();
-			else if (o.isvertical())
+			}
+			if (doubleeq(m, o.m)) {
+				if (!Line::contains(o.p0))
+					return Pt::inf();
+				if (within(o.p0))
+					return o.p0;
+				else if (within(o.p1))
+					return o.p1;
+				return Pt::inf();
+			}
+
+			Pt p;
+			if (o.isvertical()) {
 				p = Pt(o.p0.x, m * o.p0.x + b);
-			else if (isvertical())
+			} else if (isvertical()) {
 				p = Pt(p0.x, o.m * p0.x + o.b);
-			else
+			} else {
 				p = Line::isect(o);
+			}
 
 			if (within(p) && o.within(p))
 				return p;
+
 			return Pt::inf();
 		}
 	
@@ -307,7 +336,9 @@ namespace geom2d {
 		}
 	
 		// isvertical returns true if the line is a vertical line.
-		bool isvertical() const { return doubleeq(p0.x, p1.x); }
+		bool isvertical() const {
+			return doubleeq(p0.x, p1.x);
+		}
 	
 		Pt p0, p1;
 		Bbox bbox;
@@ -338,12 +369,14 @@ namespace geom2d {
 	};
 	
 	struct Arc {
+
+		Arc() { }
 	
 		// Arc constructs a new arc with the given center
-		// radius, initial angle and final angle.  Angles are
-		// given in radians.
-		Arc(const Pt &cvl, double rvl, double t0vl, double t1vl) :
-			c(cvl), r(rvl), t0(t0vl), t1(t1vl),
+		// radius, initial angle and the sweep angle.  Angles
+		// are given in radians.
+		Arc(const Pt &cvl, double rvl, double t0vl, double d) :
+			c(cvl), r(rvl), t0(t0vl), dt(d),
 			bbox(c.x - r, c.y - r, c.x + r, c.y + r)
 			{ }
 	
@@ -356,7 +389,6 @@ namespace geom2d {
 			c.translate(p.x, p.y);
 			bbox = Bbox(c.x - r, c.y - r, c.x + r, c.y + r);
 			t0 += t;
-			t1 += t;
 		}
 	
 		// translate translates the arc by the given amount in
@@ -384,7 +416,13 @@ namespace geom2d {
 				is[i].x = l.p0.x + u[j] * q.dx;
 				is[i].y = l.p0.y + u[j] * q.dy;
 				double t = Pt::angle(Pt(is[i].x - c.x, is[i].y - c.y));
-				if (l.within(is[i]) && between(t0, t1, t))
+				double tmin = t0;
+				double tmax = t0+dt;
+				if (tmin > tmax) {
+					tmin = t0+dt;
+					tmax = t0;
+				}
+				if (l.within(is[i]) && between(tmin, tmax, t))
 					i++;
 			}
 	
@@ -404,11 +442,11 @@ namespace geom2d {
 	
 		// end returns the ending point of the arc.
 		Pt end() const {
-			return Pt(c.x + cos(t1) * r, c.y + sin(t1) * r);
+			return Pt(c.x + cos(t0+dt) * r, c.y + sin(t0+dt) * r);
 		}
 	
 		Pt c;
-		double r, t0, t1;
+		double r, t0, dt;
 		Bbox bbox;
 	
 	private:
@@ -443,6 +481,8 @@ namespace geom2d {
 		// given angle.
 		static Poly triangle(const Pt&, double h, double w, double r);
 	
+		Poly() { }
+
 		Poly(const std::vector<Pt>&);
 	
 		Poly(unsigned int, ...);

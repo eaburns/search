@@ -9,7 +9,7 @@ GRAPHICSLD:=-lSDL -lSDL_image -lGLU -lGL
 
 include $(GRAPHICSOBJS:.o=.d)
 
-CLEAN+=$(GRAPHICSOBJS)
+CLEAN+=$(GRAPHICSOBJS) graphics/graphics.a
 
 EVERYTHING+=graphics
 
