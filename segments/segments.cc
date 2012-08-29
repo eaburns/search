@@ -38,10 +38,15 @@ static bool slicecontains(const Arc &a, const Pt &p) {
 	double t = Pt::angle(Pt(p.x - a.c.x, p.y - a.c.y));
 	double tmin = a.t0;
 	double tmax = a.t0+a.dt;
+
 	if (tmin > tmax) {
 		tmin = a.t0+a.dt;
 		tmax = a.t0;
 	}
+
+	if(tmax > 2*M_PI )
+		t += 2*M_PI;
+
 	return between(tmin, tmax, t) && Pt::distance(a.c, p) <= a.r;
 }
 
@@ -235,7 +240,7 @@ Segments::Sweep Segments::Oper::movesweep(const Segments &dom, const State &s) c
 		l1.p0.x, l1.p0.y,
 		l1.p1.x, l1.p1.y,
 		l0.p1.x, l0.p1.y);
- 
+
 	sweep.bbox = sweep.polys[0].bbox;
 
 	return sweep;
@@ -273,7 +278,7 @@ Segments::Operators::Operators(const Segments &dom, const State &s) {
 
 		for (int dx = -1; dx <= 1; dx++) {
 		for (int dy = -1; dy <= 1; dy++) {
-			if (dx == dy)
+			if (dx == 0 && dy == 0)
 				continue;
 			Oper mv(Oper::Move, i, dx, dy);
 			if (mv.ok(dom, s))
@@ -363,7 +368,7 @@ Segments::Cost Segments::h(const State &s) const {
 		h += adist < bdist ? adist : bdist;
 
 		dx = (double)s.x - s.poses[i].x;
-		dy = (double)s.x - s.poses[i].y;
+		dy = (double)s.y - s.poses[i].y;
 		double d = dx*dx + dy*dy;
 		if (d < gripdist)
 			gripdist = d;
@@ -377,7 +382,6 @@ Segments::Cost Segments::d(const State &s) const {
 		return 0;
 
 	double d = 0;
-	bool gripon = false;
 	for (unsigned int i = 0; i < s.poses.size(); i++) {
 		if (s.poses[i] == segs[i].goal)
 			continue;
@@ -389,12 +393,9 @@ Segments::Cost Segments::d(const State &s) const {
 		int adist = wrapind(segs[i].goal.rot - s.poses[i].rot, nangles);
 		int bdist = wrapind(s.poses[i].rot - segs[i].goal.rot, nangles);
 		d += adist < bdist ? adist : bdist;
-
-		if (s.x == s.poses[i].x && s.y == s.poses[i].y)
-			gripon = true;
 	}
 
-	return d + (gripon ? 0 : 1);
+	return d;
 }
 
 Segments::Cost Segments::pathcost(const std::vector<State> &path, const std::vector<Oper> &ops) {
