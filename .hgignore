@@ -12,6 +12,9 @@ bench/data
 structs/test
 utils/test
 drobot/test
+segments/watch
+segments/mkinst
+segments/segments_solver
 rdb/pathfor
 rdb/withattrs
 rdb/dfcmplt
