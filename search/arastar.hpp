@@ -82,7 +82,7 @@ template <class D> struct Arastar : public SearchAlgorithm<D> {
 		closed.init(d);
 		incons.init(d);
 
-		dfrowhdr(stdout, "sol", 7, "num", "nodes expanded",
+		dfrowhdr(stdout, "incumbent", 7, "num", "nodes expanded",
 			"nodes generated", "weight", "solution bound", "solution cost",
 			"wall time");
 
@@ -99,7 +99,7 @@ template <class D> struct Arastar : public SearchAlgorithm<D> {
 				if (wt < epsprime)
 					epsprime = wt;
 	
-				dfrow(stdout, "sol", "uuugggg", n, this->res.expd,
+				dfrow(stdout, "incumbent", "uuugggg", n, this->res.expd,
 					this->res.gend, wt, epsprime, cost,
 					walltime() - this->res.wallstrt);
 			}

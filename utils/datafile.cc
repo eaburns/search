@@ -59,7 +59,7 @@ void dfrowhdr(FILE *f, const char *name, unsigned int ncols, ...) {
 	va_start(ap, ncols);
 	for (unsigned int i = 0; i < ncols; i++) {
 		char *col = va_arg(ap, char*);
-		unsigned int m = snprintf(buf+n, Bufsz-n, "\t\"%s\"", col);
+		unsigned int m = snprintf(buf+n, Bufsz-n, "\t\"%s %s\"", name, col);
 		if (m > (unsigned int) Bufsz - n)
 			fatal("dfrowhdr: buffer is too small\n");
 		n += m;
