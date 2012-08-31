@@ -110,7 +110,6 @@ private:
 			}
 			nodes->destruct(kid);
 		} else {
-			assert (d.h(e.state) + e.cost >= (parent->f - parent->g));
 			kid->f = kid->g + d.h(e.state);
 			kid->update(kid->g, parent, op, e.revop);
 			closed.add(kid, hash);
