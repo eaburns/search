@@ -1,8 +1,9 @@
-search: search/search.a
+search: search/search.a search/anyprof/mkprof
 
 SEARCHOBJS:=\
 	search/search.o\
 	search/anyprof.o\
+	search/anyprof/profile.o\
 
 include $(SEARCHOBJS:.o=.d)
 
@@ -25,3 +26,12 @@ search/mkprof:\
 	@echo $@
 	@$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
 CLEAN+=search/mkprof
+
+search/anyprof/mkprof:\
+	search/anyprof/mkprof.cc\
+	$(SEARCHOBJS)\
+	rdb/rdb.a\
+	utils/utils.a
+	@echo $@
+	@$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
+CLEAN+=search/anyprof/mkprof
