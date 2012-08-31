@@ -9,12 +9,12 @@ AnytimeProfile::AnytimeProfile(unsigned int cb, unsigned int tb,
 }
 
 AnytimeProfile::AnytimeProfile(FILE *in) {
-	if (fscanf(in, " %u %u\n", &ncost, &ntime) != 2)
+	if (fscanf(in, "%u %u\n", &ncost, &ntime) != 2)
 		fatal("failed to read number of bins");
 
-	if (fscanf(in, " %lg %lg\n", &mincost, &maxcost) != 2)
+	if (fscanf(in, "%lg %lg\n", &mincost, &maxcost) != 2)
 		fatal("failed to read min and max cost");
-	if (fscanf(in, " %lg %lg\n", &mintime, &maxtime) != 2)
+	if (fscanf(in, "%lg %lg\n", &mintime, &maxtime) != 2)
 		fatal("failed to read min and max time");
 
 	initbins(ncost, ntime);
@@ -39,9 +39,9 @@ AnytimeProfile::~AnytimeProfile() {
 }
 
 void AnytimeProfile::save(FILE *out) const {
-	fprintf(out, "%u, %u\n", ncost, ntime);
-	fprintf(out, "%g, %g\n", mincost, maxcost);
-	fprintf(out, "%g, %g\n", mintime, maxtime);
+	fprintf(out, "%u %u\n", ncost, ntime);
+	fprintf(out, "%g %g\n", mincost, maxcost);
+	fprintf(out, "%g %g\n", mintime, maxtime);
 	for (unsigned int i = 0; i < ncost*ntime; i++)
 		fprintf(out, "%u\n", qtcounts[i]);
 	for (unsigned int i = 0; i < ncost*ncost*ntime; i++)
@@ -156,4 +156,10 @@ void AnytimeProfile::mkprobs() {
 			qqtprobs[qqtindex(qj, qi, dt)] /= sum;
 	}
 	}
+}
+
+
+AnytimeMonitor::AnytimeMonitor(const AnytimeProfile &p, double fw, double tw) :
+	wf(fw), wt(tw), profile(p) {
+
 }

@@ -31,6 +31,12 @@ public:
 	// save saves the profile to disk.
 	void save(FILE*) const;
 
+	// qtcount returns the count for the ith cost
+	// and jth time step.
+	unsigned int qtcount(int i, int j) const {
+		return qtcounts[qtindex(i, j)];
+	}
+
 	// prob returns the estimated probability of getting
 	// a solution of cost qj after dt time passes when the
 	// incumbent solution has a cost of qi: P(qj | qi, Δt).
@@ -99,4 +105,26 @@ private:
 	// qqtprobs is an array of the probability estimate
 	// for each cost, cost, time triple.
 	double *qqtprobs;
+};
+
+
+class AnytimeMonitor {
+public:
+
+	// AnytimeMonitor creates an anytime monitoring
+	// policy given a profile and the cost and time
+	// weights that define the user's utility function.
+	AnytimeMonitor(const AnytimeProfile&, double wf, double wt);
+
+	// deltat returns the time (in seconds) between which
+	// the monitor should be checked.
+	double deltat() const {
+		return (profile.maxtime - profile.mintime) / profile.ntime;
+	}
+
+private:
+
+	double wf, wt;
+
+	const AnytimeProfile &profile;
 };
