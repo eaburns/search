@@ -97,17 +97,20 @@ private:
 				nodes->destruct(kid);
 				return;
 			}
-			this->res.reopnd++;
-			if (open.mem(dup))
+			bool isopen = open.mem(dup);
+			if (isopen)
 				open.pre_update(dup);
 			dup->f = dup->f - dup->g + kid->g;
 			dup->update(kid->g, parent, op, e.revop);
-			if (open.mem(dup))		
+			if (isopen) {
 				open.post_update(dup);
-			else
+			} else {
+				this->res.reopnd++;
 				open.push(dup);
+			}
 			nodes->destruct(kid);
 		} else {
+			assert (d.h(e.state) + e.cost >= (parent->f - parent->g));
 			kid->f = kid->g + d.h(e.state);
 			kid->update(kid->g, parent, op, e.revop);
 			closed.add(kid, hash);

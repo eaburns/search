@@ -217,7 +217,8 @@ private:
 		if (dup) {
 			this->res.dups++;
 			if (!dropdups && kid->g < dup->g) {
-				this->res.reopnd++;
+				if (dup->ind < 0)
+					this->res.reopnd++;
 				dup->f = dup->f - dup->g + kid->g;
 				dup->update(kid->g, parent, op, e.revop);
 				computeutil(dup);

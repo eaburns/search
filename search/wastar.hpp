@@ -109,7 +109,8 @@ private:
 				nodes->destruct(kid);
 				return;
 			}
-			this->res.reopnd++;
+			if (dup->ind < 0)
+				this->res.reopnd++;
 			dup->fprime = dup->fprime - dup->g + kid->g;
 			dup->f = dup->f - dup->g + kid->g;
 			dup->update(kid->g, parent, op, e.revop);
