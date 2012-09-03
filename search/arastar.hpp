@@ -1,5 +1,5 @@
 #include "search.hpp"
-#include "anyprof.hpp"
+#include "anyprof/profile.hpp"
 #include "../structs/binheap.hpp"
 #include "../utils/pool.hpp"
 #include <limits>
@@ -166,7 +166,6 @@ protected:
 
 			if (d.isgoal(state)) {
 				cost = (double) n->g;
-				fprintf(stderr, "got a goal\n");
 				this->res.goal(d, n);
 				goal = true;
 			}
@@ -309,21 +308,23 @@ template <class D> struct ArastarMon : public Arastar<D> {
 	typedef typename Arastar<D>::Node Node;
 	typedef typename Arastar<D>::Incons Incons;
 
-	ArastarMon(int argc, const char *argv[]) :
-			Arastar<D>(argc, argv), stopnext(false),
-			stop(false), nextmon(0) {
+	ArastarMon(int argc, const char *argv[]) : Arastar<D>(argc, argv) {
 		this->wt0 = this->dwt = -1;
-		wcost = wtime = 1;
+		wf = wt = 1;
 		std::string path;
 		for (int i = 0; i < argc; i++) {
 			if (i < argc - 1 && strcmp(argv[i], "-wt0") == 0)
 				this->wt0 = strtod(argv[++i], NULL);
+
 			else if (i < argc - 1 && strcmp(argv[i], "-dwt") == 0)
 				this->dwt = strtod(argv[++i], NULL);
+
 			else if (i < argc -1 && strcmp(argv[i], "-wf") == 0)
-				wcost = strtod(argv[++i], NULL);
+				wf = strtod(argv[++i], NULL);
+
 			else if (i < argc - 1 && strcmp(argv[i], "-wt") == 0)
-				wtime = strtod(argv[++i], NULL);
+				wt = strtod(argv[++i], NULL);
+
 			else if (i < argc - 1 && strcmp(argv[i], "-p") == 0)
 				path = argv[++i];
 		}
@@ -335,22 +336,15 @@ template <class D> struct ArastarMon : public Arastar<D> {
 		if (path == "")
 			fatal("Must specify a profile file");
 
-		AnyProf prof;
-		FILE *f = fopen(path.c_str(), "r");
-		if (!f)
-			fatalx(errno, "failed to open %s for reading", path.c_str());
-		prof.read(f);
-		fclose(f);
-		monitor = MonPolicy(prof, wcost, wtime);
+		mon = AnytimeMonitor(AnytimeProfile(path), wf, wt);
 
 		this->wt = this->wt0;
 		this->nodes = new Pool<Node>();
 	}
 
 	void search(D &d, typename D::State &s0) {
+ 		bool optimal = false;
 		this->rowhdr();
-		// Output this early for debugging!
-		monitor.output(stdout);
 		this->start();
 		this->closed.init(d);
 		this->incons.init(d);
@@ -367,66 +361,54 @@ template <class D> struct ArastarMon : public Arastar<D> {
 					epsprime = this->wt;
 				this->row(n, epsprime);
 			}
-
-			if (this->wt <= 1.0 || stop)
+			if (this->wt <= 1.0)
+				optimal = true;
+			if (this->wt <= 1.0 || shouldstop())
 				break;
 			this->nextwt();
 			this->updateopen();
 			this->closed.clear();
 
-		} while(!stop && !this->limit() && !this->open.empty());
+		} while(!shouldstop() && !this->limit() && !this->open.empty());
 
 		this->finish();
+		dfpair(stdout, "converged", "%s", optimal ? "yes" : "no");
 	}
 
 	virtual void output(FILE *out) {
 		SearchAlgorithm<D>::output(out);
 		Arastar<D>::output(out);
-		monitor.output(stdout);
-		dfpair(stdout, "cost weight", "%g", wcost);
-		dfpair(stdout, "time weight", "%g", wtime);
+		dfpair(stdout, "wf", "%g", wf);
+		dfpair(stdout, "wt", "%g", wt);
 	}
 
 private:
 
 	bool improve(D &d) {
 		bool goal = false;
-		mon();
-		while (!stop && !this->limit() && this->goodnodes()) {
+		while (!shouldstop() && !this->limit() && this->goodnodes()) {
 			Node *n = *this->open.pop();
 			State buf, &state = d.unpack(buf, n->packed);
 
 			if (d.isgoal(state)) {
+				this->cost = (double) n->g;
 				this->res.goal(d, n);
 				goal = true;
 			}
 
 			this->expand(d, n, state);
-			mon();
 		}
 		return goal;
 	}
 
-	void mon() {
-		double wallt = walltime();
-		double t = wallt - this->res.wallstrt;
-		if (wallt < nextmon || this->cost  < 0)
-			return;
-		if (stopnext) {
-			stop = true;
-			return;
-		}
-
-		std::pair<double, bool> m = monitor.next(this->cost, t);
-		fflush(stdout);
-		nextmon = wallt + m.first;
-		stopnext = m.second;
-		if (m.first == 0)
-			stop = stopnext;
+	bool shouldstop() const {
+		if (this->cost < 0)
+			return false;
+		double t = walltime() - this->res.wallstrt;
+		double c = this->cost;
+		return mon.stop(c, t);
 	}
 
-	double wcost, wtime;
-	MonPolicy monitor;
-	bool stopnext, stop;
-	double nextmon;
+	double wf, wt;
+	AnytimeMonitor mon;
 };

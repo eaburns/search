@@ -36,7 +36,7 @@ int main(int argc, const char *argv[]) {
 	std::vector<std::string> paths = withattrs(root, attrs);
 	printf("%lu data files\n", paths.size());
 
-	std::vector<SolutionStream> stream;
+	std::vector<AnytimeProfile::SolutionStream> stream;
 	for (auto p = paths.begin(); p != paths.end(); p++) {
 		FILE *f = fopen(p->c_str(), "r");
 		if (!f) {
@@ -44,7 +44,7 @@ int main(int argc, const char *argv[]) {
 			continue;
 		}
 
-		SolutionStream sols;
+		AnytimeProfile::SolutionStream sols;
 		dfread(f, dfline, &sols, NULL);
 		stream.push_back(sols);
 
@@ -72,7 +72,7 @@ int main(int argc, const char *argv[]) {
 }
 
 static void dfline(std::vector<std::string> &line, void *aux) {
-	SolutionStream *sols = static_cast<SolutionStream*>(aux);
+	AnytimeProfile::SolutionStream *sols = static_cast<AnytimeProfile::SolutionStream*>(aux);
 
 	// sol is the deprecated altrow name for ARA*
 	// incumbent solutions, incumbent is the new
@@ -80,7 +80,7 @@ static void dfline(std::vector<std::string> &line, void *aux) {
 	if (line[0] != "#altrow" || (line[1] != "sol" && line[1] != "incumbent"))
 		return;
 
-	Solution sol;
+	AnytimeProfile::Solution sol;
 	sol.cost = strtod(line[7].c_str(), NULL);
 	sol.time = strtod(line[8].c_str(), NULL);
 	sols->push_back(sol);

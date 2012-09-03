@@ -3,12 +3,7 @@
 #include <vector>
 #include <cassert>
 #include <cstdio>
-
-struct Solution {
-	double cost, time;
-};
-
-typedef std::vector<Solution> SolutionStream;
+#include <string>
 
 // AnytimeProfile stores the estimated profile of
 // an anytime algorithm, e.g., the probability of
@@ -16,17 +11,27 @@ typedef std::vector<Solution> SolutionStream;
 // given the current incumbent cost and an
 // amount of time.
 class AnytimeProfile {
-public:
+public:	
+	
+	struct Solution {
+		double cost, time;
+	};
+	
+	typedef std::vector<Solution> SolutionStream;
+
+	AnytimeProfile() { }
 
 	// This constructor creates an empty profile with
 	// the specified number of bins for cost and time.
 	AnytimeProfile(unsigned int costbins, unsigned int timebins,
 		const std::vector<SolutionStream>&);
 
+	// This constructor reads the proflie from the file
+	// specified by the given path.
+	AnytimeProfile(const std::string&);
+
 	// This constructor reads a profile from the given FILE*.
 	AnytimeProfile(FILE*);
-
-	~AnytimeProfile();
 
 	// save saves the profile to disk.
 	void save(FILE*) const;
@@ -60,6 +65,7 @@ public:
 
 private:
 
+	void read(FILE*);
 	void seesolutions(const std::vector<SolutionStream>&);
 	void initbins(unsigned int, unsigned int);
 	void getextents(const std::vector<SolutionStream>&);
@@ -102,28 +108,27 @@ private:
 
 	// qtcounts is an array of the number of solutions
 	// for each cost, time pair.
-	unsigned int *qtcounts;
+	std::vector<unsigned int> qtcounts;
 
 	// qqtcounts is an array of the number of solutions
 	// for each cost, cost, time triple.
-	unsigned int *qqtcounts;
+	std::vector<unsigned int> qqtcounts;
 
 	// qqtprobs is an array of the probability estimate
 	// for each cost, cost, time triple.
-	double *qqtprobs;
+	std::vector<double>qqtprobs;
 };
 
 
 class AnytimeMonitor {
 public:
 
+	AnytimeMonitor() { }
+
 	// AnytimeMonitor creates an anytime monitoring
 	// policy given a profile and the cost and time
 	// weights that define the user's utility function.
 	AnytimeMonitor(const AnytimeProfile&, double wf, double wt);
-
-	~AnytimeMonitor();
-
 	// deltat returns the time (in seconds) between which
 	// the monitor should be checked.
 	double deltat() const {
@@ -174,7 +179,7 @@ private:
 		return q*prof.ntime + t;
 	}
 
-	const AnytimeProfile &prof;
+	AnytimeProfile prof;
 
 	// wf and wt give the user's utility function as a linear
 	// combination of cost and time: u = wf*cost + wt*time.
@@ -185,13 +190,13 @@ private:
 	double qwidth, twidth;
 
 	// value is the value of the cost and time pairs.
-	double *value;
+	std::vector<double> value;
 
 	// policy is the stopping policy.
-	bool *policy;
+	std::vector<bool> policy;
 
 	// seen is for debugging, it is set to true if we have
 	// set the value and policy for the given cost, time
 	// pair.
-	bool *seen;
+	std::vector<bool> seen;
 };

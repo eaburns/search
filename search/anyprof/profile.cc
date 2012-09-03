@@ -8,7 +8,19 @@ AnytimeProfile::AnytimeProfile(unsigned int cb, unsigned int tb,
 	seesolutions(stream);
 }
 
+AnytimeProfile::AnytimeProfile(const std::string &path) {
+	FILE *f = fopen(path.c_str(), "r");
+	if (!f)
+		fatalx(errno,"failed to open %s for reading", path.c_str());
+	read(f);
+	fclose(f);
+}
+
 AnytimeProfile::AnytimeProfile(FILE *in) {
+	read(in);
+}
+
+void AnytimeProfile::read(FILE *in) {
 	if (fscanf(in, "%u %u\n", &ncost, &ntime) != 2)
 		fatal("failed to read number of bins");
 
@@ -19,23 +31,17 @@ AnytimeProfile::AnytimeProfile(FILE *in) {
 
 	initbins(ncost, ntime);
 	for (unsigned int i = 0; i < ncost*ntime; i++) {
-		if (fscanf(in, "%u\n", qtcounts+i) != 1)
+		if (fscanf(in, "%u\n", &qtcounts[i]) != 1)
 			fatal("failed to read %uth qtcount", i);
 	}
 	for (unsigned int i = 0; i < ncost*ncost*ntime; i++) {
-		if (fscanf(in, "%u\n", qqtcounts+i) != 1)
+		if (fscanf(in, "%u\n", &qqtcounts[i]) != 1)
 			fatal("failed to read the %uth qqtcount");
 	}
 	for (unsigned int i = 0; i < ncost*ncost*ntime; i++) {
-		if (fscanf(in, "%lg\n", qqtprobs+i) != 1)
+		if (fscanf(in, "%lg\n", &qqtprobs[i]) != 1)
 			fatal("failed to read the %uth qqtprob");
 	}
-}
-
-AnytimeProfile::~AnytimeProfile() {
-	delete []qtcounts;
-	delete []qqtcounts;
-	delete []qqtprobs;
 }
 
 void AnytimeProfile::save(FILE *out) const {
@@ -53,17 +59,9 @@ void AnytimeProfile::save(FILE *out) const {
 void AnytimeProfile::initbins(unsigned int cb, unsigned int tb) {
 	ncost = cb;
 	ntime = tb;
-
-	qtcounts = new unsigned int[ncost*ntime];
-	for (unsigned int i = 0; i < ncost*ntime; i++)
-		qtcounts[i] = 0;
-
-	qqtcounts = new unsigned int[ncost*ncost*ntime];
-	qqtprobs = new double[ncost*ncost*ntime];
-	for (unsigned int i = 0; i < ncost*ncost*ntime; i++) {
-		qqtcounts[i] = 0;
-		qqtprobs[i] = 0;
-	}
+	qtcounts.resize(ncost*ntime, 0);
+	qqtcounts.resize(ncost*ncost*ntime, 0);
+	qqtprobs.resize(ncost*ncost*ntime, 0);
 }
 
 void AnytimeProfile::seesolutions(const std::vector<SolutionStream> &streams) {
@@ -188,12 +186,9 @@ AnytimeMonitor::AnytimeMonitor(const AnytimeProfile &p, double fw, double tw) :
 	qwidth((p.maxcost - p.mincost)/p.ncost),
 	twidth((p.maxtime - p.mintime)/p.ntime) {
 
-	policy = new bool[prof.ncost*prof.ntime];
-	value = new double[prof.ncost*prof.ntime];
-
-	seen = new bool[prof.ncost*prof.ntime];
-	for (unsigned int i = 0; i < prof.ncost*prof.ntime; i++)
-		seen[i] = false;
+	policy.resize(prof.ncost*prof.ntime);
+	value.resize(prof.ncost*prof.ntime);
+	seen.resize(prof.ncost*prof.ntime, false);
 
 	// max time
 	for (unsigned int q = 0; q < prof.ncost; q++) {
@@ -243,9 +238,4 @@ AnytimeMonitor::AnytimeMonitor(const AnytimeProfile &p, double fw, double tw) :
 		seen[i] = true;
 	}
 	}
-}
-
-AnytimeMonitor::~AnytimeMonitor() {
-	delete[] value;
-	delete[] policy;
 }
