@@ -309,7 +309,7 @@ template <class D> struct ArastarMon : public Arastar<D> {
 
 	ArastarMon(int argc, const char *argv[]) : Arastar<D>(argc, argv) {
 		this->wt0 = this->dwt = -1;
-		wf = wt = 1;
+		wcost = wtime = 1;
 		std::string path;
 		for (int i = 0; i < argc; i++) {
 			if (i < argc - 1 && strcmp(argv[i], "-wt0") == 0)
@@ -319,10 +319,10 @@ template <class D> struct ArastarMon : public Arastar<D> {
 				this->dwt = strtod(argv[++i], NULL);
 
 			else if (i < argc -1 && strcmp(argv[i], "-wf") == 0)
-				wf = strtod(argv[++i], NULL);
+				wcost = strtod(argv[++i], NULL);
 
 			else if (i < argc - 1 && strcmp(argv[i], "-wt") == 0)
-				wt = strtod(argv[++i], NULL);
+				wtime = strtod(argv[++i], NULL);
 
 			else if (i < argc - 1 && strcmp(argv[i], "-p") == 0)
 				path = argv[++i];
@@ -335,7 +335,7 @@ template <class D> struct ArastarMon : public Arastar<D> {
 		if (path == "")
 			fatal("Must specify a profile file");
 
-		mon = AnytimeMonitor(AnytimeProfile(path), wf, wt);
+		mon = AnytimeMonitor(AnytimeProfile(path), wcost, wtime);
 
 		this->wt = this->wt0;
 		this->nodes = new Pool<Node>();
@@ -377,8 +377,8 @@ template <class D> struct ArastarMon : public Arastar<D> {
 	virtual void output(FILE *out) {
 		SearchAlgorithm<D>::output(out);
 		Arastar<D>::output(out);
-		dfpair(stdout, "wf", "%g", wf);
-		dfpair(stdout, "wt", "%g", wt);
+		dfpair(stdout, "wf", "%g", wcost);
+		dfpair(stdout, "wt", "%g", wtime);
 	}
 
 private:
@@ -408,6 +408,6 @@ private:
 		return mon.stop(c, t);
 	}
 
-	double wf, wt;
+	double wcost, wtime;
 	AnytimeMonitor mon;
 };
