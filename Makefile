@@ -11,7 +11,7 @@ CC:=gcc
 
 AR:=ar
 
-FLAGS:=-Wall -Werror -O3 -g
+FLAGS:=-Wall -Werror -g
 
 CXXFLAGS:=$(FLAGS) -std=c++0x
 

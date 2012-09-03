@@ -37,10 +37,14 @@ public:
 		return qtcounts[qtindex(i, j)];
 	}
 
-	// prob returns the estimated probability of getting
+	// binprob returns the estimated probability of getting
 	// a solution of cost qj after dt time passes when the
 	// incumbent solution has a cost of qi: P(qj | qi, Δt).
-	double prob(double qj, double qi, double dt) const;
+	double binprob(unsigned int q2, unsigned int q1, unsigned int dt) const {	
+		if (q2 >= ncost || q1 >= ncost || dt >= ntime)
+			return 0.0;
+		return qqtprobs[qqtindex(q2, q1, dt)];
+	}
 
 	// ncost is the number of cost bins, and ntime
 	// is the number of time bins.
@@ -80,7 +84,8 @@ private:
 
 		if (c == maxcost)
 			return ncost-1;
-		return (c-mincost)/ncost;
+		double width = (maxcost-mincost)/ncost;
+		return (c-mincost)/width;
 	}
 
 	// timebin returns the bin into which the given
@@ -91,7 +96,8 @@ private:
 
 		if (dt == maxtime-mintime)
 			return ntime-1;
-		return dt/ntime;
+		double width = (maxtime-mintime)/ntime;
+		return dt/width;
 	}
 
 	// qtcounts is an array of the number of solutions
@@ -116,15 +122,76 @@ public:
 	// weights that define the user's utility function.
 	AnytimeMonitor(const AnytimeProfile&, double wf, double wt);
 
+	~AnytimeMonitor();
+
 	// deltat returns the time (in seconds) between which
 	// the monitor should be checked.
 	double deltat() const {
-		return (profile.maxtime - profile.mintime) / profile.ntime;
+		return (prof.maxtime - prof.mintime) / prof.ntime;
+	}
+
+	// stop returns true if the policy is to stop with
+	// the given solution cost at the given time. 
+	bool stop(double cost, double time) const {
+		if (cost < prof.mincost || time < prof.mintime)
+			return false;
+		if (cost >= prof.maxcost || time >= prof.maxtime)
+			return true;
+
+		unsigned int q = (cost - prof.mincost) / qwidth;
+		assert (q < prof.ncost);
+
+		unsigned int t = (time - prof.mintime) / twidth;
+		assert (t < prof.ntime);
+
+		return policy[index(q, t)];
 	}
 
 private:
 
+	// bincost is the cost of the qth cost bin.
+	double bincost(unsigned int q) const {
+		assert (q < prof.ncost);
+		return prof.mincost + (q*qwidth) + qwidth/2;
+	}
+
+	// bintime is the time of the tth time bin.
+	double bintime(unsigned int t) const {
+		assert (t < prof.ntime);
+		return prof.mintime + (t*twidth) + twidth/2;
+	}
+
+	// binutil returns the utility of q, t bin.
+	double binutil(unsigned int q, unsigned int t) const {
+		return -(wf*bincost(q) + wt*bintime(t));
+	}
+
+	// index returns the 2-dimensional array index
+	// for the given cost and time pair.
+	unsigned int index(unsigned int q, unsigned int t) const {
+		assert (q < prof.ncost);
+		assert (t < prof.ntime);
+		return q*prof.ntime + t;
+	}
+
+	const AnytimeProfile &prof;
+
+	// wf and wt give the user's utility function as a linear
+	// combination of cost and time: u = wf*cost + wt*time.
 	double wf, wt;
 
-	const AnytimeProfile &profile;
+	// qwidth and twidth are the width of the cost and
+	// time bins.
+	double qwidth, twidth;
+
+	// value is the value of the cost and time pairs.
+	double *value;
+
+	// policy is the stopping policy.
+	bool *policy;
+
+	// seen is for debugging, it is set to true if we have
+	// set the value and policy for the given cost, time
+	// pair.
+	bool *seen;
 };

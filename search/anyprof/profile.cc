@@ -47,22 +47,7 @@ void AnytimeProfile::save(FILE *out) const {
 	for (unsigned int i = 0; i < ncost*ncost*ntime; i++)
 		fprintf(out, "%u\n", qqtcounts[i]);
 	for (unsigned int i = 0; i < ncost*ncost*ntime; i++)
-		fprintf(out, "%g\n", qqtprobs[i]);
-}
-
-double AnytimeProfile::prob(double qj, double qi, double dt) const {
-	if (qj < mincost || qj > maxcost || qi < mincost || qi > maxcost || dt < mintime || dt > maxtime)
-		return 0.0;
-
-	unsigned int qjbin = costbin(qj);
-	unsigned int qibin = costbin(qi);
-	unsigned int dtbin = timebin(dt);
-
-	assert(qjbin < ncost);
-	assert(qibin < ncost);
-	assert(dtbin < ntime);
-
-	return qqtprobs[qqtindex(qjbin, qibin, dtbin)];
+		fprintf(out, "%15.15g\n", qqtprobs[i]);
 }
 
 void AnytimeProfile::initbins(unsigned int cb, unsigned int tb) {
@@ -112,54 +97,155 @@ void AnytimeProfile::countsolutions(const std::vector<SolutionStream> &streams) 
 
 		for (unsigned int i = 0; i < stream.size(); i++) {
 			unsigned int qi = costbin(stream[i].cost);
-
-			for (unsigned int j = i; j < stream.size(); j++) {
-				unsigned int dt = timebin(stream[j].time - stream[i].time);
-				unsigned int qj = costbin(stream[j].cost);
+			unsigned int curq = qi;
+			unsigned int curdt = 0;
+	
+			for (unsigned int j = i+1; j < stream.size(); j++) {
+				assert(stream[j].time > stream[i].time);
+				assert(stream[j].cost < stream[i].cost);
+	
+				unsigned int nextq = costbin(stream[j].cost);
+				unsigned int nextdt = timebin(stream[j].time - stream[i].time);
+	
+				for (unsigned int dt = curdt; dt < nextdt; dt++) {
+					qtcounts[qtindex(qi, dt)]++;
+					qqtcounts[qqtindex(curq, qi, dt)]++;
+				}
+	
+				curq = nextq;
+				curdt = nextdt;
+			}
+	
+			for (unsigned int dt = curdt; dt < ntime; dt++) {
 				qtcounts[qtindex(qi, dt)]++;
-				qqtcounts[qqtindex(qj, qi, dt)]++;
+				qqtcounts[qqtindex(curq, qi, dt)]++;
 			}
 		}
 	}
 }
 
 void AnytimeProfile::mkprobs() {
+	double small = std::numeric_limits<double>::infinity();
+
 	for (unsigned int qi = 0; qi < ncost; qi++) {
 	for (unsigned int dt = 0; dt < ntime; dt++) {
 		unsigned int n = qtcounts[qtindex(qi, dt)];
 		if (n == 0)
 			continue;
 
-		for (unsigned int qj = qi; qj < ncost; qj++) {
+		for (unsigned int qj = 0; qj < ncost; qj++) {
 			unsigned int i = qqtindex(qj, qi, dt);
 			unsigned int m = qqtcounts[i];
 
 			// solutions must be improving.
-			assert (qj >= qi || m == 0);
+			assert (qj <= qi || m == 0);
 
-			qqtprobs[i] = m / n;
+			qqtprobs[i] = m / (double) n;
+
+			if (qqtprobs[i] > 0 && qqtprobs[i] < small)
+				small = qqtprobs[i];
 		}
 	}
 	}
+
+	// smoothing
+	printf("Adding %g for smoothing\n", small/2);
+	for (unsigned int qi = 0; qi < ncost; qi++) {
+	for (unsigned int dt = 0; dt < ntime; dt++) {
+	for (unsigned int qj = 0; qj <= qi; qj++) {
+		qqtprobs[qqtindex(qj, qi, dt)] += small/2;
+	}
+	}
+	}
+
 	// normalize
 	for (unsigned int qi = 0; qi < ncost; qi++) {
 	for (unsigned int dt = 0; dt < ntime; dt++) {
 		double sum = 0;
 
-		for (unsigned int qj = qi; qj < ncost; qj++)
+		for (unsigned int qj = 0; qj < ncost; qj++)
 			sum += qqtprobs[qqtindex(qj, qi, dt)];
 
-		if (sum == 0)
-			continue;
+		assert (sum > 0);
 
-		for (unsigned int qj = qi; qj < ncost; qj++)
+		for (unsigned int qj = 0; qj <= qi; qj++)
 			qqtprobs[qqtindex(qj, qi, dt)] /= sum;
+
+		// Some sanity checks.
+		sum = 0;
+		for (unsigned int qj = 0; qj <= qi; qj++) {
+			sum += qqtprobs[qqtindex(qj, qi, dt)];
+			assert (qj <= qi || qqtprobs[qqtindex(qj, qi, dt)] == 0);
+		}
+		assert (sum > 1-1e-8);
+		assert (sum < 1+1e-8);
 	}
 	}
 }
 
-
 AnytimeMonitor::AnytimeMonitor(const AnytimeProfile &p, double fw, double tw) :
-	wf(fw), wt(tw), profile(p) {
+	prof(p), wf(fw), wt(tw),
+	qwidth((p.maxcost - p.mincost)/p.ncost),
+	twidth((p.maxtime - p.mintime)/p.ntime) {
 
+	policy = new bool[prof.ncost*prof.ntime];
+	value = new double[prof.ncost*prof.ntime];
+
+	seen = new bool[prof.ncost*prof.ntime];
+	for (unsigned int i = 0; i < prof.ncost*prof.ntime; i++)
+		seen[i] = false;
+
+	// max time
+	for (unsigned int q = 0; q < prof.ncost; q++) {
+		unsigned int i = index(q, prof.ntime-1);
+		value[i] = binutil(q, prof.ntime-1);
+		seen[i] = true;
+		policy[i] = true;
+	}
+
+	// min cost
+	for (unsigned int t = 0; t < prof.ntime; t++) {
+		unsigned int i = index(0, t);
+		value[i] = binutil(0, t);
+		seen[i] = true;
+		policy[i] = true;
+	}
+
+	for (unsigned int q1 = 1; q1 < prof.ncost; q1++) {
+	for (long t = prof.ntime-2; t >= 0; t--) {
+
+		double vgo = 0;
+		double psum = 0;
+		for (long q2 = q1; q2 >= 0; q2--) {
+			double prob = prof.binprob(q2, q1, 1);
+			psum += prob;
+			double val = value[index(q2, t+1)];
+ 			assert (seen[index(q2, t+1)]);
+			vgo += prob*val;
+		}
+
+		assert (psum > 1 - 1e-8);
+		assert (psum < 1 + 1e-8);
+
+		if (psum == 0)
+			vgo = -std::numeric_limits<double>::infinity();
+
+		double vstop = binutil(q1, t);
+
+		unsigned int i = index(q1, t);
+		if (vgo > vstop) {
+			value[i] = vgo;
+			policy[i] = false;
+		} else {
+			value[i] = vstop;
+			policy[i] = true;
+		}
+		seen[i] = true;
+	}
+	}
+}
+
+AnytimeMonitor::~AnytimeMonitor() {
+	delete[] value;
+	delete[] policy;
 }

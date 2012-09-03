@@ -2,6 +2,7 @@ search:\
 	search/search.a\
 	search/anyprof/mkprof\
 	search/anyprof/sptcounts\
+	search/anyprof/sptpolicy\
 
 SEARCHOBJS:=\
 	search/search.o\
@@ -47,3 +48,12 @@ search/anyprof/sptcounts:\
 	@echo $@
 	@$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
 CLEAN+=search/anyprof/sptcounts
+
+search/anyprof/sptpolicy:\
+	search/anyprof/sptpolicy.cc\
+	$(SEARCHOBJS)\
+	rdb/rdb.a\
+	utils/utils.a
+	@echo $@
+	@$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
+CLEAN+=search/anyprof/sptpolicy
