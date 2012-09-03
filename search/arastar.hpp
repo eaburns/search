@@ -1,13 +1,17 @@
-#include "../search/search.hpp"
+#include "search.hpp"
+#include "anyprof/profile.hpp"
 #include "../structs/binheap.hpp"
 #include "../utils/pool.hpp"
 #include <limits>
 #include <vector>
 #include <cmath>
+#include <cerrno>
+#include <string>
 
 void dfrowhdr(FILE*, const char*, unsigned int ncols, ...);
 void dfrow(FILE*, const char*, const char*, ...);
 void fatal(const char*, ...);
+void fatalx(int, const char*, ...);
 
 template <class D> struct Arastar : public SearchAlgorithm<D> {
 
@@ -78,14 +82,10 @@ template <class D> struct Arastar : public SearchAlgorithm<D> {
 
 	void search(D &d, typename D::State &s0) {
 		bool optimal = false;
+		rowhdr();
 		this->start();
 		closed.init(d);
 		incons.init(d);
-
-		dfrowhdr(stdout, "incumbent", 7, "num", "nodes expanded",
-			"nodes generated", "weight", "solution bound", "solution cost",
-			"wall time");
-
 
 		Node *n0 = init(d, s0);
 		closed.add(n0);
@@ -98,21 +98,14 @@ template <class D> struct Arastar : public SearchAlgorithm<D> {
 				double epsprime = wt == 1.0 ? 1.0 : findbound();
 				if (wt < epsprime)
 					epsprime = wt;
-	
-				dfrow(stdout, "incumbent", "uuugggg", n, this->res.expd,
-					this->res.gend, wt, epsprime, cost,
-					walltime() - this->res.wallstrt);
+				row(n, epsprime);
 			}
 
 			if (wt <= 1.0) {
 				optimal = true;
 				break;
 			}
-
-			wt = wt - dwt > 1.0 ? wt - dwt : 1.0;
-			if (wt < 1.0 + sqrt(std::numeric_limits<double>::epsilon()))
-				wt = 1.0;
-
+			nextwt();
 			updateopen();
 			closed.clear();
 
@@ -142,7 +135,28 @@ template <class D> struct Arastar : public SearchAlgorithm<D> {
 		dfpair(stdout, "weight decrement", "%g", dwt);
 	}
 
-private:
+protected:
+
+	// nextwt decrements the weight by the given value.
+	void nextwt() {
+		wt = wt - dwt > 1.0 ? wt - dwt : 1.0;
+		if (wt < 1.0 + sqrt(std::numeric_limits<double>::epsilon()))
+			wt = 1.0;
+	}
+
+	// rowhdr outputs the incumbent solution row header line.
+	void rowhdr() {
+		dfrowhdr(stdout, "incumbent", 7, "num", "nodes expanded",
+			"nodes generated", "weight", "solution bound", "solution cost",
+			"wall time");
+	}
+
+	// row outputs an incumbent solution row.
+	void row(unsigned long n, double epsprime) {
+		dfrow(stdout, "incumbent", "uuugggg", n, this->res.expd,
+			this->res.gend, wt, epsprime, cost,
+			walltime() - this->res.wallstrt);
+	}
 
 	bool improve(D &d) {
 		bool goal = false;
@@ -152,7 +166,6 @@ private:
 
 			if (d.isgoal(state)) {
 				cost = (double) n->g;
-				fprintf(stderr, "got a goal\n");
 				this->res.goal(d, n);
 				goal = true;
 			}
@@ -166,7 +179,8 @@ private:
 		return !open.empty() && (cost == Cost(-1) || cost > (*open.front())->fprime);
 	}
 
-	// Find the tightest bound for the current incumbent.
+	// findbound finds and returns the tightest bound for
+	// the current incumbent.
 	double findbound() {
 		double min = std::numeric_limits<double>::infinity();
 
@@ -200,8 +214,8 @@ private:
 		return cost / min;
 	}
 
-	// Update the open list: update f' values and add INCONS
-	// and re-heapify.
+	// updateopen updates the f' values of nodes in incons and
+	// on the open list, then incons is added to the open list.
 	void updateopen() {
 		std::vector<Node*> &nodes = incons.nodes();
 		for (unsigned long i = 0; i < nodes.size(); i++) {
@@ -277,4 +291,123 @@ private:
 	Pool<Node> *nodes;
 
 	double cost;	// solution cost
+};
+
+
+// ArastarMon is an implementation of ARA* that uses a
+// monitor in order to stop it when the utility of the current
+// solution/search time is estimated to be better than that
+// which is achievable from further search.
+template <class D> struct ArastarMon : public Arastar<D> {
+
+	typedef typename D::State State;
+	typedef typename D::PackedState PackedState;
+	typedef typename D::Cost Cost;
+	typedef typename D::Oper Oper;
+	typedef typename Arastar<D>::Node Node;
+	typedef typename Arastar<D>::Incons Incons;
+
+	ArastarMon(int argc, const char *argv[]) : Arastar<D>(argc, argv) {
+		this->wt0 = this->dwt = -1;
+		wf = wt = 1;
+		std::string path;
+		for (int i = 0; i < argc; i++) {
+			if (i < argc - 1 && strcmp(argv[i], "-wt0") == 0)
+				this->wt0 = strtod(argv[++i], NULL);
+
+			else if (i < argc - 1 && strcmp(argv[i], "-dwt") == 0)
+				this->dwt = strtod(argv[++i], NULL);
+
+			else if (i < argc -1 && strcmp(argv[i], "-wf") == 0)
+				wf = strtod(argv[++i], NULL);
+
+			else if (i < argc - 1 && strcmp(argv[i], "-wt") == 0)
+				wt = strtod(argv[++i], NULL);
+
+			else if (i < argc - 1 && strcmp(argv[i], "-p") == 0)
+				path = argv[++i];
+		}
+
+		if (this->wt0 < 1)
+			fatal("Must specify initial weight ≥ 1 using -wt0");
+		if (this->dwt <= 0)
+			fatal("Must specify weight decrement > 0 using -dwt");
+		if (path == "")
+			fatal("Must specify a profile file");
+
+		mon = AnytimeMonitor(AnytimeProfile(path), wf, wt);
+
+		this->wt = this->wt0;
+		this->nodes = new Pool<Node>();
+	}
+
+	void search(D &d, typename D::State &s0) {
+ 		bool optimal = false;
+		this->rowhdr();
+		this->start();
+		this->closed.init(d);
+		this->incons.init(d);
+		Node *n0 = this->init(d, s0);
+		this->closed.add(n0);
+		this->open.push(n0);
+
+		unsigned long n = 0;
+		do {
+			if (improve(d)) {
+				n++;
+				double epsprime = this->wt == 1.0 ? 1.0 : this->findbound();
+				if (this->wt < epsprime)
+					epsprime = this->wt;
+				this->row(n, epsprime);
+			}
+			if (this->wt <= 1.0)
+				optimal = true;
+			if (this->wt <= 1.0 || shouldstop())
+				break;
+			this->nextwt();
+			this->updateopen();
+			this->closed.clear();
+
+		} while(!shouldstop() && !this->limit() && !this->open.empty());
+
+		this->finish();
+		dfpair(stdout, "converged", "%s", optimal ? "yes" : "no");
+	}
+
+	virtual void output(FILE *out) {
+		SearchAlgorithm<D>::output(out);
+		Arastar<D>::output(out);
+		dfpair(stdout, "wf", "%g", wf);
+		dfpair(stdout, "wt", "%g", wt);
+	}
+
+private:
+
+	bool improve(D &d) {
+		bool goal = false;
+		while (!shouldstop() && !this->limit() && this->goodnodes()) {
+			Node *n = *this->open.pop();
+			State buf, &state = d.unpack(buf, n->packed);
+
+			if (d.isgoal(state)) {
+				this->cost = (double) n->g;
+				this->res.goal(d, n);
+				goal = true;
+			}
+
+			this->expand(d, n, state);
+		}
+		return goal;
+	}
+
+	bool shouldstop() const {
+		if (this->cost < 0)
+			return false;
+		double t = walltime() - this->res.wallstrt;
+		double c = this->cost;
+		return mon.stop(c, t);
+	}
+
+	double wf, wt;
+	AnytimeMonitor mon;
 };

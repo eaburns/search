@@ -46,6 +46,10 @@ struct RdbAttrs {
 	// list.
 	std::string string() const;
 
+	const std::deque<std::string> getkeys() const {
+		return keys;
+	}
+
 private:
 	std::map<std::string, std::string> pairs;
 	std::deque<std::string> keys;

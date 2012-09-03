@@ -176,7 +176,7 @@ static void helpmsg(int);
 int main(int argc, const char *argv[]) {
 	parseargs(argc, argv);
 
-	Solution sol = readdf(stdin, echo ? stdout : NULL);
+	Segments::Solution sol = Segments::readdf(stdin, echo ? stdout : NULL);
 
 	Segments segs(sol.width, sol.height, sol.nangles, sol.segs);
 

@@ -4,7 +4,6 @@ syntax: glob
 *.a
 *.gch
 */*_solver
-bench/data
 .utils_test
 .structs_test
 .rdb_test
@@ -33,4 +32,6 @@ plat2d/draw
 plat2d/watch
 plat2d/2poly
 graphics/test
-bench/mark
+search/anyprof/mkprof
+search/anyprof/sptcounts
+search/anyprof/sptpolicy
