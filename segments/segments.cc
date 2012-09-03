@@ -481,7 +481,7 @@ std::vector<Segments::Oper> scanops(const std::string &str) {
 }
 
 static void dfline(std::vector<std::string> &line, void *aux) {
-	Solution *sol = static_cast<Solution*>(aux);
+	Segments::Solution *sol = static_cast<Segments::Solution*>(aux);
 
 	if (line.size() == 3 && line[0] == "#pair" && line[1] == "path") {
 		if (sol->ops.size() > 0)
@@ -510,7 +510,7 @@ static void dfline(std::vector<std::string> &line, void *aux) {
 	}
 }
 
-Solution readdf(FILE *in, FILE *echo) {
+Segments::Solution Segments::readdf(FILE *in, FILE *echo) {
 	Solution sol;
 	dfread(in, dfline, &sol, echo);
 	return sol;

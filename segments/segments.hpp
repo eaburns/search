@@ -269,7 +269,19 @@ public:
 
 	// bounds are the lines defining the boundaries on the
 	// working space of the segments.
-	geom2d::LineSg bounds[4];
+	geom2d::LineSg bounds[4];	
+	
+	struct Solution {
+		int width, height, nangles;
+		std::vector<Segments::Seg> segs;
+		std::vector<Segments::Oper> ops;
+	};
+	
+	// readdf reads the segments instance and
+	// operators from a datafile.  If echo is
+	// non-null then each line of the datafile is
+	// echoed to the given FILE*.
+	static Solution readdf(FILE *in, FILE *echo);
 
 private:
 
@@ -291,15 +303,3 @@ private:
 // scanops scans an operator vector from an
 // operator string.
 std::vector<Segments::Oper> scanops(const std::string&);
-
-struct Solution {
-	int width, height, nangles;
-	std::vector<Segments::Seg> segs;
-	std::vector<Segments::Oper> ops;
-};
-
-// readdf reads the segments instance and
-// operators from a datafile.  If echo is
-// non-null then each line of the datafile is
-// echoed to the given FILE*.
-Solution readdf(FILE *in, FILE *echo);
