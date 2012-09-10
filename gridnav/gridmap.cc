@@ -78,18 +78,18 @@ void GridMap::load_seedinst(FILE *in) {
 
 	int c = fgetc(in);
 	ungetc(c, in);
-	if (c == 'E' && fscanf(in, "Eightway") == 0)
+	if (c == 'E' && fscanf(in, "Eightway\n") == 0)
 		eightway();
-	else if (c == 'F' && fscanf(in, "Fourway") == 0)
+	else if (c == 'F' && fscanf(in, "Fourway\n") == 0)
 		fourway();
 	else
 		readfail("Invalid movement type");
 
 	c = fgetc(in);
 	ungetc(c, in);
-	if (c == 'U' && fscanf(in, " Unit\n") == 0)
+	if (c == 'U' && fscanf(in, "Unit\n") == 0)
 		lifecost = false;
-	else if (c == 'L' && fscanf(in, " Life\n") == 0)
+	else if (c == 'L' && fscanf(in, "Life\n") == 0)
 		lifecost = true;
 	else
 		readfail("Invalid cost type");
