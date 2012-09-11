@@ -51,6 +51,10 @@ int main(int argc, const char *argv[]) {
 		fclose(f);
 	}
 	printf("%lu solutions\n", nsols);
+	if (nsols == 0) {
+		puts("No solutions");
+		return 1;
+	}
 
 	AnytimeProfile prof(ncost, ntime, stream);
 
