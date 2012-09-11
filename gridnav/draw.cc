@@ -36,7 +36,7 @@ int main(int argc, char *argv[]) {
 
 		for (unsigned int i = 0; i < cellsz; i++) {
 		for (unsigned int j = 0; j < cellsz; j++) {
-			img.setpixel(x*cellsz + i, map.h - (y*cellsz + j) -1, Image::black);
+			img.setpixel(x*cellsz + i, (map.h - y - 1)*cellsz + j, Image::black);
 		}
 		}
 	}
