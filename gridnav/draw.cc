@@ -9,15 +9,11 @@
 
 static const char *mappath;
 static const char *outpath;
+static unsigned int cellsz = 1;
+
 
 static void parseargs(int, char*[]);
 static void helpmsg(int);
-
-enum {
-	// BlkSz is the size (in points or something) of each
-	// grid block in the output image.
-	BlkSz = 1,
-};
 
 int main(int argc, char *argv[]) {
 	parseargs(argc, argv);
@@ -31,16 +27,16 @@ int main(int argc, char *argv[]) {
 		mappath = "<untitled>";
 	}
 	GridMap map(mapfile);
-	Image img(map.w*BlkSz, map.h*BlkSz, mappath);
+	Image img(map.w*cellsz, map.h*cellsz, mappath);
 
 	for (unsigned int x = 0; x < map.w; x++) {
 	for (unsigned int y = 0; y < map.h; y++) {
 		if (!map.blkd(map.index(x, y)))
 			continue;
 
-		for (unsigned int i = 0; i < BlkSz; i++) {
-		for (unsigned int j = 0; j < BlkSz; j++) {
-			img.setpixel(x*BlkSz + i, map.h - (y*BlkSz + j) -1, Image::black);
+		for (unsigned int i = 0; i < cellsz; i++) {
+		for (unsigned int j = 0; j < cellsz; j++) {
+			img.setpixel(x*cellsz + i, map.h - (y*cellsz + j) -1, Image::black);
 		}
 		}
 	}
@@ -65,6 +61,9 @@ static void parseargs(int argc, char *argv[]) {
 		}else if (i < argc-1 && strcmp(argv[i], "-o") == 0) {
 			outpath = argv[++i];
 
+		}else if (i < argc-1 && strcmp(argv[i], "-cellsz") == 0) {
+			cellsz = strtol(argv[++i], NULL, 0);
+
 		} else if (mappath != NULL) {
 			helpmsg(1);
 
@@ -78,5 +77,6 @@ static void helpmsg(int status) {
 	puts("Usage: draw [options] <map path>");
 	puts("-h	print this help message");
 	puts("-o <path>	specify the output path, '-' for standard output");
+	puts("-cellsz <number>	specify the size (in pixels) of each grid cell");
 	exit(status);
 }
