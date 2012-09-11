@@ -124,6 +124,8 @@ struct Image {
 
 	struct Poly : public Drawable, public geom2d::Poly  {
 
+		Poly() {}
+
 		Poly(const geom2d::Poly &p, const Color &color, double width) :
 			geom2d::Poly(p), w(width), c(color)
 			{ }

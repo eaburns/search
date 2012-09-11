@@ -1,4 +1,8 @@
-gridnav: gridnav/scenario_solver gridnav/gridnav_solver gridnav/2poly
+gridnav:\
+	gridnav/scenario_solver\
+	gridnav/gridnav_solver\
+	gridnav/2poly\
+	gridnav/draw\
 
 GRIDNAVOBJS=\
 	gridnav/gridmap.o\
@@ -47,3 +51,16 @@ gridnav/2poly:\
 
 include gridnav/2poly.d
 CLEAN+=gridnav/2poly gridnav/2poly.o
+
+gridnav/draw:\
+	$(GRIDNAVOBJS)\
+	gridnav/draw.cc\
+	graphics/image.o\
+	utils/utils.a\
+	structs/structs.a\
+	search/search.a
+	@echo $@
+	@$(CXX) $^ $(LDFLAGS) -o $@
+
+include gridnav/draw.d
+CLEAN+=gridnav/draw gridnav/draw.o
