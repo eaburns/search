@@ -22,6 +22,8 @@ rdb/test
 rdb/addattrs
 tiles/*pdbgen
 gridnav/2poly
+gridnav/draw
+gridnav/mkseedinst
 visnav/draw
 visnav/rand
 visnav/inst

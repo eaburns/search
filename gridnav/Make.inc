@@ -3,6 +3,7 @@ gridnav:\
 	gridnav/gridnav_solver\
 	gridnav/2poly\
 	gridnav/draw\
+	gridnav/mkseedinst\
 
 GRIDNAVOBJS=\
 	gridnav/gridmap.o\
@@ -64,3 +65,15 @@ gridnav/draw:\
 
 include gridnav/draw.d
 CLEAN+=gridnav/draw gridnav/draw.o
+
+gridnav/mkseedinst:\
+	$(GRIDNAVOBJS)\
+	gridnav/mkseedinst.cc\
+	utils/utils.a\
+	structs/structs.a\
+	search/search.a
+	@echo $@
+	@$(CXX) $^ $(LDFLAGS) -o $@
+
+include gridnav/mkseedinst.d
+CLEAN+=gridnav/mkseedinst gridnav/mkseedinst.o

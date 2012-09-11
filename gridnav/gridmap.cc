@@ -9,6 +9,16 @@
 #include <cmath>
 #include <string>
 
+GridMap::GridMap(unsigned int width, unsigned int height) :
+	map(NULL), file(""), lifecost(false), nmvs(0), flags(NULL) {
+	try {
+		setsize(width, height);
+	} catch (const safe::BadFlow<unsigned int>&) {
+		fatal("Grid is too big");
+	}
+	setfourway();
+}
+
 GridMap::GridMap(std::string &fname) :
 	map(NULL),
 	file(fname),
@@ -21,6 +31,27 @@ GridMap::GridMap(std::string &fname) :
 		fatalx(errno, "Unable to open %s for reading\n", file.c_str());
 	load(f);
 	fclose(f);
+}
+
+GridMap GridMap::uniform(unsigned int w, unsigned int h,
+		double prob, uint64_t seed) {
+	GridMap m(w, h);
+
+	Rand rng(seed);
+	for (unsigned int x = 1; x < w+1; x++) {
+	for (unsigned int y = 1; y < h+1; y++) {
+		int i = m.index(x, y);
+		if (rng.real() < prob) {
+			m.map[i] = '#';
+			m.flags[i] = OutOfBounds;
+		} else {
+ 			m.map[i] = ' ';
+			m.flags[i] = Passable;
+		}
+	}
+	}
+
+	return m;
 }
 
 GridMap::~GridMap() {
@@ -70,18 +101,12 @@ void GridMap::load_seedinst(FILE *in) {
 	if (fscanf(in, " seed %lu %u %u %lg\n", &seed, &w, &h, &prob) != 4)
 		readfail("Failed to read map header");
 
-	try {
-		setsize(w, h);
-	} catch (const safe::BadFlow<unsigned int>&) {
-		fatal("Grid is too big");
-	}
-
 	int c = fgetc(in);
 	ungetc(c, in);
 	if (c == 'E' && fscanf(in, "Eightway\n") == 0)
-		eightway();
+		seteightway();
 	else if (c == 'F' && fscanf(in, "Fourway\n") == 0)
-		fourway();
+		setfourway();
 	else
 		readfail("Invalid movement type");
 
@@ -94,19 +119,14 @@ void GridMap::load_seedinst(FILE *in) {
 	else
 		readfail("Invalid cost type");
 
-	Rand rng(seed);
-	for (unsigned int x = 1; x < w - 1; x++) {
-	for (unsigned int y = 1; y < h - 1; y++) {
-		int i = index(x, y);
-		if (prob < rng.real()) {
-			map[i] = '#';
-			flags[i] = OutOfBounds;
-		} else {
- 			map[i] = ' ';
-			flags[i] = Passable;
-		}
-	}
-	}
+	GridMap r = uniform(w, h, prob, seed);
+	w = r.w;
+	h = r.h;
+	sz = r.sz;
+	map = r.map;
+	flags = r.flags;
+	r.map = NULL;
+	r.flags = NULL;
 }
 
 // Leaves the start/end locations in the FILE.
@@ -152,9 +172,9 @@ void GridMap::load_ruml(FILE *in) {
 	c = fgetc(in);
 	ungetc(c, in);
 	if (c == 'E' && fscanf(in, "Eight-way") == 0)
-		eightway();
+		seteightway();
 	else if (c == 'F' && fscanf(in, "Four-way") == 0)
-		fourway();
+		setfourway();
 	else
 		readfail("Invalid movement type");
 }
@@ -202,7 +222,7 @@ void GridMap::load_sturtevant(FILE *in) {
 			flags[y*w + x] = terrain.flags[(int) map[y*w + x]];
 	}
 
-	octile();
+	setoctile();
 }
 
 void GridMap::setsize(unsigned int width, unsigned int height) {
@@ -212,17 +232,22 @@ void GridMap::setsize(unsigned int width, unsigned int height) {
 	map = new unsigned char[sz];
 	flags = new unsigned char[sz];
 
+	for (unsigned int i = 0; i < sz; i++) {
+		map[i] = ' ';
+		flags[i] = Passable;
+	}
+
 	for (unsigned int i = 0; i < w; i++) {
-		map[i] = '\0';
-		map[(h-1)*w + i] = '\0';
-		flags[i] = OutOfBounds;
-		flags[(h-1)*w + i] = OutOfBounds;
+		map[index(i, 0)] = '\0';
+		map[index(i, h-1)] = '\0';
+		flags[index(i, 0)] = OutOfBounds;
+		flags[index(i, h-1)] = OutOfBounds;
 	}
 	for (unsigned int i = 0; i < h; i++) {
-		map[i*w] = '\0';
-		map[i*w + w - 1] = '\0';
-		flags[i*w] = OutOfBounds;
-		flags[i*w + w - 1] = OutOfBounds;
+		map[index(0, i)] = '\0';
+		map[index(w-1, i)] = '\0';
+		flags[index(0, i)] = OutOfBounds;
+		flags[index(w-1, i)] = OutOfBounds;
 	}
 }
 
@@ -247,10 +272,11 @@ GridMap::Move::Move(const GridMap &m, int deltax, int deltay, unsigned int num, 
 	va_end(ap);
 }
 
-void GridMap::octile() {
+void GridMap::setoctile() {
 	// This operator ordering seems to give more accurate
 	// path-costs (compared to Nathan's scenario costs)
 	// when simply using doubles as the cost type.
+	nmvs = 0;
 	mvs[nmvs++] = Move(*this, -1,0, 0);
 	mvs[nmvs++] = Move(*this, 1,0, 0);
 	mvs[nmvs++] = Move(*this, 0,-1, 0);
@@ -261,15 +287,20 @@ void GridMap::octile() {
 	mvs[nmvs++] = Move(*this, 1,1, 2, 1,0, 0,1);
 }
 
-void GridMap::eightway() {
+void GridMap::seteightway() {
+	nmvs = 0;
 	mvs[nmvs++] = Move(*this, 1,1, 0);
 	mvs[nmvs++] = Move(*this, 1,-1, 0);
 	mvs[nmvs++] = Move(*this, -1,1, 0);
 	mvs[nmvs++] = Move(*this, -1,-1, 0);
-	fourway();
+	mvs[nmvs++] = Move(*this, 0,1, 0);
+	mvs[nmvs++] = Move(*this, 0,-1, 0);
+	mvs[nmvs++] = Move(*this, -1,0, 0);
+	mvs[nmvs++] = Move(*this, 1,0, 0);
 }
 
-void GridMap::fourway() {
+void GridMap::setfourway() {
+	nmvs = 0;
 	mvs[nmvs++] = Move(*this, 0,1, 0);
 	mvs[nmvs++] = Move(*this, 0,-1, 0);
 	mvs[nmvs++] = Move(*this, -1,0, 0);

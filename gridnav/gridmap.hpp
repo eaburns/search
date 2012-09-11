@@ -9,9 +9,18 @@ void fatal(const char*, ...);
 
 struct GridMap {
 
+	// Creates an empty four-way unit cost grid of the
+	// given dimensions.
+	GridMap(unsigned int w, unsigned int h);
+
 	GridMap(std::string &file);
 
 	GridMap(FILE *f) : nmvs(0) { load(f); }
+
+	// uniform returns a GridMap that has uniformly
+	// distributed obstacles.
+	static GridMap uniform(unsigned int w, unsigned int h,
+		double prob, uint64_t seed);
 
 	~GridMap();
 
@@ -76,6 +85,18 @@ struct GridMap {
 		return true;
 	}
 
+	// setoctile sets mvs to octile movement. Octile moves
+	// disallow diagonal movements unless the two adjacent
+	// cells are also unblocked.
+	void setoctile();
+
+	// seteightway sets mvs to eight-way movement.  Eight-way
+	// moves allow diagonal even if the adjacent cells are blocked.
+	void seteightway();
+
+	// setfourway sets mvs to four-way movements.
+	void setfourway();
+
 	unsigned int w, h, sz;
 	unsigned char *map;
 	std::string file;
@@ -133,16 +154,4 @@ private:
 	// w, h and sz.  The size of the map is one extra row/col
 	// on each side set to OutOfBounds.
 	void setsize(unsigned int, unsigned int);
-
-	// octile computes octile grid operators. Octile operators
-	// disallow diagonal movements unless the two adjacent
-	// cells are also unblocked.
-	void octile();
-
-	// eightway computes eight-way grid operators.  Eight-way
-	// operators allow diagonal even if the adjacent cells are blocked.
-	void eightway();
-
-	// fourway computes four-way grid operators.
-	void fourway();
 };

@@ -28,6 +28,7 @@ int main(int argc, char *argv[]) {
 		mappath = "<untitled>";
 	}
 	GridMap map(mapfile);
+
 	Image img(map.w*cellsz, map.h*cellsz, mappath);
 
 	for (unsigned int x = 0; x < map.w; x++) {
@@ -49,6 +50,14 @@ int main(int argc, char *argv[]) {
 	}
 	}
 
+	FILE *outfile = stdout;
+	if (outpath != NULL && strcmp(outpath, "-") != 0) {
+		outfile = fopen(outpath, "w");
+		if (!outfile)
+			fatalx(errno, "Failed to open %s for writing", outpath);
+	}
+	img.writeeps(outfile);
+
 	if (print) {
 		for (unsigned int y = 0; y < map.h; y++) {
 			for (unsigned int x = 0; x < map.w; x++) {
@@ -60,14 +69,6 @@ int main(int argc, char *argv[]) {
 			putc('\n', stdout);
 		}
 	}
-
-	FILE *outfile = stdout;
-	if (outpath != NULL && strcmp(outpath, "-") != 0) {
-		outfile = fopen(outpath, "w");
-		if (!outfile)
-			fatalx(errno, "Failed to open %s for writing", outpath);
-	}
-	img.writeeps(outfile);
 
 	return 0;
 }
