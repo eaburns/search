@@ -9,9 +9,14 @@ template<typename Ops, typename Node> struct ClosedList<Ops, Node, GridNav> {
 
 	ClosedList(unsigned long szhint) : len(0), cap(szhint) {
 		nodes = new Node*[cap];
+
+		for (unsigned int i = 0; i < cap; i++)
+			nodes[i] = NULL;
 	}
 
-	~ClosedList() { delete[] nodes; }
+	~ClosedList() {
+		delete[] nodes;
+	}
 
 	void init(GridNav &d) {
 		len = d.map->sz;
