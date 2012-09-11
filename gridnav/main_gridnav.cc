@@ -16,9 +16,9 @@ int main(int argc, const char *argv[]) {
 	dfpair(stdout, "goal x", "%u", xg);
 	dfpair(stdout, "goal y", "%u", yg);
 
-	if (map.blkd(map.index(x0, y0)))
+	if (map.blkd(map.index(x0+1, y0+1)))
 		fatal("The start location is blocked");
-	if (map.blkd(map.index(xg, yg)))
+	if (map.blkd(map.index(xg+1, yg+1)))
 		fatal("The goal location is blocked");
 
 	GridNav d(&map, x0, y0, xg, yg);
