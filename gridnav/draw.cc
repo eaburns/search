@@ -9,6 +9,7 @@
 
 static const char *mappath;
 static const char *outpath;
+static bool print;
 static unsigned int cellsz = 1;
 
 
@@ -34,12 +35,30 @@ int main(int argc, char *argv[]) {
 		if (!map.blkd(map.index(x, y)))
 			continue;
 
+		Color c = Image::black;
+		if (x == 1 && y == 1)
+			c = Image::green;
+		else if (x == map.w-2 && y == 1)
+			c = Image::red;
+
 		for (unsigned int i = 0; i < cellsz; i++) {
 		for (unsigned int j = 0; j < cellsz; j++) {
-			img.setpixel(x*cellsz + i, (map.h - y - 1)*cellsz + j, Image::black);
+			img.setpixel(x*cellsz + i, (map.h - y - 1)*cellsz + j, c);
 		}
 		}
 	}
+	}
+
+	if (print) {
+		for (unsigned int y = 0; y < map.h; y++) {
+			for (unsigned int x = 0; x < map.w; x++) {
+				if (!map.blkd(map.index(x, y)))
+					putc(' ', stdout);
+				else
+					putc('#', stdout);
+			}
+			putc('\n', stdout);
+		}
 	}
 
 	FILE *outfile = stdout;
@@ -57,6 +76,9 @@ static void parseargs(int argc, char *argv[]) {
 	for (int i = 1; i < argc; i++) {
 		if (strcmp(argv[i], "-h") == 0) {
 			helpmsg(0);
+
+		}else if (strcmp(argv[i], "-p") == 0) {
+			print = true;
 
 		}else if (i < argc-1 && strcmp(argv[i], "-o") == 0) {
 			outpath = argv[++i];
@@ -76,6 +98,7 @@ static void parseargs(int argc, char *argv[]) {
 static void helpmsg(int status) {
 	puts("Usage: draw [options] <map path>");
 	puts("-h	print this help message");
+	puts("-p	print the grid to standard output too");
 	puts("-o <path>	specify the output path, '-' for standard output");
 	puts("-cellsz <number>	specify the size (in pixels) of each grid cell");
 	exit(status);
