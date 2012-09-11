@@ -189,22 +189,22 @@ extern "C" unsigned long hashbytes(unsigned char[], unsigned int);
 class Rand {
 public:
 	// Rand creates a new Rand with the given seed.
-	Rand(unsigned long);
+	Rand(uint64_t);
 
 	// bits returns the next 64 pseudo-random bits.
-	unsigned long bits();
+	uint64_t bits();
 
 	// integer returns a pseudo-random integer between min
 	// and max, inclusive.
-	long integer(long min, long max);
+	int64_t integer(long min, long max);
 
 	// real returns the a pseudo-random double between
 	// 0 and 1 (not sure if it's inclusive).
 	double real();
 
-	unsigned long seed() const { return theseed; }
+	uint64_t seed() const { return theseed; }
 private:
-	unsigned long theseed;
+	uint64_t theseed;
 	uint64_t v;
 };
 
