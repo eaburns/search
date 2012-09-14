@@ -103,10 +103,11 @@ void GridMap::load_seedinst(FILE *in) {
 
 	int c = fgetc(in);
 	ungetc(c, in);
+	bool eightway = false;
 	if (c == 'E' && fscanf(in, "Eightway\n") == 0)
-		seteightway();
+		eightway = true;
 	else if (c == 'F' && fscanf(in, "Fourway\n") == 0)
-		setfourway();
+		eightway = false;
 	else
 		readfail("Invalid movement type");
 
@@ -127,6 +128,11 @@ void GridMap::load_seedinst(FILE *in) {
 	flags = r.flags;
 	r.map = NULL;
 	r.flags = NULL;
+
+	if (eightway)
+		seteightway();
+	else
+		setfourway();
 }
 
 // Leaves the start/end locations in the FILE.
