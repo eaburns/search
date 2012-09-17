@@ -9,7 +9,7 @@ static void dfline(std::vector<std::string>&, void*);
 
 int main(int argc, const char *argv[]) {
 	if (argc < 4)
-		fatal("usage: mkprof: <rdb root> <cost bins> <time bins> [key=value*]");
+		fatal("usage: mkprof <rdb root> <cost bins> <time bins> [key=value*]");
 
 	const char *root = argv[1];
 	printf("root: %s\n", root);
