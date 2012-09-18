@@ -100,7 +100,7 @@ void AnytimeProfile::countsolutions(const std::vector<SolutionStream> &streams) 
 	
 			for (unsigned int j = i+1; j < stream.size(); j++) {
 				assert(stream[j].time > stream[i].time);
-				assert(stream[j].cost < stream[i].cost);
+				assert(stream[j].cost <= stream[i].cost);
 	
 				unsigned int nextq = costbin(stream[j].cost);
 				unsigned int nextdt = timebin(stream[j].time - stream[i].time);
