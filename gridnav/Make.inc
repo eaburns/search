@@ -4,6 +4,7 @@ gridnav:\
 	gridnav/2poly\
 	gridnav/draw\
 	gridnav/mkseedinst\
+	gridnav/scenario2rdb\
 
 GRIDNAVOBJS=\
 	gridnav/gridmap.o\
@@ -77,3 +78,16 @@ gridnav/mkseedinst:\
 
 include gridnav/mkseedinst.d
 CLEAN+=gridnav/mkseedinst gridnav/mkseedinst.o
+
+gridnav/scenario2rdb:\
+	$(GRIDNAVOBJS)\
+	gridnav/scenario2rdb.o\
+	utils/utils.a\
+	structs/structs.a\
+	search/search.a\
+	rdb/rdb.a
+	@echo $@
+	@$(CXX) $^ $(LDFLAGS) -o $@
+
+include gridnav/scenario2rdb.d
+CLEAN+=gridnav/scenario2rdb gridnav/scenario2rdb.o

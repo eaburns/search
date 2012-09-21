@@ -24,6 +24,7 @@ tiles/*pdbgen
 gridnav/2poly
 gridnav/draw
 gridnav/mkseedinst
+gridnav/scenario2rdb
 visnav/draw
 visnav/rand
 visnav/inst
@@ -37,3 +38,4 @@ graphics/test
 search/anyprof/mkprof
 search/anyprof/sptcounts
 search/anyprof/sptpolicy
+search/anyprof/bestwt

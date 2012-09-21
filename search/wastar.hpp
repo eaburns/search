@@ -78,7 +78,7 @@ template <class D> struct Wastar : public SearchAlgorithm<D> {
 		closed.prstats(stdout, "closed ");
 		dfpair(stdout, "open list type", "%s", "binary heap");
 		dfpair(stdout, "node size", "%u", sizeof(Node));
-		dfpair(stdout, "weight", "%g", wt);
+		dfpair(stdout, "weight", "%lg", wt);
 	}
 
 private:
