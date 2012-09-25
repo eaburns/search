@@ -14,10 +14,11 @@ template <class D> struct Bugsy_slim : public SearchAlgorithm<D> {
 	typedef typename D::Oper Oper;
 
 	struct Node : SearchNode<D> {
-		typename D::Cost f, h, d;
+		typename D::Cost h, d;
 		double u, t;
 
-		// The expansion count when this node was generated.
+		// The expansion count when this node was
+		// generated.
 		unsigned long expct;
 
 		static bool pred(Node *a, Node *b) {
@@ -25,8 +26,6 @@ template <class D> struct Bugsy_slim : public SearchAlgorithm<D> {
 				return a->u > b->u;
 			if (a->t != b->t)
 				return a->t < b->t;
-			if (a->f != b->f)
-				return a->f < b->f;
 			return a->g > b->g;
 		}
 	};
@@ -38,8 +37,7 @@ template <class D> struct Bugsy_slim : public SearchAlgorithm<D> {
 	};
 
 	Bugsy_slim(int argc, const char *argv[]) :
-			SearchAlgorithm<D>(argc, argv),
-			navg(0), herror(0), derror(0), avgdelay(0),
+			SearchAlgorithm<D>(argc, argv), avgdelay(0),
 			timeper(0.0), nextresort(Resort1), nresort(0),
 			closed(30000001) {
 		wf = wt = -1;
@@ -93,8 +91,6 @@ template <class D> struct Bugsy_slim : public SearchAlgorithm<D> {
 		timeper = 0.0;
 		nresort = 0;
 		nextresort = Resort1;
-		navg = 0;
-		herror = derror = 0;
 		nodes = new Pool<Node>();
 	}
 
@@ -107,8 +103,6 @@ template <class D> struct Bugsy_slim : public SearchAlgorithm<D> {
 		dfpair(stdout, "wt", "%g", wt);
 		dfpair(stdout, "final time per expand", "%g", timeper);
 		dfpair(stdout, "number of resorts", "%lu", nresort);
-		dfpair(stdout, "mean single-step h error", "%g", herror);
-		dfpair(stdout, "mean single-step d error", "%g", derror);
 		dfpair(stdout, "mean expansion delay", "%g", avgdelay);
 	}
 
@@ -147,13 +141,6 @@ private:
 
 		if (bestinfo.f < Cost(0))
 			return;
-
-		navg++;
-		double herr = bestinfo.f - n->f;
-		herror = herror + (herr - herror)/navg;
-
-		double derr = bestinfo.d + 1 - n->d;
-		derror = derror + (derr - derror)/navg;
 	}
 
 	// considers adding the child to the open and closed lists.
@@ -161,20 +148,9 @@ private:
 		Node *kid = nodes->construct();
 		typename D::Edge e(d, state, op);
 		kid->g = parent->g + e.cost;
-		kid->expct = this->res.expd;
-
-		// single step path-max on d
 		kid->d = d.d(e.state);
-		if (kid->d < parent->d - Cost(1))
-			kid->d = parent->d - Cost(1);
-
-		// single step path-max on h
 		kid->h = d.h(e.state);
-		if (kid->h < parent->h - e.cost)
-			kid->h = parent->h - e.cost;
-
-		kid->f = kid->g + kid->h;
-
+		kid->expct = this->res.expd;
 		Kidinfo kinfo(kid->g, kid->h, kid->d);
 
 		d.pack(kid->packed, e.state);
@@ -197,7 +173,6 @@ private:
 		Node *n0 = nodes->construct();
 		d.pack(n0->packed, s0);
 		n0->g = Cost(0);
-		n0->h = n0->f = d.h(s0);
 		n0->d = d.d(s0);
 		computeutil(n0);
 		n0->op = n0->pop = D::Nop;
@@ -209,12 +184,8 @@ private:
 	// compututil computes the utility value of the given node
 	// using corrected estimates of d and h.
 	void computeutil(Node *n) {
-		double d = n->d / (1-derror);
-		double h = n->h + d*herror;
-		d *= avgdelay;
-		double f = h + n->g;
-		n->t = timeper * d;
-		n->u = -(wf * f + wt * n->t);
+		n->t = timeper * (avgdelay <= 0 ? 1 : avgdelay) * n->d;
+		n->u = -(wf * (n->h + n->g) + wt * n->t);
 	}
 
 	// updatetime runs a simple state machine (from Wheeler's BUGSY
@@ -240,14 +211,8 @@ private:
 	// wf and wt are the cost and time weight respectively.
 	double wf, wt;
 
-	// heuristic correction
-	unsigned long navg;
-	double herror, derror;
-
 	// expansion delay
 	double avgdelay;
-
-	bool dropdups;
 
 	// for nodes-per-second estimation
 	double timeper, last;
