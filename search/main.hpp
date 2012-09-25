@@ -1,6 +1,7 @@
 #include "search.hpp"
 #include "idastar.hpp"
 #include "astar.hpp"
+#include "astar-dump.hpp"
 #include "wastar.hpp"
 #include "greedy.hpp"
 #include "bugsy.hpp"
@@ -62,6 +63,8 @@ template<class D> SearchAlgorithm<D> *getsearch(int argc, const char *argv[]) {
 
 	if (strcmp(argv[1], "idastar") == 0)
 		return new Idastar<D>(argc, argv);
+	else if (strcmp(argv[1], "astar-dump") == 0)
+		return new Astar_dump<D>(argc, argv);
 	else if (strcmp(argv[1], "astar") == 0)
 		return new Astar<D>(argc, argv);
 	else if (strcmp(argv[1], "wastar") == 0)
