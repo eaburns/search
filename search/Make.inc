@@ -3,6 +3,7 @@ search:\
 	search/anyprof/sptcounts\
 	search/anyprof/sptpolicy\
 	search/anyprof/bestwt\
+	search/learnh/lms\
 
 SEARCHOBJS:=\
 	search/search.o\
@@ -56,3 +57,12 @@ search/anyprof/bestwt:\
 	@echo $@
 	@$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
 CLEAN+=search/anyprof/bestwt
+
+search/learnh/lms:\
+	search/learnh/lms.cc\
+	$(SEARCHOBJS)\
+	rdb/rdb.a\
+	utils/utils.a
+	@echo $@
+	@$(CXX) $(CXXFLAGS) $^ -llapack $(LDFLAGS) -o $@
+CLEAN+=search/learnh/lms
