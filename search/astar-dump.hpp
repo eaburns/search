@@ -71,17 +71,20 @@ template <class D> struct Astar_dump : public SearchAlgorithm<D> {
 	}
 
 	void dumpgoal(Node *goal) const {
-		dfrowhdr(stdout, "path", 5, "g", "h", "D", "d", "h*");
+		dfrowhdr(stdout, "path", 6, "g", "h", "D", "d", "h*", "d*");
 
 		double hstar = 0;
+		double dstar = 0;
 		for (Node *n = goal; n; n = n->parentnode) {
-			dfrow(stdout, "path", "ggggg",
+			dfrow(stdout, "path", "gggggg",
 				(double) n->g,
 				(double) n->f - n->g,
 				(double) n->depth,
 				(double) n->d,
-				(double) hstar);
+				hstar,
+				dstar);
 			hstar += (double) n->inedge;
+			dstar++;
 		}
 	}
 
