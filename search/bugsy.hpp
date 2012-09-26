@@ -45,7 +45,7 @@ template <class D> struct Bugsy : public SearchAlgorithm<D> {
 
 	Bugsy(int argc, const char *argv[]) :
 			SearchAlgorithm<D>(argc, argv),
-			uselms(false),
+			usehlms(false),
 			usehhat(false),
 			usedhat(false),
 			navg(0),
@@ -74,8 +74,13 @@ template <class D> struct Bugsy : public SearchAlgorithm<D> {
 				dropdups = true;
 			else if (i < argc - 1 && strcmp(argv[i], "-interph") == 0)
 				interph = usehhat = true;
-			else if (i < argc - 1 && strcmp(argv[i], "-hlms") == 0)
-				initlms(argv[++i]);
+			else if (i < argc - 1 && strcmp(argv[i], "-hlms") == 0) {
+				usehlms = true;
+				initlms(sizeof(hcoeffs)/sizeof(hcoeffs[0]), argv[++i], hcoeffs);
+			} else if (i < argc - 1 && strcmp(argv[i], "-dlms") == 0) {
+				usedlms = true;
+				initlms(sizeof(dcoeffs)/sizeof(dcoeffs[0]), argv[++i], dcoeffs);
+			}
 		}
 
 		if (wf < 0)
@@ -264,11 +269,11 @@ private:
 	// compututil computes the utility value of the given node
 	// using corrected estimates of d and h.
 	void computeutil(Node *n) {
-		double d = n->d;
+		double d = usedlms ? evallms(n, dcoeffs) : n->d;
 		if (usedhat)
 			d /= (1 - derror);
 
-		double h = uselms ? hlms(n) : n->h;
+		double h = usehlms ? evallms(n, hcoeffs) : n->h;
 		if (usehhat) {
 			if (interph) {
 				double hhat = h + d*herror;
@@ -307,36 +312,38 @@ private:
 		open.reinit();
 	}
 
-	void initlms(const char *wts) {
-		uselms = true;
+	void initlms(unsigned int n, const char *wts, double coeffs[]) {
 		char *cpy = new char[strlen(wts)+1];
 		memcpy(cpy, wts, strlen(wts)+1);
 
 		char *tok = strtok(cpy, ",");
-		int n = sizeof(coeffs)/sizeof(coeffs[0]);
-		for (int i = 0; i < n; i++) {
+		for (unsigned int i = 0; i < n; i++) {
 			if (!tok)
-				fatal("Expected %d coefficients", n);
+				fatal("Expected %u coefficients", n);
 			char *end = NULL;
 			coeffs[i] = strtod(tok, &end);
 			if (end == tok)
-				fatal("Coefficient %d (%s) is invalid", i, tok);		
+				fatal("Coefficient %u (%s) is invalid", i, tok);		
 			tok = strtok(NULL, ",");
 		}
 
 		delete []cpy;
 	}
 
-	double hlms(Node *n) const {
+	double evallms(Node *n, double coeffs[]) const {
 		return n->h*coeffs[0] +
 			n->g*coeffs[1] +
 			n->d*coeffs[2] +
 			n->depth*coeffs[3];
 	}
 
-	bool uselms;
+	bool usehlms;
 	// h, g, d, and D coefficients for LMS-based heuristic;
-	double coeffs[4];
+	double hcoeffs[4];
+
+	bool usedlms;
+	// h, g, d, and D coefficients for LMS-based heuristic;
+	double dcoeffs[4];
 
 	// wf and wt are the cost and time weight respectively.
 	double wf, wt;
