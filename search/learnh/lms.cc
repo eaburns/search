@@ -131,7 +131,7 @@ int main(int argc, const char *argv[]) {
 
 	sptpoints(sptfile);
 	fprintf(stderr, "h=%g\ng=%g\nd=%g\nD=%g\n", b[0], b[1], b[2], b[3]);
-	printf( "%g;%g;%g;%g\n", b[0], b[1], b[2], b[3]);
+	printf( "%6.2f;%6.2f;%6.2f;%6.2f\n", b[0], b[1], b[2], b[3]);
 
 	sptfooter(sptfile);
 
