@@ -6,6 +6,7 @@
 #include "../search/search.hpp"
 #include "../structs/binheap.hpp"
 #include "../utils/pool.hpp"
+#include <cstring>
 
 template <class D> struct Bugsy : public SearchAlgorithm<D> {
 	typedef typename D::State State;
@@ -43,10 +44,19 @@ template <class D> struct Bugsy : public SearchAlgorithm<D> {
 	};
 
 	Bugsy(int argc, const char *argv[]) :
-			SearchAlgorithm<D>(argc, argv), usehhat(false),
-			usedhat(false), navg(0), herror(0), derror(0),
-			useexpdelay(false), avgdelay(0), dropdups(false),
-			timeper(0.0), nextresort(Resort1), nresort(0),
+			SearchAlgorithm<D>(argc, argv),
+			uselms(false),
+			usehhat(false),
+			usedhat(false),
+			navg(0),
+			herror(0),
+			derror(0),
+			useexpdelay(false),
+			avgdelay(0),
+			dropdups(false),
+			timeper(0.0),
+			nextresort(Resort1),
+			nresort(0),
 			closed(30000001) {
 		wf = wt = -1;
 		for (int i = 0; i < argc; i++) {
@@ -64,6 +74,8 @@ template <class D> struct Bugsy : public SearchAlgorithm<D> {
 				dropdups = true;
 			else if (i < argc - 1 && strcmp(argv[i], "-interph") == 0)
 				interph = usehhat = true;
+			else if (i < argc - 1 && strcmp(argv[i], "-hlms") == 0)
+				initlms(argv[++i]);
 		}
 
 		if (wf < 0)
@@ -256,7 +268,7 @@ private:
 		if (usedhat)
 			d /= (1 - derror);
 
-		double h = n->h;
+		double h = uselms ? hlms(n) : n->h;
 		if (usehhat) {
 			if (interph) {
 				double hhat = h + d*herror;
@@ -294,6 +306,37 @@ private:
 			computeutil(open.at(i));
 		open.reinit();
 	}
+
+	void initlms(const char *wts) {
+		uselms = true;
+		char *cpy = new char[strlen(wts)+1];
+		memcpy(cpy, wts, strlen(wts)+1);
+
+		char *tok = strtok(cpy, ",");
+		int n = sizeof(coeffs)/sizeof(coeffs[0]);
+		for (int i = 0; i < n; i++) {
+			if (!tok)
+				fatal("Expected %d coefficients", n);
+			char *end = NULL;
+			coeffs[i] = strtod(tok, &end);
+			if (end == tok)
+				fatal("Coefficient %d (%s) is invalid", i, tok);		
+			tok = strtok(NULL, ",");
+		}
+
+		delete []cpy;
+	}
+
+	double hlms(Node *n) const {
+		return n->h*coeffs[0] +
+			n->g*coeffs[1] +
+			n->d*coeffs[2] +
+			n->depth*coeffs[3];
+	}
+
+	bool uselms;
+	// h, g, d, and D coefficients for LMS-based heuristic;
+	double coeffs[4];
 
 	// wf and wt are the cost and time weight respectively.
 	double wf, wt;
