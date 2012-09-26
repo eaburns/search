@@ -9,7 +9,7 @@ GRAPHICSLD:=-lSDL -lSDL_image -lGLU -lGL
 
 include $(GRAPHICSOBJS:.o=.d)
 
-CLEAN+=$(GRAPHICSOBJS) graphics/graphics.a
+CLEAN+=$(GRAPHICSOBJS)
 
 EVERYTHING+=graphics
 
@@ -17,7 +17,7 @@ graphics/graphics.a: $(GRAPHICSOBJS)
 	@echo $@
 	@$(AR) rsc $@ $(GRAPHICSOBJS)
 
-CLEAN+=graphics.a
+CLEAN+=graphics/graphics.a
 
 # A simple test binary
 graphics/test:\
