@@ -41,7 +41,6 @@ unsigned long t;
 
 // setrow sets the rth row of the A matrix to h,g,d,D
 static void setrow(unsigned int r, double h, double g, double d, double D);
-
 static void dfline(std::vector<std::string>&, void*);
 static void sptheader(FILE*);
 static void sptpoints(FILE*);
@@ -50,6 +49,9 @@ static void sptfooter(FILE*);
 int main(int argc, const char *argv[]) {
 	if (argc < 2)
 		fatal("usage: lms <sample size> <rdbroot> [key=value*]");
+
+	// Seed with zero.
+	randgen = Rand(0);
 
 	char *end = NULL;
 	sz = strtol(argv[1], &end, 10);
@@ -76,6 +78,7 @@ int main(int argc, const char *argv[]) {
 	fputc('\n', stderr);
 
 	auto paths = withattrs(root, attrs);
+	fprintf(stderr, "%lu data files\n", paths.size());
 	for (auto p = paths.begin(); p != paths.end(); p++) {
 		FILE *f = fopen(p->c_str(), "r");
 		if (!f) {
@@ -86,7 +89,7 @@ int main(int argc, const char *argv[]) {
 		fclose(f);
 	}
 
-	fprintf(stderr, "%lu solutions\n", t);
+	fprintf(stderr, "%lu data points\n", t);
 
 	int m = t < sz ? t : sz;
 	for (unsigned int i = 0; i < (unsigned int) m; i++) {
