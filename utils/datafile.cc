@@ -170,6 +170,8 @@ static void tryprocstatus(FILE *out)
 		return;
 
 	FILE *in = fopen(buf, "r");
+	if (!in)
+		fatalx(errno, "Failed to open %s for reading", buf);
 
 	for (;;) {
 		if (!fgets(buf, Bufsz, in))
