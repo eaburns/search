@@ -1,6 +1,6 @@
 #include "../../utils/utils.hpp"
 #include "../../rdb/rdb.hpp"
-#include "lms.hpp"
+#include "leastsquares.hpp"
 #include <cassert>
 #include <cstring>
 
@@ -103,7 +103,7 @@ int main(int argc, const char *argv[]) {
 	}
 	sptheader(sptfile);
 
-	lms(m, NFeatures, A, b, x);
+	leastsquares(m, NFeatures, A, b, x);
 
 	sptpoints(sptfile);
 	fprintf(stderr, "h=%g\ng=%g\nd=%g\nD=%g\n", x[0], x[1], x[2], x[3]);

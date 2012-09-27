@@ -59,7 +59,7 @@ search/anyprof/bestwt:\
 CLEAN+=search/anyprof/bestwt
 
 search/learnh/hlms:\
-	search/learnh/lms.cc\
+	search/learnh/leastsquares.cc\
 	search/learnh/hlms.cc\
 	$(SEARCHOBJS)\
 	rdb/rdb.a\

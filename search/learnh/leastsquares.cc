@@ -1,9 +1,9 @@
-#include "lms.hpp"
+#include "leastsquares.hpp"
 
 // The lapack routine.
 extern "C" void dgels_( char* trans, int* m, int* n, int* nrhs, double* a, int* lda, double* b, int* ldb, double* work, int* lwork, int* info );
 
-bool lms(int nrows, int ncols, double Ain[], double bin[], double x[]) {
+bool leastsquares(int nrows, int ncols, double Ain[], double bin[], double x[]) {
 	bool res = false;
 	char trans[] = "No transpose";
 
