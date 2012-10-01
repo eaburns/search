@@ -1,10 +1,12 @@
 tiles:\
 	tiles/15md_solver\
-	tiles/24md_solver
+	tiles/24md_solver\
+	tiles/generator\
 
 CLEAN+=\
 	tiles/15md_solver\
-	tiles/24md_solver
+	tiles/24md_solver\
+	tiles/generator\
 	
 EVERYTHING+=tiles
 
@@ -29,5 +31,15 @@ tiles/%md_solver:\
 		structs/structs.a\
 		search/search.a\
 		$(LDFLAGS) `./tiles/defs.sh $*` -o $@
+
+tiles/generator: tiles/generator.d
+tiles/generator: tiles/generator.cc utils/utils.a
+	@echo $@
+	@$(CXX) $(CXXFLAGS)\
+		tiles/generator.cc\
+		utils/utils.a\
+		$(LDFLAGS) -o $@
+
+CLEAN+=tiles/generator
 
 include tiles/main_mdist.d
