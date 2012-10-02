@@ -45,6 +45,7 @@ template <class D> struct Bugsy : public SearchAlgorithm<D> {
 
 	Bugsy(int argc, const char *argv[]) :
 			SearchAlgorithm<D>(argc, argv),
+			resort(true),
 			usehlms(false),
 			usehhat(false),
 			usedhat(false),
@@ -64,6 +65,8 @@ template <class D> struct Bugsy : public SearchAlgorithm<D> {
 				wf = strtod(argv[++i], NULL);
 			else if (i < argc - 1 && strcmp(argv[i], "-wt") == 0)
 				wt = strtod(argv[++i], NULL);
+			else if (i < argc - 1 && strcmp(argv[i], "-noresort") == 0)
+				resort = false;
 			else if (i < argc - 1 && strcmp(argv[i], "-expdelay") == 0)
 				useexpdelay = true;
 			else if (i < argc - 1 && strcmp(argv[i], "-hhat") == 0)
@@ -303,7 +306,7 @@ private:
 	// updateopen updates the utilities of all nodes on open and
 	// reinitializes the heap every 2^i expansions.
 	void updateopen() {
-		if (this->res.expd < nextresort)
+		if (!resort || this->res.expd < nextresort)
 			return;
 		nextresort *= 2;
 		nresort++;
@@ -336,6 +339,9 @@ private:
 			n->d*coeffs[2] +
 			n->depth*coeffs[3];
 	}
+
+	// resort the open list sometimes?
+	bool resort;
 
 	bool usehlms;
 	// h, g, d, and D coefficients for LMS-based heuristic;
