@@ -28,10 +28,13 @@ public:
 			delete[] bins;
 	}
 
+	// add adds an element to the hash table.
 	void add(Elm *e) {
 		add(e, Ops::hash(Ops::key(e)));
 	}
 
+	// Just like the above add method, however,
+	// it accepts a pre-computed hash value.
 	void add(Elm *e, unsigned long h) {
 		if (fill * Fillfact >= nbins)
 			resize(nbins == 0 ? Defsz : nbins * Growfact);
@@ -40,10 +43,15 @@ public:
 		fill++;
 	}
 
+	// find returns the first element that has the
+	// give key, or NULL if no elements with the
+	// key are in the table.
 	Elm *find(Key k) {
 		return find(k, Ops::hash(k));
 	}
 
+	// Just like the previous find method, however,
+	// it accepts a pre-computed hash value.
 	Elm *find(Key k, unsigned long h) {
 		for (Elm *p = bins[h % nbins]; p; p = Ops::entry(p).nxt) {
 			if (Ops::key(p) == k)
@@ -53,6 +61,40 @@ public:
 		return NULL;
 	}
 
+	// rm attempts to remove one an element from
+	// the hash table.  If rm returns true then one
+	// element with the given key is removed, if rm
+	// returns false than there were no items with
+	// the key.
+	bool rm(Key k) {
+		return rm(k, Ops::hash(k));
+	}
+
+	// Just like the above rm method, however, it
+	// accepts a pre-computed hash value.
+	bool rm(Key k, unsigned long h) {
+		unsigned long i = h % nbins;
+
+		Elm *q = NULL, *p;
+		for (p = bins[i]; p; p = Ops::entry(p).nxt) {
+			if (Ops::key(p) == k)
+				break;
+			q = p;
+		}
+
+		if (p == NULL)	// not found
+			return false;
+
+		fill--;
+
+		if (q == NULL)	// head of list
+			bins[i] = Ops::entry(p).nxt;
+		else
+			q = Ops::entry(p).nxt;
+		return true;
+	}
+
+	// prstats prints statistics about the hash table.
 	void prstats(FILE *f, const char *prefix) {
 		char key[strlen(prefix) + strlen("collisions") + 1];
 		strcpy(key, prefix);
@@ -67,6 +109,9 @@ public:
 		dfpair(f, key, "%lu", nresize);
 	}
 
+	// clear removes all elements from the hash table
+	// but does not free any memory, leaving the
+	// hash table ready to be re-used.
 	void clear() {
 		fill = ncollide = 0;
 		nresize = 0;
@@ -104,6 +149,7 @@ private:
 	}
 
 	friend bool htable_add_test();
+	friend bool htable_rm_test();
 
 	unsigned long fill, ncollide;
 	unsigned int nresize, nbins;

@@ -65,6 +65,46 @@ bool htable_find_test() {
 	return res;
 }
 
+bool htable_rm_test() {
+	bool res = true;
+	Htable<Ops, Key, Ent> ht;
+	Ent ents[N];
+
+	unsigned int nvals = 100;
+
+	for (unsigned int i = 0; i < nvals; i++) {
+		ents[i] = Ent(i);
+		ht.add(ents + i);
+	}
+
+	unsigned long fill = nvals;
+	for (unsigned int i = 1; i < nvals; i+=2) {
+		if (!ht.rm(i)) {
+			testpr("No value mapped to key %u\n", i);
+			res = false;
+		}
+		fill--;	
+		if (ht.fill != fill) {
+			testpr("Expected fill %u, got %u\n", fill, ht.fill);
+			return false;
+		}
+	}
+
+	for (unsigned int i = 0; i < nvals; i++) {
+		Ent *vlp = ht.find(i);
+		if (!vlp && i % 2 == 0) {
+			testpr("No value mapped to even key %u\n", i);
+			res = false;
+		}
+		if (vlp && i % 2 != 0) {
+			testpr("Odd key %u was never removed\n", i);
+			res = false;
+		}
+	}
+
+	return res;
+}
+
 bool htable_find_rand_test() {
 	bool res = true;
 	Htable<Ops, Key, Ent> ht;

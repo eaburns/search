@@ -4,6 +4,7 @@
 
 bool htable_add_test();
 bool htable_find_test();
+bool htable_rm_test();
 bool htable_find_rand_test();
 bool intpq_push_test();
 bool intpq_pop_test();
@@ -17,6 +18,7 @@ bool stn_undo_one_test();
 static const Test tests[] = {
 	Test("htable add test", htable_add_test),
 	Test("htable find test", htable_find_test),
+	Test("htable rm test", htable_rm_test),
 	Test("htable find rand test", htable_find_test),
 	Test("intpq push test", intpq_push_test),
 	Test("intpq pop test", intpq_pop_test),
