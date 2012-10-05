@@ -39,3 +39,6 @@ search/anyprof/mkprof
 search/anyprof/sptcounts
 search/anyprof/sptpolicy
 search/anyprof/bestwt
+search/learnh/hlms
+tiles/generator
+gridnav/randinst
