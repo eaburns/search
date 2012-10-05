@@ -57,7 +57,7 @@ again:
 	if (ferror(in))
 		fatal("error while reading %s", mappath.c_str());
 	fclose(in);
-	printf("%u %u %u %u\n", xs[0], ys[0], xs[1], ys[1]);
+	printf("%u %u %u %u\n", xs[0]-1, ys[0]-1, xs[1]-1, ys[1]-1);
 
 	return 0;
 }
