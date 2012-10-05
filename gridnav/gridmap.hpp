@@ -34,7 +34,7 @@ struct GridMap {
 		return loc / w;
 	}
 
-	// loc returns the array index for the x,y coordinate.
+	// index returns the array index for the x,y coordinate.
 	int index(int x, int y) const {
 		return y * w + x;
 	}
