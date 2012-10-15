@@ -90,8 +90,7 @@ static double rnddbl(double min, double max) {
 
 static void helpmsg(int res) {
 	puts("Usage: rand [options]");
-	puts("\nPlaces random polygons in the unit square.  Computes the");
-	puts("visibility graph and prints the instance to standard output");
+	puts("\nPlaces random polygons in the unit square.");
 	puts("\nOptions:");
 	puts("	-h	prints this help message");
 	puts("	-o <file>	output to the specified file instead of standard output");
