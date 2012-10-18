@@ -52,10 +52,14 @@ template <class D> struct Bugsy : public SearchAlgorithm<D> {
 			navg(0),
 			herror(0),
 			derror(0),
+			herrlast(0),
+			derrlast(0),
 			useexpdelay(false),
 			avgdelay(0),
+			delaylast(0),
 			dropdups(false),
 			timeper(0.0),
+			timelast(0.0),
 			nextresort(Resort1),
 			nresort(0),
 			closed(30000001) {
@@ -127,10 +131,12 @@ template <class D> struct Bugsy : public SearchAlgorithm<D> {
 		closed.clear();
 		delete nodes;
 		timeper = 0.0;
+		timelast = 0.0;
 		nresort = 0;
 		nextresort = Resort1;
 		navg = 0;
-		herror = derror = 0;
+		herror = herrlast = derror = derrlast = 0;
+		avgdelay = delaylast = 0;
 		nodes = new Pool<Node>();
 	}
 
@@ -272,26 +278,32 @@ private:
 	// compututil computes the utility value of the given node
 	// using corrected estimates of d and h.
 	void computeutil(Node *n) {
+		if (!resort) {
+			derrlast = derror;
+			herrlast = herror;
+			avgdelay = delaylast;
+			timelast = timeper;
+		}
 		double d = usedlms ? evallms(n, dcoeffs) : n->d;
 		if (usedhat)
-			d /= (1 - derror);
+			d /= (1 - derrlast);
 
 		double h = usehlms ? evallms(n, hcoeffs) : n->h;
 		if (usehhat) {
 			if (interph) {
-				double hhat = h + d*herror;
+				double hhat = h + d*herrlast;
 				double w = wf/(wf+wt);
 				h = n->h*w + hhat*(1-w);
 			} else {
-				h += d * herror;
+				h += d * herrlast;
 			}
 		}
 
-		if (useexpdelay && avgdelay > 0)
-			d *= avgdelay;
+		if (useexpdelay && delaylast > 0)
+			d *= delaylast;
 
 		double f = h + n->g;
-		n->t = timeper * d;
+		n->t = timelast * d;
 		n->u = -(wf * f + wt * n->t);
 	}
 
@@ -310,6 +322,10 @@ private:
 			return;
 		nextresort *= 2;
 		nresort++;
+		herrlast = herror;
+		derrlast = derror;
+		delaylast = avgdelay;
+		timelast = timeper;
 		for (int i = 0; i < open.size(); i++)
 			computeutil(open.at(i));
 		open.reinit();
@@ -358,6 +374,10 @@ private:
 	bool usehhat, usedhat;
 	unsigned long navg;
 	double herror, derror;
+	// Herrlast and derrlast are the h and d errors at
+	// the last re-sort.  These are used to order nodes
+	// until the next resort.
+	double herrlast, derrlast;
 
 	// interph — when using heuristic correction,
 	// interpolate between h and hhat depending
@@ -367,11 +387,16 @@ private:
 	// expansion delay
 	bool useexpdelay;
 	double avgdelay;
+	// Delaylast is the expansion delay at the last resort,
+	// it is used to order nodes until the next resort.
+	double delaylast;
 
 	bool dropdups;
 
 	// for nodes-per-second estimation
 	double timeper, last;
+	// Timelast is the time per expansion at the last resort.
+	double timelast;
 
 	// for resorting the open list
 	unsigned long nextresort;
