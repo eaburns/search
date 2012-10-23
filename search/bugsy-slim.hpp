@@ -37,9 +37,9 @@ template <class D> struct Bugsy_slim : public SearchAlgorithm<D> {
 	};
 
 	Bugsy_slim(int argc, const char *argv[]) :
-			SearchAlgorithm<D>(argc, argv), avgdelay(0),
-			timeper(0.0), nextresort(Resort1), nresort(0),
-			closed(30000001) {
+			SearchAlgorithm<D>(argc, argv), lastdelay(0), avgdelay(0),
+			timeper(0.0), lasttime(0.0), lastexpd(0),
+			nextresort(Resort1), nresort(0), closed(30000001) {
 		wf = wt = -1;
 		for (int i = 0; i < argc; i++) {
 			if (i < argc - 1 && strcmp(argv[i], "-wf") == 0)
@@ -62,7 +62,7 @@ template <class D> struct Bugsy_slim : public SearchAlgorithm<D> {
 
 	void search(D &d, typename D::State &s0) {
 		this->start();
-		last = walltime();
+		lasttime = walltime();
 		closed.init(d);
 		Node *n0 = init(d, s0);
 		closed.add(n0);
@@ -76,7 +76,6 @@ template <class D> struct Bugsy_slim : public SearchAlgorithm<D> {
 				break;
 			}
 			expand(d, n, state);
-			updatetime();
 			updateopen();
 		}
 
@@ -89,6 +88,9 @@ template <class D> struct Bugsy_slim : public SearchAlgorithm<D> {
 		closed.clear();
 		delete nodes;
 		timeper = 0.0;
+		lastexpd = 0;
+		avgdelay = 0;
+		lastdelay = 0;
 		nresort = 0;
 		nextresort = Resort1;
 		nodes = new Pool<Node>();
@@ -184,16 +186,8 @@ private:
 	// compututil computes the utility value of the given node
 	// using corrected estimates of d and h.
 	void computeutil(Node *n) {
-		n->t = timeper * (avgdelay <= 0 ? 1 : avgdelay) * n->d;
+		n->t = timeper * (lastdelay <= 0 ? 1 : lastdelay) * n->d;
 		n->u = -(wf * (n->h + n->g) + wt * n->t);
-	}
-
-	// updatetime runs a simple state machine (from Wheeler's BUGSY
-	// implementation) that estimates the node expansion rate.
-	void updatetime() {
-		double t = walltime() - last;
-		timeper = timeper + (t - timeper)/this->res.expd;
-		last = walltime();
 	}
 
 	// updateopen updates the utilities of all nodes on open and
@@ -201,21 +195,43 @@ private:
 	void updateopen() {
 		if (this->res.expd < nextresort)
 			return;
+
+		double t = walltime();
+		timeper = (t - lasttime) / (this->res.expd - lastexpd);
+		lasttime = t;
+		lastexpd = this->res.expd;
+
+		lastdelay = avgdelay;
+
 		nextresort *= 2;
 		nresort++;
-		for (int i = 0; i < open.size(); i++)
+		reinitheap();
+	}
+
+	// Reinitheap reinitialize the heap property in O(n)
+	// time while also updating the utilities.
+	void reinitheap() {
+		if (open.size() <= 0)
+			return;
+
+		for (long i = open.size()-1; i > (long) open.size()/2; i--) 
 			computeutil(open.at(i));
-		open.reinit();
+
+		for (long i = (long) open.size()/2; i >= 0; i--) {
+			computeutil(open.at(i));
+			open.pushdown(i);
+		}
 	}
 
 	// wf and wt are the cost and time weight respectively.
 	double wf, wt;
 
 	// expansion delay
-	double avgdelay;
+	double lastdelay, avgdelay;
 
 	// for nodes-per-second estimation
-	double timeper, last;
+	double timeper, lasttime;
+	long lastexpd;
 
 	// for resorting the open list
 	unsigned long nextresort;
