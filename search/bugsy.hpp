@@ -58,8 +58,9 @@ template <class D> struct Bugsy : public SearchAlgorithm<D> {
 			avgdelay(0),
 			delaylast(0),
 			dropdups(false),
+			lasttime(0.0),
 			timeper(0.0),
-			timelast(0.0),
+			lastnodes(0),
 			nextresort(Resort1),
 			nresort(0),
 			closed(30000001) {
@@ -104,7 +105,7 @@ template <class D> struct Bugsy : public SearchAlgorithm<D> {
 
 	void search(D &d, typename D::State &s0) {
 		this->start();
-		last = walltime();
+		lasttime = walltime();
 		closed.init(d);
 		Node *n0 = init(d, s0);
 		closed.add(n0);
@@ -118,7 +119,6 @@ template <class D> struct Bugsy : public SearchAlgorithm<D> {
 				break;
 			}
 			expand(d, n, state);
-			updatetime();
 			updateopen();
 		}
 
@@ -131,7 +131,7 @@ template <class D> struct Bugsy : public SearchAlgorithm<D> {
 		closed.clear();
 		delete nodes;
 		timeper = 0.0;
-		timelast = 0.0;
+		lastnodes = 0;
 		nresort = 0;
 		nextresort = Resort1;
 		navg = 0;
@@ -282,7 +282,13 @@ private:
 			derrlast = derror;
 			herrlast = herror;
 			avgdelay = delaylast;
-			timelast = timeper;
+
+			// Update time for each expansion if we aren't resorting.
+			double t = walltime();
+			double dt = t - lasttime;
+			lastnodes++;
+			timeper += (dt - timeper)/this->res.expd;
+			lasttime = t;
 		}
 		double d = usedlms ? evallms(n, dcoeffs) : n->d;
 		if (usedhat)
@@ -303,16 +309,8 @@ private:
 			d *= delaylast;
 
 		double f = h + n->g;
-		n->t = timelast * d;
+		n->t = timeper * d;
 		n->u = -(wf * f + wt * n->t);
-	}
-
-	// updatetime runs a simple state machine (from Wheeler's BUGSY
-	// implementation) that estimates the node expansion rate.
-	void updatetime() {
-		double t = walltime() - last;
-		timeper = timeper + (t - timeper)/this->res.expd;
-		last = walltime();
 	}
 
 	// updateopen updates the utilities of all nodes on open and
@@ -325,7 +323,12 @@ private:
 		herrlast = herror;
 		derrlast = derror;
 		delaylast = avgdelay;
-		timelast = timeper;
+
+		double t = walltime();
+		timeper = (t-lasttime) / (this->res.expd - lastnodes);
+		lasttime = t;
+		lastnodes = this->res.expd;
+
 		for (int i = 0; i < open.size(); i++)
 			computeutil(open.at(i));
 		open.reinit();
@@ -393,10 +396,12 @@ private:
 
 	bool dropdups;
 
-	// for nodes-per-second estimation
-	double timeper, last;
-	// Timelast is the time per expansion at the last resort.
-	double timelast;
+	// Time-per-expansion estimation.
+	// Lasttime is the last time the estimate was made.
+	// Lastnodes is the expansion count at the last estimate.
+	// Timeper is the time-per-expansion at the last estimate.
+	double lasttime, timeper;
+	unsigned long lastnodes;
 
 	// for resorting the open list
 	unsigned long nextresort;
