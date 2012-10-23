@@ -14,7 +14,7 @@ template <class D> struct Bugsy_slim : public SearchAlgorithm<D> {
 	typedef typename D::Oper Oper;
 
 	struct Node : SearchNode<D> {
-		typename D::Cost h, d;
+		typename D::Cost h, d, f;
 		double u, t;
 
 		// The expansion count when this node was
@@ -26,6 +26,8 @@ template <class D> struct Bugsy_slim : public SearchAlgorithm<D> {
 				return a->u > b->u;
 			if (a->t != b->t)
 				return a->t < b->t;
+			if (a->f != b->f)
+				return a->f < b->f;
 			return a->g > b->g;
 		}
 	};
@@ -152,6 +154,7 @@ private:
 		kid->g = parent->g + e.cost;
 		kid->d = d.d(e.state);
 		kid->h = d.h(e.state);
+		kid->f = kid->g + kid->h;
 		kid->expct = this->res.expd;
 		Kidinfo kinfo(kid->g, kid->h, kid->d);
 
