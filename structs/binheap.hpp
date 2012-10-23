@@ -106,6 +106,23 @@ public:
 		reinit();
 	}
 
+	long pushdown(long i) {
+		long l = left(i), r = right(i);
+
+		long sml = i;
+		if (l < size() && Ops::pred(heap[l], heap[i]))
+			sml = l;
+		if (r < size() && Ops::pred(heap[r], heap[sml]))
+			sml = r;
+
+		if (sml != i) {
+			swap(sml, i);
+			return pushdown(sml);
+		}
+
+		return i;
+	}
+
 private:
 	friend bool binheap_push_test();
 	friend bool binheap_pop_test();
@@ -124,23 +141,6 @@ private:
 			swap(i, p);
 			return pullup(p);
 		}
-		return i;
-	}
-
-	long pushdown(long i) {
-		long l = left(i), r = right(i);
-
-		long sml = i;
-		if (l < size() && Ops::pred(heap[l], heap[i]))
-			sml = l;
-		if (r < size() && Ops::pred(heap[r], heap[sml]))
-			sml = r;
-
-		if (sml != i) {
-			swap(sml, i);
-			return pushdown(sml);
-		}
-
 		return i;
 	}
 

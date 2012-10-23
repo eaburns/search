@@ -329,9 +329,22 @@ private:
 		lasttime = t;
 		lastnodes = this->res.expd;
 
-		for (int i = 0; i < open.size(); i++)
+		reinitheap();
+	}
+
+	// Reinitheap reinitialize the heap property in O(n)
+	// time while also updating the utilities.
+	void reinitheap() {
+		if (open.size() <= 0)
+			return;
+
+		for (long i = open.size()-1; i > (long) open.size()/2; i--) 
 			computeutil(open.at(i));
-		open.reinit();
+
+		for (long i = (long) open.size()/2; i >= 0; i--) {
+			computeutil(open.at(i));
+			open.pushdown(i);
+		}
 	}
 
 	void initlms(unsigned int n, const char *wts, double coeffs[]) {
