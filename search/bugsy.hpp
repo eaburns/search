@@ -284,11 +284,13 @@ private:
 			avgdelay = delaylast;
 
 			// Update time for each expansion if we aren't resorting.
-			double t = walltime();
-			double dt = t - lasttime;
-			lastnodes++;
-			timeper += (dt - timeper)/this->res.expd;
-			lasttime = t;
+			if (this->res.expd > 0) {
+				double t = walltime();
+				double dt = t - lasttime;
+				lastnodes++;
+				timeper += (dt - timeper)/this->res.expd;
+				lasttime = t;
+			}
 		}
 		double d = usedlms ? evallms(n, dcoeffs) : n->d;
 		if (usedhat)
