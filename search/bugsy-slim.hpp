@@ -40,8 +40,8 @@ template <class D> struct Bugsy_slim : public SearchAlgorithm<D> {
 
 	Bugsy_slim(int argc, const char *argv[]) :
 			SearchAlgorithm<D>(argc, argv), lastdelay(0), avgdelay(0),
-			timeper(0.0), lasttime(0.0), lastexpd(0),
-			nextresort(Resort1), nresort(0), closed(30000001) {
+			timeper(0.0), lastexpd(0), nextresort(Resort1), nresort(0),
+			closed(30000001) {
 		wf = wt = -1;
 		for (int i = 0; i < argc; i++) {
 			if (i < argc - 1 && strcmp(argv[i], "-wf") == 0)
@@ -151,15 +151,21 @@ private:
 	Kidinfo considerkid(D &d, Node *parent, State &state, Oper op) {
 		Node *kid = nodes->construct();
 		typename D::Edge e(d, state, op);
+		kid->expct = this->res.expd;
 		kid->g = parent->g + e.cost;
 		kid->d = d.d(e.state);
+
+		if (kid->d < parent->d - Cost(1))
+			kid->d = parent->d - Cost(1);
+
 		kid->h = d.h(e.state);
+		if (kid->h < parent->h - e.cost)
+			kid->h = parent->h - e.cost;
+
 		kid->f = kid->g + kid->h;
-		kid->expct = this->res.expd;
 		Kidinfo kinfo(kid->g, kid->h, kid->d);
 
 		d.pack(kid->packed, e.state);
-
 		unsigned long hash = d.hash(kid->packed);
 		Node *dup = static_cast<Node*>(closed.find(kid->packed, hash));
 		if (dup) {
