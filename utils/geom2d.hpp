@@ -62,7 +62,7 @@ namespace geom2d {
 
 		// angle returns the angle to the point off of the positive x axis.
 		// The value is between 0 and 2π.
-		static double angle(const Pt &a) {	return a.angle(); }
+		static double angle(const Pt &a) { return a.angle(); }
 
 		// cwangle returns the clock-wise angle between the lines from
 		// u to v and v to w.
@@ -306,7 +306,7 @@ namespace geom2d {
 				return Pt::inf();
 			}
 			if (doubleeq(m, o.m)) {
-				if (!Line::contains(o.p0))
+				if (!Line::contains(o.p0) && !Line::contains(o.p1))
 					return Pt::inf();
 				if (within(o.p0))
 					return o.p0;
@@ -331,8 +331,12 @@ namespace geom2d {
 		}
 
 		// hits returns true if the two line segments intersect.
-		bool hits(const LineSg &l) const {
-			return bbox.hits(l.bbox) && !isect(l).isinf();
+		bool hits(const LineSg &o) const {
+			// Don't use bounding box if the slopes
+			// are infinite or zero…
+			if (doubleeq(m, 0) || doubleeq(o.m, 0) || isvertical() || o.isvertical())
+				return !isect(o).isinf();
+			return bbox.hits(o.bbox) && !isect(o).isinf();
 		}
 
 		// isvertical returns true if the line is a vertical line.

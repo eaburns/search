@@ -229,6 +229,31 @@ bool test_lineseg_along() {
 	return ok;
 }
 
+bool test_lineseg_hits() {
+	struct { double x00, y00, x01, y01, x10, y10, x11, y11; bool hit; } tst[] = {
+		// same line
+		{ 0, 0, 1, 0,
+		0.414214,1.11022e-16, 0.585786,1.11022e-16,
+		true },
+	};
+
+	bool ok = true;
+	for (unsigned int i = 0; i < sizeof(tst) / sizeof(tst[0]); i++) {
+		LineSg l0(Pt(tst[i].x00, tst[i].y00), Pt(tst[i].x01, tst[i].y01));
+		LineSg l1(Pt(tst[i].x10, tst[i].y10), Pt(tst[i].x11, tst[i].y11));
+
+		if (l0.hits(l1) != tst[i].hit) {
+			testpr("%g,%g → %g,%g; %g,%g → %g,%g hit=%d, shoud be %d\n",
+				tst[i].x00, tst[i].y00, tst[i].x01, tst[i].y01,
+				tst[i].x10, tst[i].y10, tst[i].x11, tst[i].y11,
+				!tst[i].hit, tst[i].hit);
+			ok = false;
+		}
+	}
+
+	return ok;
+}
+
 bool test_lineseg_isect() {
 	struct { double x00, y00, x01, y01, x10, y10, x11, y11, xi, yi; } tst[] = {
 		// same line

@@ -10,6 +10,7 @@ bool test_lineseg_midpt();
 bool test_lineseg_along();
 bool test_lineseg_length();
 bool test_lineseg_isect();
+bool test_lineseg_hits();
 bool test_poly_contains();
 bool test_poly_isects();
 bool test_poly_minisect();
@@ -31,6 +32,7 @@ static const Test tests[] = {
 	Test("lineseg along test", test_lineseg_along),
 	Test("lineseg length test", test_lineseg_length),
 	Test("lineseg isect test", test_lineseg_isect),
+	Test("lineseg hits test", test_lineseg_hits),
 	Test("poly contains test", test_poly_contains),
 	Test("poly isects test", test_poly_isects),
 	Test("poly minisect test", test_poly_minisect),
