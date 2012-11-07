@@ -28,6 +28,11 @@ template<typename Ops, typename Node, typename D> struct ClosedList {
 		nresize = 0;	// don't count the initial resize
 	}
 
+	~ClosedList() {
+		if (bins)
+			delete []bins;
+	}
+
 	void init(D &d) { dom = &d; }
 
 	void clear() {
