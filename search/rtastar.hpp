@@ -162,7 +162,7 @@ private:
 	// alpha pruned, depth-first search.
 	Cost look(D &d, State &state, Cost &alpha, Oper pop, Cost g, unsigned int left) {
 		Cost f = d.h(state) + g;
-		if (left == 0 || !better(f, alpha) || d.isgoal(state)) {
+		if (this->limit() || left == 0 || !better(f, alpha) || d.isgoal(state)) {
 			if (better(f, alpha))
 				alpha = f;
 			return f;
