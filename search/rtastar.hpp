@@ -68,8 +68,10 @@ template <class D> struct Rtastar : public SearchAlgorithm<D> {
 
 		this->finish();
 
-		if (this->res.ops.empty())	// deadend
+		if (!d.isgoal(cur.state)) {
+			this->res.ops.clear();
 			return;
+		}
 
 		// Rebuild the path from the operators to avoid storing very long
 		// paths as we go.
