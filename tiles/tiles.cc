@@ -5,6 +5,7 @@
 #include <cstdio>
 #include <ctime>
 #include <limits>
+#include <vector>
 
 bool Tiles::hashvecinit = false;
 unsigned long Tiles::hashvec[Ntiles][Ntiles];
@@ -17,6 +18,27 @@ Tiles::Tiles() {
 
 Tiles::Tiles(FILE *in) {
 	readruml(in);
+	initops();
+	if (!hashvecinit)
+		inithashvec();
+}
+
+/* this takes in as start and goal exactly those values read from an instance file */
+Tiles::Tiles(unsigned int w, unsigned int h, 
+	std::vector<unsigned int>& start, 
+	std::vector<unsigned int>& goal) {
+
+	if (!safe::can_mul(w, h))
+		fatal("The tiles board is too big");
+
+	if (w != Width && h != HEIGHT)
+		fatal("Width and height instance/compiler option mismatch");
+
+	for(unsigned int i = 0; i < Ntiles; i++) {
+		init[start[i]] = i;
+		goalpos[i] = goal[i];
+	}
+
 	initops();
 	if (!hashvecinit)
 		inithashvec();

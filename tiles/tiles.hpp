@@ -2,6 +2,7 @@
 
 #include <cstdio>
 #include <cassert>
+#include <vector>
 
 class Tiles {
 public:
@@ -22,6 +23,10 @@ public:
 
 	Tiles(FILE*);
 
+	/* this takes in as start and goal exactly those values read from an instance file */
+	Tiles(unsigned int, unsigned int,  std::vector<unsigned int>&,
+		std::vector<unsigned int>&);
+
 	static void dumptiles(FILE*, Tile []);
 
 	static unsigned long hash(Tile ts[], Pos b) {
@@ -32,7 +37,6 @@ public:
 			h ^= hashvec[i][ts[i]];
 		}
 		return h;
-
 	}
 
 	static unsigned long korf_hash(Tile ts[], Pos b) {

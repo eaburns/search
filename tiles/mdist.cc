@@ -1,8 +1,17 @@
 #include "mdist.hpp"
 #include <cstdlib>
 #include <limits>
+#include <vector>
 
 TilesMdist::TilesMdist(FILE *in) : Tiles(in) {
+	initmd();
+	initincr();
+}
+
+/* this takes in as start and goal exactly those values read from an instance file */
+TilesMdist::TilesMdist(unsigned int w, unsigned int h, 
+	std::vector<unsigned int>& start, std::vector<unsigned int>& goal) 
+	: Tiles(w,h,start,goal) {
 	initmd();
 	initincr();
 }

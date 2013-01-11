@@ -214,6 +214,10 @@ struct GridNav {
 		fprintf(out, "%u, %u\n", coord.first, coord.second);
 	}
 
+	void act(const State &state, const Oper &op) {
+		map->revealCells(state.loc);
+	}
+
 	// pathcost returns the cost of the given path.
 	Cost pathcost(const std::vector<State>&, const std::vector<Oper>&) const;
 

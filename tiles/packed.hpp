@@ -72,7 +72,7 @@ public:
 	}
 
 	Tiles::Pos unpack_md(const unsigned int md[][Ntiles], Tiles::Tile ts[], Tiles::Cost *hp) {
-		int b;
+		int b = -1;
 		Tiles::Cost h = 0;
 		boost::uint64_t w = word;
 		for (int i = Ntiles - 1; i >= 0; i--) {
