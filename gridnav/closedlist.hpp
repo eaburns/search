@@ -14,7 +14,7 @@ template<typename Ops, typename Node> struct ClosedList<Ops, Node, GridNav> {
 			nodes[i] = NULL;
 	}
 
-	~ClosedList() {
+	virtual ~ClosedList() {
 		delete[] nodes;
 	}
 
@@ -55,7 +55,7 @@ template<typename Ops, typename Node> struct ClosedList<Ops, Node, GridNav> {
 		dfpair(out, "closed list type", "%s", "array");
 	}
 
-private:
+protected:
 
 	unsigned long len, cap;
 	Node **nodes;
