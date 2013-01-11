@@ -28,7 +28,7 @@ template<typename Ops, typename Node, typename D> struct ClosedList {
 		nresize = 0;	// don't count the initial resize
 	}
 
-	~ClosedList() {
+	virtual ~ClosedList() {
 		if (bins)
 			delete []bins;
 	}
@@ -86,7 +86,7 @@ template<typename Ops, typename Node, typename D> struct ClosedList {
 		dfpair(out, key, "%lu", nbins);
 	}
 
-private:
+protected:
 
 	void add(Node *b[], unsigned int n, Node *e, unsigned long h) {
 		unsigned int i = h % n;
