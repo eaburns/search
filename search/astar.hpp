@@ -1,3 +1,4 @@
+#pragma once
 #include "../search/search.hpp"
 #include "../utils/pool.hpp"
 
