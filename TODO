@@ -1,3 +1,9 @@
+• Merge ClosedList and HashTable again:
+	ClosedList needs reference to domain to call
+	dom.hash, but HashTable uses Ops::hash.  We
+	should be able to handle both cases in one
+	implementation.
+
 • convert TODO to a todo.txt file?
 
 • rdb/addpath.sh: accept multiple
