@@ -1,7 +1,6 @@
 gridnav:\
 	gridnav/scenario_solver\
 	gridnav/gridnav_solver\
-	gridnav/unknowngridnav_solver\
 	gridnav/2poly\
 	gridnav/draw\
 	gridnav/mkseedinst\
@@ -41,18 +40,6 @@ gridnav/gridnav_solver:\
 
 include gridnav/main_gridnav.d
 CLEAN+=gridnav/gridnav_solver gridnav/main_gridnav.o
-
-gridnav/unknowngridnav_solver:\
-	$(GRIDNAVOBJS)\
-	gridnav/main_unknowngridnav.o\
-	utils/utils.a\
-	structs/structs.a\
-	search/search.a
-	@echo $@
-	@$(CXX) -static $^ $(LDFLAGS) -o $@
-
-include gridnav/main_unknowngridnav.d
-CLEAN+=gridnav/unknowngridnav_solver gridnav/main_unknowngridnav.o
 
 gridnav/2poly:\
 	$(GRIDNAVOBJS)\

@@ -1,7 +1,6 @@
 #include "gridmap.hpp"
 #include "gridnav.hpp"
 #include "../utils/utils.hpp"
-#include "closedlist.hpp"
 #include "../search/greedy.hpp"
 #include <cstring>
 

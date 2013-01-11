@@ -85,6 +85,76 @@ template<typename Ops, typename Node, typename D> struct ClosedList {
 		strcpy(key+strlen(prefix), "buckets");
 		dfpair(out, key, "%lu", nbins);
 	}
+	
+	Node* remove(PackedState &k) {
+		return remove(k, this->dom->hash(k)); 
+	}
+
+	Node* remove(PackedState &k, unsigned long h) {
+		unsigned int bindex = h % this->nbins;
+		Node* prev = this->bins[bindex];
+		Node *p = prev;
+		for ( ; p; p = Ops::closedentry(p).nxt) {
+			if (Ops::key(p) == k) break;
+			prev = p;
+		}
+
+		if(!p) return NULL;
+
+		this->fill--;
+		if(prev == p) { //head of the list
+			this->bins[bindex] = Ops::closedentry(p).nxt;
+		}
+		else { // middle or tail
+			Ops::closedentry(prev).nxt = Ops::closedentry(p).nxt;
+		}
+		return p;
+	}
+
+	struct iterator {
+		iterator() : done(false), bin(-1), elem(NULL) {}
+		bool done;
+		int bin;
+		Node* elem;
+	};
+
+	iterator* getIterator() const {
+		iterator* iter = new iterator();
+		for(unsigned int i = 0; i < this->nbins; i++) {
+			if(this->bins[i] != NULL) {
+				iter->done = false;
+				iter->elem = this->bins[i];
+				return iter;
+			}
+		}
+
+		iter->done = true;
+		return iter;
+	}
+
+	void advanceIterator(iterator* iter) const {
+		if(iter->done ||  iter->bin < 0 || iter->elem == NULL) return;
+
+		Node* p = Ops::closedentry(iter->elem).nxt;
+		if(p) {
+			iter->elem = p;
+			return;
+		}
+
+		for(unsigned int i = iter->bin+1; i < this->nbins; i++) {
+			if(this->bins[i] != NULL) {
+				iter->bin = i;
+				iter->elem = this->bins[i];
+				return;
+			}
+		}
+
+		iter->done = true;
+	}
+
+	void destroyIterator(iterator* iter) const { if(iter) delete iter; }
+
+	unsigned long getFill() const { return this->fill; }
 
 protected:
 

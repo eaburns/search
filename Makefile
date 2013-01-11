@@ -28,16 +28,15 @@ all: everything tests
 include utils/Make.inc
 include structs/Make.inc
 include search/Make.inc
-#include tiles/Make.inc
-#include pancake/Make.inc
-#include gridnav/Make.inc
-#include visnav/Make.inc
+include tiles/Make.inc
+include pancake/Make.inc
+include gridnav/Make.inc
+include visnav/Make.inc
 include plat2d/Make.inc
 include graphics/Make.inc
 include rdb/Make.inc
-#include drobot/Make.inc
-#include segments/Make.inc
-#include multi-level/Make.inc
+include drobot/Make.inc
+include segments/Make.inc
 
 everything: $(EVERYTHING)
 

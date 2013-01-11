@@ -9,7 +9,6 @@
 #include "arastar.hpp"
 #include "rtastar.hpp"
 #include "speediest.hpp"
-#include "lrtastar.hpp"
 #include <cstddef>
 #include <cstdio>
 
@@ -86,8 +85,6 @@ template<class D> SearchAlgorithm<D> *getsearch(int argc, const char *argv[]) {
 		return new Rtastar<D>(argc, argv);
 	else if (strcmp(argv[1], "speediest") == 0)
 		return new Speediest<D>(argc, argv);
-	else if (strcmp(argv[1], "lrtastar") == 0)
-		return new Lrtastar<D>(argc, argv);
 
 	fatal("Unknown algorithm: %s", argv[1]);
 	return NULL;	// Unreachable

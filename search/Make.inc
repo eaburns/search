@@ -67,3 +67,18 @@ search/learnh/hlms:\
 	@echo $@
 	@$(CXX) $(CXXFLAGS) $^ -llapack $(LDFLAGS) -o $@
 CLEAN+=search/learnh/hlms
+
+TESTS+=.search_test
+
+.search_test: ./search/test
+	./search/test ".*test" && touch $@
+
+CLEAN+=.search_test
+
+search/test:\
+	search/test_closedlist.cc\
+	search/test.cc\
+	utils/utils.a\
+	structs/structs.a
+	@echo $@
+	@$(CXX) $^ $(LDFLAGS) -o $@

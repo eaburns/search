@@ -1,4 +1,3 @@
-#include "closedlist.hpp"
 #include "scenario.hpp"
 #include <iostream>
 

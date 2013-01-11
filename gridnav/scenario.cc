@@ -1,7 +1,7 @@
 #include "scenario.hpp"
 #include "../utils/utils.hpp"
 #include "gridnav.hpp"
-#include "closedlist.hpp"
+#include "../search/closedlist.hpp"
 #include "../search/main.hpp"
 #include <iostream>
 #include <cmath>
