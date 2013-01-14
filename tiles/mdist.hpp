@@ -28,10 +28,6 @@ public:
 
 	TilesMdist(FILE*);
 
-	/* this takes in as start and goal exactly those values read from an instance file */
-	TilesMdist(unsigned int, unsigned int, std::vector<unsigned int>&,
-			std::vector<unsigned int>&);
-
 	State initialstate();
 
 	unsigned long hash(PackedState &p) {

@@ -8,14 +8,6 @@ TilesMdist::TilesMdist(FILE *in) : Tiles(in) {
 	initincr();
 }
 
-/* this takes in as start and goal exactly those values read from an instance file */
-TilesMdist::TilesMdist(unsigned int w, unsigned int h, 
-	std::vector<unsigned int>& start, std::vector<unsigned int>& goal) 
-	: Tiles(w,h,start,goal) {
-	initmd();
-	initincr();
-}
-
 TilesMdist::State TilesMdist::initialstate() {
 	State s;
 	s.h = 0;

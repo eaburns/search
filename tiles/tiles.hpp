@@ -2,7 +2,6 @@
 
 #include <cstdio>
 #include <cassert>
-#include <vector>
 
 class Tiles {
 public:
@@ -22,10 +21,6 @@ public:
 	Tiles();
 
 	Tiles(FILE*);
-
-	/* this takes in as start and goal exactly those values read from an instance file */
-	Tiles(unsigned int, unsigned int,  std::vector<unsigned int>&,
-		std::vector<unsigned int>&);
 
 	static void dumptiles(FILE*, Tile []);
 
