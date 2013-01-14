@@ -17,8 +17,8 @@ TILESSRC:=\
 
 CLEAN+=$(TILESSRC:.cc=.o)
 
-tiles/%md_solver: tiles/main_mdist.d
 tiles/%md_solver:\
+	tiles/main_mdist.d\
 	$(TILESSRC)\
 	tiles/main_mdist.cc\
 	utils/utils.a\
