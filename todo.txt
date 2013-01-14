@@ -1,5 +1,4 @@
 (A) DTA* +algorithms
-(A) LSS-LRTA* +algorithms
 (B) cost class to deal with infinity issues
 (B) dynamic robot pathfinding +domains
 (B) robot arm +domains
@@ -24,3 +23,4 @@ skip list +structs
 support -stdlib=libc++ on +clang
 topspin +domains
 towers of Hanoi +domains
+x 2012-01-14 (A) LSS-LRTA* +algorithms
