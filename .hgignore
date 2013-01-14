@@ -8,6 +8,8 @@ syntax: glob
 .structs_test
 .rdb_test
 .drobot_test
+.search_test
+search/test
 structs/test
 utils/test
 drobot/test
