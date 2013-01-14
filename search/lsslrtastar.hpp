@@ -71,7 +71,6 @@ template <class D> struct Lsslrtastar : public SearchAlgorithm<D> {
 		for (int i = 0; i < argc; i++) {
 			if (i < argc - 1 && strcmp(argv[i], "-lookahead") == 0)
 				lookahead = strtod(argv[++i], NULL);
-
 		}
 
 		if (lookahead < 1)
@@ -89,6 +88,10 @@ template <class D> struct Lsslrtastar : public SearchAlgorithm<D> {
 
 	void search(D &d, typename D::State &s0) {
 		this->start();
+		double startTime = walltime();
+		
+		unsigned long stepCount = 0;
+
 		lssclosed.init(d);
 
 		Node* start = init(d, s0);
@@ -107,7 +110,9 @@ template <class D> struct Lsslrtastar : public SearchAlgorithm<D> {
 
 			std::vector<Oper> partial;
 			Node* p = s_goal;
-
+			
+			emitTimes.push_back(walltime() - startTime);
+			stepCount++;
 			while(start != p) {
 				//or until the edge costs change?
 				assert(p->parent);
@@ -141,11 +146,16 @@ template <class D> struct Lsslrtastar : public SearchAlgorithm<D> {
 		}
 		std::reverse(this->res.ops.begin(), this->res.ops.end());
 		std::reverse(this->res.path.begin(), this->res.path.end());
+		
+		dfpair(stdout, "steps", "%lu", stepCount);
+		dfpair(stdout, "first emit time", "%f", emitTimes[0]);
+
+		dfpair(stdout, "average step time", "%f", (emitTimes.back() - emitTimes.front()) / (double) emitTimes.size());
+
 	}
 
 	virtual void output(FILE *out) {
 		SearchAlgorithm<D>::output(out);
-
 	}
 
 	virtual void reset() {
@@ -293,5 +303,5 @@ private:
 	unsigned int lookahead;
 	unsigned int iterationCount;
 	Node* foreverStart;
-
+	std::vector<double> emitTimes;
 };
