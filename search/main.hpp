@@ -8,6 +8,7 @@
 #include "bugsy-slim.hpp"
 #include "arastar.hpp"
 #include "rtastar.hpp"
+#include "lsslrtastar.hpp"
 #include <cstddef>
 #include <cstdio>
 
@@ -82,6 +83,8 @@ template<class D> SearchAlgorithm<D> *getsearch(int argc, const char *argv[]) {
 		return new ArastarMon<D>(argc, argv);
 	else if (strcmp(argv[1], "rtastar") == 0)
 		return new Rtastar<D>(argc, argv);
+	else if (strcmp(argv[1], "lsslrtastar") == 0)
+		return new Lsslrtastar<D>(argc, argv);
 
 	fatal("Unknown algorithm: %s", argv[1]);
 	return NULL;	// Unreachable
