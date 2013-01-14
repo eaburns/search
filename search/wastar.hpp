@@ -10,9 +10,35 @@ template <class D> struct Wastar : public SearchAlgorithm<D> {
 	typedef typename D::Cost Cost;
 	typedef typename D::Oper Oper;
 
-	struct Node : SearchNode<D> {
-		double f, fprime;
+	struct Node {
 
+		ClosedEntry<Node, D> closedent;
+		int openind;
+		Node *parent;
+		PackedState state;
+		Oper op, pop;
+		Cost f, g;
+		double fprime;
+
+		Node() : openind(-1) {
+		}
+
+		static ClosedEntry<Node, D> &closedentry(Node *n) {
+			return n->closedent;
+		}
+
+		static PackedState &key(Node *n) {
+			return n->state;
+		}
+
+		static void setind(Node *n, int i) {
+			n->openind = i;
+		}
+
+		static int getind(const Node *n) {
+			return n->openind;
+		}
+	
 		static bool pred(Node *a, Node *b) {
 			if (a->fprime == b->fprime) {
 				if (a->f == b->f)
@@ -20,7 +46,7 @@ template <class D> struct Wastar : public SearchAlgorithm<D> {
 				return a->f < b->f;
 			}
 			return a->fprime < b->fprime;
-		}
+		}	
 	};
 
 	Wastar(int argc, const char *argv[]) :
@@ -53,10 +79,10 @@ template <class D> struct Wastar : public SearchAlgorithm<D> {
 
 		while (!open.empty() && !SearchAlgorithm<D>::limit()) {
 			Node *n = *open.pop();
-			State buf, &state = d.unpack(buf, n->packed);
+			State buf, &state = d.unpack(buf, n->state);
 
 			if (d.isgoal(state)) {
-				SearchAlgorithm<D>::res.goal(d, n);
+				solpath<D, Node>(d, n, this->res);
 				break;
 			}
 
@@ -99,28 +125,33 @@ private:
 		Node *kid = nodes->construct();
 		typename D::Edge e(d, state, op);
 		kid->g = parent->g + e.cost;
-		d.pack(kid->packed, e.state);
+		d.pack(kid->state, e.state);
 
-		unsigned long hash = d.hash(kid->packed);
-		Node *dup = static_cast<Node*>(closed.find(kid->packed, hash));
+		unsigned long hash = d.hash(kid->state);
+		Node *dup = static_cast<Node*>(closed.find(kid->state, hash));
 		if (dup) {
 			this->res.dups++;
 			if (dropdups || kid->g >= dup->g) {
 				nodes->destruct(kid);
 				return;
 			}
-			if (dup->ind < 0)
+			if (dup->openind < 0)
 				this->res.reopnd++;
 			dup->fprime = dup->fprime - dup->g + kid->g;
 			dup->f = dup->f - dup->g + kid->g;
-			dup->update(kid->g, parent, op, e.revop);
-			open.pushupdate(dup, dup->ind);
+			dup->g = kid->g;
+			dup->parent = parent;
+			dup->op = op;
+			dup->pop = e.revop;
+			open.pushupdate(dup, dup->openind);
 			nodes->destruct(kid);
 		} else {
 			typename D::Cost h = d.h(e.state);
 			kid->f = kid->g + h;
 			kid->fprime = kid->g + wt * h;
-			kid->update(kid->g, parent, op, e.revop);
+			kid->parent = parent;
+			kid->op = op;
+			kid->pop = e.revop;
 			closed.add(kid, hash);
 			open.push(kid);
 		}
@@ -128,7 +159,7 @@ private:
 
 	Node *init(D &d, State &s0) {
 		Node *n0 = nodes->construct();
-		d.pack(n0->packed, s0);
+		d.pack(n0->state, s0);
 		n0->g = Cost(0);
 		typename D::Cost h = d.h(s0);
 		n0->f = h;
@@ -141,6 +172,6 @@ private:
 	bool dropdups;
 	double wt;
 	BinHeap<Node, Node*> open;
- 	ClosedList<SearchNode<D>, SearchNode<D>, D> closed;
+ 	ClosedList<Node, Node, D> closed;
 	Pool<Node> *nodes;
 };

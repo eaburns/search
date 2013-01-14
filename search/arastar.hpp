@@ -20,9 +20,33 @@ template <class D> struct Arastar : public SearchAlgorithm<D> {
 	typedef typename D::Cost Cost;
 	typedef typename D::Oper Oper;
 
-	struct Node : SearchNode<D> {
-		Cost h;
+	struct Node {
+		ClosedEntry<Node, D> closedent;
+		int openind;
+		Node *parent;
+		PackedState state;
+		Oper op, pop;
+		Cost g, h;
 		double fprime;
+
+		Node() : openind(-1) {
+		}
+
+		static ClosedEntry<Node, D> &closedentry(Node *n) {
+			return n->closedent;
+		}
+
+		static PackedState &key(Node *n) {
+			return n->state;
+		}
+
+		static void setind(Node *n, int i) {
+			n->openind = i;
+		}
+
+		static int getind(const Node *n) {
+			return n->openind;
+		}
 	
 		static bool pred(Node *a, Node *b) {
 			if (a->fprime == b->fprime)
@@ -32,18 +56,23 @@ template <class D> struct Arastar : public SearchAlgorithm<D> {
 	};
 	
 	struct Incons {
-		Incons(unsigned long szhint) : mem(szhint) { }
+		Incons(unsigned long szhint) : mem(szhint) {
+		}
 	
-		void init(D &d) { mem.init(d); }
+		void init(D &d) {
+			mem.init(d);
+		}
 	
 		void add(Node *n, unsigned long h) {
-			if (mem.find(n->packed, h) != NULL)
+			if (mem.find(n->state, h) != NULL)
 				return;
 			mem.add(n);
 			incons.push_back(n);
 		}
 	
-		std::vector<Node*> &nodes() { return incons; }
+		std::vector<Node*> &nodes() {
+			return incons;
+		}
 	
 		void clear() {
 			mem.clear();
@@ -51,7 +80,7 @@ template <class D> struct Arastar : public SearchAlgorithm<D> {
 		}
 	
 	private:
-	 	ClosedList<SearchNode<D>, SearchNode<D>, D> mem;
+	 	ClosedList<Node, Node, D> mem;
 		std::vector<Node*> incons;
 	};
 
@@ -162,11 +191,11 @@ protected:
 		bool goal = false;
 		while (!this->limit() && goodnodes()) {
 			Node *n = *open.pop();
-			State buf, &state = d.unpack(buf, n->packed);
+			State buf, &state = d.unpack(buf, n->state);
 
 			if (d.isgoal(state)) {
 				cost = (double) n->g;
-				this->res.goal(d, n);
+				solpath<D, Node>(d, n, this->res);
 				goal = true;
 			}
 
@@ -247,10 +276,10 @@ protected:
 		Node *kid = nodes->construct();
 		typename D::Edge e(d, state, op);
 		kid->g = parent->g + e.cost;
-		d.pack(kid->packed, e.state);
+		d.pack(kid->state, e.state);
 
-		unsigned long hash = d.hash(kid->packed);
-		Node *dup = static_cast<Node*>(closed.find(kid->packed, hash));
+		unsigned long hash = d.hash(kid->state);
+		Node *dup = static_cast<Node*>(closed.find(kid->state, hash));
 		if (dup) {
 			this->res.dups++;
 			if (kid->g >= dup->g) {
@@ -258,16 +287,21 @@ protected:
 				return;
 			}
 			dup->fprime = dup->fprime - dup->g + kid->g;
-			dup->update(kid->g, parent, op, e.revop);
-			if (dup->ind < 0)
+			dup->g = kid->g;
+			dup->parent = parent;
+			dup->op = op;
+			dup->pop = e.revop;
+			if (dup->openind < 0)
 				incons.add(dup, hash);
 			else
-				open.update(dup->ind);
+				open.update(dup->openind);
 			nodes->destruct(kid);
 		} else {
 			kid->h = d.h(e.state);
 			kid->fprime = (double) kid->g + wt * kid->h;
-			kid->update(kid->g, parent, op, e.revop);
+			kid->parent = parent;
+			kid->op = op;
+			kid->pop = e.revop;
 			closed.add(kid, hash);
 			open.push(kid);
 		}
@@ -275,7 +309,7 @@ protected:
 
 	Node *init(D &d, State &s0) {
 		Node *n0 = nodes->construct();
-		d.pack(n0->packed, s0);
+		d.pack(n0->state, s0);
 		n0->g = Cost(0);
 		n0->h = d.h(s0);
 		n0->fprime = wt * n0->h;
@@ -286,7 +320,7 @@ protected:
 
 	double wt0, dwt, wt;
 	BinHeap<Node, Node*> open;
- 	ClosedList<SearchNode<D>, SearchNode<D>, D> closed;
+ 	ClosedList<Node, Node, D> closed;
 	Incons incons;
 	Pool<Node> *nodes;
 
@@ -387,11 +421,11 @@ private:
 		bool goal = false;
 		while (!shouldstop() && !this->limit() && this->goodnodes()) {
 			Node *n = *this->open.pop();
-			State buf, &state = d.unpack(buf, n->packed);
+			State buf, &state = d.unpack(buf, n->state);
 
 			if (d.isgoal(state)) {
 				this->cost = (double) n->g;
-				this->res.goal(d, n);
+				solpath<D, Node>(d, n, this->res);
 				goal = true;
 			}
 

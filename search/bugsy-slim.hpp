@@ -13,13 +13,38 @@ template <class D> struct Bugsy_slim : public SearchAlgorithm<D> {
 	typedef typename D::Cost Cost;
 	typedef typename D::Oper Oper;
 
-	struct Node : SearchNode<D> {
-		typename D::Cost h, d, f;
+	struct Node {
+
+		ClosedEntry<Node, D> closedent;
+		int openind;
+		Node *parent;
+		PackedState state;
+		Oper op, pop;
+		Cost f, g, h, d;
 		double u, t;
 
 		// The expansion count when this node was
 		// generated.
 		unsigned long expct;
+
+		Node() : openind(-1) {
+		}
+
+		static ClosedEntry<Node, D> &closedentry(Node *n) {
+			return n->closedent;
+		}
+
+		static PackedState &key(Node *n) {
+			return n->state;
+		}
+
+		static void setind(Node *n, int i) {
+			n->openind = i;
+		}
+
+		static int getind(const Node *n) {
+			return n->openind;
+		}
 
 		static bool pred(Node *a, Node *b) {
 			if (a->u != b->u)
@@ -72,9 +97,9 @@ template <class D> struct Bugsy_slim : public SearchAlgorithm<D> {
 
 		while (!open.empty() && !SearchAlgorithm<D>::limit()) {
 			Node* n = *open.pop();
-			State buf, &state = d.unpack(buf, n->packed);
+			State buf, &state = d.unpack(buf, n->state);
 			if (d.isgoal(state)) {
-				SearchAlgorithm<D>::res.goal(d, n);
+				solpath<D, Node>(d, n, this->res);
 				break;
 			}
 			expand(d, n, state);
@@ -165,14 +190,16 @@ private:
 		kid->f = kid->g + kid->h;
 		Kidinfo kinfo(kid->g, kid->h, kid->d);
 
-		d.pack(kid->packed, e.state);
-		unsigned long hash = d.hash(kid->packed);
-		Node *dup = static_cast<Node*>(closed.find(kid->packed, hash));
+		d.pack(kid->state, e.state);
+		unsigned long hash = d.hash(kid->state);
+		Node *dup = closed.find(kid->state, hash);
 		if (dup) {
 			this->res.dups++;
 			nodes->destruct(kid);
 		} else {
-			kid->update(kid->g, parent, op, e.revop);
+			kid->parent = parent;
+			kid->op = op;
+			kid->pop = e.revop;
 			computeutil(kid);
 			closed.add(kid, hash);
 			open.push(kid);
@@ -182,7 +209,7 @@ private:
 
 	Node *init(D &d, State &s0) {
 		Node *n0 = nodes->construct();
-		d.pack(n0->packed, s0);
+		d.pack(n0->state, s0);
 		n0->g = Cost(0);
 		n0->d = d.d(s0);
 		computeutil(n0);
@@ -247,6 +274,6 @@ private:
 	unsigned int nresort;
 
 	BinHeap<Node, Node*> open;
- 	ClosedList<SearchNode<D>, SearchNode<D>, D> closed;
+ 	ClosedList<Node, Node, D> closed;
 	Pool<Node> *nodes;
 };

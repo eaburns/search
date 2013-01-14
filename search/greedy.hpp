@@ -8,14 +8,44 @@ template <class D, bool speedy = false> struct Greedy : public SearchAlgorithm<D
 	typedef typename D::Cost Cost;
 	typedef typename D::Oper Oper;
 
-	struct Node : SearchNode<D> {
-		Cost h;
+	struct Node {
+		ClosedEntry<Node, D> closedent;
+		int openind;
+		Node *parent;
+		PackedState state;
+		Oper op, pop;
+		Cost h, g;
 
-		static bool pred(Node *a, Node *b) { return a->h < b->h; }
+		Node() : openind(-1) {
+		}
 
-		static typename D::Cost prio(Node *n) { return n->h; }
+		static ClosedEntry<Node, D> &closedentry(Node *n) {
+			return n->closedent;
+		}
 
-		static typename D::Cost tieprio(Node *n) { return n->g; }
+		static PackedState &key(Node *n) {
+			return n->state;
+		}
+
+		static void setind(Node *n, int i) {
+			n->openind = i;
+		}
+
+		static int getind(const Node *n) {
+			return n->openind;
+		}
+	
+		static bool pred(Node *a, Node *b) {
+			return a->h < b->h;
+		}
+
+		static typename D::Cost prio(Node *n) {
+			return n->h;
+		}
+
+		static typename D::Cost tieprio(Node *n) {
+			return n->g;
+		}
 	};
 
 	Greedy(int argc, const char *argv[]) :
@@ -37,10 +67,10 @@ template <class D, bool speedy = false> struct Greedy : public SearchAlgorithm<D
 
 		while (!open.empty() && !SearchAlgorithm<D>::limit()) {
 			Node *n = open.pop();
-			State buf, &state = d.unpack(buf, n->packed);
+			State buf, &state = d.unpack(buf, n->state);
 
 			if (d.isgoal(state)) {
-				SearchAlgorithm<D>::res.goal(d, n);
+				solpath<D, Node>(d, n, this->res);
 				break;
 			}
 
@@ -82,17 +112,19 @@ private:
 		Node *kid = nodes->construct();
 		typename D::Edge e(d, state, op);
 		kid->g = parent->g + e.cost;
-		d.pack(kid->packed, e.state);
+		d.pack(kid->state, e.state);
 
-		unsigned long hash = d.hash(kid->packed);
-		SearchNode<D> *dup = closed.find(kid->packed, hash);
+		unsigned long hash = d.hash(kid->state);
+		Node *dup = closed.find(kid->state, hash);
 		if (dup) {
 			this->res.dups++;
 			nodes->destruct(kid);
 		} else {
 			kid->h = speedy ? d.d(e.state) : d.h(e.state);
 			assert ((double) kid->h >= 0);
-			kid->update(kid->g, parent, op, e.revop);
+			kid->parent = parent;
+			kid->op = op;
+			kid->pop = e.revop;
 			closed.add(kid, hash);
 			open.push(kid);
 		}
@@ -100,7 +132,7 @@ private:
 
 	Node *init(D &d, State &s0) {
 		Node *n0 = nodes->construct();
-		d.pack(n0->packed, s0);
+		d.pack(n0->state, s0);
 		n0->g = Cost(0);
 		n0->h = speedy ? d.d(s0) : d.h(s0);
 		n0->op = n0->pop = D::Nop;
@@ -109,6 +141,6 @@ private:
 	}
 
 	OpenList<Node, Node, Cost> open;
- 	ClosedList<SearchNode<D>, SearchNode<D>, D> closed;
+ 	ClosedList<Node, Node, D> closed;
 	Pool<Node> *nodes;
 };

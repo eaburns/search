@@ -86,73 +86,19 @@ private:
 	void timelimit(const char*);
 };
 
-// SearchNode is a structure that encapsulates information that
-// is shared between many search algorithms' node structures.
-// A SearchNode contains parent node and operator information
-// for constructing a solution path.  It also implements the operations
-// for a closed list and both a bucked and priority queue open list.
-template <class D> struct SearchNode {
-private:
-	ClosedEntry<SearchNode, D> closedent;
-
-public:
-	int ind;
-	typename D::PackedState packed;
-	typename D::Cost g;
-	typename D::Oper op;
-	typename D::Oper pop;
-	SearchNode *parent;
-
-	SearchNode() : ind(-1) { }
-
-	// setind sets index field to the given value.
-	static void setind(SearchNode *n, int i) { n->ind = i; }
-	
-	// getind returns the value of the index field.
-	static int getind(SearchNode *n) { return n->ind; }
-
-	// entry returns a reference to the closed list entry of the
-	// given node.
-	static ClosedEntry<SearchNode, D> &closedentry(SearchNode *n) {
-		return n->closedent;
-	}
-
-	// key returns the hash table key value for the given node.
-	// The key is the packed state representation from the
-	// search domain.
-	static typename D::PackedState &key(SearchNode *n) {
-		return n->packed;
-	}
-
-	// update updates the g, parent, op and pop fields of
-	// the receiver to match that of another node.
-	void update(const SearchNode &other) {
-		g = other.g;
-		parent = other.parent;
-		op = other.op;
-		pop = other.pop;
-	}
-
-	// update updates the corresponding fields of the given node.
-	void update(const typename D::Cost &gval, SearchNode *parentptr,
-			const typename D::Oper &oper,
-			const typename D::Oper &poper) {
-		g = gval;
-		parent = parentptr;
-		op = oper;
-		pop = poper;
-	}
-};
-
 // An OpenList holds nodes and returns them ordered by some
 // priority.  The Ops class has a pred method which accepts
 // two Nodes and returns true if the 1st node is a predecessor
 // of the second.
 template <class Ops, class Node, class Cost> class OpenList {
 public:
-	const char *kind() { return "binary heap"; }
+	const char *kind() {
+		return "binary heap";
+	}
 
-	void push(Node *n) { heap.push(n); }
+	void push(Node *n) {
+		heap.push(n);
+	}
 
 	Node *pop() {
 		boost::optional<Node*> p = heap.pop();
@@ -161,20 +107,27 @@ public:
 		return *p;
 	}
 
-	void pre_update(Node *n) { }
+	void pre_update(Node *n) {
+	}
 
 	void post_update(Node *n) {
-		if (n->ind < 0)
+		if (Ops::getind(n) < 0)
 			heap.push(n);
 		else
 			heap.update(Ops::getind(n));
 	}
 
-	bool empty() { return heap.empty(); }
+	bool empty() {
+		return heap.empty();
+	}
 
-	bool mem(Node *n) { return n->ind != -1; }
+	bool mem(Node *n) {
+		return Ops::getind(n) != -1;
+	}
 
-	void clear() { heap.clear(); }
+	void clear() {
+		heap.clear();
+	}
 
 private:
 	struct Heapops {
@@ -303,19 +256,6 @@ template <class D> struct Result : public SearchStats {
 
 	Result() { }
 
-	// Sets the cost and solution path of the result to that of
-	// the given goal node.
-	void goal(D &d, SearchNode<D> *goal) {
-		ops.clear();
-		path.clear();
-		for (SearchNode<D> *n = goal; n; n = n->parent) {
-			typename D::State buf, &state = d.unpack(buf, n->packed);
-			path.push_back(state);
-			if (n->parent)
-				ops.push_back(n->op);
-		}
-	}
-
 	// output writes information to the given file in
 	// datafile format.
 	void output(FILE *f) {
@@ -331,6 +271,25 @@ template <class D> struct Result : public SearchStats {
 		SearchStats::add(other);
 	}
 };
+
+// Solpath fills in the path and ops fields of the given search result
+// by walking back the parent pointers from the given node.
+//
+// The Node type must have a parent field pointing to the preceeding
+// node on the solution path, an op field containing the operator that
+// generated the node, and a state field containing the packed state
+// representation.
+template <class D, class Node>
+void solpath(D &d, Node *goal, Result<D> &res) {
+	res.ops.clear();
+	res.path.clear();
+	for (Node *n = goal; n; n = n->parent) {
+		typename D::State buf, &state = d.unpack(buf, n->state);
+		res.path.push_back(state);
+		if (n->parent)
+			res.ops.push_back(n->op);
+	}
+}
 
 template <class D> class SearchAlgorithm {
 public:

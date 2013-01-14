@@ -1,12 +1,9 @@
 #include "../search/search.hpp"
 #include "../utils/pool.hpp"
 
-// Astar_dump is like A* except that
-// it dumps information about nodes
-// on the solution path to the datafile.
-// This information can be useful for
-// learning heuristics from off-line
-// training instances.
+// Astar_dump is like A* except that it dumps information about nodes
+// on the solution path to the datafile. This information can be useful for
+// learning heuristics from off-line training instances.
 template <class D> struct Astar_dump : public SearchAlgorithm<D> {
 
 	typedef typename D::State State;
@@ -14,10 +11,33 @@ template <class D> struct Astar_dump : public SearchAlgorithm<D> {
 	typedef typename D::Cost Cost;
 	typedef typename D::Oper Oper;
 	
-	struct Node : SearchNode<D> {
-		Cost f, d, inedge;
+	struct Node {
+		ClosedEntry<Node, D> closedent;
+		int openind;
+		PackedState state;
+		Oper op, pop;
+		Cost f, g, d, inedge;
 		unsigned int depth;
-		Node *parentnode;
+		Node *parent;
+
+		Node() : openind(-1) {
+		}
+
+		static void setind(Node *n, int i) {
+			n->openind = i;
+		}
+		
+		static int getind(const Node *n) {
+			return n->openind;
+		}
+
+		static ClosedEntry<Node, D> &closedentry(Node *n) {
+			return n->closedent;
+		}
+
+		static PackedState &key(Node *n) {
+			return n->state;
+		}
 	
 		static bool pred(Node *a, Node *b) {
 			if (a->f == b->f)
@@ -25,9 +45,13 @@ template <class D> struct Astar_dump : public SearchAlgorithm<D> {
 			return a->f < b->f;
 		}
 
-		static Cost prio(Node *n) { return n->f; }
+		static Cost prio(Node *n) {
+			return n->f;
+		}
 
-		static Cost tieprio(Node *n) { return n->g; }
+		static Cost tieprio(Node *n) {
+			return n->g;
+		}
 	};
 
 	Astar_dump(int argc, const char *argv[]) :
@@ -49,10 +73,10 @@ template <class D> struct Astar_dump : public SearchAlgorithm<D> {
 
 		while (!open.empty() && !SearchAlgorithm<D>::limit()) {
 			Node *n = open.pop();
-			State buf, &state = d.unpack(buf, n->packed);
+			State buf, &state = d.unpack(buf, n->state);
 
 			if (d.isgoal(state)) {
-				SearchAlgorithm<D>::res.goal(d, n);
+				solpath<D, Node>(d, n, this->res);
 				dumpgoal(n);
 				break;
 			}
@@ -75,7 +99,7 @@ template <class D> struct Astar_dump : public SearchAlgorithm<D> {
 
 		double hstar = 0;
 		double dstar = 0;
-		for (Node *n = goal; n; n = n->parentnode) {
+		for (Node *n = goal; n; n = n->parent) {
 			dfrow(stdout, "path", "gggggg",
 				(double) n->g,
 				(double) n->f - n->g,
@@ -116,10 +140,10 @@ private:
 		kid->depth = parent->depth + 1;
 		kid->g = parent->g + e.cost;
 		kid->inedge = e.cost;
-		d.pack(kid->packed, e.state);
+		d.pack(kid->state, e.state);
 
-		unsigned long hash = d.hash(kid->packed);
-		Node *dup = static_cast<Node*>(closed.find(kid->packed, hash));
+		unsigned long hash = d.hash(kid->state);
+		Node *dup = closed.find(kid->state, hash);
 		if (dup) {
 			this->res.dups++;
 			if (kid->g >= dup->g) {
@@ -132,8 +156,11 @@ private:
 			dup->depth = kid->depth;
  			dup->inedge = kid->inedge;
 			dup->f = dup->f - dup->g + kid->g;
-			dup->parentnode = parent;
-			dup->update(kid->g, parent, op, e.revop);
+			dup->parent = parent;
+			dup->g = kid->g;
+			dup->parent = parent;
+			dup->op = op;
+			dup->pop = e.revop;
 			if (isopen) {
 				open.post_update(dup);
 			} else {
@@ -144,8 +171,9 @@ private:
 		} else {
 			kid->f = kid->g + d.h(e.state);
 			kid->d = d.d(e.state);
-			kid->parentnode = parent;
-			kid->update(kid->g, parent, op, e.revop);
+			kid->parent = parent;
+			kid->op = op;
+			kid->pop = e.revop;
 			closed.add(kid, hash);
 			open.push(kid);
 		}
@@ -153,7 +181,7 @@ private:
 
 	Node *init(D &d, State &s0) {
 		Node *n0 = nodes->construct();
-		d.pack(n0->packed, s0);
+		d.pack(n0->state, s0);
 		n0->g = Cost(0);
 		n0->inedge = Cost(0);
 		n0->f = d.h(s0);
@@ -161,11 +189,11 @@ private:
 		n0->depth = 0;
 		n0->pop = n0->op = D::Nop;
 		n0->parent = NULL;
-		n0->parentnode = NULL;
+		n0->parent = NULL;
 		return n0;
 	}
 
 	OpenList<Node, Node, Cost> open;
- 	ClosedList<SearchNode<D>, SearchNode<D>, D> closed;
+ 	ClosedList<Node, Node, D> closed;
 	Pool<Node> *nodes;
 };

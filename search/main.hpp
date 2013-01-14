@@ -8,7 +8,6 @@
 #include "bugsy-slim.hpp"
 #include "arastar.hpp"
 #include "rtastar.hpp"
-#include "speediest.hpp"
 #include <cstddef>
 #include <cstdio>
 
@@ -63,10 +62,10 @@ template<class D> SearchAlgorithm<D> *getsearch(int argc, const char *argv[]) {
 
 	if (strcmp(argv[1], "idastar") == 0)
 		return new Idastar<D>(argc, argv);
-	else if (strcmp(argv[1], "astar-dump") == 0)
-		return new Astar_dump<D>(argc, argv);
 	else if (strcmp(argv[1], "astar") == 0)
 		return new Astar<D>(argc, argv);
+	else if (strcmp(argv[1], "astar-dump") == 0)
+		return new Astar_dump<D>(argc, argv);
 	else if (strcmp(argv[1], "wastar") == 0)
 		return new Wastar<D>(argc, argv);
 	else if (strcmp(argv[1], "greedy") == 0)
@@ -83,8 +82,6 @@ template<class D> SearchAlgorithm<D> *getsearch(int argc, const char *argv[]) {
 		return new ArastarMon<D>(argc, argv);
 	else if (strcmp(argv[1], "rtastar") == 0)
 		return new Rtastar<D>(argc, argv);
-	else if (strcmp(argv[1], "speediest") == 0)
-		return new Speediest<D>(argc, argv);
 
 	fatal("Unknown algorithm: %s", argv[1]);
 	return NULL;	// Unreachable
