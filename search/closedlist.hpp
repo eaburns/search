@@ -28,7 +28,7 @@ template<typename Ops, typename Node, typename D> struct ClosedList {
 		nresize = 0;	// don't count the initial resize
 	}
 
-	virtual ~ClosedList() {
+	~ClosedList() {
 		if (bins)
 			delete []bins;
 	}
@@ -112,59 +112,57 @@ template<typename Ops, typename Node, typename D> struct ClosedList {
 	}
 
 	struct iterator {
-		iterator() : done(false), bin(-1), elem(NULL) {}
-		bool done;
-		int bin;
-		Node* elem;
+		iterator() : done(true), bin(-1), elem(NULL), list(NULL) {}
+		iterator(Node* elem, int bin, const ClosedList* list)  : done(false), bin(bin), elem(elem), list(list) {}
+
+		Node* next() {
+			if(done ||  bin < 0 || elem == NULL) return NULL;
+
+			Node* retVal = elem;
+
+			Node* p = Ops::closedentry(elem).nxt;
+			if(p) {
+				elem = p;
+				return elem;
+			}
+
+			for(unsigned int i = bin+1; i < list->nbins; i++) {
+				if(list->bins[i] != NULL) {
+					bin = i;
+					elem = list->bins[i];
+					return retVal;
+				}
+			}
+
+			done = true;
+			elem = NULL;
+			return retVal;
+		}
+	
+		private: 
+			bool done;
+			int bin;
+			Node* elem;
+			const ClosedList *list;
 	};
 
-	iterator* getIterator() const {
-		iterator* iter = new iterator();
-		for(unsigned int i = 0; i < this->nbins; i++) {
-			if(this->bins[i] != NULL) {
-				iter->done = false;
-				iter->elem = this->bins[i];
-				return iter;
-			}
-		}
+	
 
-		iter->done = true;
-		return iter;
+	iterator begin() const {
+		for(unsigned int i = 0; i < nbins; i++)
+			if(bins[i] != NULL)
+				return iterator(bins[i], i, this);
+	
+		return iterator();
 	}
 
 	void advanceIterator(iterator* iter) const {
-		if(iter->done ||  iter->bin < 0 || iter->elem == NULL) return;
 
-		Node* p = Ops::closedentry(iter->elem).nxt;
-		if(p) {
-			iter->elem = p;
-			return;
-		}
-
-		for(unsigned int i = iter->bin+1; i < this->nbins; i++) {
-			if(this->bins[i] != NULL) {
-				iter->bin = i;
-				iter->elem = this->bins[i];
-				return;
-			}
-		}
-
-		iter->done = true;
 	}
 
 	void destroyIterator(iterator* iter) const { if(iter) delete iter; }
 
 	unsigned long getFill() const { return this->fill; }
-
-protected:
-
-	void add(Node *b[], unsigned int n, Node *e, unsigned long h) {
-		unsigned int i = h % n;
-		if (b[i])
-			ncollide++;
-		Ops::closedentry(e).nxt = b[i];
-		b[i] = e;
-	}
 
 	void resize(unsigned int sz) {
 		Node **b = new Node*[sz];
@@ -183,6 +181,17 @@ protected:
 		bins = b;
 		nbins = sz;
 		nresize++;
+	}
+
+private:
+	friend struct iterator;
+
+	void add(Node *b[], unsigned int n, Node *e, unsigned long h) {
+		unsigned int i = h % n;
+		if (b[i])
+			ncollide++;
+		Ops::closedentry(e).nxt = b[i];
+		b[i] = e;
 	}
 
 	D *dom;

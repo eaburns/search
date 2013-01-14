@@ -6,6 +6,8 @@ bool closedlist_add_test();
 bool closedlist_find_test();
 bool closedlist_rm_test();
 bool closedlist_find_rand_test();
+bool closedlist_iter_test();
+bool closedlist_iter_test2();
 
 
 static const Test tests[] = {
@@ -13,6 +15,8 @@ static const Test tests[] = {
 	Test("closed list find test", closedlist_find_test),
 	Test("closed list rm test", closedlist_rm_test),
 	Test("closed list find rand test", closedlist_find_rand_test),
+	Test("closed list iter test (match values)", closedlist_iter_test),
+	Test("closed list iter test (match total after resize)", closedlist_iter_test2),
 };
 
 enum { Ntests = sizeof(tests) / sizeof(tests[0]) };

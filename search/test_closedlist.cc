@@ -138,3 +138,66 @@ bool closedlist_find_rand_test() {
 	return res;
 }
 
+bool closedlist_iter_test() {
+	bool res = true;
+
+	ClosedList<Ent, Ent, Ent> closed(1000);
+	Ent ents[N];
+
+	if (closed.getFill() != 0) {
+		testpr("Hash table fill is not initialized to zero\n");
+		res = false;
+	}
+
+	for (unsigned int i = 0; i < N; i++) {
+		ents[i] = Ent(i);
+		closed.add(ents + i);
+		if (closed.getFill() != i+1) {
+			testpr("Closed List fill is not %u after %u adds\n", i+1, i+1);
+			res = false;
+		}
+	}
+	ClosedList<Ent, Ent, Ent>::iterator iter = closed.begin();
+
+	for(unsigned int i = 0; i < N; i++) {
+		Ent* e = iter.next();
+		if(e->vl != i)
+			res = false;
+	}
+
+	if(iter.next() != NULL)
+		res = false;
+
+	return res;
+}
+
+bool closedlist_iter_test2() {
+	bool res = true;
+
+	ClosedList<Ent, Ent, Ent> closed(10);
+	Ent ents[N];
+
+	if (closed.getFill() != 0) {
+		testpr("Hash table fill is not initialized to zero\n");
+		res = false;
+	}
+
+	for (unsigned int i = 0; i < N; i++) {
+		ents[i] = Ent(i);
+		closed.add(ents + i);
+		if (closed.getFill() != i+1) {
+			testpr("Closed List fill is not %u after %u adds\n", i+1, i+1);
+			res = false;
+		}
+	}
+
+	unsigned int count = 0;
+
+	for(ClosedList<Ent, Ent, Ent>::iterator iter = closed.begin();
+		iter.next() != NULL; count++) {}
+
+	if(count != N)
+		res = false;
+
+	return res;
+}
