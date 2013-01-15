@@ -43,7 +43,7 @@ template <class D> struct Lsslrtastar : public SearchAlgorithm<D> {
 		static void setind(Node *n, int i) {
 			n->openind = i;
 		}
-	
+
 		static bool pred(const Node *a, const Node *b) {
 			if (a->f == b->f)
 				return a->g > b->g;
@@ -55,7 +55,7 @@ template <class D> struct Lsslrtastar : public SearchAlgorithm<D> {
 		static void setind(Node *n, int i) {
 			n->openind = i;
 		}
-	
+
 		static bool pred(const Node *a, const Node *b) {
 			return a->h < b->h;
 		}
@@ -88,7 +88,7 @@ template <class D> struct Lsslrtastar : public SearchAlgorithm<D> {
 	void search(D &d, typename D::State &s0) {
 		this->start();
 		double startTime = walltime();
-		
+
 		unsigned long stepCount = 0;
 
 		lssclosed.init(d);
@@ -109,7 +109,7 @@ template <class D> struct Lsslrtastar : public SearchAlgorithm<D> {
 
 			std::vector<Oper> partial;
 			Node* p = s_goal;
-			
+
 			emitTimes.push_back(walltime() - startTime);
 			stepCount++;
 			while(start != p) {
@@ -145,7 +145,7 @@ template <class D> struct Lsslrtastar : public SearchAlgorithm<D> {
 		}
 		std::reverse(this->res.ops.begin(), this->res.ops.end());
 		std::reverse(this->res.path.begin(), this->res.path.end());
-		
+
 		dfpair(stdout, "steps", "%lu", stepCount);
 		dfpair(stdout, "first emit time", "%f", emitTimes[0]);
 
@@ -235,8 +235,7 @@ private:
 					seen.add(kid, hash);
 					lssopen.push(kid);
 
-					//TODO: keep only best goal
-					if(d.isgoal(edge.state)) {
+					if(d.isgoal(edge.state) && (goal == NULL || kid->g < goal->g)) {
 						goal = kid;
 					}
 				}
@@ -251,12 +250,12 @@ private:
 
 		return *lssopen.front();
 	}
-	
+
 	void dijkstra(D& d) {
 		iterationCount++;
 
 		BinHeap<HSort, Node*> open;
-	
+
 		open.append(lssopen.data());
 
 		while(lssclosed.getFill() > 0) {
@@ -279,7 +278,7 @@ private:
 					p->iterationCount = iterationCount;
 					p->h = std::numeric_limits<double>::infinity();
 				}
-				
+
 				double newH = s->h + pred[i].cost;
 				if(inClosed && p->h > newH) {
 					p->h = newH;
