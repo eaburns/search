@@ -11,7 +11,6 @@ template <class D> struct Lsslrtastar : public SearchAlgorithm<D> {
 	typedef typename D::Operators Operators;
 	typedef typename D::Edge Edge;
 
-
 	struct Node;
 
 	struct predecessor {
@@ -169,12 +168,12 @@ private:
 		lssclosed.clear();
 		lssopen.clear();
 
-		s_start->g = 0;
-
 		Node* goal = NULL;
 
 		s_start->parent = NULL;
 		s_start->iterationCount = iterationCount;
+		s_start->g = 0;
+
 		lssopen.push(s_start);
 
 		for(unsigned int exp = 0; exp < lookahead && !lssopen.empty(); exp++) {
@@ -188,7 +187,8 @@ private:
 			State buf, &state = d.unpack(buf, s->state);
 
 			unsigned long hash = d.hash(s->state);
-			if(lssclosed.find(s->state, hash) != NULL) {
+
+			if(!lssclosed.find(s->state, hash)) {
 				lssclosed.add(s, hash);
 			}
 
@@ -202,6 +202,7 @@ private:
 
 				unsigned long hash = d.hash(kid->state);
 				Node *dup = seen.find(kid->state, hash);
+				double newG = s->g + edge.cost;
 
 				if(dup) {
 					nodes->destruct(kid);
@@ -212,35 +213,36 @@ private:
 						kid->predecessors.clear();
 						kid->openind = -1;
 					}
+
+					if(kid->g > newG) {
+						kid->g = newG;
+						kid->parent = s;
+						kid->f = kid->g + kid->h;
+						kid->op = ops[i];
+						kid->pop = edge.revop;
+
+						lssopen.pushupdate(kid, kid->openind);
+					}
 				}
 				else {
-					kid->g = std::numeric_limits<double>::infinity();
-					kid->h = d.h(edge.state);
-
-					seen.add(kid, hash);
-					
-					if(d.isgoal(edge.state)) {
-						goal = kid;
-					}
-
-					//other updates should be guaranteed to occur below
-				}
-
-				kid->iterationCount = iterationCount;
-				kid->predecessors.emplace_back(s, edge.cost);
-
-				double newG = s->g + edge.cost;
-
-				if(std::isinf(kid->g) || kid->g > newG) {
-
 					kid->g = newG;
+					kid->h = d.h(edge.state);
 					kid->parent = s;
 					kid->f = kid->g + kid->h;
 					kid->op = ops[i];
 					kid->pop = edge.revop;
 
-					lssopen.pushupdate(kid, kid->openind);
+					seen.add(kid, hash);
+					lssopen.push(kid);
+
+					//TODO: keep only best goal
+					if(d.isgoal(edge.state)) {
+						goal = kid;
+					}
 				}
+
+				kid->iterationCount = iterationCount;
+				kid->predecessors.emplace_back(s, edge.cost);
 			}
 		}
 
@@ -258,6 +260,7 @@ private:
 		open.append(lssopen.data());
 
 		while(lssclosed.getFill() > 0) {
+
 			Node* s = *open.pop();
 
 			unsigned long hash = d.hash(s->state);
@@ -278,7 +281,7 @@ private:
 				}
 				
 				double newH = s->h + pred[i].cost;
-				if(newH > p->h) {
+				if(inClosed && p->h > newH) {
 					p->h = newH;
 					open.pushupdate(p, p->openind);
 				}
