@@ -15,6 +15,6 @@ for path in $($withattrs $root  type=instance); do
 	if test -e $hpath; then
 		continue
 	fi
-	echo -n "$path\n\t"
+	echo -n "$hpath\n\t"
 	$makeh $hpath < $path
 done
