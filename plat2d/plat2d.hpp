@@ -36,7 +36,10 @@ struct Plat2d {
 	typedef int Oper;
 	enum { Nop = -1 };
 
-	Plat2d(FILE*);
+	// Plat2d constructs a new Plat2d domain from an instance file.  If the
+	// vgfile parameter is non-NULL then the visibility graph used for
+	// the heuristic is loaded from the given file, otherwise it is computed.
+	Plat2d(FILE* inst, FILE *vgfile=NULL);
 
 	~Plat2d();
 
@@ -187,7 +190,9 @@ private:
 		static bool pred(const Node *a, const Node *b) { return a->d < b->d; }
 	};
 
-	void initvg();
+
+	void initheuristic(FILE*);
+	VisGraph *mkvisgraph();
 
 	Cost hvis(const State &s) const {
 		const Lvl::Blkinfo &bi = lvl.majorblk(s.player.body.bbox);
@@ -236,10 +241,12 @@ private:
 	// to the given file.;
 	void drawmap(const char*) const;
 
-	VisGraph *vg;
-	std::vector<long> centers;
 	std::vector<Node> togoal;
 	int gcenter;	// vertex ID of the goal center
 	double gleft, gright, gtop, gbottom;
+
+public:
+	std::vector<long> centers;
+	VisGraph *vg;
 }; 
 

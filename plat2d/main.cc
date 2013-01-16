@@ -5,7 +5,7 @@
 #include <cstdio>
 #include <cerrno>
 
-const char *lvl = NULL;
+static const char *lvl, *vg;
 
 static void parseargs(int, const char*[]);
 
@@ -21,7 +21,15 @@ int main(int argc, const char *argv[]) {
 		dfpair(stdout, "level", "%s", lvl);
 	}
 
-	Plat2d d(infile);
+	FILE *vgfile = NULL;
+	if (vg) {
+		vgfile = fopen(vg, "r");
+		if (!vgfile)
+			fatalx(errno, "Failed to open %s for reading", vg);
+		dfpair(stdout, "visibility graph loaded from", "%s", vg);
+	}
+
+	Plat2d d(infile, vgfile);
 	if (infile != stdin)
 		fclose(infile);
 
@@ -35,5 +43,7 @@ static void parseargs(int argc, const char *argv[]) {
 	for (int i = 1; i < argc; i++) {
 		if (i < argc - 1 && strcmp(argv[i], "-lvl") == 0)
 			lvl = argv[++i];
+		else if (i < argc - 1 && strcmp(argv[i], "-vg") == 0)
+			vg = argv[++i];
 	}
 }

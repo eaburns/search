@@ -1,12 +1,11 @@
-(A) DTA* +algorithms
 (A) 2013-01-14 f-LRTA* +algorithms
+(A) DTA* +algorithms
 (B) cost class to deal with infinity issues
 (B) dynamic robot pathfinding +domains
 (B) robot arm +domains
 (C) accept multiple arguments in rdb/addpath.sh
 (D) change fatal to be an exception +utils
 (D) fix segfault that sometimes occurs in fatal +utils
-(D) in the +plat2d heuristic, don't consider going up longer than you can jump
 (D) merge closed list and hash table:  ClosedList needs reference to domain to call dom.hash, but HashTable uses Ops::hash.  We should be able to handle both cases in one implementation.
 (E) unit +test Steve's safeops +utils
 Explicit Estimation Search +algorithms
@@ -18,12 +17,13 @@ draw the solution path and expanded nodes in +plat2d
 linear conflicts heuristic +tiles
 multiple sequence alignment +domains
 packed >15 puzzle states +tiles
+pre-compute visgraphs for +plat2d (-heuristic option?)
 red-black tree +structs
+render only tiles on the screen in plat2d/play +plat2d
 roadmap pathfinding +domains
 skip list +structs
 support -stdlib=libc++ on +clang
 topspin +domains
 towers of Hanoi +domains
 x 2013-01-14 (A) LSS-LRTA* +algorithms
-render only tiles on the screen in plat2d/play +plat2d
-pre-compute visgraphs for +plat2d (-heuristic option?)
+x 2013-01-16 (D) in the +plat2d heuristic, don't consider going up longer than you can jump

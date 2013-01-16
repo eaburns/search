@@ -12,7 +12,7 @@ const unsigned int Plat2d::Operators::Ops[] = {
 
 const unsigned int Plat2d::Operators::Nops = sizeof(Ops) / sizeof(Ops[0]);
 
-Plat2d::Plat2d(FILE *in) : lvl(in) {
+Plat2d::Plat2d(FILE *in, FILE *vgfile) : lvl(in) {
 	gx = x0 = lvl.width();
 	gy = y0 = lvl.height();
 	for (unsigned int x = 0; x < lvl.width(); x++) {
@@ -41,7 +41,7 @@ Plat2d::Plat2d(FILE *in) : lvl(in) {
 	gtop = gy * H;
 	gbottom = (gy + 1) * H;
 
-	initvg();
+	initheuristic(vgfile);
 }
 
 Plat2d::~Plat2d() {
@@ -53,30 +53,20 @@ Plat2d::State Plat2d::initialstate() {
 		0, Player::Width, Player::Height);
 }
 
-void Plat2d::initvg() {
+void Plat2d::initheuristic(FILE *vgfile) {
 	double strt = walltime();
-	bool *blkd = new bool[lvl.width() * lvl.height()];
-	for (unsigned int i = 0; i < lvl.width() * lvl.height(); i++)
-		blkd[i] = false;
-	for (unsigned int i = 0; i < lvl.width(); i++) {
-	for (unsigned int j = 0; j < lvl.height(); j++)
-		blkd[i * lvl.height() + j] = lvl.blocked(i, j);
+
+	if (vgfile) {
+		vg = new VisGraph(vgfile);
+		for (unsigned int i = 0; i < lvl.width() * lvl.height(); i++) {
+			long ind;
+			if (fscanf(vgfile, " %ld", &ind) != 1)
+				fatalx(errno, "Failed to read the %uth center index\n", i);
+			centers.push_back(ind);
+		}
+	} else {
+		vg = mkvisgraph();
 	}
-
-	vg = new VisGraph(PolyMap(blkd, lvl.width(), lvl.height()));
-	delete[]blkd;
-
-	for (unsigned int i = 0; i < lvl.width() * lvl.height(); i++) {
-		unsigned int x = i / lvl.height();
-		unsigned int y = i % lvl.height();
-		geom2d::Pt pt(x + 0.5, y + 0.5);
-		if (!vg->map.obstructed(pt))
-			centers.push_back(vg->add(pt));
-		else
-			centers.push_back(-1);
-	}
-
-	vg->scale(W, H);
 
 	togoal.resize(vg->verts.size());
 	for (unsigned int i = 0; i < vg->verts.size(); i++) {
@@ -110,7 +100,36 @@ void Plat2d::initvg() {
 		}
 	}
 	drawmap("vismap.eps");
-	dfpair(stdout, "visibility graph time", "%g", walltime() - strt);
+	if (vgfile)
+		dfpair(stdout, "visibility graph time (loaded)", "%g", walltime() - strt);
+	else
+		dfpair(stdout, "visibility graph time", "%g", walltime() - strt);
+}
+
+VisGraph *Plat2d::mkvisgraph() {
+	bool *blkd = new bool[lvl.width() * lvl.height()];
+	for (unsigned int i = 0; i < lvl.width() * lvl.height(); i++)
+		blkd[i] = false;
+	for (unsigned int i = 0; i < lvl.width(); i++) {
+	for (unsigned int j = 0; j < lvl.height(); j++)
+		blkd[i * lvl.height() + j] = lvl.blocked(i, j);
+	}
+
+	vg = new VisGraph(PolyMap(blkd, lvl.width(), lvl.height()));
+	delete[]blkd;
+
+	for (unsigned int i = 0; i < lvl.width() * lvl.height(); i++) {
+		unsigned int x = i / lvl.height();
+		unsigned int y = i % lvl.height();
+		geom2d::Pt pt(x + 0.5, y + 0.5);
+		if (!vg->map.obstructed(pt))
+			centers.push_back(vg->add(pt));
+		else
+			centers.push_back(-1);
+	}
+
+	vg->scale(W, H); 
+	return vg;
 }
 
 void Plat2d::drawmap(const char *file) const {

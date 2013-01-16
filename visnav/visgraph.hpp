@@ -12,8 +12,7 @@ struct VisGraph {
 
 	VisGraph(FILE*);
 
-	// output writes the visibility graph to the
-	// given file.
+	// output writes the visibility graph to the given file.
 	void output(FILE*) const;
 
 	// dumpvertlocs writes the location of each vertex
