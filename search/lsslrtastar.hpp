@@ -184,6 +184,7 @@ private:
 		s_start->parent = NULL;
 		s_start->iterationCount = iterationCount;
 		s_start->g = 0;
+		s_start->pop = D::Nop;
 
 		lssopen.push(s_start);
 
