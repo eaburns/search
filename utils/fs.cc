@@ -7,7 +7,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-enum { MaxLine = 16384 };
+enum { MaxLine = 1048576 };	// Gigantic lines, but whatever…
 
 static const char *sepstr = "/";
 static const char sepchar = sepstr[0];
