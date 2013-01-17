@@ -86,6 +86,7 @@ template <class D> struct Lsslrtastar : public SearchAlgorithm<D> {
 	}
 
 	void search(D &d, typename D::State &s0) {
+
 		this->start();
 		double startTime = walltime();
 
@@ -149,6 +150,16 @@ template <class D> struct Lsslrtastar : public SearchAlgorithm<D> {
 		dfpair(stdout, "steps", "%lu", stepCount);
 		dfpair(stdout, "first emit time", "%f", emitTimes[0]);
 
+
+		double minEmit =  emitTimes.front();
+		double maxEmit = emitTimes.front();
+		for(unsigned int i = 1; i < emitTimes.size(); i++) {
+			double stepTime = emitTimes[i] - emitTimes[i-1];
+			if(stepTime < minEmit) minEmit = stepTime;
+			if(stepTime > maxEmit) maxEmit = stepTime;
+		}
+		dfpair(stdout, "min step time", "%f", minEmit);
+		dfpair(stdout, "max step time", "%f", maxEmit);
 		dfpair(stdout, "average step time", "%f", (emitTimes.back() - emitTimes.front()) / (double) emitTimes.size());
 
 	}
