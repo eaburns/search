@@ -36,6 +36,7 @@ visnav/pbm2poly
 plat2d/draw
 plat2d/watch
 plat2d/2poly
+plat2d/makeh
 graphics/test
 search/anyprof/mkprof
 search/anyprof/sptcounts
