@@ -263,6 +263,7 @@ struct DockRobot {
 	struct Edge {
 		Cost cost;
 		Oper revop;
+		Cost revcost;
 		State &state;
 
 		Cost oldh, oldd;

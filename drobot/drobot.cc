@@ -223,6 +223,7 @@ void DockRobot::Edge::apply(State &s, const Oper &o) {
 		assert (p >= 0);
 		revop = Oper(Oper::Pop, p);
 		cost = PopCostFact * (sz + 1);	// from the OCaml code
+		revcost = PopCostFact * (sz + 2);
 
 		break;
 	}
@@ -243,6 +244,8 @@ void DockRobot::Edge::apply(State &s, const Oper &o) {
 			p = l.findpile(bottom);
 		revop = Oper(Oper::Push, c, p);
 		cost = PopCostFact * (sz + 1);	// from the OCaml code
+		revcost = PopCostFact * sz;
+
 		break;
 	}
 	case Oper::Load: {
@@ -253,6 +256,8 @@ void DockRobot::Edge::apply(State &s, const Oper &o) {
 
 		revop = Oper(Oper::Unload);
 		cost = LoadCost;
+		revcost = LoadCost;
+
 		break;
 	}
 	case Oper::Unload: {
@@ -267,6 +272,8 @@ void DockRobot::Edge::apply(State &s, const Oper &o) {
 		assert (c >= 0);
 		revop = Oper(Oper::Load, c);
 		cost = LoadCost;
+		revcost = LoadCost;
+
 		break;
 	}
 	case Oper::Move: {
@@ -286,6 +293,8 @@ void DockRobot::Edge::apply(State &s, const Oper &o) {
 
 		revop = Oper(Oper::Move, src);
 		cost = dom.adj[src][dst];
+		revcost = dom.adj[dst][src];
+
 		break;
 	}
 	default:

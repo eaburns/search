@@ -91,6 +91,7 @@ struct <DOMAIN> {
 	struct Edge {
 		Cost cost;
 		Oper revop;
+		Cost revcost;
 
 		// The state field may or may not be a reference.
 		// The reference variant is used in domains that

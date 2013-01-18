@@ -60,10 +60,11 @@ public:
 	struct Edge {
 		Cost cost;
 		Oper revop;
+		Cost revcost;
 		State &state;
 
 		Edge(TilesMdist &d, State &s, Oper op) :
-				cost(1), revop(s.b), state(s), oldh(s.h) {
+				cost(1), revop(s.b), revcost(1), state(s), oldh(s.h) {
 			Tile t = state.ts[op];
 			state.ts[state.b] = t;
 			state.h += d.incr[t][op][state.b];

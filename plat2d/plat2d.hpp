@@ -133,16 +133,21 @@ struct Plat2d {
 	struct Edge {
 		Cost cost;
 		Oper revop;
+		Cost revcost;
 		State state;
 
-		Edge(Plat2d &d, State &s, Oper op) : revop(Nop), state(s) {
+		Edge(Plat2d &d, State &s, Oper op) : revop(Nop), revcost(-1), state(s) {
 			state.player.act(d.lvl, (unsigned int) op);
 			cost = 1; // geom2d::Pt::distance(s.player.body.bbox.min, state.player.body.bbox.min));
 			if (s.player.body.bbox.min.y == state.player.body.bbox.min.y) {
-				if (op == Player::Left)
-					revop = Player::Right;
-				else if (op == Player::Right)
+				if (op == Player::Left) {
+					revop = Player::Right; 
+					revcost = cost;
+				}
+				else if (op == Player::Right) {
 					revop = Player::Left;
+					revcost = cost;
+				}
 			}
 		}
 

@@ -227,6 +227,7 @@ public:
 	struct Edge {
 		Cost cost;
 		Oper revop;
+		Cost revcost;
 		State state;
 
 		Edge(const Segments&, const State&, Oper);
