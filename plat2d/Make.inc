@@ -1,9 +1,5 @@
-plat2d:\
-	plat2d/plat2d_solver\
-	plat2d/makeh\
-	plat2d/draw\
-	plat2d/2poly\
-	plat2d/watch\
+plat2d: plat2d/plat2d_solver plat2d/draw\
+	plat2d/2poly plat2d/watch
 
 PLAT2DOBJS=\
 	plat2d/lvl.o\
@@ -30,19 +26,6 @@ plat2d/plat2d_solver:\
 
 include plat2d/main.d plat2d/plat2d.d
 CLEAN+=plat2d/plat2d_solver plat2d/main.o plat2d/plat2d.o
-
-plat2d/makeh:\
-	$(PLAT2DOBJS)\
-	plat2d/makeh.o\
-	plat2d/plat2d.o\
-	graphics/image.o\
-	visnav/visgraph.a\
-	utils/utils.a
-	@echo $@
-	@$(CXX) $^ $(LDFLAGS) -o $@
-
-include plat2d/makeh.d
-CLEAN+=plat2d/makeh plat2d/makeh.o
 
 plat2d/draw:\
 	$(PLAT2DOBJS)\
