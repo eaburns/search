@@ -146,8 +146,6 @@ template<typename Ops, typename Node, typename D> struct ClosedList {
 			const ClosedList *list;
 	};
 
-	
-
 	iterator begin() const {
 		for(unsigned int i = 0; i < nbins; i++)
 			if(bins[i] != NULL)
@@ -156,13 +154,13 @@ template<typename Ops, typename Node, typename D> struct ClosedList {
 		return iterator();
 	}
 
-	void advanceIterator(iterator* iter) const {
-
+	unsigned long getFill() const {
+		return this->fill;
 	}
 
-	void destroyIterator(iterator* iter) const { if(iter) delete iter; }
-
-	unsigned long getFill() const { return this->fill; }
+	bool empty() const {
+		return this->fill == 0;
+	}
 
 	void resize(unsigned int sz) {
 		Node **b = new Node*[sz];
