@@ -83,10 +83,11 @@ public:
 	struct Edge {
 		Cost cost;
 		Oper revop;
+		Cost revcost;
 		State &state;
 
 		Edge(Pancake &d, State &s, Oper op) :
-				cost(1), revop(op), state(s), oldh(s.h) {
+				cost(1), revop(op), revcost(1), state(s), oldh(s.h) {
 			bool wasgap = gap(state.cakes, op);
 			state.flip(op);
 

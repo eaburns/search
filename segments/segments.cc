@@ -318,6 +318,8 @@ Segments::Edge::Edge(const Segments &dom, const State &s, Oper op) {
 		state.nleft++;
 	else if (!wasgoal && isgoal)
 		state.nleft--;
+
+	revcost = revop.cost(state);
 }
 
 Segments::State Segments::initialstate() const {
