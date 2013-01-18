@@ -180,6 +180,7 @@ struct GridNav {
 	struct Edge {
 		Cost cost;
 		Oper revop;
+		Cost revcost;
 		State state;
 
 		Edge(const GridNav &d, State &s, Oper op) :
@@ -197,6 +198,7 @@ struct GridNav {
 				cost = Cost(mul, 0);
 			else
 				cost = Cost(0, mul);
+			revcost = cost;
 		}
 	};
 
