@@ -112,6 +112,10 @@ struct GridNav {
 		bool operator==(const PackedState &o) const {
 			return o.loc == loc;
 		}
+
+		bool operator!=(const PackedState &o) const {
+			return !(o == *this);
+		}
 	};
 
 	State initialstate() const;
