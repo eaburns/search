@@ -82,10 +82,11 @@ struct VisNav {
 	struct Edge {
 		Cost cost;
 		Oper revop;
+		Cost revcost;
 		State state;
 
 		Edge(VisNav &d, State &s, Oper op) :
-			cost(op.edge->dist), revop(op), state(op.edge->dst) { }
+			cost(op.edge->dist), revop(op), revcost(op.edge->dist), state(op.edge->dst) { }
 	};
 
 	void pack(PackedState &dst, State &src) {
