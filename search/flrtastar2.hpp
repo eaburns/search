@@ -5,7 +5,7 @@
 #include <vector>
 
 template <class D>
-class Flrtastar : public SearchAlgorithm<D> {
+class Flrtastar2 : public SearchAlgorithm<D> {
 private:
 
 	typedef typename D::PackedState PackedState;
@@ -161,7 +161,7 @@ private:
 
 public:
 
-	Flrtastar(int argc, const char *argv[]) :
+	Flrtastar2(int argc, const char *argv[]) :
 		SearchAlgorithm<D>(argc, argv),
 		astarClosed(1),
 		astarNodes(1),
