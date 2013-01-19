@@ -111,47 +111,78 @@ template<typename Ops, typename Node, typename D> struct ClosedList {
 		return p;
 	}
 
-	struct iterator {
-		iterator() : done(true), bin(-1), elem(NULL), list(NULL) {}
-		iterator(Node* elem, int bin, const ClosedList* list)  : done(false), bin(bin), elem(elem), list(list) {}
+	class iterator {
+	public:
+		static iterator begin(Node **bs, unsigned int nb) {
+			iterator it(0, NULL);
+			it.bins = bs;
+			it.nbins = nb;
 
-		Node* next() {
-			if(done ||  bin < 0 || elem == NULL) return NULL;
+			if (!it.bins[0])
+				it.nextbin();
 
-			Node* retVal = elem;
+			if (it.b < it.nbins)
+				it.n = it.bins[it.b];
 
-			Node* p = Ops::closedentry(elem).nxt;
-			if(p) {
-				elem = p;
-				return elem;
-			}
-
-			for(unsigned int i = bin+1; i < list->nbins; i++) {
-				if(list->bins[i] != NULL) {
-					bin = i;
-					elem = list->bins[i];
-					return retVal;
-				}
-			}
-
-			done = true;
-			elem = NULL;
-			return retVal;
+			return it;
 		}
-	
-		private: 
-			bool done;
-			int bin;
-			Node* elem;
-			const ClosedList *list;
+
+		static iterator end(unsigned int nb) {
+			return iterator(nb, NULL);
+		}
+
+		bool operator==(const iterator &o) const {
+			return n == o.n && b == o.b;
+		}
+
+		bool operator!=(const iterator &o) const {
+			return !(*this == o);
+		}
+
+		Node *operator*() const {
+			return n;
+		}
+
+		Node operator->() const {
+			return *n;
+		}
+
+		void operator++() {
+			if (b >= nbins)
+				return;
+			
+			n = Ops::closedentry(n).nxt;
+			if (n != NULL)
+				return;
+
+			nextbin();
+			if (b < nbins)
+				n = bins[b];
+		}
+
+	private:
+		iterator(unsigned int bin, Node *nd) : n(nd), b(bin) {
+		}
+
+		void nextbin() {
+			b++;
+			while (b < nbins && !bins[b])
+				b++;
+		}
+
+		Node *n;
+		unsigned int b;
+
+		Node **bins;
+		unsigned int nbins;
 	};
 
-	iterator begin() const {
-		for(unsigned int i = 0; i < nbins; i++)
-			if(bins[i] != NULL)
-				return iterator(bins[i], i, this);
-	
-		return iterator();
+	iterator begin() {
+		return iterator::begin(bins, nbins);
+	}
+
+	iterator end() {
+		return iterator::end(nbins);
 	}
 
 	unsigned long getFill() const {

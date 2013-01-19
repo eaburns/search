@@ -53,12 +53,12 @@ bool closedlist_find_test() {
 	ClosedList<Ent, Ent, Ent> closed(100);
 	Ent ents[N];
 
-	for (unsigned int i = 0; i < 100; i++) {
+	for (unsigned int i = 0; i < N; i++) {
 		ents[i] = Ent(i);
 		closed.add(ents + i);
 	}
 
-	for (unsigned int i = 0; i < 100; i++) {
+	for (unsigned int i = 0; i < N; i++) {
 		Ent::PackedState ps = ents[i].pack();
 		Ent *vlp = closed.find(ps);
 		if (!vlp) {
@@ -78,15 +78,13 @@ bool closedlist_rm_test() {
 	ClosedList<Ent, Ent, Ent> closed(100);
 	Ent ents[N];
 
-	unsigned int nvals = 100;
-
-	for (unsigned int i = 0; i < nvals; i++) {
+	for (unsigned int i = 0; i < N; i++) {
 		ents[i] = Ent(i);
 		closed.add(ents + i);
 	}
 
-	unsigned long fill = nvals;
-	for (unsigned int i = 1; i < nvals; i+=2) {
+	unsigned long fill = N;
+	for (unsigned int i = 1; i < N; i+=2) {
 		if (!closed.remove(i)) {
 			testpr("No value mapped to key %u\n", i);
 			res = false;
@@ -98,7 +96,7 @@ bool closedlist_rm_test() {
 		}
 	}
 
-	for (unsigned int i = 0; i < nvals; i++) {
+	for (unsigned int i = 0; i < N; i++) {
 		Ent *vlp = closed.find(i);
 		if (!vlp && i % 2 == 0) {
 			testpr("No value mapped to even key %u\n", i);
@@ -119,12 +117,12 @@ bool closedlist_find_rand_test() {
 	Rand r(time(NULL));
 	Ent ents[N];
 
-	for (unsigned int i = 0; i < 100; i++) {
+	for (unsigned int i = 0; i < N; i++) {
 		ents[i] = Ent(r.bits());
 		closed.add(ents + i);
 	}
 
-	for (unsigned int i = 0; i < 100; i++) {
+	for (unsigned int i = 0; i < N; i++) {
 		Ent *vlp = closed.find(ents[i].vl);
 		if (!vlp) {
 			testpr("No value mapped to key %u\n", i);
@@ -138,66 +136,22 @@ bool closedlist_find_rand_test() {
 	return res;
 }
 
-bool closedlist_iter_test() {
-	bool res = true;
-
-	ClosedList<Ent, Ent, Ent> closed(1000);
+bool closed_iter_test() {
+	ClosedList<Ent, Ent, Ent> closed(100);
 	Ent ents[N];
-
-	if (closed.getFill() != 0) {
-		testpr("Hash table fill is not initialized to zero\n");
-		res = false;
-	}
 
 	for (unsigned int i = 0; i < N; i++) {
 		ents[i] = Ent(i);
 		closed.add(ents + i);
-		if (closed.getFill() != i+1) {
-			testpr("Closed List fill is not %u after %u adds\n", i+1, i+1);
-			res = false;
-		}
-	}
-	ClosedList<Ent, Ent, Ent>::iterator iter = closed.begin();
-
-	for(unsigned int i = 0; i < N; i++) {
-		Ent* e = iter.next();
-		if(e->vl != i)
-			res = false;
 	}
 
-	if(iter.next() != NULL)
-		res = false;
-
-	return res;
-}
-
-bool closedlist_iter_test2() {
-	bool res = true;
-
-	ClosedList<Ent, Ent, Ent> closed(10);
-	Ent ents[N];
-
-	if (closed.getFill() != 0) {
-		testpr("Hash table fill is not initialized to zero\n");
-		res = false;
+	unsigned long cnt = 0;
+	for (auto it : closed) {
+		if (it->vl != ents[it->vl].vl)
+			return false;
+		cnt++;
+		if (cnt > closed.getFill())
+			return false;
 	}
-
-	for (unsigned int i = 0; i < N; i++) {
-		ents[i] = Ent(i);
-		closed.add(ents + i);
-		if (closed.getFill() != i+1) {
-			testpr("Closed List fill is not %u after %u adds\n", i+1, i+1);
-			res = false;
-		}
-	}
-
-	unsigned int count = 0;
-
-	for(ClosedList<Ent, Ent, Ent>::iterator iter = closed.begin();
-		iter.next() != NULL; count++) {}
-
-	if(count != N)
-		res = false;
-
-	return res;
+	return cnt == closed.getFill();
 }

@@ -392,8 +392,7 @@ private:
 
 	Node* markDead(D& d) {
 int count = 0;
-		auto iter = lssclosed.begin();
-		for(Node* s = iter.next(); s != NULL; s = iter.next()) {
+		for(auto s : lssclosed) {
 			if(s->dead) continue;
 			s->dead = isDeadEnd(d, s) || isRedundant(d, s);
 			if(s->dead) count++;
@@ -420,6 +419,7 @@ int count = 0;
 				minCost = cost;
 			}
 		}
+
 		if(openIsDead)
 			return NULL;
 		return minNode;

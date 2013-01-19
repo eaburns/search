@@ -75,8 +75,10 @@ TESTS+=.search_test
 
 CLEAN+=.search_test
 
+search/test_closedlist.o: search/closedlist.hpp
+
 search/test:\
-	search/test_closedlist.cc\
+	search/test_closedlist.o\
 	search/test.cc\
 	utils/utils.a\
 	structs/structs.a
