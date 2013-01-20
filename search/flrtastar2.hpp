@@ -204,11 +204,13 @@ public:
 		cur->gglobal = 0;
 
 		while (!cur->goal) {
-			expandLss(d, cur);
-			gCostLearning(d);
-			hCostLearning(d);
-			markDeadRedundant(d);
-			cur = move(cur);
+			AstarNode *goal = expandLss(d, cur);
+			if (!goal) {
+				gCostLearning(d);
+				hCostLearning(d);
+				markDeadRedundant(d);
+			}
+			cur = move(cur, goal);
 fprintf(stderr, "\n");
 		}
 
@@ -228,7 +230,9 @@ fprintf(stderr, "\n");
 
 private:
 
-	void expandLss(D &d, Node *rootNode) {
+	// ExpandLss returns the cheapest  goal node if one was generated
+	// and NULL otherwise.
+	AstarNode *expandLss(D &d, Node *rootNode) {
 		astarOpen.clear();
 		astarNodes.clear();
 		astarClosed.clear();
@@ -244,6 +248,8 @@ private:
 		astarOpen.push(a);
 		astarNodes.add(a);
 
+		AstarNode *goal = NULL;
+
 		unsigned int exp;
 		for (exp = 0; !astarOpen.empty() && exp < lookahead; exp++) {
 			AstarNode *s = *astarOpen.pop();
@@ -254,16 +260,24 @@ private:
 			if (s->node->dead)
 				continue;
 
-			expandPropagate(d, s, true);
+			AstarNode *g = expandPropagate(d, s, true);
+			if (g && (!goal || g->glocal < goal->glocal))
+				goal = g;
 
 			if (s->node->goal) {
 				astarOpen.push(s);
-				return;
+				goal = s;
+				break;
 			}
 		}
+		return goal;
 	}
 
-	void expandPropagate(D &d, AstarNode *s, bool doExpand) {
+	// ExpandPropagate returns the cheapest goal node if one is generated
+	// and NULL otherwise.
+	AstarNode *expandPropagate(D &d, AstarNode *s, bool doExpand) {
+		AstarNode *goal = NULL;
+
 		auto kids = expand(d, s->node);
 		for (unsigned int i = 0; i < kids.size(); i++) {
 			auto e = kids[i];
@@ -288,6 +302,9 @@ private:
 				}
 			}
 
+			if (k->goal && kid && (!goal || kid->glocal < goal->glocal))
+				goal = kid;
+
 			if (s->node->gglobal + e.outcost < k->gglobal) {
 				bool wasDead = k->dead;
 				k->dead = false;
@@ -310,6 +327,8 @@ private:
 					i = -1;
 			}
 		}
+
+		return goal;
 	}
 
 	void gCostLearning(D &d) {
@@ -410,14 +429,15 @@ fprintf(stderr, "d=%lu	", cnt);
 		return true;
 	}
 
-	Node *move(Node *cur) {
-		AstarNode *best = NULL;
-
-		for (auto n : astarOpen.data()) {
-			if (n->node == cur || n->node->dead)
-				continue;
-			if (best == NULL || AstarNode::FSort::pred(n, best))
-				best = n;
+	Node *move(Node *cur, AstarNode *goal) {
+		AstarNode *best = goal;
+		if (!best) {
+			for (auto n : astarOpen.data()) {
+				if (n->node == cur || n->node->dead)
+					continue;
+				if (best == NULL || AstarNode::FSort::pred(n, best))
+					best = n;
+			}
 		}
 		if (best) {
 			assert (best->node != cur);
