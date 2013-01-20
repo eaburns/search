@@ -27,12 +27,16 @@ private:
 	};
 
 	struct outedge {
-		outedge(Node *n, Oper o, Oper p, double c) :
-			node(n), op(o), pop(p), outcost(c) {
+		outedge(Node *n, Oper o, Cost rc, Cost c) :
+			node(n),
+			op(o),
+			revcost(rc == Cost(-1) ? geom2d::Infinity : rc),
+			outcost(c == Cost(-1) ? geom2d::Infinity : c) {
 		}
 
 		Node *node;
-		Oper op, pop;
+		Oper op;
+		double revcost;
 		double outcost;
 	};
 
@@ -158,7 +162,7 @@ private:
 		Node *node;
 		AstarNode *parent;
 		double glocal, f;
-		Oper op, pop;
+		Oper op;
 		long openind;
 		bool updated;
 
@@ -243,7 +247,7 @@ private:
 		AstarNode *a = astarPool->construct();
 		a->node = rootNode;
 		a->parent = NULL;
-		a->op = a->pop = D::Nop;
+		a->op = D::Nop;
 		a->glocal = 0;
 		a->f = rootNode->h;
 		astarOpen.push(a);
@@ -300,7 +304,6 @@ private:
 					kid->glocal = s->glocal + e.outcost;
 					kid->f = kid->glocal + kid->node->h;
 					kid->op = e.op;
-					kid->pop = e.pop;
 					astarOpen.pushupdate(kid, kid->openind);
 				}
 			}
@@ -322,7 +325,7 @@ private:
 					expandPropagate(d, kid, false);
 			}
 
-			double backCost = geom2d::Infinity;
+			double backCost = e.revcost;
 			if (k->gglobal + backCost < s->node->gglobal && !k->dead) {
 				s->node->gglobal = k->gglobal + backCost;
 //				s->node->h = s->node->hdef;
@@ -472,7 +475,7 @@ private:
 			Edge e(d, s, ops[i]);
 			Node *k = nodes.get(d, e.state);
 			k->preds.emplace_back(n, e.cost);
-			n->succs.emplace_back(k, ops[i], e.revop, e.cost);
+			n->succs.emplace_back(k, ops[i], e.revcost, e.cost);
 		}
 		n->expd = true;
 
