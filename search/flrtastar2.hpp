@@ -98,19 +98,9 @@ private:
 			return n;
 		}
 
-	private:
+//	private:
 		ClosedList<Node, Node, D> tbl;
 		Pool<Node> *pool;
-	};
-
-	class GSort {
-	public:
-		static void setind(Node *n, int i) {
-		}
-	
-		static bool pred(Node *a, Node *b) {
-			return a->gglobal < b->gglobal;
-		}
 	};
 
 	class AstarNode {
@@ -118,24 +108,52 @@ private:
 
 		AstarNode() : openind(-1), updated(false) {
 		}
-
-		static ClosedEntry<AstarNode, D> &closedentry(AstarNode *n) {
-			return n->closedent;
-		}
-
-		static PackedState &key(AstarNode *n) {
-			return n->node->state;
-		}
-
-		static void setind(AstarNode *n, int i) {
-			n->openind = i;
-		}
 	
-		static bool pred(AstarNode *a, AstarNode *b) {
-			if (geom2d::doubleeq(a->f, b->f))
-				return a->glocal > b->glocal;
-			return a->f < b->f;
-		}
+		class Nodes {
+		public:
+			static ClosedEntry<AstarNode, D> &closedentry(AstarNode *n) {
+				return n->nodesent;
+			}
+	
+			static PackedState &key(AstarNode *n) {
+				return n->node->state;
+			}
+		};
+	
+		class Closed {
+		public:
+			static ClosedEntry<AstarNode, D> &closedentry(AstarNode *n) {
+				return n->closedent;
+			}
+	
+			static PackedState &key(AstarNode *n) {
+				return n->node->state;
+			}
+		};
+
+		class FSort {
+		public:
+			static void setind(AstarNode *n, int i) {
+				n->openind = i;
+			}
+		
+			static bool pred(AstarNode *a, AstarNode *b) {	
+				if (geom2d::doubleeq(a->f, b->f))
+					return a->glocal > b->glocal;
+				return a->f < b->f;
+			}
+		};
+
+		class HSort {
+		public:
+			static void setind(AstarNode *n, int i) {
+				n->openind = i;
+			}
+		
+			static bool pred(AstarNode *a, AstarNode *b) {
+				return a->node->h < b->node->h;
+			}
+		};
 
 		Node *node;
 		AstarNode *parent;
@@ -145,18 +163,7 @@ private:
 		bool updated;
 
 	private:
-		ClosedEntry<AstarNode, D> closedent;
-	};
-
-	class HSort {
-	public:
-		static void setind(AstarNode *n, int i) {
-			n->openind = i;
-		}
-	
-		static bool pred(AstarNode *a, AstarNode *b) {
-			return a->node->h < b->node->h;
-		}
+		ClosedEntry<AstarNode, D> closedent, nodesent;
 	};
 
 public:
@@ -202,6 +209,24 @@ public:
 			hCostLearning(d);
 
 			markDeadRedundant(d);
+/*
+			fprintf(stderr, "\nclosed fill=%lu, exp=%lu\n",
+				astarClosed.getFill(), this->res.expd);
+			fprintf(stderr, "the start\n");
+			unsigned int last = 0;
+			AstarNode *lastNode = NULL;
+			for (auto n : astarClosed) {
+				fprintf(stderr, "%u\n", n->node->state.loc);
+				assert (n->node->state.loc != last);
+				assert (n != lastNode);
+				last = n->node->state.loc;
+				lastNode = n;
+			}
+			fprintf(stderr, "the end\n");
+			return;
+*/
+
+
 			cur = move(cur);
 fprintf(stderr, "h=%g (Δ=%g)\n", cur->h, cur->h - cur->hdef);
 		}
@@ -232,9 +257,9 @@ private:
 		AstarNode *a = astarPool->construct();
 		a->node = rootNode;
 		a->parent = NULL;
+		a->op = a->pop = D::Nop;
 		a->glocal = 0;
 		a->f = rootNode->h;
-		a->op = a->pop = D::Nop;
 		astarOpen.push(a);
 		astarNodes.add(a);
 
@@ -262,7 +287,6 @@ private:
 		for (unsigned int i = 0; i < kids.size(); i++) {
 			auto e = kids[i];
 			Node *si = e.node;
-
 			AstarNode *kid = astarNodes.find(si->state);
 
 			if (doExpand && astarNodes.find(s->node->state)) {
@@ -270,9 +294,10 @@ private:
 					kid = astarPool->construct();
 					kid->node = si;
 					kid->glocal = geom2d::Infinity;
+					kid->openind = -1;
 					astarNodes.add(kid);
 				}
-				if (kid->glocal > s->glocal + e.outcost) {
+				if (kid->glocal - geom2d::Threshold > s->glocal + e.outcost) {
 					kid->parent = s;
 					kid->glocal = s->glocal + e.outcost;
 					kid->f = kid->glocal + kid->node->h;
@@ -281,6 +306,9 @@ private:
 					astarOpen.pushupdate(kid, kid->openind);
 				}
 			}
+
+			if (!kid)
+				continue;
 
 			if (s->node->gglobal + e.outcost < si->gglobal) {
 				bool wasDead = si->dead;
@@ -297,7 +325,8 @@ private:
 					expandPropagate(d, kid, false);
 			}
 
-			double backCost = geom2d::Infinity;
+// TODO!
+			double backCost = e.outcost;//geom2d::Infinity;
 			if (si->gglobal + backCost < s->node->gglobal && !si->dead) {
 				s->node->gglobal = si->gglobal + backCost;
 //				s->node->h = s->node->hdef;
@@ -308,15 +337,13 @@ private:
 	}
 
 	void gCostLearning(D &d) {
-		for (auto n : astarOpen.data()) {
-			if (n->node->dead)
-				continue;
+		for (auto n : astarOpen.data())
 			expandPropagate(d, n, false);
-		}
 	}
 
 	void hCostLearning(D &d) {
-		BinHeap<HSort, AstarNode*> open;
+		BinHeap<typename AstarNode::HSort, AstarNode*> open;
+
 		open.append(astarOpen.data());
 
 		unsigned long left = astarClosed.getFill();
@@ -344,18 +371,25 @@ private:
 	}
 
 	void markDeadRedundant(D &d) {
-		auto it = astarClosed.begin();
-		for (AstarNode *n = it.next(); n; n = it.next()) {
+		unsigned long cnt = 0;
+
+		for (auto n : astarClosed) {
 			if (n->node->dead)
 				continue;
 			n->node->dead = isDead(d, n->node) || isRedundant(d, n->node);
+			if (n->node->dead)
+				cnt++;
 		}
 
 		for (auto n : astarOpen.data()) {
 			if (n->node->dead)
 				continue;
 			n->node->dead = isDead(d, n->node) || isRedundant(d, n->node);
+			if (n->node->dead)
+				cnt++;
 		}
+
+fprintf(stderr, "d=%lu	", cnt);
 	}
 
 	bool isDead(D &d, Node *n) {
@@ -400,7 +434,7 @@ private:
 		for (auto n : astarOpen.data()) {
 			if (n->node == cur || n->node->dead)
 				continue;
-			if (best == NULL || AstarNode::pred(n, best))
+			if (best == NULL || AstarNode::FSort::pred(n, best))
 				best = n;
 		}
 		if (best) {
@@ -440,6 +474,8 @@ fprintf(stderr, "moving one step ");
 
 			Edge e(d, s, ops[i]);
 			Node *k = nodes.get(d, e.state);
+			if (std::isinf(k->gglobal))
+				k->gglobal = n->gglobal + e.cost;
 			k->preds.emplace_back(n, e.cost);
 			n->succs.emplace_back(k, ops[i], e.revop, e.cost);
 		}
@@ -448,9 +484,9 @@ fprintf(stderr, "moving one step ");
 		return n->succs;
 	}
 
-	BinHeap<AstarNode, AstarNode*> astarOpen;
-	ClosedList<AstarNode, AstarNode, D> astarClosed;
-	ClosedList<AstarNode, AstarNode, D> astarNodes;
+	BinHeap<typename AstarNode::FSort, AstarNode*> astarOpen;
+	ClosedList<typename AstarNode::Closed, AstarNode, D> astarClosed;
+	ClosedList<typename AstarNode::Nodes, AstarNode, D> astarNodes;
 	Pool<AstarNode> *astarPool;
 
 	Nodes nodes;
