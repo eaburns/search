@@ -203,6 +203,7 @@ public:
 		Node *cur = nodes.get(d, s0);
 		cur->gglobal = 0;
 
+		unsigned int nsteps = 0;
 		while (!cur->goal) {
 			AstarNode *goal = expandLss(d, cur);
 			if (!goal) {
@@ -211,7 +212,6 @@ public:
 				markDeadRedundant(d);
 			}
 			cur = move(cur, goal);
-fprintf(stderr, "\n");
 		}
 
 		this->finish();
@@ -226,6 +226,7 @@ fprintf(stderr, "\n");
 		}
 		std::reverse(this->res.ops.begin(), this->res.ops.end());
 		std::reverse(this->res.path.begin(), this->res.path.end());
+		dfpair(stdout, "num steps", "u", (unsigned long) nsteps);
 	}
 
 private:
@@ -293,6 +294,8 @@ private:
 					astarNodes.add(kid);
 				}
 				if (kid->glocal > s->glocal + e.outcost) {
+					if (kid->parent)	// !NULL if a dup
+						this->res.dups++;
 					kid->parent = s;
 					kid->glocal = s->glocal + e.outcost;
 					kid->f = kid->glocal + kid->node->h;
@@ -368,15 +371,11 @@ private:
 	}
 
 	void markDeadRedundant(D &d) {
-		unsigned long cnt = 0;
-
 		for (auto n : astarClosed) {
-			assert (!std::isinf(n->node->gglobal));
-			if (n->node->dead || n->node->goal)
+			assert(!n->node->goal);
+			if (n->node->dead) // || n->node->goal)
 				continue;
 			n->node->dead = isDead(d, n->node) || isRedundant(d, n->node);
-			if (n->node->dead)
-				cnt++;
 		}
 
 		for (auto n : astarOpen.data()) {
@@ -384,11 +383,7 @@ private:
 				continue;
 			assert (!std::isinf(n->node->gglobal));
 			n->node->dead = isDead(d, n->node) || isRedundant(d, n->node);
-			if (n->node->dead)
-				cnt++;
 		}
-
-fprintf(stderr, "d=%lu	", cnt);
 	}
 
 	bool isDead(D &d, Node *n) {
@@ -447,7 +442,6 @@ fprintf(stderr, "d=%lu	", cnt);
 				ops.push_back(p->op);
 			}
 			this->res.ops.insert(this->res.ops.end(), ops.rbegin(), ops.rend());
-fprintf(stderr, "moving %lu steps ", ops.size());
 			return best->node;
 		}
 
@@ -457,7 +451,6 @@ fprintf(stderr, "moving %lu steps ", ops.size());
 				next = cur->succs[i];
 		}
 		this->res.ops.push_back(next.op);
-fprintf(stderr, "moving one step ");
 		return next.node;
 	}
 
