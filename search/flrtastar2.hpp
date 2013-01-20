@@ -98,7 +98,7 @@ private:
 			return n;
 		}
 
-//	private:
+	private:
 		ClosedList<Node, Node, D> tbl;
 		Pool<Node> *pool;
 	};
@@ -207,28 +207,9 @@ public:
 			expandLss(d, cur);
 			gCostLearning(d);
 			hCostLearning(d);
-
 			markDeadRedundant(d);
-/*
-			fprintf(stderr, "\nclosed fill=%lu, exp=%lu\n",
-				astarClosed.getFill(), this->res.expd);
-			fprintf(stderr, "the start\n");
-			unsigned int last = 0;
-			AstarNode *lastNode = NULL;
-			for (auto n : astarClosed) {
-				fprintf(stderr, "%u\n", n->node->state.loc);
-				assert (n->node->state.loc != last);
-				assert (n != lastNode);
-				last = n->node->state.loc;
-				lastNode = n;
-			}
-			fprintf(stderr, "the end\n");
-			return;
-*/
-
-
 			cur = move(cur);
-fprintf(stderr, "h=%g (Δ=%g)\n", cur->h, cur->h - cur->hdef);
+fprintf(stderr, "\n");
 		}
 
 		this->finish();
@@ -286,18 +267,18 @@ private:
 		auto kids = expand(d, s->node);
 		for (unsigned int i = 0; i < kids.size(); i++) {
 			auto e = kids[i];
-			Node *si = e.node;
-			AstarNode *kid = astarNodes.find(si->state);
+			Node *k = e.node;
+			AstarNode *kid = astarNodes.find(k->state);
 
 			if (doExpand && astarNodes.find(s->node->state)) {
 				if (!kid) {
 					kid = astarPool->construct();
-					kid->node = si;
+					kid->node = k;
 					kid->glocal = geom2d::Infinity;
 					kid->openind = -1;
 					astarNodes.add(kid);
 				}
-				if (kid->glocal - geom2d::Threshold > s->glocal + e.outcost) {
+				if (kid->glocal > s->glocal + e.outcost) {
 					kid->parent = s;
 					kid->glocal = s->glocal + e.outcost;
 					kid->f = kid->glocal + kid->node->h;
@@ -307,28 +288,23 @@ private:
 				}
 			}
 
-			if (!kid)
-				continue;
+			if (s->node->gglobal + e.outcost < k->gglobal) {
+				bool wasDead = k->dead;
+				k->dead = false;
+				k->gglobal = s->node->gglobal + e.outcost;
+//				k->h = k->hdef;
 
-			if (s->node->gglobal + e.outcost < si->gglobal) {
-				bool wasDead = si->dead;
-				si->dead = false;
-				si->gglobal = s->node->gglobal + e.outcost;
-//				si->h = si->hdef;
-
-				bool onClosed = astarClosed.find(si->state);
-
+				bool onClosed = astarClosed.find(k->state);
 				if (kid && onClosed && wasDead)
 					expandPropagate(d, kid, true);
 
-				else if (kid && doExpand && (kid->openind >= 0 || onClosed))
+				else if (kid && (kid->openind >= 0 || onClosed))
 					expandPropagate(d, kid, false);
 			}
 
-// TODO!
-			double backCost = e.outcost;//geom2d::Infinity;
-			if (si->gglobal + backCost < s->node->gglobal && !si->dead) {
-				s->node->gglobal = si->gglobal + backCost;
+			double backCost = geom2d::Infinity;
+			if (k->gglobal + backCost < s->node->gglobal && !k->dead) {
+				s->node->gglobal = k->gglobal + backCost;
 //				s->node->h = s->node->hdef;
 				if (i > 0)
 					i = -1;
@@ -337,8 +313,10 @@ private:
 	}
 
 	void gCostLearning(D &d) {
-		for (auto n : astarOpen.data())
-			expandPropagate(d, n, false);
+		for (auto n : astarOpen.data()) {
+			if (!n->node->dead)
+				expandPropagate(d, n, false);
+		}
 	}
 
 	void hCostLearning(D &d) {
@@ -374,7 +352,8 @@ private:
 		unsigned long cnt = 0;
 
 		for (auto n : astarClosed) {
-			if (n->node->dead)
+			assert (!std::isinf(n->node->gglobal));
+			if (n->node->dead || n->node->goal)
 				continue;
 			n->node->dead = isDead(d, n->node) || isRedundant(d, n->node);
 			if (n->node->dead)
@@ -382,8 +361,9 @@ private:
 		}
 
 		for (auto n : astarOpen.data()) {
-			if (n->node->dead)
+			if (n->node->dead || n->node->goal)
 				continue;
+			assert (!std::isinf(n->node->gglobal));
 			n->node->dead = isDead(d, n->node) || isRedundant(d, n->node);
 			if (n->node->dead)
 				cnt++;
@@ -394,7 +374,7 @@ fprintf(stderr, "d=%lu	", cnt);
 
 	bool isDead(D &d, Node *n) {
 		for (auto succ : expand(d, n)) {
-			if (n->gglobal + succ.outcost <= succ.node->gglobal)
+			if (succ.node->gglobal >= n->gglobal + succ.outcost)
 				return false;
 		}
 		return true;
@@ -420,6 +400,8 @@ fprintf(stderr, "d=%lu	", cnt);
 					bestc = c;
 				}
 			}
+
+			assert (distinct == n || !std::isinf(succ.node->gglobal));
 
 			if (distinct == n)
 				return false;
@@ -461,6 +443,8 @@ fprintf(stderr, "moving one step ");
 
 	// Expand returns the successor nodes of a state.
 	std::vector<outedge> expand(D &d, Node *n) {
+		assert(!n->dead);
+
 		if (n->expd)
 			return n->succs;
 
@@ -474,8 +458,6 @@ fprintf(stderr, "moving one step ");
 
 			Edge e(d, s, ops[i]);
 			Node *k = nodes.get(d, e.state);
-			if (std::isinf(k->gglobal))
-				k->gglobal = n->gglobal + e.cost;
 			k->preds.emplace_back(n, e.cost);
 			n->succs.emplace_back(k, ops[i], e.revop, e.cost);
 		}
