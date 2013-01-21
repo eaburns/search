@@ -4,10 +4,6 @@
 #include "../utils/geom2d.hpp"
 
 
-//TODO: it might make sense to cache successors of states to avoid having to reconstruct them
-//			**at LEAST make one function where we can generate the successors
-//TODO: WHERE is the ONE place for predecesorr population???
-
 template <class D> struct Flrtastar : public SearchAlgorithm<D> {
 
 	typedef typename D::State State;
@@ -57,7 +53,7 @@ template <class D> struct Flrtastar : public SearchAlgorithm<D> {
 		static void setind(Node *n, int i) {
 			n->openind = i;
 		}
-	
+
 		static bool pred(const Node *a, const Node *b) {
 			if (a->f == b->f)
 				return a->g_local > b->g_local;
@@ -69,7 +65,7 @@ template <class D> struct Flrtastar : public SearchAlgorithm<D> {
 		static void setind(Node *n, int i) {
 			n->openind = i;
 		}
-	
+
 		static bool pred(const Node *a, const Node *b) {
 			return a->h < b->h;
 		}
@@ -79,7 +75,7 @@ template <class D> struct Flrtastar : public SearchAlgorithm<D> {
 		static void setind(Node *n, int i) {
 			n->openind = i;
 		}
-	
+
 		static bool pred(const Node *a, const Node *b) {
 			return a->g < b->g;
 		}
@@ -134,10 +130,13 @@ template <class D> struct Flrtastar : public SearchAlgorithm<D> {
 
 				dest = markDead(d); // returns NULL if all of open is dead, or best node otherwise
 			}
+//			else fprintf(stderr, "expandLSS\n");
 
 			if(!dest) { //all of open was dead
 				dest = getNeighborWithLowestG(d, start);
+//				fprintf(stderr, "neighbor\n");
 			}
+//			else fprintf(stderr, "markDead\n");
 
 			std::vector<Oper> partial;
 			Node* p = dest;
@@ -149,6 +148,8 @@ template <class D> struct Flrtastar : public SearchAlgorithm<D> {
 				p = p->parent;
 			}
 			lengths.push_back(partial.size());
+
+//			testMoves(d, start, dest, partial);
 
 			this->res.ops.insert(	this->res.ops.end(), partial.rbegin(), partial.rend());
 
@@ -218,6 +219,23 @@ template <class D> struct Flrtastar : public SearchAlgorithm<D> {
 
 private:
 
+	void testMoves(D& d, Node* start, Node* end, std::vector<Oper> &path) {
+		Node* s = start;
+		Node n;
+		for(auto iter = path.rbegin();iter != path.rend(); iter++) {
+			Oper op = *iter;
+			State buf, &state = d.unpack(buf, s->state);
+			Edge edge(d, state, op);
+
+			d.pack(n.state, edge.state);
+
+			s = seen.find(n.state);
+			assert(s);
+		}
+		if(s != end) fprintf(stderr, "path length: %d\n", (int)path.size());
+		assert(s == end);
+	}
+
 	//if a goal is found, it is be returned, otherwise NULL
 	Node* expandLSS(D& d, Node* s_cur) {
 		iterationCount++;
@@ -237,7 +255,14 @@ private:
 		for(unsigned int exp = 0; exp < lookahead && !lssopen.empty(); exp++) {
 
 			Node* s  = *lssopen.pop();
-			
+
+			Node* t = s;
+
+			while(t != s_cur) {
+				t = t->parent;
+				assert(t);
+			}
+
 			if(goal != NULL && goal->f <= s->f) {
 				lssopen.push(s);
 				return goal;
@@ -259,7 +284,7 @@ private:
 
 		State buf, &state = d.unpack(buf, s->state);
 		Operators ops(d, state);
-		bool populateSuccessors = s->succs.size() == 0;
+//		bool populateSuccessors = s->succs.size() == 0;
 
 		this->res.expd++;
 		for(unsigned int i = 0; i < ops.size(); i++) {
@@ -309,7 +334,7 @@ private:
 
 					seen.add(kid, hash);
 					lssopen.push(kid);
-					
+
 
 					if(d.isgoal(e.state) && (*goal == NULL || kid->g_local < (*goal)->g_local)) {
 						*goal = kid;
@@ -318,8 +343,8 @@ private:
 
 				kid->iterationCount = iterationCount;
 				kid->preds.emplace_back(s, e.cost);
-				if(populateSuccessors)
-					s->succs.emplace_back(kid, e.cost);
+//				if(populateSuccessors)
+//					s->succs.emplace_back(kid, e.cost);
 			}
 			else {
 				if(!dup) continue;
@@ -362,12 +387,12 @@ private:
 			expandAndPropagate(d, openData[i], &dummy, false);
 		}
 	}
-	
+
 	void lsslrtastarHCostLearning(D& d) {
 		iterationCount++;
 
 		BinHeap<HSort, Node*> open;
-	
+
 		open.append(lssopen.data());
 
 		std::vector<Node*> oldClosed;
@@ -394,7 +419,7 @@ private:
 					p->iterationCount = iterationCount;
 					p->h = std::numeric_limits<double>::infinity();
 				}
-				
+
 				double newH = s->h + s->preds[i].costFrom;
 				if(inClosed && p->h > newH) {
 					p->h = newH;
@@ -487,7 +512,7 @@ int count = 0;
 
 			if(!kid)
 				return false;
-			else if(kid->dead) 
+			else if(kid->dead)
 				continue;
 
 //TODO: is this really okay to have happen?
@@ -499,7 +524,7 @@ int count = 0;
 			for(unsigned int j = 1; j < kid->preds.size(); j++) {
 
 			 	const prededge &p = kid->preds[j];
-				
+
 				if(p.node->dead)
 					continue;
 
@@ -523,9 +548,10 @@ int count = 0;
 
 
 	Node* getNeighborWithLowestG(D& d, Node* s) {
-		if(s->succs.size() > 0) {
+/*		if(s->succs.size() > 0) {
+			fprintf(stderr, "cached\n");
 			Node* minGKid = s->succs[0].node;
-	
+
 			for(unsigned int i = 1; i < s->succs.size(); i++) {
 				Node *kid = s->succs[i].node;
 
@@ -533,10 +559,12 @@ int count = 0;
 					minGKid = kid;
 			}
 
+			checkMove(d, s, minGKid,
+
 			minGKid->parent = s;
 			return minGKid;
-		}
-
+		}*/
+//fprintf(stderr, "generated\n");
 		Node* minGKid = NULL;
 		double minGCost = std::numeric_limits<double>::infinity();
 
