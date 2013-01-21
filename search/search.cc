@@ -12,22 +12,22 @@ static void stoptimer(int);
 static int timersig(int);
 
 SearchStats::SearchStats() : 
-	wallstrt(0), cpustrt(0), wallend(0), cpuend(0),
+	wallstart(0), cpustart(0), wallend(0), cpuend(0),
 	expd(0), gend(0), reopnd(0), dups(0) { }
 
-void SearchStats::strt() {
-	wallstrt = walltime();
-	cpustrt = cputime();
+void SearchStats::start() {
+	wallstart = walltime();
+	cpustart = cputime();
 }
 
-void SearchStats::fin() {
+void SearchStats::finish() {
 	wallend = walltime();
 	cpuend = cputime();
 }
 
 void SearchStats::output(FILE *f) {
-	dfpair(f, "total raw cpu time", "%g", cpuend - cpustrt);
-	dfpair(f, "total wall time", "%g", wallend - wallstrt);
+	dfpair(f, "total raw cpu time", "%g", cpuend - cpustart);
+	dfpair(f, "total wall time", "%g", wallend - wallstart);
 	dfpair(f, "total nodes expanded", "%lu", expd);
 	dfpair(f, "total nodes generated", "%lu", gend);
 	dfpair(f, "total nodes duplicated", "%lu", dups);

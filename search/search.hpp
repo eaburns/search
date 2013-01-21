@@ -15,8 +15,9 @@ void dfpair(FILE *f, const char *key, const char *fmt, ...);
 
 // A SearchStats structure contains statistical information
 // collected during a run of a search algorithm.
-struct SearchStats {
-	double wallstrt, cpustrt;
+class SearchStats {
+public:
+	double wallstart, cpustart;
 	double wallend, cpuend;
 	unsigned long expd, gend, reopnd, dups;
 
@@ -24,11 +25,11 @@ struct SearchStats {
 
 	// start must be called by the search in order to
 	// begin collecting statistical information.
-	void strt();
+	void start();
 
 	// finish must be called by the search in order to
 	// stop collecting information.
-	void fin();
+	void finish();
 
 	// output prints the statistical information to the given
 	// file in datafile format.
@@ -42,18 +43,19 @@ struct SearchStats {
 		reopnd += other.reopnd;
 		dups += other.dups;
 
-		double wt = wallend - wallstrt;
-		double ct = cpuend - cpustrt;
-		wallstrt = cpustrt = 0;
-		wallend = wt + (other.wallend - other.wallstrt);
-		cpuend = ct + (other.cpuend - other.cpustrt);
+		double wt = wallend - wallstart;
+		double ct = cpuend - cpustart;
+		wallstart = cpustart = 0;
+		wallend = wt + (other.wallend - other.wallstart);
+		cpuend = ct + (other.cpuend - other.cpustart);
 	}
 };
 
 // A Limit structure contains information about when a
 // search algorithm should be stopped because it has
 // hit a user specified limit.
-struct Limit {
+class Limit {
+public:
 
 	Limit();
 
@@ -90,7 +92,8 @@ private:
 // priority.  The Ops class has a pred method which accepts
 // two Nodes and returns true if the 1st node is a predecessor
 // of the second.
-template <class Ops, class Node, class Cost> class OpenList {
+template <class Ops, class Node, class Cost>
+class OpenList {
 public:
 	const char *kind() {
 		return "binary heap";
@@ -144,7 +147,8 @@ typedef int IntOpenCost;
 // both of which return ints.  The list is sorted in increasing order
 // on the prio key then secondary sorted in decreasing order on
 // the tieprio key.
-template <class Ops, class Node> class OpenList <Ops, Node, IntOpenCost> {
+template <class Ops, class Node>
+class OpenList <Ops, Node, IntOpenCost> {
 
 	struct Maxq {
 		Maxq() : fill(0), max(0), bkts(100)  { }
@@ -250,7 +254,9 @@ public:
 // A Result is returned from a completed search.  It contains
 // statistical information about the search along with the
 // solution cost and solution path if a goal was found.
-template <class D> struct Result : public SearchStats {
+template <class D>
+class Result : public SearchStats {
+public:
 	std::vector<typename D::State> path;
 	std::vector<typename D::Oper> ops;
 
@@ -291,7 +297,8 @@ void solpath(D &d, Node *goal, Result<D> &res) {
 	}
 }
 
-template <class D> class SearchAlgorithm {
+template <class D>
+class SearchAlgorithm {
 public:
 	SearchAlgorithm(int argc, const char *argv[]) : lim(argc, argv) { }
 
@@ -309,12 +316,12 @@ public:
 	}
 
 	void start() {
-		res.strt();
+		res.start();
 		lim.start();
 	}
 
 	void finish() {
-		res.fin();
+		res.finish();
 		lim.finish();
 	}
 
