@@ -232,6 +232,7 @@ public:
 	}
 
 	virtual void output(FILE *out) {
+		SearchAlgorithm<D>::output(out);
 		dfpair(out, "num steps", "%lu", (unsigned long) times.size());
 		assert (lengths.size() == times.size());
 		if (times.size() != 0) {
