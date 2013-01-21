@@ -184,7 +184,7 @@ protected:
 	void row(unsigned long n, double epsprime) {
 		dfrow(stdout, "incumbent", "uuugggg", n, this->res.expd,
 			this->res.gend, wt, epsprime, cost,
-			walltime() - this->res.wallstrt);
+			walltime() - this->res.wallstart);
 	}
 
 	bool improve(D &d) {
@@ -437,7 +437,7 @@ private:
 	bool shouldstop() const {
 		if (this->cost < 0)
 			return false;
-		double t = walltime() - this->res.wallstrt;
+		double t = walltime() - this->res.wallstart;
 		double c = this->cost;
 		return mon.stop(c, t);
 	}
