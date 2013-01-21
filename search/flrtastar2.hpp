@@ -274,8 +274,7 @@ private:
 		astarOpen.clear();
 		astarNodes.clear();
 		astarClosed.clear();
-		delete astarPool;
-		astarPool = new Pool<AstarNode>();
+		astarPool->releaseall();
 
 		AstarNode *a = astarPool->construct();
 		a->node = rootNode;
