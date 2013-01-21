@@ -97,7 +97,6 @@ private:
 
 			n->goal = d.isgoal(s);
 			n->h = n->hdef = d.h(s);
-			assert (n->goal || n->h > 0);
 			tbl.add(n, hash);
 			return n;
 		}
