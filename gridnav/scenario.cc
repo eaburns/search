@@ -94,8 +94,8 @@ Result<GridNav> ScenarioEntry::run(unsigned int n, SearchAlgorithm<GridNav> *src
 		(unsigned long) n, (unsigned long) bucket, (unsigned long) w,
 		(unsigned long) h, (unsigned long) x0, (unsigned long) y0,
 		(unsigned long)  x1, (unsigned long) y1, opt, res.expd, res.gend,
-		(double) cost, (unsigned long) res.path.size(), res.wallend - res.wallstrt,
-		res.cpuend - res.cpustrt);
+		(double) cost, (unsigned long) res.path.size(), res.wallend - res.wallstart,
+		res.cpuend - res.cpustart);
 
 	return res;
 }
