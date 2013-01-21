@@ -344,7 +344,7 @@ private:
 			if (k->goal && kid && (!goal || kid->glocal < goal->glocal))
 				goal = kid;
 
-// The following two lines seem to improve performance, but I have no idea why.
+// The following two lines seem to improve performance on plat2d, but I have no idea why.
 //			if (!kid)
 //				continue;
 
@@ -362,9 +362,8 @@ private:
 					expandPropagate(d, kid, false);
 			}
 
-			double backCost = e.revcost;
-			if (k->gglobal + backCost < s->node->gglobal && !k->dead) {
-				s->node->gglobal = k->gglobal + backCost;
+			if (k->gglobal + e.revcost < s->node->gglobal && !k->dead) {
+				s->node->gglobal = k->gglobal + e.revcost;
 //				s->node->h = s->node->hdef;
 				if (i > 0)
 					i = -1;
