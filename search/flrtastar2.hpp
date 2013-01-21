@@ -344,6 +344,10 @@ private:
 			if (k->goal && kid && (!goal || kid->glocal < goal->glocal))
 				goal = kid;
 
+// The following two lines seem to improve performance, but I have no idea why.
+//			if (!kid)
+//				continue;
+
 			if (s->node->gglobal + e.outcost < k->gglobal) {
 				bool wasDead = k->dead;
 				k->dead = false;
