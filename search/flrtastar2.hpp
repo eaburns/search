@@ -274,8 +274,7 @@ private:
 		astarOpen.clear();
 		astarNodes.clear();
 		astarClosed.clear();
-		delete astarPool;
-		astarPool = new Pool<AstarNode>();
+		astarPool->releaseall();
 
 		AstarNode *a = astarPool->construct();
 		a->node = rootNode;
@@ -449,6 +448,8 @@ private:
 					distinct = pred.node;
 					bestc = c;
 				}
+
+				assert (distinct == n || !std::isinf(succ.node->gglobal));
 			}
 
 			if (distinct == n)
@@ -507,6 +508,8 @@ private:
 
 			Edge e(d, s, ops[i]);
 			Node *k = nodes.get(d, e.state);
+			if (std::isinf(k->gglobal))
+				k->gglobal = n->gglobal + e.cost;
 			k->preds.emplace_back(n, e.cost);
 			n->succs.emplace_back(k, ops[i], e.revcost, e.cost);
 		}
