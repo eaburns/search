@@ -215,6 +215,7 @@ public:
 			}
 			cur = move(cur, goal);
 			times.push_back(walltime() - this->res.wallstart);
+fprintf(stderr, "%gs\n", walltime() - this->res.wallstart);
 		}
 
 		this->finish();
@@ -449,6 +450,8 @@ private:
 					distinct = pred.node;
 					bestc = c;
 				}
+
+				assert (distinct == n || !std::isinf(succ.node->gglobal));
 			}
 
 			if (distinct == n)
@@ -477,6 +480,7 @@ private:
 			}
 			this->res.ops.insert(this->res.ops.end(), ops.rbegin(), ops.rend());
 			lengths.push_back(ops.size());
+fprintf(stderr, "%lu steps ", ops.size());
 			return best->node;
 		}
 
@@ -487,6 +491,7 @@ private:
 		}
 		this->res.ops.push_back(next.op);
 		lengths.push_back(1);
+fprintf(stderr, "one step ");
 		return next.node;
 	}
 
@@ -507,6 +512,8 @@ private:
 
 			Edge e(d, s, ops[i]);
 			Node *k = nodes.get(d, e.state);
+			if (std::isinf(k->gglobal))
+				k->gglobal = n->gglobal + e.cost;
 			k->preds.emplace_back(n, e.cost);
 			n->succs.emplace_back(k, ops[i], e.revcost, e.cost);
 		}
