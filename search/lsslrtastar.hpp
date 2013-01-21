@@ -88,9 +88,6 @@ template <class D> struct Lsslrtastar : public SearchAlgorithm<D> {
 	void search(D &d, typename D::State &s0) {
 
 		this->start();
-		double startTime = walltime();
-
-		unsigned long stepCount = 0;
 
 		lssclosed.init(d);
 
@@ -111,14 +108,14 @@ template <class D> struct Lsslrtastar : public SearchAlgorithm<D> {
 			std::vector<Oper> partial;
 			Node* p = s_goal;
 
-			emitTimes.push_back(walltime() - startTime);
-			stepCount++;
+			emitTimes.push_back(walltime() - this->res.wallstart);
 			while(start != p) {
 				//or until the edge costs change?
 				assert(p->parent);
 				partial.push_back(p->op);
 				p = p->parent;
 			}
+			lengths.push_back(partial.size());
 
 			this->res.ops.insert(	this->res.ops.end(), partial.rbegin(), partial.rend());
 			start = s_goal;
@@ -147,25 +144,40 @@ template <class D> struct Lsslrtastar : public SearchAlgorithm<D> {
 		std::reverse(this->res.ops.begin(), this->res.ops.end());
 		std::reverse(this->res.path.begin(), this->res.path.end());
 
-		dfpair(stdout, "steps", "%lu", stepCount);
-		dfpair(stdout, "first emit time", "%f", emitTimes[0]);
-
-
-		double minEmit =  emitTimes.front();
-		double maxEmit = emitTimes.front();
-		for(unsigned int i = 1; i < emitTimes.size(); i++) {
-			double stepTime = emitTimes[i] - emitTimes[i-1];
-			if(stepTime < minEmit) minEmit = stepTime;
-			if(stepTime > maxEmit) maxEmit = stepTime;
-		}
-		dfpair(stdout, "min step time", "%f", minEmit);
-		dfpair(stdout, "max step time", "%f", maxEmit);
-		dfpair(stdout, "average step time", "%f", (emitTimes.back() - emitTimes.front()) / (double) emitTimes.size());
-
 	}
 
 	virtual void output(FILE *out) {
 		SearchAlgorithm<D>::output(out);
+
+		dfpair(out, "num steps", "%lu", emitTimes.size());
+		if (emitTimes.size() > 0) {
+			dfpair(out, "first emit time", "%f", emitTimes[0]);
+			double minEmit =  emitTimes.front();
+			double maxEmit = emitTimes.front();
+			for(unsigned int i = 1; i < emitTimes.size(); i++) {
+				double stepTime = emitTimes[i] - emitTimes[i-1];
+				if(stepTime < minEmit) minEmit = stepTime;
+				if(stepTime > maxEmit) maxEmit = stepTime;
+			}
+			dfpair(out, "min step time", "%f", minEmit);
+			dfpair(out, "max step time", "%f", maxEmit);
+			dfpair(out, "mean step time", "%f", (emitTimes.back() - emitTimes.front()) / (double) emitTimes.size());
+		}
+		if (lengths.size() != 0) {
+			unsigned int min = lengths.front();
+			unsigned int max = lengths.front();
+			unsigned long sum = 0;
+			for (auto l : lengths) {
+				if (l < min)
+					min = l;
+				if (l > max)
+					max = l;
+				sum += l;
+			}
+			dfpair(out, "min step length", "%u", min);
+			dfpair(out, "max step length", "%u", max);
+			dfpair(out, "mean step length", "%g", sum / (double) lengths.size());
+		}
 	}
 
 	virtual void reset() {
@@ -205,11 +217,13 @@ private:
 			}
 
 			Operators ops(d, state);
+			this->res.expd++;
 			for(unsigned int i = 0; i < ops.size(); i++) {
 
 				Edge edge(d, state, ops[i]);
 				Node *kid = nodes->construct();
 
+				this->res.gend++;
 				d.pack(kid->state, edge.state);
 
 				unsigned long hash = d.hash(kid->state);
@@ -227,6 +241,8 @@ private:
 					}
 
 					if(kid->g > newG) {
+						if (dup)
+							this->res.dups++;
 						kid->g = newG;
 						kid->parent = s;
 						kid->f = kid->g + kid->h;
@@ -318,4 +334,5 @@ private:
 	unsigned int iterationCount;
 	Node* foreverStart;
 	std::vector<double> emitTimes;
+	std::vector<unsigned int> lengths;
 };

@@ -125,7 +125,6 @@ template <class D> struct Flrtastar : public SearchAlgorithm<D> {
 		State buf, &startState = d.unpack(buf, start->state);
 
 		while(!d.isgoal(startState)) {
-
 			Node* dest = expandLSS(d, start);
 
 			if(!dest) { //we didn't find a goal
@@ -149,10 +148,12 @@ template <class D> struct Flrtastar : public SearchAlgorithm<D> {
 				partial.push_back(p->op);
 				p = p->parent;
 			}
+			lengths.push_back(partial.size());
 
 			this->res.ops.insert(	this->res.ops.end(), partial.rbegin(), partial.rend());
 
 			start = dest;
+			emitTimes.push_back(walltime() - this->res.wallstart);
 
 			startState = d.unpack(buf, start->state);
 		}
@@ -176,26 +177,39 @@ template <class D> struct Flrtastar : public SearchAlgorithm<D> {
 
 		std::reverse(this->res.ops.begin(), this->res.ops.end());
 		std::reverse(this->res.path.begin(), this->res.path.end());
-/*
-		dfpair(stdout, "steps", "%lu", stepCount);
-		dfpair(stdout, "first emit time", "%f", emitTimes[0]);
-
-
-		double minEmit =  emitTimes.front();
-		double maxEmit = emitTimes.front();
-		for(unsigned int i = 1; i < emitTimes.size(); i++) {
-			double stepTime = emitTimes[i] - emitTimes[i-1];
-			if(stepTime < minEmit) minEmit = stepTime;
-			if(stepTime > maxEmit) maxEmit = stepTime;
-		}
-		dfpair(stdout, "min step time", "%f", minEmit);
-		dfpair(stdout, "max step time", "%f", maxEmit);
-		dfpair(stdout, "average step time", "%f", (emitTimes.back() - emitTimes.front()) / (double) emitTimes.size());	
-*/
 	}
 
 	virtual void output(FILE *out) {
 		SearchAlgorithm<D>::output(out);
+		dfpair(out, "num steps", "%lu", emitTimes.size());
+		if (emitTimes.size() > 0) {
+			dfpair(out, "first emit time", "%f", emitTimes[0]);
+			double minEmit =  emitTimes.front();
+			double maxEmit = emitTimes.front();
+			for(unsigned int i = 1; i < emitTimes.size(); i++) {
+				double stepTime = emitTimes[i] - emitTimes[i-1];
+				if(stepTime < minEmit) minEmit = stepTime;
+				if(stepTime > maxEmit) maxEmit = stepTime;
+			}
+			dfpair(out, "min step time", "%f", minEmit);
+			dfpair(out, "max step time", "%f", maxEmit);
+			dfpair(out, "mean step time", "%f", (emitTimes.back() - emitTimes.front()) / (double) emitTimes.size());
+		}
+		if (lengths.size() != 0) {
+			unsigned int min = lengths.front();
+			unsigned int max = lengths.front();
+			unsigned long sum = 0;
+			for (auto l : lengths) {
+				if (l < min)
+					min = l;
+				if (l > max)
+					max = l;
+				sum += l;
+			}
+			dfpair(out, "min step length", "%u", min);
+			dfpair(out, "max step length", "%u", max);
+			dfpair(out, "mean step length", "%g", sum / (double) lengths.size());
+		}
 	}
 
 	virtual void reset() {
@@ -247,11 +261,13 @@ private:
 		Operators ops(d, state);
 		bool populateSuccessors = s->succs.size() == 0;
 
+		this->res.expd++;
 		for(unsigned int i = 0; i < ops.size(); i++) {
 
 			Edge e(d, state, ops[i]);
 			Node *kid = nodes->construct();
 
+			this->res.gend++;
 			d.pack(kid->state, e.state);
 
 			unsigned long hash = d.hash(kid->state);
@@ -271,6 +287,8 @@ private:
 					}
 
 					if(kid->g_local > newLocalG) {
+						if (dup)
+							this->res.dups++;
 						kid->g_local = newLocalG;
 						kid->parent = s;
 						kid->f = kid->g_local + kid->h;
@@ -431,12 +449,14 @@ int count = 0;
 
 		if(ops.size() == 0) return true;
 
+		this->res.expd++;
 		for(unsigned int i = 0; i < ops.size(); i++) {
 			if(ops[i] == s->pop) continue;
 
 			Edge edge(d, state, ops[i]);
 			PackedState key;
 
+			this->res.gend++;
 			d.pack(key, edge.state);
 
 			Node *kid = seen.find(key);
@@ -454,11 +474,13 @@ int count = 0;
 
 		if(ops.size() == 0) return true;
 
+		this->res.expd++;
 		for(unsigned int i = 0; i < ops.size(); i++) {
 
 			Edge edge(d, state, ops[i]);
 			PackedState key;
 
+			this->res.gend++;
 			d.pack(key, edge.state);
 
 			Node *kid = seen.find(key);
@@ -520,11 +542,13 @@ int count = 0;
 
 		State buf, &state = d.unpack(buf, s->state);
 		Operators ops(d, state);
+		this->res.expd++;
 		for(unsigned int i = 0; i < ops.size(); i++) {
 
 			Edge edge(d, state, ops[i]);
 			Node *kid = nodes->construct();
 
+			this->res.gend++;
 			d.pack(kid->state, edge.state);
 
 			unsigned long hash = d.hash(kid->state);
@@ -577,4 +601,5 @@ int count = 0;
 	double weight;
 	unsigned int iterationCount;
 	std::vector<double> emitTimes;
+	std::vector<unsigned int> lengths;
 };

@@ -207,7 +207,6 @@ public:
 		Node *cur = nodes.get(d, s0);
 		cur->gglobal = 0;
 
-		unsigned int nsteps = 0;
 		while (!cur->goal) {
 			AstarNode *goal = expandLss(d, cur);
 			if (!goal) {
@@ -216,6 +215,7 @@ public:
 				markDeadRedundant(d);
 			}
 			cur = move(cur, goal);
+			times.push_back(walltime() - this->res.wallstart);
 		}
 
 		this->finish();
@@ -230,7 +230,41 @@ public:
 		}
 		std::reverse(this->res.ops.begin(), this->res.ops.end());
 		std::reverse(this->res.path.begin(), this->res.path.end());
-		dfpair(stdout, "num steps", "u", (unsigned long) nsteps);
+	}
+
+	virtual void output(FILE *out) {
+		dfpair(out, "num steps", "%lu", (unsigned long) times.size());
+		assert (lengths.size() == times.size());
+		if (times.size() != 0) {
+			double min = times.front();
+			double max = times.front();
+			for (unsigned int i = 1; i < times.size(); i++) {
+				double dt = times[i] - times[i-1];
+				if (dt < min)
+					min = dt;
+				if (dt > max)
+					max = dt;
+			}
+			dfpair(out, "first emit time", "%g", times.front());
+			dfpair(out, "min step time", "%g", min);
+			dfpair(out, "max step time", "%g", max);
+			dfpair(out, "mean step time", "%g", (times.back()-times.front())/times.size());
+		}
+		if (lengths.size() != 0) {
+			unsigned int min = lengths.front();
+			unsigned int max = lengths.front();
+			unsigned long sum = 0;
+			for (auto l : lengths) {
+				if (l < min)
+					min = l;
+				if (l > max)
+					max = l;
+				sum += l;
+			}
+			dfpair(out, "min step length", "%u", min);
+			dfpair(out, "max step length", "%u", max);
+			dfpair(out, "mean step length", "%g", sum / (double) lengths.size());
+		}
 	}
 
 private:
@@ -445,6 +479,7 @@ private:
 				ops.push_back(p->op);
 			}
 			this->res.ops.insert(this->res.ops.end(), ops.rbegin(), ops.rend());
+			lengths.push_back(ops.size());
 			return best->node;
 		}
 
@@ -454,6 +489,7 @@ private:
 				next = cur->succs[i];
 		}
 		this->res.ops.push_back(next.op);
+		lengths.push_back(1);
 		return next.node;
 	}
 
@@ -489,4 +525,7 @@ private:
 
 	Nodes nodes;
 	unsigned int lookahead;
+
+	std::vector<double> times;
+	std::vector<unsigned int> lengths;
 };
