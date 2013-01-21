@@ -205,9 +205,10 @@ private:
 
 		int c = centers[bi.x * lvl.height() + bi.y];
 		geom2d::Pt g = goalpt(bi, loc);
-		if (togoal[c].prev == gcenter || vg->map.isvisible(loc, g))
-			// still admissible if we go up to the next int
-			return ceil(geom2d::Pt::distance(loc, g));
+		if (togoal[c].prev == gcenter || vg->map.isvisible(loc, g)) {
+			double d = geom2d::Pt::distance(loc, g);
+			return d <= 0 ? 1 : ceil(d);
+		}
 
 		// Length of a tile diagonal, subtracted from the visnav
 		// distance to account for the fact that the goal vertex
