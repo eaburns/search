@@ -22,8 +22,9 @@ template <class D> struct Flrtastar : public SearchAlgorithm<D> {
 	};
 
 	struct succedge {
-		succedge(Node* n, double c) : node(n), costTo(c) {}
+		succedge(Node* n, Oper o, double c) : node(n), op(o), costTo(c) {}
 		Node* node;
+		Oper op;
 		double costTo;
 	};
 
@@ -284,7 +285,7 @@ private:
 
 		State buf, &state = d.unpack(buf, s->state);
 		Operators ops(d, state);
-//		bool populateSuccessors = s->succs.size() == 0;
+		bool populateSuccessors = s->succs.size() == 0;
 
 		this->res.expd++;
 		for(unsigned int i = 0; i < ops.size(); i++) {
@@ -343,8 +344,8 @@ private:
 
 				kid->iterationCount = iterationCount;
 				kid->preds.emplace_back(s, e.cost);
-//				if(populateSuccessors)
-//					s->succs.emplace_back(kid, e.cost);
+				if(populateSuccessors)
+					s->succs.emplace_back(kid, ops[i], e.cost);
 			}
 			else {
 				if(!dup) continue;
@@ -548,22 +549,24 @@ int count = 0;
 
 
 	Node* getNeighborWithLowestG(D& d, Node* s) {
-/*		if(s->succs.size() > 0) {
-			fprintf(stderr, "cached\n");
+		if(s->succs.size() > 0) {
+//			fprintf(stderr, "cached\n");
 			Node* minGKid = s->succs[0].node;
+			minGKid->op = s->succs[0].op;
 
 			for(unsigned int i = 1; i < s->succs.size(); i++) {
 				Node *kid = s->succs[i].node;
 
-				if(kid->g < minGKid->g)
+				if(kid->g < minGKid->g) {
 					minGKid = kid;
+					minGKid->op = s->succs[i].op;
+				}
 			}
 
-			checkMove(d, s, minGKid,
-
 			minGKid->parent = s;
+
 			return minGKid;
-		}*/
+		}
 //fprintf(stderr, "generated\n");
 		Node* minGKid = NULL;
 		double minGCost = std::numeric_limits<double>::infinity();
@@ -604,7 +607,7 @@ int count = 0;
 				minGKid = kid;
 				minGCost = kid->g;
 			}
-			s->succs.emplace_back(kid, edge.cost);
+			s->succs.emplace_back(kid, ops[i], edge.cost);
 		}
 
 		assert(minGKid != NULL);
