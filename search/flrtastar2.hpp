@@ -452,8 +452,6 @@ private:
 				}
 			}
 
-			assert (distinct == n || !std::isinf(succ.node->gglobal));
-
 			if (distinct == n)
 				return false;
 		}
