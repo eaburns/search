@@ -232,6 +232,7 @@ public:
 	}
 
 	virtual void output(FILE *out) {
+		SearchAlgorithm<D>::output(out);
 		dfpair(out, "num steps", "%lu", (unsigned long) times.size());
 		assert (lengths.size() == times.size());
 		if (times.size() != 0) {
@@ -274,8 +275,7 @@ private:
 		astarOpen.clear();
 		astarNodes.clear();
 		astarClosed.clear();
-		delete astarPool;
-		astarPool = new Pool<AstarNode>();
+		astarPool->releaseall();
 
 		AstarNode *a = astarPool->construct();
 		a->node = rootNode;
@@ -344,6 +344,10 @@ private:
 			if (k->goal && kid && (!goal || kid->glocal < goal->glocal))
 				goal = kid;
 
+// The following two lines seem to improve performance on plat2d, but I have no idea why.
+//			if (!kid)
+//				continue;
+
 			if (s->node->gglobal + e.outcost < k->gglobal) {
 				bool wasDead = k->dead;
 				k->dead = false;
@@ -358,9 +362,8 @@ private:
 					expandPropagate(d, kid, false);
 			}
 
-			double backCost = e.revcost;
-			if (k->gglobal + backCost < s->node->gglobal && !k->dead) {
-				s->node->gglobal = k->gglobal + backCost;
+			if (k->gglobal + e.revcost < s->node->gglobal && !k->dead) {
+				s->node->gglobal = k->gglobal + e.revcost;
 //				s->node->h = s->node->hdef;
 				if (i > 0)
 					i = -1;
@@ -449,6 +452,8 @@ private:
 					distinct = pred.node;
 					bestc = c;
 				}
+
+				assert (distinct == n || !std::isinf(succ.node->gglobal));
 			}
 
 			if (distinct == n)
@@ -507,6 +512,8 @@ private:
 
 			Edge e(d, s, ops[i]);
 			Node *k = nodes.get(d, e.state);
+			if (std::isinf(k->gglobal))
+				k->gglobal = n->gglobal + e.cost;
 			k->preds.emplace_back(n, e.cost);
 			n->succs.emplace_back(k, ops[i], e.revcost, e.cost);
 		}
