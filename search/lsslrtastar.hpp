@@ -63,8 +63,6 @@ template <class D> struct Lsslrtastar : public SearchAlgorithm<D> {
 
 	Lsslrtastar(int argc, const char *argv[]) :
 		SearchAlgorithm<D>(argc, argv), seen(30000001), lssclosed(1), iterationCount(0) {
-		nodes = new Pool<Node>();
-
 		lookahead = 0;
 
 		for (int i = 0; i < argc; i++) {
