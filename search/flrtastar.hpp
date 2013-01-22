@@ -84,7 +84,6 @@ template <class D> struct Flrtastar : public SearchAlgorithm<D> {
 
 	Flrtastar(int argc, const char *argv[]) :
 		SearchAlgorithm<D>(argc, argv), seen(30000001), lssclosed(1), iterationCount(0) {
-		nodes = new Pool<Node>();
 
 		lookahead = 0;
 		weight = 0;
@@ -348,12 +347,12 @@ private:
 					s->succs.emplace_back(kid, ops[i], e.cost);
 			}
 			else {
+				nodes->destruct(kid);
 				if(!dup) continue;
 				kid = dup;
 			}
 
 			double newGCost = s->g + e.cost;
-
 
 			if(kid->g > newGCost) {
 				bool wasDead = kid->dead;
