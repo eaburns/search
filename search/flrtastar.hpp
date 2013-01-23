@@ -154,6 +154,7 @@ template <class D> struct Flrtastar : public SearchAlgorithm<D> {
 			this->res.ops.insert(	this->res.ops.end(), partial.rbegin(), partial.rend());
 
 			start = dest;
+
 			emitTimes.push_back(walltime() - this->res.wallstart);
 
 			startState = d.unpack(buf, start->state);
@@ -256,13 +257,6 @@ private:
 
 			Node* s  = *lssopen.pop();
 
-			Node* t = s;
-
-			while(t != s_cur) {
-				t = t->parent;
-				assert(t);
-			}
-
 			if(goal != NULL && goal->f <= s->f) {
 				lssopen.push(s);
 				return goal;
@@ -307,7 +301,7 @@ private:
 
 					if(kid->iterationCount < iterationCount) {
 						kid->g_local = std::numeric_limits<double>::infinity();
-						kid->preds.clear();
+//						kid->preds.clear();
 						kid->openind = -1;
 					}
 
@@ -342,7 +336,12 @@ private:
 				}
 
 				kid->iterationCount = iterationCount;
-				kid->preds.emplace_back(s, e.cost);
+				bool found = false;
+				for(unsigned int j = 0; j < kid->preds.size(); j++) {
+					if(kid->preds[i].node == s) { found = true; break; }
+				}
+				if(!found)
+					kid->preds.emplace_back(s, e.cost);
 				if(populateSuccessors)
 					s->succs.emplace_back(kid, ops[i], e.cost);
 			}
@@ -401,7 +400,7 @@ private:
 
 //TODO: Nathan does this and we needed it to but I'm not convinced it is correct
 //with respect to the original LSSLRTA* Algorithm
-			if(open.size() == 0) return;
+			if(open.size() == 0) break;
 
 			Node* s = *open.pop();
 
@@ -442,7 +441,7 @@ int count = 0;
 		}
 
 		Node* minNode = NULL;
-		double minCost = std::numeric_limits<double>::infinity();
+//		double minCost = std::numeric_limits<double>::infinity();
 		bool openIsDead = true;
 		auto openData = lssopen.data();
 		for(auto s : openData) {
@@ -456,15 +455,16 @@ int count = 0;
 			openIsDead = false;
 
 //			double cost = s->g + weight * s->h;
-			double cost = s->g_local + weight * s->h;
-			if(cost < minCost) {
+//			double cost = s->g_local + weight * s->h;
+			if(minNode == NULL || Node::pred(s, minNode)) { //cost < minCost) {
 				minNode = s;
-				minCost = cost;
+//				minCost = cost;
 			}
 		}
 
 		if(openIsDead)
 			return NULL;
+
 		return minNode;
 	}
 
@@ -476,7 +476,6 @@ int count = 0;
 
 		this->res.expd++;
 		for(unsigned int i = 0; i < ops.size(); i++) {
-			if(ops[i] == s->pop) continue;
 
 			Edge edge(d, state, ops[i]);
 			PackedState key;
@@ -487,9 +486,10 @@ int count = 0;
 			Node *kid = seen.find(key);
 
 			double value = s->g + edge.cost;
-			if(!kid || kid->g >= value || geom2d::doubleeq(kid->g, value))
+			if(!kid || kid->g >= value)
 				return false;
 		}
+
 		return true;
 	}
 
@@ -515,13 +515,11 @@ int count = 0;
 			else if(kid->dead)
 				continue;
 
-//TODO: is this really okay to have happen?
-			if(kid->preds.size() == 0) return false;
 
-			Node* minNode = kid->preds[0].node;
-			double minCost = minNode->g + kid->preds[0].costFrom;
+			Node* minNode = NULL;
+			double minCost = std::numeric_limits<double>::infinity();
 
-			for(unsigned int j = 1; j < kid->preds.size(); j++) {
+			for(unsigned int j = 0; j < kid->preds.size(); j++) {
 
 			 	const prededge &p = kid->preds[j];
 
@@ -530,11 +528,8 @@ int count = 0;
 
 				double cost = p.node->g + p.costFrom;
 
-				if(minCost > cost) {
+				if(minNode == NULL || minCost > cost) {
 					minCost = cost;
-					minNode = p.node;
-				}
-				else if(geom2d::doubleeq(minCost, cost) && p.node < minNode) {
 					minNode = p.node;
 				}
 			}
@@ -543,9 +538,8 @@ int count = 0;
 				return false;
 		}
 
-		return false;
+		return true;
 	}
-
 
 	Node* getNeighborWithLowestG(D& d, Node* s) {
 		if(s->succs.size() > 0) {
