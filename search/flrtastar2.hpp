@@ -381,9 +381,10 @@ private:
 	}
 
 	void gCostLearning(D &d) {
-		for (auto n : astarOpen.data()) {
-			if (!n->node->dead)
-				expandPropagate(d, n, false);
+		std::vector<AstarNode*> &o = astarOpen.data();
+		for (unsigned int i = 0; i < o.size(); i++) {
+			if (!o[i]->node->dead)
+				expandPropagate(d, o[i], false);
 		}
 	}
 
