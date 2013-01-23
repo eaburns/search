@@ -26,8 +26,8 @@ void SearchStats::finish() {
 }
 
 void SearchStats::output(FILE *f) {
-	dfpair(f, "total raw cpu time", "%g", cpuend - cpustart);
-	dfpair(f, "total wall time", "%g", wallend - wallstart);
+	dfpair(f, "total raw cpu time", "%f", cpuend - cpustart);
+	dfpair(f, "total wall time", "%f", wallend - wallstart);
 	dfpair(f, "total nodes expanded", "%lu", expd);
 	dfpair(f, "total nodes generated", "%lu", gend);
 	dfpair(f, "total nodes duplicated", "%lu", dups);
