@@ -341,7 +341,7 @@ private:
 				kid->iterationCount = iterationCount;
 				bool found = false;
 				for(unsigned int j = 0; j < kid->preds.size(); j++) {
-					if(kid->preds[i].node == s) { found = true; break; }
+					if(kid->preds[j].node == s) { found = true; break; }
 				}
 				if(!found)
 					kid->preds.emplace_back(s, e.cost);
