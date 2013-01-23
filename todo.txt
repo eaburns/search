@@ -27,3 +27,5 @@ towers of Hanoi +domains
 x 2013-01-14 (A) LSS-LRTA* +algorithms
 render only tiles on the screen in plat2d/play +plat2d
 pre-compute visgraphs for +plat2d (-heuristic option?)
+spanning tree heuristic +vacuum
+chargers +vacuum
