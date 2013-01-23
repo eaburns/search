@@ -1,5 +1,5 @@
+(A) ClosedList equality should be done by the domain not operator== on the states
 (A) DTA* +algorithms
-x 2013-01-18 (A) 2013-01-14 f-LRTA* +algorithms
 (B) cost class to deal with infinity issues
 (B) dynamic robot pathfinding +domains
 (B) robot arm +domains
@@ -13,19 +13,21 @@ Explicit Estimation Search +algorithms
 PDBs +tiles
 Rubik's cube +domains
 bit-packed states +pancake
+chargers +vacuum
 cheapest and nearest heuristics for life cost +gridnav
+don't copy the dirt array in +vacuum except on the Suck action
 draw the solution path and expanded nodes in +plat2d
 linear conflicts heuristic +tiles
 multiple sequence alignment +domains
 packed >15 puzzle states +tiles
+pre-compute visgraphs for +plat2d (-heuristic option?)
 red-black tree +structs
+render only tiles on the screen in plat2d/play +plat2d
 roadmap pathfinding +domains
 skip list +structs
+spanning tree heuristic +vacuum
 support -stdlib=libc++ on +clang
 topspin +domains
 towers of Hanoi +domains
 x 2013-01-14 (A) LSS-LRTA* +algorithms
-render only tiles on the screen in plat2d/play +plat2d
-pre-compute visgraphs for +plat2d (-heuristic option?)
-spanning tree heuristic +vacuum
-chargers +vacuum
+x 2013-01-18 (A) 2013-01-14 f-LRTA* +algorithms
