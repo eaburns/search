@@ -145,7 +145,7 @@ private:
 	Cost heuristic(D &d, State &cur, Oper pop) {
 		Node *n = nodes->construct();
 		d.pack(n->packed, cur);
-		unsigned long hash = d.hash(n->packed);
+		unsigned long hash = n->packed.hash(&d);
 
 		Node *dup = seen.find(n->packed, hash);
 		if (dup) {
@@ -192,7 +192,7 @@ private:
 	Cost *storenode(D &d, State &cur, Cost h) {
 		Node *n = nodes->construct();
 		d.pack(n->packed, cur);
-		unsigned long hash = d.hash(n->packed);
+		unsigned long hash = n->packed.hash(&d);
 
 		Node *dup = seen.find(n->packed, hash);
 		if (dup) {

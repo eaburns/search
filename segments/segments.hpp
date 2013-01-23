@@ -143,13 +143,15 @@ public:
 			return *this;
 		}
 
-		bool operator==(const PackedState &o) const {
+		bool eq(const Segments*, const PackedState &o) const {
 			for (unsigned int i = 0; i < poses.size(); i++) {
 				if (poses[i] != o.poses[i])
 					return false;
 			}
 			return x == o.x && y == o.y;
 		}
+
+		unsigned long hash(const Segments*) const;
 
 		std::vector<Pose> poses;
 		unsigned int x, y;
@@ -238,8 +240,6 @@ public:
 	State initialstate() const;
 
 	State goalstate() const;
-
-	unsigned long hash(const PackedState&) const;
 
 	Cost h(const State&) const;
 

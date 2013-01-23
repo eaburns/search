@@ -3,23 +3,30 @@
 #include <ctime>
 
 struct Ent {
-	typedef unsigned int PackedState;
+	typedef Ent PackedState;
 
-	static unsigned int hash(PackedState &ps) { return ps; }
+	static ClosedEntry<Ent, Ent> &closedentry(Ent *n) {
+		return n->closedent;
+	} 
 
-	static ClosedEntry<Ent, Ent> &closedentry(Ent *n) { return n->closedent; }
+	static Ent &key(Ent *n) {
+		return *n;
+	}
 
-	static PackedState &key(Ent *n) { return n->packed; }
-
-	Ent(int i) : vl(i), packed(i) {}
+	Ent(int i) : vl(i) {}
 
 	Ent() {}
 
-	PackedState pack() { return vl; }
+	bool eq(const Ent*, const Ent &o) const {
+		return vl == o.vl;
+	}
+
+	unsigned int hash(const Ent*) const {
+		return vl;
+	}
 
 	ClosedEntry<Ent, Ent> closedent;
 	unsigned int vl;
-	PackedState packed;
 };
 
 typedef unsigned int Key;
@@ -59,7 +66,7 @@ bool closedlist_find_test() {
 	}
 
 	for (unsigned int i = 0; i < N; i++) {
-		Ent::PackedState ps = ents[i].pack();
+		Ent::PackedState ps = ents[i];
 		Ent *vlp = closed.find(ps);
 		if (!vlp) {
 			testpr("No value mapped to key %u\n", i);
@@ -85,7 +92,8 @@ bool closedlist_rm_test() {
 
 	unsigned long fill = N;
 	for (unsigned int i = 1; i < N; i+=2) {
-		if (!closed.remove(i)) {
+		Ent e(i);
+		if (!closed.remove(e)) {
 			testpr("No value mapped to key %u\n", i);
 			res = false;
 		}
@@ -97,7 +105,8 @@ bool closedlist_rm_test() {
 	}
 
 	for (unsigned int i = 0; i < N; i++) {
-		Ent *vlp = closed.find(i);
+		Ent e(i);
+		Ent *vlp = closed.find(e);
 		if (!vlp && i % 2 == 0) {
 			testpr("No value mapped to even key %u\n", i);
 			res = false;
@@ -123,7 +132,7 @@ bool closedlist_find_rand_test() {
 	}
 
 	for (unsigned int i = 0; i < N; i++) {
-		Ent *vlp = closed.find(ents[i].vl);
+		Ent *vlp = closed.find(ents[i]);
 		if (!vlp) {
 			testpr("No value mapped to key %u\n", i);
 			res = false;

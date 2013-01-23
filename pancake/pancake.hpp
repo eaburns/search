@@ -19,13 +19,19 @@ public:
 	typedef int Cost;
 
 	struct State {
-		bool operator==(const State &o) const {
+		bool eq(const Pancake*, const State &o) const {
 			for (unsigned int i = 0; i < Ncakes; i++) {
 				if (cakes[i] != o.cakes[i])
 					return false;
 			}
 			return true;
 		}
+
+		unsigned long hash(const Pancake*) const {
+			return hashbytes((unsigned char *) cakes,
+						Ncakes * sizeof(Cake));
+		}
+
 	private:
 		friend class Pancake;
 		friend class Undo;
@@ -50,11 +56,6 @@ public:
 	Pancake(FILE*);
 
 	State initialstate();
-
-	unsigned long hash(const PackedState &p) const {
-		return hashbytes((unsigned char *) p.cakes,
-					Ncakes * sizeof(Cake));
-	}
 
 	Cost h(const State &s) const {
 		return s.h;

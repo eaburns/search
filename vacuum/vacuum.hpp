@@ -20,7 +20,7 @@ public:
 		State() : loc(-1), energy(-1), ndirt(-1) {
 		}
 
-		bool operator==(const State &o) const {
+		bool eq(const Vacuum*, const State &o) const {
 			if (loc != o.loc || ndirt != o.ndirt)
 				return false;
 
@@ -32,15 +32,15 @@ public:
 			return true;
 		}
 
+		unsigned long hash(const Vacuum*) const {
+			return loc*dirt.size() + ndirt;
+		}
+
 		int loc, energy, ndirt;
 		std::vector<bool> dirt;
 	};
 
 	typedef State PackedState;
-
-	unsigned long hash(const PackedState &s) const {
-		return s.loc*ndirt() + s.ndirt;
-	}
 
 	State initialstate(void) const;
 

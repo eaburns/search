@@ -34,11 +34,11 @@ public:
 		return 0;
 	}
 
-	unsigned long hash() {
+	unsigned long hash(const void*) {
 		return hashbytes(bytes, sizeof(bytes));
 	}
 
-	bool operator==(PackedTiles &o) const {
+	bool eq(const void*, PackedTiles &o) const {
 		return memcmp(bytes, o.bytes, sizeof(bytes)) == 0;
 	}
 };
@@ -88,11 +88,11 @@ public:
 		return b;
 	}
 
-	unsigned long hash() {
+	unsigned long hash(const void*) {
 		return word;
 	}
 
-	bool operator==(const PackedTiles &o) const {
+	bool eq(const void*, const PackedTiles &o) const {
 		return word == o.word;
 	}
 };

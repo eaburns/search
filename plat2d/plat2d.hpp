@@ -52,11 +52,30 @@ struct Plat2d {
 
 	struct PackedState {
 
-		bool operator==(const PackedState &o) const {
+		bool eq(const Plat2d*, const PackedState &o) const {
 			return jframes == o.jframes &&
 				geom2d::doubleeq(x, o.x) &&
 				geom2d::doubleeq(y, o.y) &&
 				geom2d::doubleeq(dy, o.dy);
+		}	
+	
+		unsigned long hash(const Plat2d*) {
+			static const unsigned int sz = sizeof(x) +
+				sizeof(y) + sizeof(dy) + sizeof(jframes);
+			unsigned char bytes[sz];
+			unsigned int i = 0;
+			char *p = (char*) &x;
+			for (unsigned int j = 0; j < sizeof(x); j++)
+				bytes[i++] = p[j];
+			p = (char*) &y;
+			for (unsigned int j = 0; j < sizeof(y); j++)
+				bytes[i++] = p[j];
+			p = (char*) &dy;
+			for (unsigned int j = 0; j < sizeof(dy); j++)
+				bytes[i++] = p[j];
+			bytes[i++] = jframes;
+			assert (i <= sz);
+			return hashbytes(bytes, i);
 		}
 
 		double x, y, dy;
@@ -66,25 +85,6 @@ struct Plat2d {
 	};
 
 	State initialstate();
-
-	unsigned long hash(PackedState &pkd) {
-		static const unsigned int sz = sizeof(pkd.x) +
-			sizeof(pkd.y) + sizeof(pkd.dy) + sizeof(pkd.jframes);
-		unsigned char bytes[sz];
-		unsigned int i = 0;
-		char *p = (char*) &pkd.x;
-		for (unsigned int j = 0; j < sizeof(pkd.x); j++)
-			bytes[i++] = p[j];
-		p = (char*) &pkd.y;
-		for (unsigned int j = 0; j < sizeof(pkd.y); j++)
-			bytes[i++] = p[j];
-		p = (char*) &pkd.dy;
-		for (unsigned int j = 0; j < sizeof(pkd.dy); j++)
-			bytes[i++] = p[j];
-		bytes[i++] = pkd.jframes;
-		assert (i <= sz);
-		return hashbytes(bytes, i);
-	}
 
 	Cost h(State &s) {
 		if (s.h < 0)

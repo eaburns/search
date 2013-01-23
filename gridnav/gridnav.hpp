@@ -109,20 +109,17 @@ struct GridNav {
 	struct PackedState {
 		unsigned int loc;
 
-		bool operator==(const PackedState &o) const {
+		unsigned long hash(const GridNav*) const {
+			return loc;
+		}
+
+		bool eq(const GridNav*, const PackedState &o) const {
 			return o.loc == loc;
 		}
 
-		bool operator!=(const PackedState &o) const {
-			return !(o == *this);
-		}
 	};
 
 	State initialstate() const;
-
-	unsigned long hash(PackedState &p) {
-		return p.loc;
-	}
 
 	Cost h(State &s) const {
 		computeh(s);

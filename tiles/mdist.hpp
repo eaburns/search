@@ -30,10 +30,6 @@ public:
 
 	State initialstate();
 
-	unsigned long hash(PackedState &p) {
-		return p.hash();
-	}
-
 	Cost h(State &s) const { return s.h; }
 
 	Cost d(State &s) const { return s.h; }

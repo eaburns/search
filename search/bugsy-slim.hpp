@@ -191,7 +191,7 @@ private:
 		Kidinfo kinfo(kid->g, kid->h, kid->d);
 
 		d.pack(kid->state, e.state);
-		unsigned long hash = d.hash(kid->state);
+		unsigned long hash = kid->state.hash(&d);
 		Node *dup = closed.find(kid->state, hash);
 		if (dup) {
 			this->res.dups++;

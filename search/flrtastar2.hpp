@@ -88,7 +88,7 @@ private:
 			Node *n = pool->construct();
 			d.pack(n->state, s);
 
-			unsigned long hash = d.hash(n->state);
+			unsigned long hash = n->state.hash(&d);
 			Node *found = tbl.find(n->state, hash);
 			if (found) {
 				pool->destruct(n);

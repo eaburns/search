@@ -43,7 +43,7 @@ template<typename Ops, typename Node, typename D> struct ClosedList {
 	}
 
 	void add(Node *n) {
-		add(n, dom->hash(Ops::key(n)));
+		add(n, Ops::key(n).hash(dom));
 	}
 
 	void add(Node *n, unsigned long h) {
@@ -55,12 +55,12 @@ template<typename Ops, typename Node, typename D> struct ClosedList {
 	}
 
 	Node *find(PackedState &k) {
-		return find(k, dom->hash(k));
+		return find(k, k.hash(dom));
 	}
 
 	Node *find(PackedState &k, unsigned long h) {
 		for (Node *p = bins[h % nbins]; p; p = Ops::closedentry(p).nxt) {
-			if (Ops::key(p) == k)
+			if (Ops::key(p).eq(dom, k))
 				return p;
 		}
 
@@ -87,7 +87,7 @@ template<typename Ops, typename Node, typename D> struct ClosedList {
 	}
 	
 	Node* remove(PackedState &k) {
-		return remove(k, this->dom->hash(k)); 
+		return remove(k, k.hash(dom)); 
 	}
 
 	Node* remove(PackedState &k, unsigned long h) {
@@ -95,7 +95,7 @@ template<typename Ops, typename Node, typename D> struct ClosedList {
 		Node* prev = this->bins[bindex];
 		Node *p = prev;
 		for ( ; p; p = Ops::closedentry(p).nxt) {
-			if (Ops::key(p) == k) break;
+			if (Ops::key(p).eq(dom, k)) break;
 			prev = p;
 		}
 
@@ -201,7 +201,7 @@ template<typename Ops, typename Node, typename D> struct ClosedList {
 
 		for (unsigned int i = 0; i < nbins; i++) {
 		for (Node *p = bins[i]; p; p = Ops::closedentry(p).nxt)
-			add(b, sz, p, dom->hash(Ops::key(p)));
+			add(b, sz, p, Ops::key(p).hash(dom));
 		}
 
 		if (bins)

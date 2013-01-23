@@ -114,7 +114,7 @@ private:
 		kid->g = parent->g + e.cost;
 		d.pack(kid->state, e.state);
 
-		unsigned long hash = d.hash(kid->state);
+		unsigned long hash = kid->state.hash(&d);
 		Node *dup = closed.find(kid->state, hash);
 		if (dup) {
 			this->res.dups++;

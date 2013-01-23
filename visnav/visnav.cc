@@ -51,7 +51,7 @@ VisNav::Cost VisNav::pathcost(const std::vector<State> &path, const std::vector<
 	for (int i = ops.size() - 1; i >= 0; i--) {
 		State copy(state);
 		Edge e(*this, copy,ops[i]);
-		assert (e.state == path[i]);
+		assert (e.state.eq(this, path[i]));
 		state = e.state;
 		cost += e.cost;
 	}

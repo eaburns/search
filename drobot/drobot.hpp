@@ -201,9 +201,14 @@ struct DockRobot {
 
 		~PackedState() {
 			if (pos) delete[] pos;
+		}	
+	
+		unsigned long hash(const DockRobot *d) const {
+			return hashbytes(reinterpret_cast<unsigned char*>(pos),
+				sizeof(pos[0])*sz);
 		}
 
-		bool operator==(const PackedState &o) const {
+		bool eq(const DockRobot*, const PackedState &o) const {
 			for (unsigned int i = 0; i < sz; i++) {
 				if (pos[i] != o.pos[i])
 					return false;
@@ -216,11 +221,6 @@ struct DockRobot {
 	};
 
 	State initialstate();
-
-	unsigned long hash(const PackedState &p) const {
-		return hashbytes(reinterpret_cast<unsigned char*>(p.pos),
-			sizeof(p.pos[0])*p.sz);
-	}
 
 	Cost h(State &s) const {
 		if (s.h < Cost(0)) {

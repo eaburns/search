@@ -262,7 +262,7 @@ private:
 
 		d.pack(kid->state, e.state);
 
-		unsigned long hash = d.hash(kid->state);
+		unsigned long hash = kid->state.hash(&d);
 		Node *dup = static_cast<Node*>(closed.find(kid->state, hash));
 		if (dup) {
 			this->res.dups++;

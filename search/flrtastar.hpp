@@ -262,7 +262,7 @@ private:
 				return goal;
 			}
 
-			unsigned long hash = d.hash(s->state);
+			unsigned long hash = s->state.hash(&d);
 			if(!lssclosed.find(s->state, hash))
 				lssclosed.add(s, hash);
 
@@ -292,7 +292,7 @@ private:
 			this->res.gend++;
 			d.pack(kid->state, e.state);
 
-			unsigned long hash = d.hash(kid->state);
+			unsigned long hash = kid->state.hash(&d);
 			Node *dup = seen.find(kid->state, hash);
 
 			double newLocalG = s->g_local + e.cost;
@@ -407,7 +407,7 @@ private:
 
 			Node* s = *open.pop();
 
-			unsigned long hash = d.hash(s->state);
+			unsigned long hash = s->state.hash(&d);
 			if(lssclosed.find(s->state, hash)) {
 				oldClosed.push_back(lssclosed.remove(s->state, hash));
 			}
@@ -578,7 +578,7 @@ int count = 0;
 			this->res.gend++;
 			d.pack(kid->state, edge.state);
 
-			unsigned long hash = d.hash(kid->state);
+			unsigned long hash = kid->state.hash(&d);
 			Node *dup = seen.find(kid->state, hash);
 
 			if(dup) {

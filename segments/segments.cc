@@ -336,12 +336,12 @@ Segments::State Segments::goalstate() const {
 	return State(*this, poses, 0, 0);
 }
 
-unsigned long Segments::hash(const PackedState &pkd) const {
-	unsigned int ss[3*pkd.poses.size() + 2];
+unsigned long Segments::PackedState::hash(const Segments *s) const {
+	unsigned int ss[3*poses.size() + 2];
 	unsigned int n = 0;
-	ss[n++] = pkd.x;
-	ss[n++] = pkd.y;
-	for (auto p = pkd.poses.begin(); p != pkd.poses.end(); p++) {
+	ss[n++] = x;
+	ss[n++] = y;
+	for (auto p = poses.begin(); p != poses.end(); p++) {
 		ss[n++] = p->rot;
 		ss[n++] = p->x;
 		ss[n++] = p->y;
