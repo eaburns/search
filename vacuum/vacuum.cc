@@ -1,6 +1,7 @@
 #include "vacuum.hpp"
+#include <utility>
 
-Vacuum::Vacuum(FILE *in) : x0(-1), y0(-1), ndirt(0) {
+Vacuum::Vacuum(FILE *in) : x0(-1), y0(-1) {
 	int w, h;
 	if (fscanf(in, "%d\n%d\n", &w, &h) != 2)
 		fatal("Failed to read the width and height");
@@ -18,8 +19,8 @@ Vacuum::Vacuum(FILE *in) : x0(-1), y0(-1), ndirt(0) {
 				break;
 
 			case '*':
-				dirt[map->index(x, y)] = ndirt;
-				ndirt++;
+				dirt[map->index(x, y)] = ndirt();
+				dirtLocs.push_back(std::make_pair(x, y));
 				break;
 
 			case '@':
@@ -64,8 +65,8 @@ void Vacuum::reverseops() {
 Vacuum::State Vacuum::initialstate() const {
 	State s;
 	s.loc = map->index(x0, y0);
-	s.ndirt = ndirt;
-	s.dirt.resize(ndirt, true);
+	s.ndirt = ndirt();
+	s.dirt.resize(ndirt(), true);
 	return s;
 }
 
@@ -81,4 +82,17 @@ Vacuum::Cost Vacuum::pathcost(const std::vector<State> &path, const std::vector<
 	}
 	assert (isgoal(state));
 	return cost;
+}
+
+void Vacuum::printpath(FILE *out, const std::vector<Oper> &ops) const {
+	for (int i = ops.size()-1; i >= 0; i--) {
+		if (ops.at(i) <= 3)
+			fprintf(out, "%s\n", map->mvs[ops.at(i)].name);
+		else if (ops.at(i) == Suck)
+			fprintf(out, "V\n");
+		else if (ops.at(i) == Charge)
+			fatal("Charge action!");
+		else
+			fatal("Unknown operator %d", ops[i]);
+	}
 }

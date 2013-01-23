@@ -56,7 +56,7 @@ struct GridMap {
 	struct Move {
 		Move() : n(0) { }
 
-		Move(const GridMap&, int, int, unsigned int, ...);
+		Move(const GridMap&, const char*, int, int, unsigned int, ...);
 
 		// dx, dy give the x and y displacement of
 		// this move.
@@ -78,6 +78,9 @@ struct GridMap {
 		// n is the number of valid elements in
 		// the chk array.
 		unsigned int n;
+
+		// Name is the human-readable name of this operator.
+		const char *name;
 	};
 
 	// ok returns true if the given move is valid from the

@@ -39,13 +39,36 @@ public:
 	typedef State PackedState;
 
 	unsigned long hash(const PackedState &s) const {
-		return s.loc*ndirt + s.ndirt;
+		return s.loc*ndirt() + s.ndirt;
 	}
 
 	State initialstate(void) const;
 
 	Cost h(const State &s) const {
-		return s.ndirt;
+		unsigned int i;
+		for (i = 0; i < s.dirt.size() && !dirt[i]; i++)
+			;
+
+		int minx = dirtLocs[i].first;
+		int maxx = minx;
+		int miny = dirtLocs[i].second;
+		int maxy = miny;
+
+		for (i++; i < s.dirt.size(); i++) {
+			if (!dirt[i])
+				continue;
+			int x = dirtLocs[i].first, y = dirtLocs[i].second;
+			if (x < minx)
+				minx = x;
+			if (x > maxx)
+				maxx = x;
+			if (y < miny)
+				miny = y;
+			if (y > maxy)
+				maxy = y;
+		}
+
+		return s.ndirt + (maxx-minx) + (maxy-miny);
 	}
 
 	Cost d(const State &s) const {
@@ -98,7 +121,7 @@ public:
 				int dirt = d.dirt[s.loc];
 
 				assert (dirt >= 0);
-				assert ((unsigned int) dirt < d.ndirt);
+				assert ((unsigned int) dirt < d.ndirt());
 				assert (state.dirt[dirt]);
 
 				state.dirt[dirt]  =false;
@@ -138,7 +161,13 @@ public:
 
 	Cost pathcost(const std::vector<State>&, const std::vector<Oper>&);
 
+	void printpath(FILE*, const std::vector<Oper>&) const;
+
 private:
+
+	unsigned int ndirt() const {
+		return dirtLocs.size();
+	}
 
 	// reverseops computes the reverse operators
 	void reverseops();
@@ -149,7 +178,7 @@ private:
 	GridMap *map;
 	int x0, y0;
 
-	unsigned int ndirt;
-	std::vector<int> dirt;
+	std::vector<int> dirt;	// Indexed by map location, gives dirt ID.
+	std::vector<std::pair<int, int> > dirtLocs;
 	std::vector<bool> chargers;
 };

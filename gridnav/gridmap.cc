@@ -257,8 +257,8 @@ void GridMap::setsize(unsigned int width, unsigned int height) {
 	}
 }
 
-GridMap::Move::Move(const GridMap &m, int deltax, int deltay, unsigned int num, ...) :
-			dx(deltax), dy(deltay), delta(dx + m.w * dy), cost(1.0), n(num + 1) {
+GridMap::Move::Move(const GridMap &m, const char *nme, int deltax, int deltay, unsigned int num, ...) :
+			dx(deltax), dy(deltay), delta(dx + m.w * dy), cost(1.0), n(num + 1), name(nme) {
 	if (n > sizeof(chk) / sizeof(chk[0]))
 		fatal("Cannot create a move with %d checks\n", n);
 
@@ -280,35 +280,35 @@ GridMap::Move::Move(const GridMap &m, int deltax, int deltay, unsigned int num, 
 
 void GridMap::setoctile() {
 	// This operator ordering seems to give more accurate
-	// path-costs (compared to Nathan's scenario costs)
+	// path-costs (compared to Sathan's scenario costs)
 	// when simply using doubles as the cost type.
 	nmvs = 0;
-	mvs[nmvs++] = Move(*this, -1,0, 0);
-	mvs[nmvs++] = Move(*this, 1,0, 0);
-	mvs[nmvs++] = Move(*this, 0,-1, 0);
-	mvs[nmvs++] = Move(*this, -1,-1, 2, 0,-1, -1,0);
-	mvs[nmvs++] = Move(*this, 1,-1, 2, 0,-1, 1,0);
-	mvs[nmvs++] = Move(*this, 0,1, 0);
-	mvs[nmvs++] = Move(*this, -1,1, 2, -1,0, 0,1);
-	mvs[nmvs++] = Move(*this, 1,1, 2, 1,0, 0,1);
+	mvs[nmvs++] = Move(*this, "W", -1,0, 0);
+	mvs[nmvs++] = Move(*this, "E", 1,0, 0);
+	mvs[nmvs++] = Move(*this, "N", 0,-1, 0);
+	mvs[nmvs++] = Move(*this, "NW", -1,-1, 2, 0,-1, -1,0);
+	mvs[nmvs++] = Move(*this, "NE", 1,-1, 2, 0,-1, 1,0);
+	mvs[nmvs++] = Move(*this, "S", 0,1, 0);
+	mvs[nmvs++] = Move(*this, "SW", -1,1, 2, -1,0, 0,1);
+	mvs[nmvs++] = Move(*this, "SE", 1,1, 2, 1,0, 0,1);
 }
 
 void GridMap::seteightway() {
 	nmvs = 0;
-	mvs[nmvs++] = Move(*this, 1,1, 0);
-	mvs[nmvs++] = Move(*this, 1,-1, 0);
-	mvs[nmvs++] = Move(*this, -1,1, 0);
-	mvs[nmvs++] = Move(*this, -1,-1, 0);
-	mvs[nmvs++] = Move(*this, 0,1, 0);
-	mvs[nmvs++] = Move(*this, 0,-1, 0);
-	mvs[nmvs++] = Move(*this, -1,0, 0);
-	mvs[nmvs++] = Move(*this, 1,0, 0);
+	mvs[nmvs++] = Move(*this, "SE", 1,1, 0);
+	mvs[nmvs++] = Move(*this, "NE", 1,-1, 0);
+	mvs[nmvs++] = Move(*this, "SW", -1,1, 0);
+	mvs[nmvs++] = Move(*this, "NW", -1,-1, 0);
+	mvs[nmvs++] = Move(*this, "S", 0,1, 0);
+	mvs[nmvs++] = Move(*this, "N", 0,-1, 0);
+	mvs[nmvs++] = Move(*this, "W", -1,0, 0);
+	mvs[nmvs++] = Move(*this, "E", 1,0, 0);
 }
 
 void GridMap::setfourway() {
 	nmvs = 0;
-	mvs[nmvs++] = Move(*this, 0,1, 0);
-	mvs[nmvs++] = Move(*this, 0,-1, 0);
-	mvs[nmvs++] = Move(*this, -1,0, 0);
-	mvs[nmvs++] = Move(*this, 1,0, 0);
+	mvs[nmvs++] = Move(*this, "S", 0,1, 0);
+	mvs[nmvs++] = Move(*this, "N", 0,-1, 0);
+	mvs[nmvs++] = Move(*this, "W", -1,0, 0);
+	mvs[nmvs++] = Move(*this, "E", 1,0, 0);
 }
