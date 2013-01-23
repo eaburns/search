@@ -214,7 +214,7 @@ public:
 				markDeadRedundant(d);
 			}
 			cur = move(cur, goal);
-			times.push_back(walltime() - this->res.wallstart);
+			times.push_back(cputime() - this->res.cpustart);
 		}
 
 		this->finish();
@@ -245,10 +245,10 @@ public:
 				if (dt > max)
 					max = dt;
 			}
-			dfpair(out, "first emit time", "%g", times.front());
-			dfpair(out, "min step time", "%g", min);
-			dfpair(out, "max step time", "%g", max);
-			dfpair(out, "mean step time", "%g", (times.back()-times.front())/times.size());
+			dfpair(out, "first emit cpu time", "%f", times.front());
+			dfpair(out, "min step cpu time", "%f", min);
+			dfpair(out, "max step cpu time", "%f", max);
+			dfpair(out, "mean step cpu time", "%f", (times.back()-times.front())/times.size());
 		}
 		if (lengths.size() != 0) {
 			unsigned int min = lengths.front();

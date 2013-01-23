@@ -155,7 +155,7 @@ template <class D> struct Flrtastar : public SearchAlgorithm<D> {
 
 			start = dest;
 
-			emitTimes.push_back(walltime() - this->res.wallstart);
+			emitTimes.push_back(cputime() - this->res.cpustart);
 
 			startState = d.unpack(buf, start->state);
 		}
@@ -185,7 +185,7 @@ template <class D> struct Flrtastar : public SearchAlgorithm<D> {
 		SearchAlgorithm<D>::output(out);
 		dfpair(out, "num steps", "%lu", emitTimes.size());
 		if (emitTimes.size() > 0) {
-			dfpair(out, "first emit time", "%f", emitTimes[0]);
+			dfpair(out, "first emit cpu time", "%f", emitTimes[0]);
 			double minEmit =  emitTimes.front();
 			double maxEmit = emitTimes.front();
 			for(unsigned int i = 1; i < emitTimes.size(); i++) {
@@ -193,9 +193,9 @@ template <class D> struct Flrtastar : public SearchAlgorithm<D> {
 				if(stepTime < minEmit) minEmit = stepTime;
 				if(stepTime > maxEmit) maxEmit = stepTime;
 			}
-			dfpair(out, "min step time", "%f", minEmit);
-			dfpair(out, "max step time", "%f", maxEmit);
-			dfpair(out, "mean step time", "%f", (emitTimes.back() - emitTimes.front()) / (double) emitTimes.size());
+			dfpair(out, "min step cpu time", "%f", minEmit);
+			dfpair(out, "max step cpu time", "%f", maxEmit);
+			dfpair(out, "mean step cpu time", "%f", (emitTimes.back() - emitTimes.front()) / (double) emitTimes.size());
 		}
 		if (lengths.size() != 0) {
 			unsigned int min = lengths.front();
