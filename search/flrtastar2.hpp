@@ -206,9 +206,9 @@ public:
 		Node *cur = nodes.get(d, s0);
 		cur->gglobal = 0;
 
-		while (!cur->goal) {
+		while (!cur->goal && !this->limit()) {
 			AstarNode *goal = expandLss(d, cur);
-			if (!goal) {
+			if (!goal && !this->limit()) {
 				gCostLearning(d);
 				hCostLearning(d);
 				markDeadRedundant(d);
@@ -218,6 +218,11 @@ public:
 		}
 
 		this->finish();
+
+		if (!cur->goal) {
+			this->res.ops.clear();
+			return;
+		}
 
 		// Rebuild the path from the operators.
 		nodes.clear();
@@ -288,8 +293,7 @@ private:
 
 		AstarNode *goal = NULL;
 
-		unsigned int exp;
-		for (exp = 0; !astarOpen.empty() && exp < lookahead; exp++) {
+		for (unsigned int exp = 0; !astarOpen.empty() && exp < lookahead && !this->limit(); exp++) {
 			AstarNode *s = *astarOpen.pop();
 
 			if (!astarClosed.find(s->node->state))
@@ -315,6 +319,9 @@ private:
 	// and NULL otherwise.
 	AstarNode *expandPropagate(D &d, AstarNode *s, bool doExpand) {
 		AstarNode *goal = NULL;
+
+		if (this->limit())
+			return NULL;
 
 		auto kids = expand(d, s->node);
 		for (unsigned int i = 0; i < kids.size(); i++) {

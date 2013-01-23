@@ -95,13 +95,14 @@ template <class D> struct Lsslrtastar : public SearchAlgorithm<D> {
 
 		State buf, &startState = d.unpack(buf, start->state);
 
-		while(!d.isgoal(startState)) {
+		while(!d.isgoal(startState) && !this->limit()) {
 
 			Node* s_goal = astar(d, start);
 
 			if(s_goal == NULL) break;
 
-			dijkstra(d);
+			if (!this->limit())
+				dijkstra(d);
 
 			std::vector<Oper> partial;
 			Node* p = s_goal;
@@ -198,7 +199,7 @@ private:
 
 		lssopen.push(s_start);
 
-		for(unsigned int exp = 0; exp < lookahead && !lssopen.empty(); exp++) {
+		for(unsigned int exp = 0; exp < lookahead && !lssopen.empty() && !this->limit(); exp++) {
 			Node* s = *lssopen.pop();
 
 			if(goal != NULL && goal->f <= s->f) {

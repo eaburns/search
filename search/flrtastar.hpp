@@ -120,10 +120,10 @@ template <class D> struct Flrtastar : public SearchAlgorithm<D> {
 
 		State buf, &startState = d.unpack(buf, start->state);
 
-		while(!d.isgoal(startState)) {
+		while(!d.isgoal(startState) && !this->limit()) {
 			Node* dest = expandLSS(d, start);
 
-			if(!dest) { //we didn't find a goal
+			if(!dest && !this->limit()) { //we didn't find a goal
 				gCostLearning(d);
 
 				lsslrtastarHCostLearning(d);
@@ -253,7 +253,7 @@ private:
 
 		lssopen.push(s_cur);
 
-		for(unsigned int exp = 0; exp < lookahead && !lssopen.empty(); exp++) {
+		for(unsigned int exp = 0; exp < lookahead && !lssopen.empty() && !this->limit(); exp++) {
 
 			Node* s  = *lssopen.pop();
 
@@ -275,6 +275,9 @@ private:
 	}
 
 	void expandAndPropagate(D& d, Node* s, Node** goal, bool expand, bool debug=false) {
+
+		if (this->limit())
+			return;
 
 		State buf, &state = d.unpack(buf, s->state);
 		Operators ops(d, state);
