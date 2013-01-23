@@ -14,5 +14,5 @@ double walltime() {
 }
 
 double cputime() {
-	return clock() / CLOCKS_PER_SEC;
+	return clock() / (double) CLOCKS_PER_SEC;
 }
