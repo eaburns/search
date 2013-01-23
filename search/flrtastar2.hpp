@@ -190,6 +190,10 @@ public:
 		astarClosed.resize(lookahead*3);
 	}
 
+	~Flrtastar2() {
+		delete astarPool;
+	}
+
 	void reset() {
 		SearchAlgorithm<D>::reset();
 		nodes.clear();
