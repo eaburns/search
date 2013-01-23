@@ -137,4 +137,6 @@ struct <DOMAIN> {
 	void dumpstate(FILE *out, const State &s) const {
 		fatal("Unimplemented");
 	}
+
+	Cost pathcost(const std::vector<State>&, const std::vector<Oper>&);
 };
