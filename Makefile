@@ -37,6 +37,7 @@ include graphics/Make.inc
 include rdb/Make.inc
 include drobot/Make.inc
 include segments/Make.inc
+include vacuum/Make.inc
 
 everything: $(EVERYTHING)
 

@@ -44,6 +44,12 @@ struct GridMap {
 		return !(flags[l] & Passable);
 	}
 
+	// Block sets a location as blocked.
+	void block(int i) {
+		map[i] = '#';
+		flags[i] = OutOfBounds;
+	}
+
 	// A Move contains information for a single
 	// possible move to and adjacent cell of the
 	// grid.
