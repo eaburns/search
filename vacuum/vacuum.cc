@@ -66,7 +66,7 @@ Vacuum::State Vacuum::initialstate() const {
 	State s;
 	s.loc = map->index(x0, y0);
 	s.ndirt = ndirt();
-	s.dirt.resize(ndirt(), true);
+	s.dirt = std::make_shared<std::vector<bool> >(ndirt(), true);
 	return s;
 }
 

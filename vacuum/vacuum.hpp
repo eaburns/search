@@ -2,6 +2,7 @@
 
 #include "../utils/utils.hpp"
 #include "../gridnav/gridmap.hpp"
+#include <memory>
 #include <cstdio>
 
 class Vacuum {
@@ -24,8 +25,8 @@ public:
 			if (loc != o.loc || ndirt != o.ndirt)
 				return false;
 
-			for (unsigned int i = 0; i < dirt.size(); i++) {
-				if (dirt[i] != o.dirt[i])
+			for (unsigned int i = 0; i < dirt->size(); i++) {
+				if (dirt->at(i) != o.dirt->at(i))
 					return false;
 			}
 
@@ -33,11 +34,11 @@ public:
 		}
 
 		unsigned long hash(const Vacuum*) const {
-			return loc*dirt.size() + ndirt;
+			return loc*dirt->size() + ndirt;
 		}
 
 		int loc, energy, ndirt;
-		std::vector<bool> dirt;
+		std::shared_ptr<std::vector<bool> > dirt;
 	};
 
 	typedef State PackedState;
@@ -46,7 +47,7 @@ public:
 
 	Cost h(const State &s) const {
 		unsigned int i;
-		for (i = 0; i < s.dirt.size() && !dirt[i]; i++)
+		for (i = 0; i < s.dirt->size() && !dirt[i]; i++)
 			;
 
 		int minx = dirtLocs[i].first;
@@ -54,7 +55,7 @@ public:
 		int miny = dirtLocs[i].second;
 		int maxy = miny;
 
-		for (i++; i < s.dirt.size(); i++) {
+		for (i++; i < s.dirt->size(); i++) {
 			if (!dirt[i])
 				continue;
 			int x = dirtLocs[i].first, y = dirtLocs[i].second;
@@ -85,7 +86,7 @@ public:
 				return;
 
 			int dirt = d.dirt[s.loc];
-			if (dirt >= 0 && s.dirt[dirt])
+			if (dirt >= 0 && s.dirt->at(dirt))
 				ops[n++] = Suck;
 
 			for (unsigned int i = 0; i < d.map->nmvs; i++) {
@@ -122,9 +123,10 @@ public:
 
 				assert (dirt >= 0);
 				assert ((unsigned int) dirt < d.ndirt());
-				assert (state.dirt[dirt]);
+				assert (state.dirt->at(dirt));
 
-				state.dirt[dirt]  =false;
+				state.dirt = std::make_shared<std::vector<bool>>(s.dirt->begin(), s.dirt->end());
+				state.dirt->at(dirt) = false;
 				state.ndirt--;
 
 				revop = Nop;
@@ -155,8 +157,8 @@ public:
 	void dumpstate(FILE *out, const State &s) const {
 		auto pt = map->coord(s.loc);
 		fprintf(out, "(%d, %d), energy=%d, ndirt=%d", pt.first, pt.second, s.energy, s.ndirt);
-		for (auto d : s.dirt)
-			fprintf(out, " %d", d);
+		for (unsigned int i = 0; i < s.dirt->size(); i++)
+			fprintf(out, " %d", (int) s.dirt->at(i));
 	}
 
 	Cost pathcost(const std::vector<State>&, const std::vector<Oper>&);
