@@ -13,6 +13,8 @@ search/test
 structs/test
 utils/test
 drobot/test
+vacuum/vacuum_solver
+vacuum/vacuum_cs730
 segments/watch
 segments/mkinst
 segments/segments_solver

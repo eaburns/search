@@ -31,3 +31,4 @@ towers of Hanoi +domains
 x 2013-01-14 (A) LSS-LRTA* +algorithms
 x 2013-01-18 (A) 2013-01-14 f-LRTA* +algorithms
 x 2013-01-23 (A) 2013-01-23 ClosedList equality should be done by the domain not operator== on the states
+vacuum_cs730 should accept a-star and h1 as arguments +vacuum
