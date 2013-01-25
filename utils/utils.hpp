@@ -270,3 +270,9 @@ unsigned long ipow(unsigned int, unsigned int);
 
 // fallfact returns `x to the n falling.'
 unsigned long fallfact(unsigned int x, unsigned int n);
+
+// Normcdf returns the cumulative density value of a normal distribution at a point.
+double normcdf(double mu, double sigma, double x);
+
+// Phi is the CDF of the standard normal.
+double phi(double x);

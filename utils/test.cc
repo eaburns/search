@@ -66,6 +66,7 @@ void pow_ints_bench(unsigned long, double*, double*);
 void ipow_bench(unsigned long, double*, double*);
 void ceil_bench(unsigned long, double*, double*);
 void floor_bench(unsigned long, double*, double*);
+void phi_bench(unsigned long, double*, double*);
 
 static const Benchmark benches[] = {
 	Benchmark("new(16)/delete() benchmark", new_16_delete_bench),
@@ -88,6 +89,7 @@ static const Benchmark benches[] = {
 	Benchmark("ipow benchmark", ipow_bench),
 	Benchmark("ceil benchmark", ceil_bench),
 	Benchmark("floor benchmark", floor_bench),
+	Benchmark("phi benchmark", phi_bench),
 };
 
 enum { Nbenches = sizeof(benches) / sizeof(benches[0]) };

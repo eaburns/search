@@ -185,3 +185,12 @@ void floor_bench(unsigned long n, double *strt, double *end) {
 	for (unsigned long i = 0; i < n; i++)
 		dvol = floor(is[i]);
 }
+
+void phi_bench(unsigned long n, double *strt, double *end) {
+	double *is = randdoubles(n);
+
+	*strt = walltime();
+
+	for (unsigned long i = 0; i < n; i++)
+		dvol = phi(is[i]);
+}
