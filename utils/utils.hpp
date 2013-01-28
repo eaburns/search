@@ -276,3 +276,7 @@ double normcdf(double mu, double sigma, double x);
 
 // Phi is the CDF of the standard normal.
 double phi(double x);
+
+// Integrate returns an approximation of the closed integral from start to end on
+// the given function.  It performs the trapazoid rule in increments of stepsize.
+double integrate(double(*)(double), double start, double end, double stepsize);
