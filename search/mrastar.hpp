@@ -335,10 +335,7 @@ public:
 
 		Node *cur = graph.node(d, s0);
 
-		unsigned int cnt = 0;
-
 		while (!cur->isgoal && !this->limit()) {
-			cnt++;
 			Lss lss(*this, graph, cur);
 			lss.expand(d, lookahead);
 			lss.learn();
@@ -346,6 +343,7 @@ public:
 			auto p = lss.move(d);
 			this->res.ops.insert(this->res.ops.end(), p.first.rbegin(), p.first.rend());	
 			cur = p.second;
+			steps.emplace_back(cputime() - this->res.cpustart, (unsigned int) p.first.size());
 		}
 		this->finish();
 
@@ -369,14 +367,56 @@ public:
 
 	void reset() {
 		SearchAlgorithm<D>::reset();
+		steps.clear();
 		graph.clear();
 	}
 
 	virtual void output(FILE *out) {
 		SearchAlgorithm<D>::output(out);
+		dfpair(out, "num steps", "%lu", (unsigned long) steps.size());
+		if (steps.size() != 0) {
+			double mint = steps.front().time;
+			double maxt = steps.front().time;
+
+			unsigned int minl = steps.front().length;
+			unsigned int maxl = steps.front().length;
+			unsigned long nmoves = 0;
+
+			for (unsigned int i = 1; i < steps.size(); i++) {
+				double dt = steps[i].time - steps[i-1].time;
+				if (dt < mint)
+					mint = dt;
+				if (dt > maxt)
+					maxt = dt;
+
+				unsigned int l = steps[i].length;
+				if (l < minl)
+					minl = l;
+				if (l > maxl)
+					maxl = l;
+				nmoves += l;
+			}
+			dfpair(out, "first emit cpu time", "%f", steps.front().time);
+			dfpair(out, "min step cpu time", "%f", mint);
+			dfpair(out, "max step cpu time", "%f", maxt);
+			dfpair(out, "mean step cpu time", "%f", (steps.back().time-steps.front().time)/steps.size());
+			dfpair(out, "min step length", "%u", minl);
+			dfpair(out, "max step length", "%u", maxl);
+			dfpair(out, "mean step length", "%g", nmoves / (double) steps.size());
+		}
 	}
 
 private:
+
+	struct Step {
+		Step(double t, unsigned int l) : time(t), length(l) {
+		}
+
+		double time;
+		unsigned int length;
+	};
+
+	std::vector<Step> steps;
 
 	Graph graph;
 	unsigned int lookahead;
