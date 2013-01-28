@@ -62,12 +62,14 @@ template <class D> struct Lsslrtastar : public SearchAlgorithm<D> {
 	};
 
 	Lsslrtastar(int argc, const char *argv[]) :
-		SearchAlgorithm<D>(argc, argv), seen(30000001), lssclosed(1), iterationCount(0) {
+		SearchAlgorithm<D>(argc, argv), seen(30000001), lssclosed(1), iterationCount(0), oneStep(false) {
 		lookahead = 0;
 
 		for (int i = 0; i < argc; i++) {
 			if (i < argc - 1 && strcmp(argv[i], "-lookahead") == 0)
 				lookahead = strtod(argv[++i], NULL);
+			else if(i < argc - 1 && strcmp(argv[i], "-onestep") == 0)
+				oneStep = true;
 		}
 
 		if (lookahead < 1)
@@ -108,16 +110,26 @@ template <class D> struct Lsslrtastar : public SearchAlgorithm<D> {
 			Node* p = s_goal;
 
 			emitTimes.push_back(cputime() - this->res.cpustart);
+
+			Node* oneStepState = NULL;
 			while(start != p) {
 				//or until the edge costs change?
 				assert(p->parent);
 				partial.push_back(p->op);
+				oneStepState = p;
 				p = p->parent;
 			}
-			lengths.push_back(partial.size());
 
-			this->res.ops.insert(	this->res.ops.end(), partial.rbegin(), partial.rend());
-			start = s_goal;
+			if(oneStep) {
+				lengths.push_back(1);
+				this->res.ops.push_back(partial.back());
+				start = oneStepState;
+			}
+			else {
+				lengths.push_back(partial.size());
+				this->res.ops.insert(this->res.ops.end(), partial.rbegin(), partial.rend());
+				start = s_goal;
+			}
 
 			//update action costs?
 
@@ -334,4 +346,5 @@ private:
 	Node* foreverStart;
 	std::vector<double> emitTimes;
 	std::vector<unsigned int> lengths;
+	bool oneStep;
 };
