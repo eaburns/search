@@ -11,6 +11,7 @@
 #include "lsslrtastar.hpp"
 #include "flrtastar.hpp"
 #include "flrtastar2.hpp"
+#include "mrastar.hpp"
 #include <cstddef>
 #include <cstdio>
 
@@ -91,6 +92,8 @@ template<class D> SearchAlgorithm<D> *getsearch(int argc, const char *argv[]) {
 		return new Flrtastar<D>(argc, argv);
 	else if (strcmp(argv[1], "flrtastar2") == 0)
 		return new Flrtastar2<D>(argc, argv);
+	else if (strcmp(argv[1], "mrastar") == 0)
+		return new Mrastar<D>(argc, argv);
 
 	fatal("Unknown algorithm: %s", argv[1]);
 	return NULL;	// Unreachable
