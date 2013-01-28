@@ -325,9 +325,10 @@ public:
 		lim.finish();
 	}
 
+	bool limit() {
+		return lim.reached(res);
+	}
+
 	Result<D> res;
 	Limit lim;
-
-protected:
-	bool limit() { return lim.reached(res); }
 };

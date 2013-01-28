@@ -15,151 +15,306 @@ private:
 	typedef typename D::Oper Oper;
 	typedef typename D::Edge Edge;
 
-	class Node;
-	class Nodes;
-
-	struct inedge {
-		inedge(Node *n, double c) : node(n), incost(c) {
-		}
-
-		Node *node;
-		double incost;
-	};
-
-	struct outedge {
-		outedge(Node *n, Oper o, Cost rc, Cost c) :
-			node(n),
-			op(o),
-			revcost(rc == Cost(-1) ? geom2d::Infinity : rc),
-			outcost(c == Cost(-1) ? geom2d::Infinity : c) {
-		}
-
-		Node *node;
-		Oper op;
-		double revcost;
-		double outcost;
-	};
-
-	class Node {
+	class Graph {
 	public:
-		static ClosedEntry<Node, D> &closedentry(Node *n) {
-			return n->closedent;
+
+		Graph(SearchAlgorithm<D> &s, unsigned int sz) : nodes(sz), search(s) {
 		}
+
+		struct Node;
+
+		struct Out {
+			Out(Node *n, double c, Oper o) : node(n), cost(c), op(o) {
+			}
+
+			Node *node;
+			double cost;
+			Oper op;
+		};
+
+		struct In {
+			In(Node *n, double c) : node(n), cost(c) {
+			}
+
+			Node *node;
+			double cost;
+		};
+
+		struct Node {
+			double h;
+			bool isgoal;
+			bool expd;	// Have we generated successors yet?
+			std::vector<Out> succs;
+			std::vector<In> preds;
+			PackedState state;
+
+		private:
+
+			friend class Pool<Node>;
+			friend class Graph;
+
+			Node() : expd(false) {
+			}
+
+			ClosedEntry<Node, D> closedEnt;
+		};
 
 		static PackedState &key(Node *n) {
 			return n->state;
 		}
 
-		PackedState state;
-		double h;
-		bool goal;
-		bool expd;	// Have we generated succs yet?
-		std::vector<outedge> succs;
-		std::vector<inedge> preds;
-
-	private:
-		friend class Nodes;
-		friend class Pool<Node>;
-
-		Node() : expd(false) {
+		static ClosedEntry<Node, D> &closedentry(Node *n) {
+			return n->closedEnt;
 		}
 
-		ClosedEntry<Node, D> closedent;
-	};
-
-	class Nodes {
-	public:
-		Nodes(unsigned int sz) : tbl(sz) {
-		}
-
-		~Nodes() {
-		}
-
-		void clear() {
-			tbl.clear();
-			pool.releaseall();
-		}
-
-		Node *get(D &d, State &s) {
-			Node *n = pool.construct();
-			d.pack(n->state, s);
+		// Node returns the node representing this state.
+		Node *node(D &d, State &state) {
+			Node *n = pool.construct();	
+			d.pack(n->state, state);
 
 			unsigned long hash = n->state.hash(&d);
-			Node *found = tbl.find(n->state, hash);
+			Node *found = nodes.find(n->state, hash);
+
 			if (found) {
 				pool.destruct(n);
 				return found;
 			}
 
-			n->goal = d.isgoal(s);
-			n->h = d.h(s);
-			tbl.add(n, hash);
+			n->h = d.h(state);
+			n->isgoal = d.isgoal(state);
+			nodes.add(n, hash);
 			return n;
 		}
 
+		// Succs returns the successors of the given node, either by
+		// returning their cached values or by generating them.
+		std::vector<Out>&succs(D &d, Node *n) {
+			if (n->expd)
+				return n->succs;
+
+			search.res.expd++;
+
+			State buf, &s = d.unpack(buf, n->state);
+			Operators ops(d, s);
+			for (unsigned int i = 0; i < ops.size(); i++) {
+				search.res.gend++;
+
+				Edge e(d, s, ops[i]);
+				Node *k = node(d, e.state);
+				k->preds.emplace_back(n, e.cost);
+				n->succs.emplace_back(k, e.cost, ops[i]);
+			}
+
+			n->expd = true;
+			return n->succs;
+		}
+
+		void clear() {
+			pool.releaseall();
+			nodes.clear();
+		}
+
 	private:
-		ClosedList<Node, Node, D> tbl;
 		Pool<Node> pool;
+		ClosedList<Graph, Node, D> nodes;
+
+		// The search algorithm for counting expansions, generations, duplicates, etc.
+		SearchAlgorithm<D> &search;
 	};
 
-	class AstarNode {
+	// Lss is a resumable A* search, defining the local search space beneath a node.
+	class Lss {
 	public:
 
-		AstarNode() : openind(-1), updated(false), closed(false) {
-		}
-	
-		class Nodes {
-		public:
-			static ClosedEntry<AstarNode, D> &closedentry(AstarNode *n) {
-				return n->nodesent;
+		struct Node {
+			long openind, learnind;
+			double g, f;
+			Oper op;
+			Node *parent;
+			bool closed, updated;
+			typename Graph::Node *node;
+
+		private:
+
+			friend class Lss;
+			friend class Pool<Node>;
+
+			Node() : openind(-1), learnind(-1), closed(false), updated(false) {
 			}
-	
-			static PackedState &key(AstarNode *n) {
-				return n->node->state;
-			}
+
+			ClosedEntry<Node, D> closedEnt;
 		};
 
-		class FSort {
+		static PackedState &key(Node *n) {
+			return n->node->state;
+		}
+
+		static ClosedEntry<Node, D> &closedentry(Node *n) {
+			return n->closedEnt;
+		}
+
+		// F orders nodes in increasing order of f, tie-breaking on high g.
+		class F {
 		public:
-			static void setind(AstarNode *n, int i) {
+			static void setind(Node *n, long i) {
 				n->openind = i;
 			}
-		
-			static bool pred(AstarNode *a, AstarNode *b) {	
-				if (geom2d::doubleeq(a->f, b->f))
+
+			static bool pred(Node *a, Node *b) {
+				if (a->f == b->f)
 					return a->g > b->g;
 				return a->f < b->f;
 			}
 		};
 
-		class HSort {
-		public:
-			static void setind(AstarNode *n, int i) {
-				n->openind = i;
+
+		Lss(Mrastar<D> &s, Graph &g, typename Graph::Node *root) :
+			goal(NULL), nodes(s.lookahead), nclosed(0), search(s), graph(g) {
+
+			Node *r = pool.construct();
+			r->g = 0;
+			r->f = root->h;
+			r->parent = NULL;
+			r->op = D::Nop;
+			r->node = root;
+			open.push(r);
+		}
+
+		// Expand performs no more than N expansions, returning true
+		// if there are more nodes to be expanded and false otherwise.
+		// If a goal is expanded then expand returns early.  If a goal was
+		// expanded on a previous call then it return immediately.
+		bool expand(D &d, unsigned int N) {
+			if (open.empty() || (goal && goal->closed))
+				return !open.empty();
+
+			unsigned int expd = 0;
+			while (!open.empty() && expd < N && !search.limit()) {
+				Node *n = *open.pop();
+
+				nclosed += !n->closed;
+				n->closed = true;
+
+				if (n->node->isgoal) {
+					assert (goal == n || geom2d::doubleeq(goal->g, n->g));
+					break;
+				}
+
+				expd++;
+				for (auto e : graph.succs(d, n->node)) {
+
+					if (n->parent && e.node == n->parent->node)
+						continue;
+
+					unsigned long hash = e.node->state.hash(&d);
+					Node *k = nodes.find(e.node->state, hash);
+					double g = n->g + e.cost;
+
+					if (!k) {
+						k = pool.construct();
+						k->node = e.node;
+						nodes.add(k, hash);
+					} else if (k->g <= g) {
+						continue;
+					}
+
+					k->parent = n;
+					k->op = e.op;
+					k->g = g;
+					k->f = g + k->node->h;
+					open.pushupdate(k, k->openind);
+
+					if (k->node->isgoal && (!goal || k->g < goal->g))
+						goal = k;
+				}
 			}
-		
-			static bool pred(AstarNode *a, AstarNode *b) {
+
+			return !open.empty();
+		}
+
+		// H orders nodes in increasing order on h.
+		class H {
+		public:
+			static void setind(Node *n, long i) {
+				n->learnind = i;
+			}
+
+			static bool pred(Node *a, Node *b) {
 				return a->node->h < b->node->h;
 			}
 		};
 
-		Node *node;
-		AstarNode *parent;
-		double g, f;
-		Oper op;
-		long openind;
-		bool updated, closed;
+		// Learn backs up the h values on the fringe into the interior.
+		void learn() {
+			BinHeap<H, Node*> o;
+
+			o.append(open.data());
+
+			while (nclosed > 0) {
+				Node *n = *o.pop();
+
+				if (n->closed);
+					nclosed--;
+				n->closed = false;
+
+				for (auto e : n->node->preds) {
+					Node *p = nodes.find(e.node->state);
+					if (!p || !p->closed)
+						continue;
+					if (!p->updated || p->node->h > n->node->h + e.cost) {
+						p->node->h = n->node->h + e.cost;
+						p->updated = true;
+						o.pushupdate(p, p->learnind);
+					}
+				}
+			}
+		}
+
+		// Move returns the operators (in reverse order) from the root
+		// to the cheapest generated goal, or, if no goal was generated,
+		// the node on the open list with the lowest f value, along with
+		// the corresponding graph node.
+		std::pair<std::vector<Oper>, typename Graph::Node*> move(D &d) {
+			Node *best = goal;
+
+			if (!best) {
+				assert (!open.empty());
+				best = open.data()[0];
+				for (auto n : open.data())
+					assert (!F::pred(n, best));
+			}
+
+			std::vector<Oper> ops;
+			for (Node *n = best; n->parent; n = n->parent)
+				ops.push_back(n->op);
+
+
+			return std::make_pair(ops, best->node);
+		}
+
+		// Goal is the cheapest goal that has been generated, or NULL
+		// if no goal was generated.  If goal->closed is true then the
+		// goal was expanded, and this is the optimal solution from the
+		// root of this search.
+		Node *goal;
 
 	private:
-		ClosedEntry<AstarNode, D> nodesent;
+
+		Pool<Node> pool;
+		BinHeap<F, Node*> open;
+		ClosedList<Lss, Node, D> nodes;
+		unsigned int nclosed;
+
+		// The search algorithm used to check the limit.
+		Mrastar<D> &search;
+		Graph &graph;
 	};
 
 public:
 
 	Mrastar(int argc, const char *argv[]) :
 		SearchAlgorithm<D>(argc, argv),
-		astarNodes(1),
-		nodes(30000001),
+		graph(*this, 30000001),
 		lookahead(0) {
 
 		for (int i = 0; i < argc; i++) {
@@ -168,229 +323,61 @@ public:
 		}
 		if (lookahead < 1)
 			fatal("Must specify a lookahead ≥1 using -lookahead");
-
-		astarNodes.resize(lookahead*3);
 	}
 
 	~Mrastar() {
 	}
 
-	void reset() {
-		SearchAlgorithm<D>::reset();
-		nodes.clear();
-		astarOpen.clear();
-		astarNodes.clear();
-		astarPool.releaseall();
-	}
+	typedef typename Graph::Node Node;
 
 	void search(D &d, State &s0) {
 		this->start();
 
-		Node *cur = nodes.get(d, s0);
+		Node *cur = graph.node(d, s0);
 
-		while (!cur->goal && !this->limit()) {
-			AstarNode *goal = expandLss(d, cur);
-			if (!goal && !this->limit())
-				hCostLearning(d);
-			cur = move(cur, goal);
-			times.push_back(cputime() - this->res.cpustart);
+		unsigned int cnt = 0;
+
+		while (!cur->isgoal && !this->limit()) {
+			cnt++;
+			Lss lss(*this, graph, cur);
+			lss.expand(d, lookahead);
+			lss.learn();
+
+			auto p = lss.move(d);
+			this->res.ops.insert(this->res.ops.end(), p.first.rbegin(), p.first.rend());	
+			cur = p.second;
 		}
-
 		this->finish();
 
-		if (!cur->goal) {
+		if (!cur->isgoal) {
 			this->res.ops.clear();
 			return;
 		}
 
 		// Rebuild the path from the operators.
-		nodes.clear();
+		graph.clear();
 		this->res.path.push_back(s0);
-		for (auto it = this->res.ops.begin(); it != this->res.ops.end(); it++) {
+		for (auto o : this->res.ops) {
 			State copy = this->res.path.back();
-			Edge e(d, copy, *it);
+			Edge e(d, copy, o);
 			this->res.path.push_back(e.state);
 		}
+		assert (d.isgoal(this->res.path.back()));
 		std::reverse(this->res.ops.begin(), this->res.ops.end());
 		std::reverse(this->res.path.begin(), this->res.path.end());
 	}
 
+	void reset() {
+		SearchAlgorithm<D>::reset();
+		graph.clear();
+	}
+
 	virtual void output(FILE *out) {
 		SearchAlgorithm<D>::output(out);
-		dfpair(out, "num steps", "%lu", (unsigned long) times.size());
-		assert (lengths.size() == times.size());
-		if (times.size() != 0) {
-			double min = times.front();
-			double max = times.front();
-			for (unsigned int i = 1; i < times.size(); i++) {
-				double dt = times[i] - times[i-1];
-				if (dt < min)
-					min = dt;
-				if (dt > max)
-					max = dt;
-			}
-			dfpair(out, "first emit cpu time", "%f", times.front());
-			dfpair(out, "min step cpu time", "%f", min);
-			dfpair(out, "max step cpu time", "%f", max);
-			dfpair(out, "mean step cpu time", "%f", (times.back()-times.front())/times.size());
-		}
-		if (lengths.size() != 0) {
-			unsigned int min = lengths.front();
-			unsigned int max = lengths.front();
-			unsigned long sum = 0;
-			for (auto l : lengths) {
-				if (l < min)
-					min = l;
-				if (l > max)
-					max = l;
-				sum += l;
-			}
-			dfpair(out, "min step length", "%u", min);
-			dfpair(out, "max step length", "%u", max);
-			dfpair(out, "mean step length", "%g", sum / (double) lengths.size());
-		}
 	}
 
 private:
 
-	// ExpandLss returns the cheapest  goal node if one was generated
-	// and NULL otherwise.
-	AstarNode *expandLss(D &d, Node *rootNode) {
-		astarOpen.clear();
-		astarNodes.clear();
-		astarPool.releaseall();
-		nclosed = 0;
-
-		AstarNode *goal = NULL;
-
-		AstarNode *a = astarPool.construct();
-		a->node = rootNode;
-		a->parent = NULL;
-		a->op = D::Nop;
-		a->g = 0;
-		a->f = rootNode->h;
-		astarOpen.push(a);
-		astarNodes.add(a);
-
-		unsigned int exp = 0;
-		while (!astarOpen.empty() && exp < lookahead && !this->limit()) {
-			AstarNode *s = *astarOpen.pop();
-
-			nclosed += !s->closed;
-			s->closed = true;
-
-			if (s->node->goal) {
-				astarOpen.push(s);
-				break;
-			}
-
-			exp++;
-
-			for (auto e : successors(d, s->node)) {
-				AstarNode *kid = astarNodes.find(e.node->state);
-				if (!kid) {
-					kid = astarPool.construct();
-					kid->node = e.node;
-					kid->g = geom2d::Infinity;
-					kid->openind = -1;
-					astarNodes.add(kid);
-				}
-				if (kid->g > s->g + e.outcost) {
-					if (kid->parent)	// !NULL if a dup
-						this->res.dups++;
-					kid->parent = s;
-					kid->g = s->g + e.outcost;
-					kid->f = kid->g + kid->node->h;
-					kid->op = e.op;
-					astarOpen.pushupdate(kid, kid->openind);
-				}
-
-				if (kid->node->goal && (!goal || kid->g < goal->g))
-					goal = kid;
-			}
-		}
-		return goal;
-	}
-
-	void hCostLearning(D &d) {
-		BinHeap<typename AstarNode::HSort, AstarNode*> open;
-
-		open.append(astarOpen.data());
-
-		while (nclosed > 0) {
-			AstarNode *s = *open.pop();
-
-			if (s->closed)
-				nclosed--;
-
-			for (auto e : s->node->preds) {
-				Node *sprime = e.node;
-
-				AstarNode *sp = astarNodes.find(sprime->state);
-				if (!sp || !sp->closed)
-					continue;
-
-				if (!sp->updated || sprime->h > e.incost + s->node->h) {
-					sprime->h = e.incost + s->node->h;
-					sp->updated = true;
-					open.pushupdate(sp, sp->openind);
-				}
-			}
-		}
-	}
-
-	Node *move(Node *cur, AstarNode *goal) {
-		AstarNode *best = goal;
-		if (!best) {
-			for (auto n : astarOpen.data()) {
-				if (n->node != cur && (best == NULL || AstarNode::FSort::pred(n, best)))
-					best = n;
-			}
-		}
-
-		assert (best->node != cur);
-		std::vector<Oper> ops;
-		for (AstarNode *p = best; p->node != cur; p = p->parent) {
-			assert (p->parent != best);	// no cycles
-			ops.push_back(p->op);
-		}
-		this->res.ops.insert(this->res.ops.end(), ops.rbegin(), ops.rend());
-		lengths.push_back(ops.size());
-		return best->node;
-	}
-
-	// Successors returns the cached successors of a node, generating them if the node
-	// has yet to be expanded.
-	std::vector<outedge> successors(D &d, Node *n) {
-		if (n->expd)
-			return n->succs;
-
-		State buf, &s = d.unpack(buf, n->state);
-
-		this->res.expd++;
-
-		Operators ops(d, s);
-		for (unsigned int i = 0; i < ops.size(); i++) {
-			this->res.gend++;
-
-			Edge e(d, s, ops[i]);
-			Node *k = nodes.get(d, e.state);
-			k->preds.emplace_back(n, e.cost);
-			n->succs.emplace_back(k, ops[i], e.revcost, e.cost);
-		}
-		n->expd = true;
-
-		return n->succs;
-	}
-
-	BinHeap<typename AstarNode::FSort, AstarNode*> astarOpen;
-	ClosedList<typename AstarNode::Nodes, AstarNode, D> astarNodes;
-	unsigned int nclosed;
-	Pool<AstarNode> astarPool;
-
-	Nodes nodes;
+	Graph graph;
 	unsigned int lookahead;
-
-	std::vector<double> times;
-	std::vector<unsigned int> lengths;
 };
