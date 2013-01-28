@@ -261,6 +261,8 @@ private:
 		astarPool.releaseall();
 		nclosed = 0;
 
+		AstarNode *goal = NULL;
+
 		AstarNode *a = astarPool.construct();
 		a->node = rootNode;
 		a->parent = NULL;
@@ -270,9 +272,8 @@ private:
 		astarOpen.push(a);
 		astarNodes.add(a);
 
-		AstarNode *goal = NULL;
-
-		for (unsigned int exp = 0; !astarOpen.empty() && exp < lookahead && !this->limit(); exp++) {
+		unsigned int exp = 0;
+		while (!astarOpen.empty() && exp < lookahead && !this->limit()) {
 			AstarNode *s = *astarOpen.pop();
 
 			nclosed += !s->closed;
@@ -283,7 +284,9 @@ private:
 				break;
 			}
 
-			for (auto e : expand(d, s->node)) {
+			exp++;
+
+			for (auto e : successors(d, s->node)) {
 				AstarNode *kid = astarNodes.find(e.node->state);
 				if (!kid) {
 					kid = astarPool.construct();
@@ -356,9 +359,9 @@ private:
 		return best->node;
 	}
 
-	// Expand returns the cached successors of a node, generating them if the node
+	// Successors returns the cached successors of a node, generating them if the node
 	// has yet to be expanded.
-	std::vector<outedge> expand(D &d, Node *n) {
+	std::vector<outedge> successors(D &d, Node *n) {
 		if (n->expd)
 			return n->succs;
 
