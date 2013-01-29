@@ -251,6 +251,7 @@ private:
 			o.append(open.data());
 
 			while (nclosed > 0) {
+				assert (!o.empty());
 				Node *n = *o.pop();
 
 				if (n->closed);
