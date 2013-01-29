@@ -409,6 +409,9 @@ private:
 
 		for(unsigned int i = 0; i < paths.size(); i++) {
 			FILE* in = fopen(paths[i].c_str(), "r");
+			if(!in) {
+				fatalx(errno, "failed to open %s while building lss lookup table", paths[i].c_str());
+			}
 
 			RdbAttrs instanceAttrs = pathattrs(paths[i]);
 			unsigned int lookahead = strtol(instanceAttrs.lookup("lookahead").c_str(), NULL, 10);
@@ -423,6 +426,10 @@ private:
 			dfread(in, this->dfHandleThis, &lsstable[index].expectTime, NULL);
 
 			fclose(in);
+		}
+
+		if(lsstable.size() == 0) {
+			fatal("failed to load any training data files for building the lss lookup table");
 		}
 
 		std::sort(lsstable.begin(), lsstable.end());
