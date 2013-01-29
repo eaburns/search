@@ -168,15 +168,17 @@ private:
 		};
 
 
-		Lss(Mrastar<D> &s, Graph &g, typename Graph::Node *root) :
-			goal(NULL), nodes(s.lookahead), nclosed(0), search(s), graph(g) {
+		Lss(Mrastar<D> &s, Graph &g, typename Graph::Node *rt, double g0, Oper o0) :
+			goal(NULL), root(rt), op0(o0), nodes(s.lookahead), nclosed(0), search(s), graph(g) {
 
 			Node *r = pool.construct();
-			r->g = 0;
+			r->g = g0;
 			r->f = root->h;
 			r->parent = NULL;
-			r->op = D::Nop;
+			r->op = op0;
 			r->node = root;
+			if (root->isgoal)
+				goal = r;
 			open.push(r);
 		}
 
@@ -196,6 +198,7 @@ private:
 				n->closed = true;
 
 				if (n->node->isgoal) {
+					assert (goal);
 					assert (goal == n || geom2d::doubleeq(goal->g, n->g));
 					break;
 				}
@@ -250,8 +253,7 @@ private:
 
 			o.append(open.data());
 
-			while (nclosed > 0) {
-				assert (!o.empty());
+			while (nclosed > 0 && !o.empty()) {
 				Node *n = *o.pop();
 
 				if (n->closed);
@@ -286,11 +288,31 @@ private:
 			}
 
 			std::vector<Oper> ops;
-			for (Node *n = best; n->parent; n = n->parent)
+			for (Node *n = best; n; n = n->parent)
 				ops.push_back(n->op);
 
 
 			return std::make_pair(ops, best->node);
+		}
+
+		static void setind(Lss *l, long i) {
+		}
+
+		static bool pred(Lss *a, Lss *b) {
+			auto af = a->fg();
+			auto bf = b->fg();
+			if (af.first == bf.first)
+				return af.second > bf.second;
+			return af.first < bf.first;
+		}
+
+		std::pair<double, double> fg() {
+			if (open.empty() && !goal)
+				return std::make_pair(geom2d::Infinity, geom2d::Infinity);
+			if (open.empty())
+				return std::make_pair(goal->g, goal->g);
+			Node *front = *open.front();
+			return std::make_pair(front->f, front->g);
 		}
 
 		// Goal is the cheapest goal that has been generated, or NULL
@@ -298,6 +320,13 @@ private:
 		// goal was expanded, and this is the optimal solution from the
 		// root of this search.
 		Node *goal;
+
+		// Root is the root of this node.
+		typename Graph::Node *root;
+
+		// Op0 is the operator generating the root of this tree from
+		// the current node.
+		Oper op0;
 
 	private:
 
@@ -316,11 +345,14 @@ public:
 	Mrastar(int argc, const char *argv[]) :
 		SearchAlgorithm<D>(argc, argv),
 		graph(*this, 30000001),
+		onestep(false),
 		lookahead(0) {
 
 		for (int i = 0; i < argc; i++) {
 			if (i < argc - 1 && strcmp(argv[i], "-lookahead") == 0)
 				lookahead = strtoul(argv[++i], NULL, 10);
+			else if (strcmp(argv[i], "-onestep") == 0)
+				onestep = true;
 		}
 		if (lookahead < 1)
 			fatal("Must specify a lookahead ≥1 using -lookahead");
@@ -337,17 +369,9 @@ public:
 		Node *cur = graph.node(d, s0);
 
 		while (!cur->isgoal) {
-			Lss lss(*this, graph, cur);
-			lss.expand(d, lookahead);
-
-			if (this->limit())
-				break;
-
-			lss.learn();
-
-			auto p = lss.move(d);
-			this->res.ops.insert(this->res.ops.end(), p.first.rbegin(), p.first.rend());	
+			auto p = step(d, cur);
 			cur = p.second;
+			this->res.ops.insert(this->res.ops.end(), p.first.rbegin(), p.first.rend());
 			steps.emplace_back(cputime() - this->res.cpustart, (unsigned int) p.first.size());
 		}
 		this->finish();
@@ -365,9 +389,50 @@ public:
 			Edge e(d, copy, o);
 			this->res.path.push_back(e.state);
 		}
+
+		PackedState pkd;
+		d.pack(pkd, this->res.path.back());
+		assert (pkd.eq(&d, cur->state));
+
 		assert (d.isgoal(this->res.path.back()));
 		std::reverse(this->res.ops.begin(), this->res.ops.end());
 		std::reverse(this->res.path.begin(), this->res.path.end());
+	}
+
+	std::pair<std::vector<Oper>, Node*> step(D &d, Node *cur) {
+		BinHeap<Lss, Lss*> lss;
+		for (auto s : graph.succs(d, cur))
+			lss.push(new Lss(*this, graph, s.node, s.cost, s.op));
+
+		for (unsigned int e = 0; e < lookahead && !lss.empty() && !this->limit(); e++) {
+			Lss *l = *lss.front();
+
+			if (l->goal && l->goal->closed)
+				break;
+
+			l->expand(d, 1);
+ 			lss.update(0);
+		}
+
+		if (!this->limit()) {
+			for (auto l : lss.data())
+				l->learn();
+		}
+
+		Lss *best = *lss.front();
+		std::pair<std::vector<Oper>, Node*> p;
+		if (onestep) {
+			std::vector<Oper> ops;
+			ops.push_back(best->op0);
+			p = std::make_pair(ops, best->root);
+		} else {
+			p = best->move(d);
+		}
+
+		for (auto l : lss.data())
+			delete l;
+
+		return p;
 	}
 
 	void reset() {
@@ -378,6 +443,7 @@ public:
 
 	virtual void output(FILE *out) {
 		SearchAlgorithm<D>::output(out);
+		dfpair(out, "one step", "%s", onestep ? "yes" : "no");
 		dfpair(out, "num steps", "%lu", (unsigned long) steps.size());
 		if (steps.size() != 0) {
 			double mint = steps.front().time;
@@ -385,7 +451,7 @@ public:
 
 			unsigned int minl = steps.front().length;
 			unsigned int maxl = steps.front().length;
-			unsigned long nmoves = 0;
+			unsigned long nmoves = steps.front().length;
 
 			for (unsigned int i = 1; i < steps.size(); i++) {
 				double dt = steps[i].time - steps[i-1].time;
@@ -424,5 +490,6 @@ private:
 	std::vector<Step> steps;
 
 	Graph graph;
+	bool onestep;
 	unsigned int lookahead;
 };
