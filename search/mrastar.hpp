@@ -336,9 +336,13 @@ public:
 
 		Node *cur = graph.node(d, s0);
 
-		while (!cur->isgoal && !this->limit()) {
+		while (!cur->isgoal) {
 			Lss lss(*this, graph, cur);
 			lss.expand(d, lookahead);
+
+			if (this->limit())
+				break;
+
 			lss.learn();
 
 			auto p = lss.move(d);
