@@ -68,7 +68,7 @@ template <class D> struct Lsslrtastar : public SearchAlgorithm<D> {
 		for (int i = 0; i < argc; i++) {
 			if (i < argc - 1 && strcmp(argv[i], "-lookahead") == 0)
 				lookahead = strtod(argv[++i], NULL);
-			else if(i < argc - 1 && strcmp(argv[i], "-onestep") == 0)
+			else if(strcmp(argv[i], "-onestep") == 0)
 				oneStep = true;
 		}
 
@@ -159,6 +159,8 @@ template <class D> struct Lsslrtastar : public SearchAlgorithm<D> {
 
 	virtual void output(FILE *out) {
 		SearchAlgorithm<D>::output(out);
+
+		dfpair(out, "one step", "%s", oneStep ? "yes" : "no");
 
 		dfpair(out, "num steps", "%lu", emitTimes.size());
 		if (emitTimes.size() > 0) {
