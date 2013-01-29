@@ -16,9 +16,10 @@ search: search/search.a search/anyprof/mkprof
 EVERYTHING+=search
 
 search/search.a:\
-	$(SEARCHOBJS)
+	$(SEARCHOBJS)\
+	 $(RDBOBJS)
 	@echo $@
-	@$(AR) rsc $@ $(SEARCHOBJS)
+	@$(AR) rsc $@ $(SEARCHOBJS) $(RDBOBJS)
 
 CLEAN+=$(SEARCHOBJS) search/search.a
 
