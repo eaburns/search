@@ -65,14 +65,14 @@ public:
 
 	// empty returns true if the heap is empty and
 	// false otherwise.
-	bool empty() { return heap.empty(); }
+	bool empty() const { return heap.empty(); }
 
 	// clear clears all of the elements from the heap
 	// leaving it empty.
 	void clear() { heap.clear(); }
 
  	// size returns the number of entries in the heap.
-	long size() { return heap.size(); }
+	long size() const { return heap.size(); }
 
 	// at returns the element of the heap at the given
 	// index.

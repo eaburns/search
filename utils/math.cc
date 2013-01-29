@@ -56,3 +56,25 @@ double phi(double x) {
 	static const double sqrt2 = sqrt(2);
 	return 0.5 * (1 + erf(x/sqrt2));
 }
+
+double integrate(double(*getY)(double), double start, double end, double stepsize) {
+	double sum = 0;
+	double y1 = 0;
+	double y2 = getY(start);
+	double cur = start;
+	double next = start + stepsize;
+	for( ; next < end; cur = next, next+=stepsize) {
+		
+		y1 = y2;
+		y2 = getY(next);
+
+		sum += (next - cur) * ((y1 + y2) / 2);
+	}
+
+	y1 = y2;
+	y2 = getY(end);
+	next = end;
+	sum += (next - cur) * ((y1 + y2) / 2);
+
+	return sum;
+}

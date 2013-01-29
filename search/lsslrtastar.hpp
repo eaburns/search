@@ -66,20 +66,21 @@ template <class D> struct Lsslrtastar : public SearchAlgorithm<D> {
 		SearchAlgorithm<D>(argc, argv), seen(30000001), lssclosed(1), staticLookahead(0), iterationCount(0),
 		oneStep(false), dynamicLookahead(false) {
 
-		std::string levelFile;
-		std::string trainingDataPath;
+		std::string levelFile;		
+		std::string trainingDataRoot;
+
 
 		for (int i = 0; i < argc; i++) {
 			if (i < argc - 1 && strcmp(argv[i], "-lookahead") == 0)
 				staticLookahead = strtod(argv[++i], NULL);
-			else if (i < argc - 1 && strcmp(argv[i], "-lvl") == 0)
-				levelFile = std::string(argv[++i]);
 			else if(strcmp(argv[i], "-onestep") == 0)
 				oneStep = true;
 			else if(i < argc - 1 && strcmp(argv[i], "-dynlss") == 0) {
-				trainingDataPath = std::string(argv[++i]);
+				trainingDataRoot = std::string(argv[++i]);
 				dynamicLookahead = true;
 			}
+			else if (i < argc - 1 && strcmp(argv[i], "-lvl") == 0)
+				levelFile = std::string(argv[++i]);
 		}
 
 		if(staticLookahead < 1 && !dynamicLookahead)
@@ -92,7 +93,7 @@ template <class D> struct Lsslrtastar : public SearchAlgorithm<D> {
 
 		nodes = new Pool<Node>();
 		if(dynamicLookahead)
-			constructLSSLookupTable(trainingDataPath, levelFile);
+			constructLSSLookupTable(trainingDataRoot, levelFile);
 	}
 
 	~Lsslrtastar() {
