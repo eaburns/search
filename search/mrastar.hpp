@@ -126,13 +126,15 @@ private:
 	class Lss {
 	public:
 
+		typedef typename Graph::Node GraphNode;
+
 		struct Node {
 			long openind, learnind;
 			double g, f;
 			Oper op;
 			Node *parent;
 			bool closed, updated;
-			typename Graph::Node *node;
+			GraphNode *node;
 
 		private:
 
@@ -167,15 +169,14 @@ private:
 			}
 		};
 
-
-		Lss(Mrastar<D> &s, Graph &g, typename Graph::Node *rt, double g0, Oper o0) :
-			goal(NULL), root(rt), op0(o0), nodes(s.lookahead), nclosed(0), search(s), graph(g) {
+		Lss(Mrastar<D> &s, Graph &g, GraphNode *c, GraphNode *rt, double g0, Oper o) :
+			goal(NULL), root(rt), op(o), cur(c), nodes(s.lookahead), nclosed(0), search(s), graph(g) {
 
 			Node *r = pool.construct();
 			r->g = g0;
 			r->f = root->h;
 			r->parent = NULL;
-			r->op = op0;
+			r->op = op;
 			r->node = root;
 			if (root->isgoal)
 				goal = r;
@@ -205,8 +206,7 @@ private:
 
 				expd++;
 				for (auto e : graph.succs(d, n->node)) {
-
-					if (n->parent && e.node == n->parent->node)
+					if (e.node == cur || (n->parent && e.node == n->parent->node))
 						continue;
 
 					unsigned long hash = e.node->state.hash(&d);
@@ -277,7 +277,7 @@ private:
 		// to the cheapest generated goal, or, if no goal was generated,
 		// the node on the open list with the lowest f value, along with
 		// the corresponding graph node.
-		std::pair<std::vector<Oper>, typename Graph::Node*> move(D &d) {
+		std::pair<std::vector<Oper>, GraphNode*> move(D &d) {
 			Node *best = goal;
 
 			if (!best) {
@@ -322,13 +322,15 @@ private:
 		Node *goal;
 
 		// Root is the root of this node.
-		typename Graph::Node *root;
+		GraphNode *root;
 
-		// Op0 is the operator generating the root of this tree from
+		// Op is the operator generating the root of this tree from
 		// the current node.
-		Oper op0;
+		Oper op;
 
 	private:
+
+		GraphNode *cur;
 
 		Pool<Node> pool;
 		BinHeap<F, Node*> open;
@@ -402,9 +404,9 @@ public:
 	std::pair<std::vector<Oper>, Node*> step(D &d, Node *cur) {
 		BinHeap<Lss, Lss*> lss;
 		for (auto s : graph.succs(d, cur))
-			lss.push(new Lss(*this, graph, s.node, s.cost, s.op));
+			lss.push(new Lss(*this, graph, cur, s.node, s.cost, s.op));
 
-		for (unsigned int e = 0; e < lookahead && !lss.empty() && !this->limit(); e++) {
+		for (unsigned int e = 0; e < lookahead && !this->limit(); e++) {
 			Lss *l = *lss.front();
 
 			if (l->goal && l->goal->closed)
@@ -419,20 +421,21 @@ public:
 				l->learn();
 		}
 
-		Lss *best = *lss.front();
-		std::pair<std::vector<Oper>, Node*> p;
-		if (onestep) {
-			std::vector<Oper> ops;
-			ops.push_back(best->op0);
-			p = std::make_pair(ops, best->root);
-		} else {
-			p = best->move(d);
-		}
+		auto p = move(d, *lss.front());
 
 		for (auto l : lss.data())
 			delete l;
 
 		return p;
+	}
+
+	std::pair<std::vector<Oper>, Node*> move(D &d, Lss *l) {
+		if (!onestep)
+			return l->move(d); 
+
+		std::vector<Oper> ops;
+		ops.push_back(l->op);
+		return std::make_pair(ops, l->root);
 	}
 
 	void reset() {
