@@ -388,7 +388,7 @@ private:
 	void constructLSSLookupTable(const std::string &dataRoot, const std::string &levelFile) {
 		RdbAttrs lvlAttrs = pathattrs(levelFile);
 
-		std::string instanceRoot(dataRoot + lvlAttrs.lookup("domain"));
+		std::string instanceRoot(pathcat(dataRoot, lvlAttrs.lookup("domain")));
 
 		RdbAttrs attrs;
 
@@ -406,6 +406,8 @@ private:
 		else { fatal("LSS-Lookup not set up for: %s", lvlAttrs.lookup("domain").c_str()); }
 
 		std::vector<std::string> paths = withattrs(instanceRoot, attrs);
+		if (paths.size() == 0)
+			fatal("No data matching for %s in %s", attrs.string().c_str(), instanceRoot.c_str());
 
 		for(unsigned int i = 0; i < paths.size(); i++) {
 			FILE* in = fopen(paths[i].c_str(), "r");
