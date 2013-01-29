@@ -1,6 +1,7 @@
 #pragma once
 #include "../search/search.hpp"
 #include "../utils/pool.hpp"
+#include "../rdb/rdb.hpp"
 
 template <class D> struct Lsslrtastar : public SearchAlgorithm<D> {
 
@@ -62,23 +63,36 @@ template <class D> struct Lsslrtastar : public SearchAlgorithm<D> {
 	};
 
 	Lsslrtastar(int argc, const char *argv[]) :
-		SearchAlgorithm<D>(argc, argv), seen(30000001), lssclosed(1), iterationCount(0), oneStep(false) {
-		lookahead = 0;
+		SearchAlgorithm<D>(argc, argv), seen(30000001), lssclosed(1), staticLookahead(0), iterationCount(0),
+		oneStep(false), dynamicLookahead(false) {
+
+		std::string levelFile;
+		std::string trainingDataPath;
 
 		for (int i = 0; i < argc; i++) {
 			if (i < argc - 1 && strcmp(argv[i], "-lookahead") == 0)
-				lookahead = strtod(argv[++i], NULL);
-			else if(i < argc - 1 && strcmp(argv[i], "-onestep") == 0)
+				staticLookahead = strtod(argv[++i], NULL);
+			else if (i < argc - 1 && strcmp(argv[i], "-lvl") == 0)
+				levelFile = std::string(argv[++i]);
+			else if(strcmp(argv[i], "-onestep") == 0)
 				oneStep = true;
+			else if(i < argc - 1 && strcmp(argv[i], "-dynlss") == 0) {
+				trainingDataPath = std::string(argv[++i]);
+				dynamicLookahead = true;
+			}
 		}
 
-		if (lookahead < 1)
+		if(staticLookahead < 1 && !dynamicLookahead)
 			fatal("Must specify a lookahead ≥1 using -lookahead");
 
-
-		lssclosed.resize(lookahead * 3);
+		if(staticLookahead > 0)
+			lssclosed.resize(staticLookahead * 3);
+		else
+			lssclosed.resize(1000);
 
 		nodes = new Pool<Node>();
+		if(dynamicLookahead)
+			constructLSSLookupTable(trainingDataPath, levelFile);
 	}
 
 	~Lsslrtastar() {
@@ -97,9 +111,17 @@ template <class D> struct Lsslrtastar : public SearchAlgorithm<D> {
 
 		State buf, &startState = d.unpack(buf, start->state);
 
+//TODO: for domains that want to run something like this we need a function to get the real-time constraint
+		double realTimeInterval = 0.02;//D::getRealTimeConstraint(); //or framerate
+		double nextRequiredEmit = cputime() + realTimeInterval;
+
 		while(!d.isgoal(startState) && !this->limit()) {
 
-			Node* s_goal = astar(d, start);
+			Node* s_goal;
+			if(!dynamicLookahead)
+				s_goal = astar(d, start, staticLookahead);
+			else
+				s_goal = astar(d, start, getDynamicLSSSize(nextRequiredEmit));
 
 			if(s_goal == NULL) break;
 
@@ -124,11 +146,13 @@ template <class D> struct Lsslrtastar : public SearchAlgorithm<D> {
 				lengths.push_back(1);
 				this->res.ops.push_back(partial.back());
 				start = oneStepState;
+				nextRequiredEmit += realTimeInterval;
 			}
 			else {
 				lengths.push_back(partial.size());
 				this->res.ops.insert(this->res.ops.end(), partial.rbegin(), partial.rend());
 				start = s_goal;
+				nextRequiredEmit += realTimeInterval * (double)partial.size();
 			}
 
 			//update action costs?
@@ -170,6 +194,9 @@ template <class D> struct Lsslrtastar : public SearchAlgorithm<D> {
 				if(stepTime < minEmit) minEmit = stepTime;
 				if(stepTime > maxEmit) maxEmit = stepTime;
 			}
+
+			dfpair(out, "onestep", "%s", oneStep ? "yes" : "no");
+			dfpair(out, "dynamic lookahead", "%s", dynamicLookahead ? "yes" : "no");
 			dfpair(out, "min step cpu time", "%f", minEmit);
 			dfpair(out, "max step cpu time", "%f", maxEmit);
 			dfpair(out, "mean step cpu time", "%f", (emitTimes.back() - emitTimes.front()) / (double) emitTimes.size());
@@ -197,7 +224,7 @@ template <class D> struct Lsslrtastar : public SearchAlgorithm<D> {
 
 private:
 
-	Node* astar(D& d, Node* s_start) {
+	Node* astar(D& d, Node* s_start, unsigned int lookahead) {
 		iterationCount++; //handle setting g's to inf by checking iteration number
 		lssclosed.clear();
 		lssopen.clear();
@@ -327,6 +354,79 @@ private:
 		}
 	}
 
+	unsigned int getDynamicLSSSize(double deadline) const {
+		double remaining = deadline - cputime();
+
+//TODO: Would we ever want to try to interoplate these values?
+		for(unsigned int i = 0; i < lsstable.size(); i++) {
+			if(remaining <= lsstable[i].expectTime)
+				return lsstable[i].size;
+		}
+		return lsstable.back().size;
+	}
+
+	static void dfHandleThis(std::vector<std::string>& lineData, void* data) {
+		if(lineData[1].compare("max step cpu time") == 0) {
+			double oldVal = *(double*)data;
+			double newVal = strtod(lineData[2].c_str(), NULL);
+			if(newVal > oldVal) {
+				*((double*)data) =  newVal;
+			}
+		}
+	}
+
+	struct lsslookup {
+		lsslookup(unsigned int size) : size(size), expectTime(0) {}
+		bool operator<(const lsslookup &l) const {
+			return size < l.size;
+		}
+		unsigned int size;
+		double expectTime;
+	};
+
+	void constructLSSLookupTable(const std::string &dataRoot, const std::string &levelFile) {
+		RdbAttrs lvlAttrs = pathattrs(levelFile);
+
+		std::string instanceRoot(dataRoot + lvlAttrs.lookup("domain"));
+
+		RdbAttrs attrs;
+
+		attrs.push_back("alg", "lsslrtastar");
+
+		if(lvlAttrs.lookup("domain").compare("plat2d") == 0) {
+
+			if(oneStep) attrs.push_back("onestep", "yes");
+			else attrs.push_back("onestep", "no");
+
+			attrs.push_back("type", "training");
+			attrs.push_back("width", lvlAttrs.lookup("width"));
+			attrs.push_back("height", lvlAttrs.lookup("height"));
+		}
+		else { fatal("LSS-Lookup not set up for: %s", lvlAttrs.lookup("domain").c_str()); }
+
+		std::vector<std::string> paths = withattrs(instanceRoot, attrs);
+
+		for(unsigned int i = 0; i < paths.size(); i++) {
+			FILE* in = fopen(paths[i].c_str(), "r");
+
+			RdbAttrs instanceAttrs = pathattrs(paths[i]);
+			unsigned int lookahead = strtol(instanceAttrs.lookup("lookahead").c_str(), NULL, 10);
+			unsigned int index = 0;
+			for( ; index < lsstable.size(); index++)
+				if(lsstable[index].size == lookahead)
+					break;
+
+			if(index >= lsstable.size())
+				lsstable.emplace_back(lookahead);
+
+			dfread(in, this->dfHandleThis, &lsstable[index].expectTime, NULL);
+
+			fclose(in);
+		}
+
+		std::sort(lsstable.begin(), lsstable.end());
+	}
+
 	Node *init(D &d, State &s0) {
 		Node *n0 = nodes->construct();
 		d.pack(n0->state, s0);
@@ -341,10 +441,12 @@ private:
 	BinHeap<Node, Node*> lssopen;
  	ClosedList<Node, Node, D> lssclosed;
 	Pool<Node> *nodes;
-	unsigned int lookahead;
+	unsigned int staticLookahead;
 	unsigned int iterationCount;
 	Node* foreverStart;
 	std::vector<double> emitTimes;
 	std::vector<unsigned int> lengths;
 	bool oneStep;
+	bool dynamicLookahead;
+	std::vector<lsslookup> lsstable;
 };
