@@ -370,7 +370,7 @@ public:
 
 		Node *cur = graph.node(d, s0);
 
-		while (!cur->isgoal) {
+		while (!cur->isgoal && !this->limit()) {
 			auto p = step(d, cur);
 			cur = p.second;
 			this->res.ops.insert(this->res.ops.end(), p.first.rbegin(), p.first.rend());
