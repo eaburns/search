@@ -126,8 +126,9 @@ template <class D> struct Lsslrtastar : public SearchAlgorithm<D> {
 
 			if(s_goal == NULL) break;
 
-			if (!this->limit())
-				dijkstra(d);
+			if (this->limit()) break;
+
+			dijkstra(d);
 
 			std::vector<Oper> partial;
 			Node* p = s_goal;
