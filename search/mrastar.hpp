@@ -543,7 +543,13 @@ public:
 			dfrac = 1;
 		else if (dfrac < 0)
 			dfrac = 0;
-		double sigma = herr*dhat * (1 - dfrac);
+
+//		double sigma = herr * dhat*(1 - dfrac);
+		dhat *= 1 - dfrac;
+		double sigma = 12.698373624401009
+			+ dhat * 0.034835695393688
+			+ dhat*dhat * 0.000034990580392
+			+ dhat*dhat*dhat * -0.000000038671449;
 
 		Normal n(l->root->fhat, sigma);
 
