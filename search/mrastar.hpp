@@ -42,6 +42,12 @@ private:
 
 		struct Node {
 			double h;
+			// D is not the standard d definition, it is the distance-to-goal estimate
+			// of the node from which h was inherited.  It is the number of steps over
+			// which heuristic error was acumulated.
+			double d;
+			// Dorig is the domain's original d estimate for this node.
+			double dorig;
 			bool isgoal;
 			bool expd;	// Have we generated successors yet?
 			std::vector<Out> succs;
@@ -81,6 +87,7 @@ private:
 			}
 
 			n->h = d.h(state);
+			n->d = n->dorig = d.d(state);
 			n->isgoal = d.isgoal(state);
 			nodes.add(n, hash);
 			return n;
@@ -130,7 +137,8 @@ private:
 
 		struct Node {
 			long openind, learnind;
-			double g, f;
+			double g, f, fhat;
+			unsigned long gend;
 			Oper op;
 			Node *parent;
 			bool closed, updated;
@@ -163,24 +171,30 @@ private:
 			}
 
 			static bool pred(Node *a, Node *b) {
-				if (a->f == b->f)
-					return a->g > b->g;
-				return a->f < b->f;
+				if (a->fhat == b->fhat) {
+					if (a->f == b->f)
+						return a->g > b->g;
+					return a->f < b->f;
+				}
+				return a->fhat < b->fhat;
 			}
 		};
 
 		Lss(Mrastar<D> &s, Graph &g, GraphNode *c, GraphNode *rt, double g0, Oper o) :
-			goal(NULL), root(rt), op(o), cur(c), nodes(s.lookahead), nclosed(0), search(s), graph(g) {
+			goal(NULL), op(o), cur(c), nodes(s.lookahead), nclosed(0), search(s), graph(g) {
 
-			Node *r = pool.construct();
-			r->g = g0;
-			r->f = root->h;
-			r->parent = NULL;
-			r->op = op;
-			r->node = root;
-			if (root->isgoal)
-				goal = r;
-			open.push(r);
+			root = pool.construct();
+			root->node = rt;
+			root->g = g0;
+			root->f = rt->h;
+			root->gend = search.ndelay;
+			assert(search.herr >= 0);
+			root->fhat = root->f + search.herr*rt->d;
+			root->parent = NULL;
+			root->op = op;
+			if (rt->isgoal)
+				goal = root;
+			open.push(root);
 		}
 
 		// Expand performs no more than N expansions, returning true
@@ -204,7 +218,10 @@ private:
 					break;
 				}
 
+				search.updatedelay(n->gend);
+
 				expd++;
+				Node *bestkid = NULL;
 				for (auto e : graph.succs(d, n->node)) {
 					if (e.node == cur || (n->parent && e.node == n->parent->node))
 						continue;
@@ -216,8 +233,11 @@ private:
 					if (!k) {
 						k = pool.construct();
 						k->node = e.node;
+						k->gend = search.ndelay;
 						nodes.add(k, hash);
 					} else if (k->g <= g) {
+						if (!bestkid || k->f < bestkid->f)
+							bestkid = k;
 						continue;
 					}
 
@@ -225,11 +245,19 @@ private:
 					k->op = e.op;
 					k->g = g;
 					k->f = g + k->node->h;
+					assert (search.herr >= 0);
+					k->fhat = k->f + search.herr*k->node->d;
 					open.pushupdate(k, k->openind);
+
+					if (!bestkid || k->f < bestkid->f)
+						bestkid = k;
 
 					if (k->node->isgoal && (!goal || k->g < goal->g))
 						goal = k;
 				}
+
+				if (bestkid)
+					search.updateerror(n->node, n->g - bestkid->g, bestkid->node);
 			}
 
 			return !open.empty();
@@ -251,6 +279,11 @@ private:
 		void learn() {
 			BinHeap<H, Node*> o;
 
+			for (auto n : nodes) {
+				n->learnind = -1;
+				n->updated = false;
+			}
+
 			o.append(open.data());
 
 			while (nclosed > 0 && !o.empty()) {
@@ -266,6 +299,8 @@ private:
 						continue;
 					if (!p->updated || p->node->h > n->node->h + e.cost) {
 						p->node->h = n->node->h + e.cost;
+						if (p->node->d < n->node->d)
+							p->node->d = n->node->d;
 						p->updated = true;
 						o.pushupdate(p, p->learnind);
 					}
@@ -299,20 +334,15 @@ private:
 		}
 
 		static bool pred(Lss *a, Lss *b) {
-			auto af = a->fg();
-			auto bf = b->fg();
-			if (af.first == bf.first)
-				return af.second > bf.second;
-			return af.first < bf.first;
+			return a->f() < b->f();
 		}
 
-		std::pair<double, double> fg() {
+		double f() {
 			if (open.empty() && !goal)
-				return std::make_pair(geom2d::Infinity, geom2d::Infinity);
+				return geom2d::Infinity;
 			if (open.empty())
-				return std::make_pair(goal->g, goal->g);
-			Node *front = *open.front();
-			return std::make_pair(front->f, front->g);
+				return goal->g;
+			return (*open.front())->fhat;
 		}
 
 		// Goal is the cheapest goal that has been generated, or NULL
@@ -322,7 +352,7 @@ private:
 		Node *goal;
 
 		// Root is the root of this node.
-		GraphNode *root;
+		Node *root;
 
 		// Op is the operator generating the root of this tree from
 		// the current node.
@@ -346,15 +376,15 @@ public:
 
 	Mrastar(int argc, const char *argv[]) :
 		SearchAlgorithm<D>(argc, argv),
+		herr(0), ndelay(0),  herrNext(0), nerr(0),
+		delay(1),
+		nsearch(0),
 		graph(*this, 30000001),
-		onestep(false),
 		lookahead(0) {
 
 		for (int i = 0; i < argc; i++) {
 			if (i < argc - 1 && strcmp(argv[i], "-lookahead") == 0)
 				lookahead = strtoul(argv[++i], NULL, 10);
-			else if (strcmp(argv[i], "-onestep") == 0)
-				onestep = true;
 		}
 		if (lookahead < 1)
 			fatal("Must specify a lookahead ≥1 using -lookahead");
@@ -372,6 +402,12 @@ public:
 
 		while (!cur->isgoal && !this->limit()) {
 			auto p = step(d, cur);
+
+			for (auto s : cur->succs) {
+				if (s.cost + s.node->h > cur->h)
+					cur->h = s.cost + s.node->h;
+			}
+
 			cur = p.second;
 			this->res.ops.insert(this->res.ops.end(), p.first.rbegin(), p.first.rend());
 			steps.emplace_back(cputime() - this->res.cpustart, (unsigned int) p.first.size());
@@ -406,19 +442,32 @@ public:
 		for (auto s : graph.succs(d, cur))
 			lss.push(new Lss(*this, graph, cur, s.node, s.cost, s.op));
 
-		for (unsigned int e = 0; e < lookahead && !this->limit(); e++) {
-			Lss *l = *lss.front();
+		nexterror();
 
-			if (l->goal && l->goal->closed)
+ 		while (!this->limit()) {
+
+			if ((*lss.front())->goal)
 				break;
 
-			l->expand(d, 1);
- 			lss.update(0);
-		}
+			Lss *l = searchhere(lss);
+			if (!l) {
+//fprintf(stderr, "move\n");
+				break;
+			}
 
-		if (!this->limit()) {
-			for (auto l : lss.data())
-				l->learn();
+			double start = cputime();
+
+			l->expand(d, lookahead);
+
+			if (l->goal) {
+				auto p = move(d, l);
+				for (auto l : lss.data())
+					delete l;
+				return p;
+			}
+
+			nsearch++;
+			searchtime += ((cputime()-start) - searchtime)/nsearch;
 		}
 
 		auto p = move(d, *lss.front());
@@ -429,13 +478,124 @@ public:
 		return p;
 	}
 
-	std::pair<std::vector<Oper>, Node*> move(D &d, Lss *l) {
-		if (!onestep)
-			return l->move(d); 
+	// Searchhere returns the Lss from which to perform the next lookahead
+	// expansions or NULL if it's time to act.
+	Lss *searchhere(BinHeap<Lss, Lss*> &lss) {
 
+		if (this->res.expd == 1 && lss.size() > 0)
+			return *lss.front();
+
+		// Only one action: Nike.
+		if (lss.size() == 1)
+			return NULL;
+
+		for (auto l : lss.data())
+			l->learn();
+
+		Lss *best = NULL;
+		double ubest = (*lss.front())->root->fhat;
+//fprintf(stderr, "uact=%g\n", ubest);
+
+		Lss *first = *lss.pop();	// We'll put this one back later.
+		Lss *second = *lss.front();
+		double u = expectedutil(second->root->fhat, first);
+		if (u < ubest) {
+			best = first;
+			ubest = u;
+		}
+
+//int i = 0;
+//fprintf(stderr, ", u%d=%g\n", i, u);
+
+		for (auto l : lss.data()) {
+			double u = expectedutil(first->root->fhat, l);
+//i++;
+//fprintf(stderr, ", u%d=%g\n", i, u);
+			if (u < ubest) {
+				best = l;
+				ubest = u;
+			}
+		}
+//fprintf(stderr, "nsearch=%lu\n", nsearch);
+
+		lss.push(first);
+
+		return best;
+	}
+
+	double expectedutil(double fbest, Lss *l) {
+		double u = geom2d::Infinity;
+		for (unsigned int i = 1; i < 10000; i++) {
+			auto e = util(fbest, l, lookahead*i);
+			if (e.first < u)
+				 u = e.first;
+			if (e.second)
+				break;
+		}
+		return u;
+	}
+
+	// Util is the expected utility of searching under the given LSS for  the given amount of search.
+	std::pair<double, bool> util(double fbest, Lss *l, unsigned long N) {
+		double dhat = l->root->node->d;
+		double dfrac = (N/delay) / dhat;
+		if (dfrac > 1)
+			dfrac = 1;
+		else if (dfrac < 0)
+			dfrac = 0;
+		double sigma = herr*dhat * (1 - dfrac);
+
+		Normal n(l->root->fhat, sigma);
+
+		double min = l->root->fhat - 3*sigma;
+		double max = fbest;
+
+		double searchcost = (lookahead/N)*(searchtime/0.02);	// 0.02 is the number of seconds per frame in plat2d ☹
+
+//fprintf(stderr, "max=%g, min=%g, f=%g, fhat=%g, sigma=%g, dhat=%g, dfrac=%g, herr=%g, delay=%g, nsteps=%lu\n", max, min, l->root->f, l->root->fhat, sigma, dhat, dfrac, herr, delay, (unsigned long) steps.size());
+		if (max <= min)
+			return std::make_pair(searchcost + fbest, geom2d::doubleeq(dfrac, 1));
+
+		if (geom2d::doubleeq(sigma, 0))
+			return std::make_pair(searchcost + l->root->fhat, geom2d::doubleeq(dfrac, 1));
+
+		return std::make_pair(
+				searchcost +
+				integrate([n](double x) -> double{ return x * n.pdf(x); }, min, max, 0.1) + 
+				(1-n.cdf(fbest))*fbest,
+			geom2d::doubleeq(dfrac, 1));
+	}
+
+	void nexterror() {
+		if (herrNext > 0)
+			herr = herrNext;
+		herrNext = 0;
+		nerr = 0;
+	}
+
+	void updateerror(Node *n, double cost, Node *bestkid) {
+		nerr++;
+
+		double h = bestkid->h;
+		if (h < n->h - cost)
+			h = n->h - cost;
+
+		double e = (h + cost) - n->h;
+		if (e < 0)
+			e = 0;
+		herrNext += (e - herrNext)/nerr;
+	}
+
+	void updatedelay(unsigned long gend) {
+		unsigned long d = ndelay - gend;
+		ndelay++;
+		delay += (d - delay)/(double)ndelay;
+	}
+
+	std::pair<std::vector<Oper>, Node*> move(D &d, Lss *l) {
 		std::vector<Oper> ops;
 		ops.push_back(l->op);
-		return std::make_pair(ops, l->root);
+		return std::make_pair(ops, l->root->node);
 	}
 
 	void reset() {
@@ -446,7 +606,6 @@ public:
 
 	virtual void output(FILE *out) {
 		SearchAlgorithm<D>::output(out);
-		dfpair(out, "one step", "%s", onestep ? "yes" : "no");
 		dfpair(out, "num steps", "%lu", (unsigned long) steps.size());
 		if (steps.size() != 0) {
 			double mint = steps.front().time;
@@ -477,8 +636,17 @@ public:
 			dfpair(out, "min step length", "%u", minl);
 			dfpair(out, "max step length", "%u", maxl);
 			dfpair(out, "mean step length", "%g", nmoves / (double) steps.size());
+			dfpair(out, "number of searches", "%lu", nsearch);
 		}
+
+		dfpair(out, "last step mean h error", "%g", herr);
 	}
+
+	// Herr is the previous iteration's average heuristic error.
+	double herr;
+
+	// Ndelay is the number of expansion over which the delay is averaged.
+	unsigned long ndelay;
 
 private:
 
@@ -492,7 +660,21 @@ private:
 
 	std::vector<Step> steps;
 
+	// HerrNext is the current iteration's average heuristic error.
+	double herrNext;
+
+	// NErr is the number of items over which error has been computed this iteration.
+	unsigned long nerr;
+
+	// Delay is the average expansion delay.
+	double delay;
+
+	// Searchtime is the average time to perform lookahead amount of search.
+	double searchtime;
+
+	// Nsearch is the number of searches over which the search time is averaged;
+	unsigned long nsearch;
+
 	Graph graph;
-	bool onestep;
 	unsigned int lookahead;
 };
