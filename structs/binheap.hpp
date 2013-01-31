@@ -24,6 +24,7 @@ public:
 		if (heap.size() > 1) {
 			heap[0] = heap.back();
 			heap.pop_back();
+			Ops::setind(heap[0], 0);
 			pushdown(0);
 		} else {
 			heap.pop_back();
