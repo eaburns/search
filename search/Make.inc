@@ -4,6 +4,7 @@ search:\
 	search/anyprof/sptpolicy\
 	search/anyprof/bestwt\
 	search/learnh/hlms\
+	search/learnh/learnsig\
 
 SEARCHOBJS:=\
 	search/search.o\
@@ -15,9 +16,8 @@ search: search/search.a search/anyprof/mkprof
 
 EVERYTHING+=search
 
-search/search.a:\
-	$(SEARCHOBJS)\
-	 $(RDBOBJS)
+search/search.a: $(RDBOBJS)
+search/search.a: $(SEARCHOBJS)
 	@echo $@
 	@$(AR) rsc $@ $(SEARCHOBJS) $(RDBOBJS)
 
@@ -68,6 +68,16 @@ search/learnh/hlms:\
 	@echo $@
 	@$(CXX) $(CXXFLAGS) $^ -llapack $(LDFLAGS) -o $@
 CLEAN+=search/learnh/hlms
+
+search/learnh/learnsig:\
+	search/learnh/leastsquares.cc\
+	search/learnh/learnsig.cc\
+	$(SEARCHOBJS)\
+	rdb/rdb.a\
+	utils/utils.a
+	@echo $@
+	@$(CXX) $(CXXFLAGS) $^ -llapack $(LDFLAGS) -o $@
+CLEAN+=search/learnh/learnsig
 
 TESTS+=.search_test
 

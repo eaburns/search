@@ -24,6 +24,7 @@ public:
 		if (heap.size() > 1) {
 			heap[0] = heap.back();
 			heap.pop_back();
+			Ops::setind(heap[0], 0);
 			pushdown(0);
 		} else {
 			heap.pop_back();
@@ -46,6 +47,8 @@ public:
 	// index.  This should be called whenever the priority
 	// of an element changes.  O(lg n) time.
 	void update(long i) {
+		if (i < 0 || (unsigned int) i >= heap.size())
+			fatal("Updating an invalid heap index: %ld, size=%lu\n", i, heap.size());
 		i = pullup(i);
 		pushdown(i);
 	}
@@ -91,6 +94,9 @@ public:
 	void reinit() {
 		if (heap.size() <= 0)
 			return;
+
+		for (unsigned int i = 0; i < heap.size(); i++)
+			Ops::setind(heap[i], i);
 
 		for (long i = heap.size() / 2; ; i--) {
 			pushdown(i);

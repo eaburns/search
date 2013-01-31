@@ -279,4 +279,15 @@ double phi(double x);
 
 // Integrate returns an approximation of the closed integral from start to end on
 // the given function.  It performs the trapazoid rule in increments of stepsize.
-double integrate(double(*)(double), double start, double end, double stepsize);
+double integrate(std::function<double(double)>, double start, double end, double stepsize);
+
+class Normal {
+public:
+	Normal(double mean, double stdev);
+	double pdf(double) const;
+	double cdf(double) const;
+private:
+	double mean, stdev;
+	double pdfcoeff;
+	double cdfcoeff;
+};

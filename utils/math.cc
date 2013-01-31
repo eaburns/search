@@ -1,7 +1,9 @@
+#include "utils.hpp"
 #include "safeops.hpp"
 #include <boost/cstdint.hpp>
 #include <limits>
 #include <cmath>
+#include <functional>
 
 void fatal(const char*, ...);
 
@@ -57,7 +59,7 @@ double phi(double x) {
 	return 0.5 * (1 + erf(x/sqrt2));
 }
 
-double integrate(double(*getY)(double), double start, double end, double stepsize) {
+double integrate(std::function<double(double)> getY, double start, double end, double stepsize) {
 	double sum = 0;
 	double y1 = 0;
 	double y2 = getY(start);
@@ -68,7 +70,7 @@ double integrate(double(*getY)(double), double start, double end, double stepsiz
 		y1 = y2;
 		y2 = getY(next);
 
-		sum += (next - cur) * ((y1 + y2) / 2);
+		sum += stepsize * ((y1 + y2) / 2);
 	}
 
 	y1 = y2;
@@ -77,4 +79,17 @@ double integrate(double(*getY)(double), double start, double end, double stepsiz
 	sum += (next - cur) * ((y1 + y2) / 2);
 
 	return sum;
+}
+
+Normal::Normal(double m, double s) : mean(m), stdev(s) {
+	pdfcoeff = 1/(stdev*sqrt(2*M_PI));
+	cdfcoeff = 1/(sqrt(2*stdev*stdev));
+}
+
+double Normal::pdf(double x) const {
+	return pdfcoeff * exp(-(x- mean)*(x-mean) / (2*stdev*stdev));
+}
+
+double Normal::cdf(double x) const {
+	return 0.5 * (1 + erf((x-mean)*cdfcoeff));
 }

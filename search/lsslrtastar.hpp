@@ -144,7 +144,10 @@ template <class D> struct Lsslrtastar : public SearchAlgorithm<D> {
 				p = p->parent;
 			}
 
-			if(oneStep) {
+
+			State &endstate = d.unpack(buf, s_goal->state);
+
+			if(oneStep && !d.isgoal(endstate)) {
 				lengths.push_back(1);
 				this->res.ops.push_back(partial.back());
 				start = oneStepState;
