@@ -92,6 +92,9 @@ public:
 		if (heap.size() <= 0)
 			return;
 
+		for (unsigned int i = 0; i < heap.size(); i++)
+			Ops::setind(heap[i], i);
+
 		for (long i = heap.size() / 2; ; i--) {
 			pushdown(i);
 			if (i == 0)
