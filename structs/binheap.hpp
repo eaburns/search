@@ -46,6 +46,8 @@ public:
 	// index.  This should be called whenever the priority
 	// of an element changes.  O(lg n) time.
 	void update(long i) {
+		if (i < 0 || (unsigned int) i >= heap.size())
+			fatal("Updating an invalid heap index: %ld, size=%lu\n", i, heap.size());
 		i = pullup(i);
 		pushdown(i);
 	}
