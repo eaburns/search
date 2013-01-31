@@ -16,9 +16,8 @@ search: search/search.a search/anyprof/mkprof
 
 EVERYTHING+=search
 
-search/search.a:\
-	$(SEARCHOBJS)\
-	 $(RDBOBJS)
+search/search.a: $(RDBOBJS)
+search/search.a: $(SEARCHOBJS)
 	@echo $@
 	@$(AR) rsc $@ $(SEARCHOBJS) $(RDBOBJS)
 

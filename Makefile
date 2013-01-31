@@ -11,7 +11,7 @@ CC:=gcc
 
 AR:=ar
 
-FLAGS:=-Wall -Werror -g -O3
+FLAGS:=-Wall -Werror -g #-O3
 
 CXXFLAGS:=$(FLAGS) -std=c++0x
 
@@ -26,6 +26,7 @@ TESTS:=
 all: everything tests
 
 include utils/Make.inc
+include rdb/Make.inc
 include structs/Make.inc
 include search/Make.inc
 include tiles/Make.inc
@@ -34,7 +35,6 @@ include gridnav/Make.inc
 include visnav/Make.inc
 include plat2d/Make.inc
 include graphics/Make.inc
-include rdb/Make.inc
 include drobot/Make.inc
 include segments/Make.inc
 include vacuum/Make.inc
