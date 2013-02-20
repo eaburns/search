@@ -43,10 +43,8 @@ public:
 	}
 };
 
-template<> class PackedTiles<16> {
+template<int Ntiles> class PackedTiles64 {
 	friend class Tiles;
-
-	enum { Ntiles = 16 };
 
 	boost::uint64_t word;
 
@@ -92,7 +90,14 @@ public:
 		return word;
 	}
 
-	bool eq(const void*, const PackedTiles &o) const {
+	bool eq(const void*, const PackedTiles64 &o) const {
 		return word == o.word;
 	}
 };
+
+template<> class PackedTiles<16> : public PackedTiles64<16> {
+};
+
+template<> class PackedTiles<9> : public PackedTiles64<9> {
+};
+
