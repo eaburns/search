@@ -26,7 +26,7 @@ void Tiles::readruml(FILE *in) {
 	unsigned int w, h;
 
 	if (fscanf(in, " %u %u", &w, &h) != 2)
-		fatalx(errno, "Failed to read width and height");
+		fatal("Failed to read width and height");
 
 	if (!safe::can_mul(w, h))
 		fatal("The tiles board is too big");
@@ -35,23 +35,23 @@ void Tiles::readruml(FILE *in) {
 		fatal("Width and height instance/compiler option mismatch");
 
 	if (fscanf(in, " starting positions for each tile:") != 0)
-		fatalx(errno, "Failed to read the starting position label");
+		fatal("Failed to read the starting position label");
 
 	for (Tile t = 0; t < Ntiles; t++) {
 		unsigned int p;
 		int r = fscanf(in, " %u", &p);
 		if (r != 1)
-			fatalx(errno, "Failed to read the starting positions: r=%d", r);
+			fatal("Failed to read the starting position for tile %d", t);
 		init[p] = t;
 	}
 
 	if (fscanf(in, " goal positions:") != 0)
-		fatalx(errno, "Failed to read the goal position label");
+		fatal("Failed to read the goal position label");
 
 	for (Tile t = 0; t < Ntiles; t++) {
 		unsigned int p;
 		if (fscanf(in, " %u", &p) != 1)
-			fatalx(errno, "Failed to read the goal position");
+			fatal("Failed to read the goal position");
 		goalpos[t] = p;
 	}
 }
