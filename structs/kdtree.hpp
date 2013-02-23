@@ -31,7 +31,7 @@ public:
 private:
 
 	N *insert(N*, unsigned int, N*);
-	std::pair<const N*, double> nearest(const N*, double[], double*) const;
+	const N* nearest(const N*, double[], double*) const;
 	double sqdist(const N*, double[]) const;
 
 	N *root;
@@ -72,13 +72,13 @@ typename Kdtree<K, Data>::N* Kdtree<K, Data>::insert(N *t, unsigned int depth, N
 template<unsigned int K, class Data>
 const typename Kdtree<K, Data>::N* Kdtree<K, Data>::nearest(double pt[K]) const {
 	double r = std::numeric_limits<double>::infinity();
-	return nearest(root, pt, &r).first;
+	return nearest(root, pt, &r);
 }
 
 template<unsigned int K, class Data>
-std::pair<const typename Kdtree<K, Data>::N*, double> Kdtree<K, Data>::nearest(const N *t, double pt[], double *range) const {
+const typename Kdtree<K, Data>::N* Kdtree<K, Data>::nearest(const N *t, double pt[], double *range) const {
 	if (!t)
-		return std::make_pair<const N*, double>(NULL, std::numeric_limits<double>::infinity());
+		return NULL;
 
 	unsigned int s = t->split;
 	double diff = pt[s] - t->point[s];
@@ -91,23 +91,22 @@ std::pair<const typename Kdtree<K, Data>::N*, double> Kdtree<K, Data>::nearest(c
 		diff = -diff;
 	}
 
-	auto near = nearest(thisSide, pt, range);
+	const N* n = nearest(thisSide, pt, range);
 
 	if (diff*diff > *range)
-		return near;
+		return n;
 
 	double d = sqdist(t, pt);
 	if (d <= *range) {
-		near = std::make_pair(t, d);
-		*range = std::min(near.second, *range);
-
+		n = t;
+		*range = std::min(d, *range);
 	}
 
-	auto m = nearest(otherSide, pt, range);
-	if (m.second < near.second)
-		near = m;
+	const N *m = nearest(otherSide, pt, range);
+	if (m)
+		n = m;
 
-	return near;
+	return n;
 }
 
 template<unsigned int K, class Data>
