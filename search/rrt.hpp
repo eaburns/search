@@ -110,6 +110,7 @@ done:
 		SearchAlgorithm<D>::output(out);
 		dfpair(stdout, "node size", "%u", sizeof(Node));
 		dfpair(stdout, "RRT seed", "%lu", (unsigned long) seed);
+		dfpair(stdout, "RRT tree size", "%lu", (unsigned long) tree.size());
 	}
 
 private:
