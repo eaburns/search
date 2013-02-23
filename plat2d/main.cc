@@ -1,5 +1,6 @@
 #include "plat2d.hpp"
 #include "../search/main.hpp"
+#include "../search/rrt.hpp"
 #include "../utils/utils.hpp"
 #include <cstdio>
 #include <cerrno>
@@ -7,6 +8,7 @@
 const char *lvl = NULL;
 
 static void parseargs(int, const char*[]);
+static SearchAlgorithm<Plat2d> *get(int, const char*[]);
 
 int main(int argc, const char *argv[]) {
 	parseargs(argc, argv);
@@ -24,7 +26,7 @@ int main(int argc, const char *argv[]) {
 	if (infile != stdin)
 		fclose(infile);
 
-	search<Plat2d>(d, argc, argv);
+	searchGet<Plat2d>(get, d, argc, argv);
 	dffooter(stdout);
 
 	return 0;
@@ -35,4 +37,10 @@ static void parseargs(int argc, const char *argv[]) {
 		if (i < argc - 1 && strcmp(argv[i], "-lvl") == 0)
 			lvl = argv[++i];
 	}
+}
+
+static SearchAlgorithm<Plat2d> *get(int argc, const char *argv[]) {
+	if (strcmp(argv[1], "rrt") == 0)
+		return new RRT<Plat2d>(argc, argv);
+	return getsearch<Plat2d>(argc, argv);
 }

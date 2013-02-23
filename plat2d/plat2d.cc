@@ -41,6 +41,9 @@ Plat2d::Plat2d(FILE *in) : lvl(in) {
 	gtop = gy * H;
 	gbottom = (gy + 1) * H;
 
+	maxx = lvl.width()*Tile::Width;
+	maxy = lvl.height()*Tile::Height;
+
 	initvg();
 }
 

@@ -27,7 +27,11 @@ void fatal(const char*, ...);
 template<class D> SearchAlgorithm<D> *getsearch(int argc, const char *argv[]);
 
 template<class D> Result<D> search(D &d, int argc, const char *argv[]) {
-	SearchAlgorithm<D> *srch = getsearch<D>(argc, argv);
+	return searchGet(getsearch, d, argc, argv);
+}
+
+template<class D> Result<D> searchGet(SearchAlgorithm<D>*(*get)(int, const char *[]), D &d, int argc, const char *argv[]) {
+	SearchAlgorithm<D> *srch = get(argc, argv);
 	if (!srch && argc > 1)
 		fatal("Unknow search algorithm: %s", argv[1]);
 	if (!srch)

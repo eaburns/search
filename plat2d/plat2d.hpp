@@ -46,6 +46,14 @@ struct Plat2d {
 		State(unsigned int x, unsigned int y, unsigned int z,
 			unsigned int w, unsigned int h) : player(x, y, w, h), h(-1) { }
 
+		static const int K = 3;
+
+		void vector(const Plat2d *d, double vec[]) const {
+			vec[0] = player.body.bbox.min.x/d->maxx;
+			vec[1] = player.body.bbox.min.y/d->maxy;
+			vec[2] = (player.body.dy+Body::Maxdy)/(2*Body::Maxdy);
+		}
+
 		Player player;
 		Cost h;
 	};
@@ -247,5 +255,7 @@ private:
 	std::vector<Node> togoal;
 	int gcenter;	// vertex ID of the goal center
 	double gleft, gright, gtop, gbottom;
+
+	double maxx, maxy;	// width and height in pixels.
 }; 
 
