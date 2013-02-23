@@ -31,8 +31,8 @@ public:
 private:
 
 	N *insert(N*, unsigned int, N*);
-	std::pair<const N*, double> nearest(const N*, double[K], double*) const;
-	double sqdist(const N*, double[K]) const;
+	std::pair<const N*, double> nearest(const N*, double[], double*) const;
+	double sqdist(const N*, double[]) const;
 
 	N *root;
 	unsigned long num;
@@ -76,7 +76,7 @@ const typename Kdtree<K, Data>::N* Kdtree<K, Data>::nearest(double pt[K]) const 
 }
 
 template<unsigned int K, class Data>
-std::pair<const typename Kdtree<K, Data>::N*, double> Kdtree<K, Data>::nearest(const N *t, double pt[K], double *range) const {
+std::pair<const typename Kdtree<K, Data>::N*, double> Kdtree<K, Data>::nearest(const N *t, double pt[], double *range) const {
 	if (!t)
 		return std::make_pair<const N*, double>(NULL, std::numeric_limits<double>::infinity());
 
@@ -109,7 +109,7 @@ std::pair<const typename Kdtree<K, Data>::N*, double> Kdtree<K, Data>::nearest(c
 }
 
 template<unsigned int K, class Data>
-double Kdtree<K, Data>::sqdist(const N *n, double pt[K]) const {
+double Kdtree<K, Data>::sqdist(const N *n, double pt[]) const {
 	if (!n)
 		return std::numeric_limits<double>::infinity();
 
