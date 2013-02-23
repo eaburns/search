@@ -93,17 +93,19 @@ std::pair<const typename Kdtree<K, Data>::N*, double> Kdtree<K, Data>::nearest(c
 
 	auto near = nearest(thisSide, pt, range);
 
-	if (diff*diff <= *range) {
-		double d = sqdist(t, pt);
-		if (d < *range) {
-			near = std::make_pair(t, d);
-			*range = std::min(near.second, *range);
-		}
+	if (diff*diff > *range)
+		return near;
 
-		auto m = nearest(otherSide, pt, range);
-		if (m.second < near.second)
-			near = m;
+	double d = sqdist(t, pt);
+	if (d <= *range) {
+		near = std::make_pair(t, d);
+		*range = std::min(near.second, *range);
+
 	}
+
+	auto m = nearest(otherSide, pt, range);
+	if (m.second < near.second)
+		near = m;
 
 	return near;
 }
