@@ -25,14 +25,19 @@ public:
 	// Nearest returns a pointer to the nearest node in the tree, or NULL on error.
 	const N* nearest(double[K]) const;
 
+	// Depth returns  the maximum depth of any branch of the tree.
+	// This is an O(n) routine.
+	unsigned int depth() const;
+
 	// Size returns the number of points in the tree.
 	unsigned long size() const;
 
 private:
 
 	N *insert(N*, unsigned int, N*);
-	const N* nearest(const N*, double[], double*) const;
-	double sqdist(const N*, double[]) const;
+	const N* nearest(const N*, const double[], double*) const;
+	unsigned int depth(const N*) const;
+	inline double sqdist(const N*, const double[]) const;
 
 	N *root;
 	unsigned long num;
@@ -76,19 +81,20 @@ const typename Kdtree<K, Data>::N* Kdtree<K, Data>::nearest(double pt[K]) const 
 }
 
 template<unsigned int K, class Data>
-const typename Kdtree<K, Data>::N* Kdtree<K, Data>::nearest(const N *t, double pt[], double *range) const {
+const typename Kdtree<K, Data>::N* Kdtree<K, Data>::nearest(const N *t, const double pt[], double *range) const {
 	if (!t)
 		return NULL;
 
-	unsigned int s = t->split;
-	double diff = pt[s] - t->point[s];
+	double diff = pt[t->split] - t->point[t->split];
 
-	N *thisSide = t->right;
-	N *otherSide = t->left;
+	const N *thisSide, *otherSide;
 	if (diff < 0) {
 		thisSide = t->left;
 		otherSide = t->right;
 		diff = -diff;
+	} else {
+		thisSide = t->right;
+		otherSide = t->left;
 	}
 
 	const N* n = nearest(thisSide, pt, range);
@@ -110,9 +116,11 @@ const typename Kdtree<K, Data>::N* Kdtree<K, Data>::nearest(const N *t, double p
 }
 
 template<unsigned int K, class Data>
-double Kdtree<K, Data>::sqdist(const N *n, double pt[]) const {
+double Kdtree<K, Data>::sqdist(const N *n, const double pt[]) const {
+	static const double Inf = std::numeric_limits<double>::infinity();
+
 	if (!n)
-		return std::numeric_limits<double>::infinity();
+		return Inf;
 
 	double s = 0;
 	for (unsigned int i = 0; i < K; i++) {
@@ -120,6 +128,18 @@ double Kdtree<K, Data>::sqdist(const N *n, double pt[]) const {
 		s += d*d;
 	}
 	return s;
+}
+
+template<unsigned int K, class Data>
+unsigned int Kdtree<K, Data>::depth() const {
+	return depth(root);
+}
+
+template<unsigned int K, class Data>
+unsigned int Kdtree<K, Data>::depth(const N *n) const {
+	if (!n)
+		return 0;
+	return std::max(depth(n->left), depth(n->right)) + 1;
 }
 
 template<unsigned int K, class Data>
