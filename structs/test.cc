@@ -14,6 +14,8 @@ bool stn_copy_eq_test();
 bool stn_add_one_ok_test();
 bool stn_add_one_incons_test();
 bool stn_undo_one_test();
+bool kdtree_insert_test();
+bool kdtree_nearest_test();
 
 static const Test tests[] = {
 	Test("htable add test", htable_add_test),
@@ -28,6 +30,8 @@ static const Test tests[] = {
 	Test("stn add one ok test", stn_add_one_ok_test),
 	Test("stn add one incons test", stn_add_one_incons_test),
 	Test("stn undo one test", stn_undo_one_test),
+	Test("kdtree insert test", kdtree_insert_test),
+	Test("kdtree nearest test", kdtree_nearest_test),
 };
 
 enum { Ntests = sizeof(tests) / sizeof(tests[0]) };

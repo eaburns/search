@@ -16,16 +16,22 @@ TESTS+=.structs_test
 
 CLEAN+=.structs_test
 
+STRUCTSTESTOBJS=\
+	structs/test_htable.o\
+	structs/test_intpq.o\
+	structs/test_binheap.o\
+	structs/test_stn.o\
+	structs/test_kdtree.o\
+
 structs/test:\
-	structs/test_htable.cc\
-	structs/test_intpq.cc\
-	structs/test_binheap.cc\
-	structs/test_stn.cc\
+	$(STRUCTSTESTOBJS)\
 	structs/test.cc\
 	utils/utils.a\
 	structs/structs.a
 	@echo $@
 	@$(CXX) $^ $(LDFLAGS) -o $@
+
+include $(STRUCTSTESTOBJS:.o=.d)
 
 structs/structs.a:\
 	$(STRUCTSOBJS)
