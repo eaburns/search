@@ -33,7 +33,7 @@ bool kdtree_nearest_test() {
 	for (unsigned int i = 0; i < N; i++)
 		root.insert(pts[i], i);
 
-	for (unsigned int i = 0; i < N; i++) {
+	for (unsigned int i = 0; i < 1000; i++) {
 		double pt[K];
 		for (unsigned int j = 0; j < K; j++)
 			pt[j] = randgen.real();
