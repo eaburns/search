@@ -140,7 +140,6 @@ private:
 
 	void drawtree(D &d) {
 		Image *img = d.drawmap();
-		fprintf(stderr, "image: %ux%u\n", img->width, img->height);
 		for (auto kdnode : tree) {
 			Node *n = kdnode->data;
 			if (!n->parent)
