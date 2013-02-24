@@ -9,9 +9,9 @@ const Color Image::green(0, 1, 0);
 const Color Image::blue(0, 0, 1);
 const Color Image::black(0, 0, 0);
 const Color Image::white(1, 1, 1);
-const Color Image::yellow(0.80, 0.80, 0.20);	// Mustard
+const Color Image::yellow(1, 1, 0.2);
 
-const Color somecolors[] = {
+Color somecolors[] = {
 	Color(0.0, 0.6, 0.0),	// Dark green
 	Color(0.0, 0.0, 0.6),	// Dark blue
 	Color(0.5, 0.0, 0.5),	// Purple

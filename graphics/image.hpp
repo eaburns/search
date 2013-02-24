@@ -36,7 +36,7 @@ private:
 // An array of colors that can be used for
 // conveniently cycling through some
 // OK colors.
-extern const Color somecolors[];
+extern Color somecolors[];
 extern const unsigned int Nsomecolors;
 
 struct Image {

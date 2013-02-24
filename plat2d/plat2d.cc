@@ -147,6 +147,21 @@ void Plat2d::savemap(const char *file) const {
 	img.saveeps(file);
 }
 
+static Color *setblack() {
+	Color *saved = new Color[Nsomecolors];
+	for (unsigned int i = 0; i < Nsomecolors; i++) {
+		saved[i] = somecolors[i];
+		somecolors[i] = Image::black;
+	}
+	return saved;
+}
+
+static void restorecolors(Color *saved) {
+	for (unsigned int i = 0; i < Nsomecolors; i++)
+		somecolors[i] = saved[i];
+	delete []saved;
+}
+
 Image* Plat2d::drawmap() const {
 	bool *blkd = new bool[lvl.width() * lvl.height()];
 	for (unsigned int i = 0; i < lvl.width() * lvl.height(); i++)
@@ -163,7 +178,9 @@ Image* Plat2d::drawmap() const {
 	auto sz = graph.map.max().minus(graph.map.min());
 
 	Image *img = new Image(sz.x+0.5, sz.y+0.5);
+	auto saved = setblack();
 	graph.map.draw(*img, -1);
+	restorecolors(saved);
 
 	unsigned int W = Tile::Width;
 	unsigned int H = Tile::Height;
