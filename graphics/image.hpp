@@ -40,7 +40,7 @@ extern const Color somecolors[];
 extern const unsigned int Nsomecolors;
 
 struct Image {
-	static const Color red, green, blue, white, black;
+	static const Color red, green, blue, white, black, yellow;
 
 	Image(unsigned int w, unsigned int h, const char *t = "<untitled>") :
 		width(w), height(h), title(t), pixels(NULL)

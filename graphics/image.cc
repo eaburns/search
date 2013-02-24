@@ -9,6 +9,7 @@ const Color Image::green(0, 1, 0);
 const Color Image::blue(0, 0, 1);
 const Color Image::black(0, 0, 0);
 const Color Image::white(1, 1, 1);
+const Color Image::yellow(0.80, 0.80, 0.20);	// Mustard
 
 const Color somecolors[] = {
 	Color(0.0, 0.6, 0.0),	// Dark green
@@ -153,7 +154,7 @@ void Image::Pt::writeeps(FILE *out) const {
 	fputs("% Pt\n", out);
 	fprintf(out, "%g %g %g setrgbcolor\n", c.getred(), c.getgreen(), c.getblue());
 	const char *finish = "stroke\n";
-	if (w >= 0) {
+	if (w <= 0) {
 		finish = "fill\n";
 		fputs("0.1 setlinewidth\n", out);
 	} else {
