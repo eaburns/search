@@ -175,9 +175,8 @@ Image* Plat2d::drawmap() const {
 	delete[]blkd;
 
 	graph.scale(Tile::Width, Tile::Height);
-	auto sz = graph.map.max().minus(graph.map.min());
 
-	Image *img = new Image(sz.x+0.5, sz.y+0.5);
+	Image *img = new Image(maxx+0.5, maxy+0.5);
 	auto saved = setblack();
 	graph.map.draw(*img, -1);
 	restorecolors(saved);

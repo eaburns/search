@@ -2,6 +2,8 @@
 #include "../search/search.hpp"
 #include "../structs/kdtree.hpp"
 #include "../utils/pool.hpp"
+#include "../utils/geom2d.hpp"
+#include "../graphics/image.hpp"
 #include <set>
 
 template <class D> class RRT : public SearchAlgorithm<D> {
@@ -18,6 +20,7 @@ public:
 		Node *parent;
 		PackedState state;
 		Oper op;
+		double point[K];	// Just used to draw the tree.
 		std::set<Oper> ops;	// ops added to the tree
 	};
 
@@ -45,6 +48,8 @@ public:
 
 		double pt[K];
 		s0.vector(&d, pt);
+		for (unsigned int i = 0; i < K; i++)
+			root->point[i] = pt[i];
 		tree.insert(pt, root);
 
 		for ( ; ; ) {
@@ -91,14 +96,17 @@ public:
 				pool.destruct(kid);
 				continue;
 			}
-
+	
 			node->ops.insert(kid->op);
 			tree.insert(bestpt, kid);
+			for (unsigned int i = 0; i < K; i++)
+				kid->point[i] = bestpt[i];
 		}
 
 done:
 
 		this->finish();
+		drawtree(d);
 	}
 
 	virtual void reset() {
@@ -112,7 +120,6 @@ done:
 		dfpair(stdout, "RRT seed", "%lu", (unsigned long) seed);
 		dfpair(stdout, "KD-tree size", "%lu", (unsigned long) tree.size());
 		dfpair(stdout, "KD-tree depth", "%lu", (unsigned long) tree.depth());
-
 	}
 
 private:
@@ -129,6 +136,29 @@ private:
 	void sample(double s[]) {
 		for (unsigned int i = 0; i < K; i++)
 			s[i] = rng.real();
+	}
+
+	void drawtree(D &d) {
+		Image *img = d.drawmap();
+		fprintf(stderr, "image: %ux%u\n", img->width, img->height);
+		for (auto kdnode : tree) {
+			Node *n = kdnode->data;
+			if (!n->parent)
+				continue;
+			geom2d::Pt p0(n->point[0], n->point[1]);
+			p0.scale(img->width, img->height);
+			geom2d::Pt p1(n->parent->point[0], n->parent->point[1]);
+			p1.scale(img->width, img->height);
+			img->add(new Image::Line(p0, p1, Image::black, 1));
+		}
+		for (auto kdnode : tree) {
+			Node *n = kdnode->data;
+			geom2d::Pt p0(n->point[0], n->point[1]);
+			p0.scale(img->width, img->height);
+			img->add(new Image::Pt(p0, Image::red, 0.5, -1));
+		}
+
+		img->saveeps("rrt.eps");
 	}
 
 	Rand rng;

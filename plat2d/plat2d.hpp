@@ -49,8 +49,11 @@ struct Plat2d {
 		static const int K = 3;
 
 		void vector(const Plat2d *d, double vec[]) const {
-			vec[0] = player.body.bbox.min.x/d->maxx;
-			vec[1] = player.body.bbox.min.y/d->maxy;
+			auto p = player.body.bbox.center();
+			p.y = d->maxy - p.y;
+			p.scale(1.0/d->maxx, 1.0/d->maxy);
+			vec[0] = p.x;
+			vec[1] = p.y;
 			vec[2] = (player.body.dy+Body::Maxdy)/(2*Body::Maxdy);
 		}
 
