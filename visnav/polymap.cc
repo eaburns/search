@@ -43,14 +43,26 @@ void PolyMap::output(FILE *out) const {
 }
 
 void PolyMap::draw(Image &img, double w) const {
+	if (bound) {
+		Color bgcolor = Image::black;
+		if (w <= 0) {
+			// To fill the outter boundary, we need to fill the
+			// whole image with the desired color, then
+			// white out the interior of the boundary polygon.
+			geom2d::Poly bkg(4,
+				0.0, 0.0,
+				0.0, (double) img.height,
+				(double) img.width, (double) img.height,
+				(double) img.width, 0.0);
+			img.add(new Image::Poly(bkg, Image::black, -1));
+			bgcolor = Image::white;
+		}
+		img.add(new Image::Poly(*bound, bgcolor, w));
+	}
+
 	for (unsigned int i = 0; i < polys.size(); i++) {
 		const Color &c = somecolors[i % Nsomecolors];
 		img.add(new Image::Poly(polys[i], c, w));
-	}
-	if (bound) {
-		if (w < 1)	// Filling in the bounding polygon fills the wrong side.
-			w = 1;
-		img.add(new Image::Poly(*bound, Image::black, w));
 	}
 }
 

@@ -163,7 +163,7 @@ Image* Plat2d::drawmap() const {
 	auto sz = graph.map.max().minus(graph.map.min());
 
 	Image *img = new Image(sz.x+0.5, sz.y+0.5);
-	graph.map.draw(*img, 1);
+	graph.map.draw(*img, -1);
 
 	unsigned int W = Tile::Width;
 	unsigned int H = Tile::Height;
