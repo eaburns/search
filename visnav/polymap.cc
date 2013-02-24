@@ -47,8 +47,11 @@ void PolyMap::draw(Image &img, double w) const {
 		const Color &c = somecolors[i % Nsomecolors];
 		img.add(new Image::Poly(polys[i], c, w));
 	}
-	if (bound)
+	if (bound) {
+		if (w < 1)	// Filling in the bounding polygon fills the wrong side.
+			w = 1;
 		img.add(new Image::Poly(*bound, Image::black, w));
+	}
 }
 
 void PolyMap::scale(double sx, double sy) {
