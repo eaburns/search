@@ -2,6 +2,7 @@
 #include "../utils/pool.hpp"
 #include <limits>
 #include <utility>
+#include <stack>
 
 template<unsigned int K, class Data>
 class Kdtree {
@@ -31,6 +32,53 @@ public:
 
 	// Size returns the number of points in the tree.
 	unsigned long size() const;
+
+	class iterator {
+	public:
+
+		N* operator*() const {
+			return nodes.top();
+		}
+
+		N operator->() const {
+			return *nodes.top();
+		}
+
+		void operator++() {
+			N *n = nodes.top();
+			nodes.pop();
+			if (n->right)
+				nodes.push(n->right);
+			if (n->left)
+				nodes.push(n->left);
+		}
+
+		bool operator==(const iterator &o) const {
+			return nodes == o.nodes;
+		}
+
+		bool operator!=(const iterator &o) const {
+			return nodes != o.nodes;
+		}
+
+	private:
+		friend class Kdtree<K, Data>;
+
+		iterator() { }
+
+		std::stack<N*> nodes;
+	};
+
+	iterator begin() {
+		iterator it;
+		if (root)
+			it.nodes.push(root);
+		return it;
+	}
+
+	iterator end() {
+		return iterator();
+	}
 
 private:
 

@@ -80,6 +80,37 @@ bool kdtree_nearest_test() {
 	return true;
 }
 
+bool kdtree_iterator_test() {
+	Kdtree<K,unsigned int> root;
+	for (unsigned int i = 0; i < N; i++) {
+		double v[K];
+		for (unsigned int i = 0; i < K; i++)
+			v[i] = randgen.real();
+		root.insert(v, i);
+	}
+
+	bool *seen = new bool[N];
+	for (unsigned int i = 0; i < N; i++)
+		seen[i] = false;
+
+	for (auto n : root)
+		seen[n->data] = true;
+
+	unsigned int nmissed = 0;
+	for (unsigned int i = 0; i < N; i++) {
+		if (!seen[i]) {
+			nmissed++;
+			if (nmissed < 10)
+				testpr("The iterator didn't see node %u\n", i);
+			if (nmissed == 10)
+				testpr("…\n");
+		}
+	}
+
+	delete []seen;
+	return nmissed == 0;
+}
+
 static void pr(double pt[]) {
 	const char *prefix = "";
 	for (unsigned int i = 0; i < K; i++) {
