@@ -32,6 +32,9 @@ int main(int argc, const char *argv[]) {
 	ProfilerStop();
 	dffooter(stdout);
 
+	Image *map = d.drawmap();
+	map->saveeps("map.eps");
+
 	return 0;
 }
 

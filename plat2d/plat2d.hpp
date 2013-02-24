@@ -184,6 +184,9 @@ struct Plat2d {
 
 	Cost pathcost(const std::vector<State>&, const std::vector<Oper>&);
 
+	// Drawmap returns an image of the map.
+	Image *drawmap() const;
+
 	unsigned int gx, gy;	// goal tile location
 	unsigned int x0, y0;	// initial location
 	Lvl lvl;
@@ -246,9 +249,9 @@ private:
 		return pt;
 	}
 
-	// drawmap draws the visibility map used for the heuristic
+	// savemap draws the visibility map used for the heuristic
 	// to the given file.;
-	void drawmap(const char*) const;
+	void savemap(const char*) const;
 
 	VisGraph *vg;
 	std::vector<long> centers;

@@ -112,11 +112,11 @@ void Plat2d::initvg() {
 				open.update(togoal[e.dst].i);
 		}
 	}
-	drawmap("vismap.eps");
+	savemap("vismap.eps");
 	dfpair(stdout, "visibility graph time", "%g", walltime() - strt);
 }
 
-void Plat2d::drawmap(const char *file) const {
+void Plat2d::savemap(const char *file) const {
 	static const unsigned int Width = 400, Height = 400;
 
 	VisGraph graph(*vg);
@@ -145,6 +145,38 @@ void Plat2d::drawmap(const char *file) const {
 	}
 
 	img.saveeps(file);
+}
+
+Image* Plat2d::drawmap() const {
+	bool *blkd = new bool[lvl.width() * lvl.height()];
+	for (unsigned int i = 0; i < lvl.width() * lvl.height(); i++)
+		blkd[i] = false;
+	for (unsigned int i = 0; i < lvl.width(); i++) {
+	for (unsigned int j = 0; j < lvl.height(); j++)
+		blkd[i * lvl.height() + lvl.height()-j-1] = lvl.blocked(i, j);
+	}
+
+	VisGraph graph(PolyMap(blkd, lvl.width(), lvl.height()));
+	delete[]blkd;
+
+	graph.scale(Tile::Width, Tile::Height);
+	auto sz = graph.map.max().minus(graph.map.min());
+
+	Image *img = new Image(sz.x+0.5, sz.y+0.5);
+	graph.map.draw(*img, 1);
+
+	unsigned int W = Tile::Width;
+	unsigned int H = Tile::Height;
+
+	unsigned int y0 = lvl.height()-this->y0-1;
+	unsigned int gy = lvl.height()-this->gy-1;
+
+	geom2d::Pt s(W*x0 + W/2, H*y0 + H/2);
+	img->add(new Image::Pt(s, Image::red, W/2, -1));
+	geom2d::Pt g(W*gx + W/2, H*gy + H/2);
+	img->add(new Image::Pt(g, Image::yellow, W/2, -1));
+
+	return img;
 }
 
 Plat2d::Cost Plat2d::pathcost(const std::vector<State> &path, const std::vector<Oper> &ops) {
