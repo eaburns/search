@@ -108,7 +108,7 @@ private:
 	class LssNode {
 	public:
 
-		LssNode() : openind(-1), updated(false) {
+		LssNode() : openind(-1), updated(false), closed(false) {
 		}
 	
 		class Nodes {
