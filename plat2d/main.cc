@@ -4,7 +4,6 @@
 #include "../utils/utils.hpp"
 #include <cstdio>
 #include <cerrno>
-#include <google/profiler.h>
 
 const char *lvl = NULL;
 
@@ -27,9 +26,7 @@ int main(int argc, const char *argv[]) {
 	if (infile != stdin)
 		fclose(infile);
 
-	ProfilerStart("cpu.prof");
 	searchGet<Plat2d>(get, d, argc, argv);
-	ProfilerStop();
 	dffooter(stdout);
 
 	Image *map = d.drawmap();

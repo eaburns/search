@@ -17,7 +17,7 @@ CXXFLAGS:=$(FLAGS) -std=c++0x
 
 CFLAGS:=$(FLAGS) -std=c99
 
-LDFLAGS:=$(FLAGS) -std=c++0x -lprofiler -lunwind
+LDFLAGS:=$(FLAGS) -std=c++0x
 
 EVERYTHING:=
 
