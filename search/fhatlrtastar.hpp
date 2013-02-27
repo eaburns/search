@@ -166,6 +166,7 @@ public:
 		SearchAlgorithm<D>(argc, argv),
 		lssNodes(1),
 		herror(0),
+		derror(0),
 		nodes(30000001),
 		lookahead(0) {
 
@@ -189,6 +190,7 @@ public:
 		lssNodes.clear();
 		lssPool.releaseall();
 		herror = 0;
+		derror = 0;
 	}
 
 	void search(D &d, State &s0) {
@@ -227,6 +229,8 @@ public:
 		SearchAlgorithm<D>::output(out);
 		dfpair(out, "num steps", "%lu", (unsigned long) times.size());
 		assert (lengths.size() == times.size());
+		dfpair(out, "h error last", "%g", herror);
+		dfpair(out, "d error last", "%g", derror);
 		if (times.size() != 0) {
 			double min = times.front();
 			double max = times.front();
@@ -279,6 +283,7 @@ private:
 		lssNodes.add(a);
 
 		double herrnext = 0;
+		double derrnext = 0;
 
 		LssNode *goal = NULL;
 
@@ -308,7 +313,11 @@ private:
 					kid->parent = s;
 					kid->g = s->g + e.outcost;
 					kid->f = kid->g + kid->node->h;
-					kid->fhat = kid->f + kid->node->d*herror;
+
+					double d = kid->node->d / (1 - derror);
+					double h = kid->node->h + herror*d;
+					kid->fhat = kid->g + h;
+
 					kid->op = e.op;
 					lssOpen.pushupdate(kid, kid->openind);
 				}
@@ -320,10 +329,15 @@ private:
 			}
 
 			if (bestkid) {
-				double herr = s->f - bestkid->f;
+				double herr =  bestkid->f - s->f;
 				if (herr < 0)
 					herr = 0;
 				herrnext = herrnext + (herr - herrnext)/(exp+1);
+
+				double derr = bestkid->node->d + 1 - s->node->d;
+				if (derr < 0)
+					derr = 0;
+				derrnext = derrnext + (derr - derrnext)/(exp+1);
 			}
 
 			if (s->node->goal) {
@@ -334,6 +348,7 @@ private:
 		}
 
 		herror = herrnext;
+		derror = derrnext;
 
 		return goal;
 	}
@@ -418,6 +433,7 @@ private:
 	unsigned int nclosed;
 
 	double herror;
+	double derror;
 
 	Nodes nodes;
 	unsigned int lookahead;
