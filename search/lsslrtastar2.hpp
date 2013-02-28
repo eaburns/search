@@ -282,10 +282,11 @@ private:
 			nclosed += !s->closed;
 			s->closed = true;
 
-			auto kids = expand(d, s->node);
-			for (unsigned int i = 0; i < kids.size(); i++) {
-				auto e = kids[i];
+			for (auto e : expand(d, s->node)) {
 				Node *k = e.node;
+				if (s->parent && k == s->parent->node)
+					continue;
+
 				LssNode *kid = lssNodes.find(k->state);
 
 				if (!kid) {
