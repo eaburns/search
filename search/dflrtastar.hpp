@@ -259,6 +259,7 @@ private:
 		a->op = D::Nop;
 		a->g = 0;
 		a->f = rootNode->h;
+		lssNodes.add(a);
 
 		alpha = geom2d::Infinity;
 
