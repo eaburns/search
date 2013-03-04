@@ -178,6 +178,7 @@ LookaheadLimit *LookaheadLimit::fromArgs(int argc, const char *argv[]) {
 		if (i < argc - 1 && strcmp(argv[i], "-lookahead") == 0)
 			return new ExpansionLimit(strtoul(argv[++i], NULL, 10));
 		if (i < argc - 1 && strcmp(argv[i], "-dynamic") == 0) {
+			std::string root = argv[i+1];
 			std::string level = "";
 			for (i = 0; i < argc; i++) {	// plat2d
 				if (i < argc - 1 && strcmp(argv[i], "-lvl") == 0) {
@@ -187,7 +188,7 @@ LookaheadLimit *LookaheadLimit::fromArgs(int argc, const char *argv[]) {
 			}
 			if (level == "")
 				fatal("No level file specified for dynamic lookahead");
-			return new MaxTimeLimit(argv[0], argv[i+1], level);
+			return new MaxTimeLimit(argv[1], root, level);
 		}
 	}
 	fatal("No limit given");
