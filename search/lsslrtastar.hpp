@@ -187,6 +187,8 @@ template <class D> struct Lsslrtastar : public SearchAlgorithm<D> {
 	}
 
 	virtual void output(FILE *out) {
+		if (dynamicLookahead)
+			dfpair(out, "initial lookahead", "%u", staticLookahead);
 		SearchAlgorithm<D>::output(out);
 
 		dfpair(out, "num steps", "%lu", emitTimes.size());
