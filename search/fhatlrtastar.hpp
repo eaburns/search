@@ -2,7 +2,6 @@
 #include "../search/search.hpp"
 #include "../utils/geom2d.hpp"
 #include "../utils/pool.hpp"
-#include "lsslrtastar2.hpp"
 #include <vector>
 
 template <class D>
@@ -168,9 +167,8 @@ public:
 		lssNodes(1),
 		herror(0),
 		derror(0),
-		nodes(30000001) {
-
-		unsigned int lookahead = 0;
+		nodes(30000001),
+		lookahead(0) {
 
 		for (int i = 0; i < argc; i++) {
 			if (i < argc - 1 && strcmp(argv[i], "-lookahead") == 0)
@@ -179,12 +177,10 @@ public:
 		if (lookahead < 1)
 			fatal("Must specify a lookahead ≥1 using -lookahead");
 
-		lssLim = new ExpansionLimit(lookahead);
 		lssNodes.resize(lookahead*3);
 	}
 
 	~Fhatlrtastar() {
-		delete lssLim;
 	}
 
 	void reset() {
@@ -291,15 +287,12 @@ private:
 
 		LssNode *goal = NULL;
 
-		unsigned int exp = 0;
-		lssLim->reset();
-		while (!lssOpen.empty() && !lssLim->stop() && !this->limit()) {
+		for (unsigned int exp = 0; !lssOpen.empty() && exp < lookahead && !this->limit(); exp++) {
 			LssNode *s = *lssOpen.pop();
 
 			nclosed += !s->closed;
 			s->closed = true;
 
-			exp++;
 			LssNode *bestkid = NULL;
 			for (auto e : expand(d, s->node)) {
 				Node *k = e.node;
@@ -444,7 +437,7 @@ private:
 	double derror;
 
 	Nodes nodes;
-	LookaheadLimit *lssLim;
+	unsigned int lookahead;
 
 	std::vector<double> times;
 	std::vector<unsigned int> lengths;
