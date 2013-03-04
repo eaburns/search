@@ -459,7 +459,7 @@ class MaxTimeLimit : public LookaheadLimit {
 
 public:
 
-	MaxTimeLimit(const std::string &alg, const std::string &dataRoot, const std::string &levelFile) : deadline(0) {
+	MaxTimeLimit(const std::string &alg, const std::string &dataRoot, const std::string &levelFile) {
 		RdbAttrs lvlAttrs = pathattrs(levelFile);
 		auto dom = lvlAttrs.lookup("domain");
 		if(dom != "plat2d")
@@ -488,7 +488,8 @@ public:
 			fclose(in);
 
 			if (max < 0)
-				fatal("No 'max step cpu time' key in %s", paths[i].c_str());
+continue;
+		//		fatal("No 'max step cpu time' key in %s", paths[i].c_str());
 
 			RdbAttrs instanceAttrs = pathattrs(paths[i]);
 
@@ -518,13 +519,21 @@ public:
 	}
 
 	virtual void start(double g) {
+		n = 0;
 		if (g > 1)
 			g--;	// leave 1 frame worth of time just incase.
-		deadline = cputime() + g*0.02;	// hard-coded for plat2d
+		double remaining = g*0.02;	// hard-coded for plat2d
+		for(unsigned int i = 0; i < lsstable.size(); i++) {
+			if(remaining <= lsstable[i].maxTime) {
+				lim = lsstable[i].size;
+				return;
+			}
+		}
+		lim = lsstable.back().size;
 	}
 
 	virtual bool stop() {
-		return cputime() >= deadline;
+		return n++ >= lim;
 	}
 
 	virtual void output(FILE *out) const {
@@ -533,6 +542,6 @@ public:
 
 
 private:
-	double deadline;
+	unsigned int n, lim;
 	std::vector<lsslookup> lsstable;
 };
