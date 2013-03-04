@@ -190,7 +190,7 @@ public:
 
 		Node *cur = nodes.get(d, s0);
 
-		lsslim->start(1);
+		lsslim->start(0);
 
 		while (!cur->goal && !this->limit()) {
 			LssNode *goal = expandLss(d, cur);
@@ -459,7 +459,7 @@ class MaxTimeLimit : public LookaheadLimit {
 
 public:
 
-	MaxTimeLimit(const std::string &alg, const std::string &dataRoot, const std::string &levelFile) {
+	MaxTimeLimit(const std::string &alg, const std::string &dataRoot, const std::string &levelFile, unsigned int l0) : lim0(l0) {
 		RdbAttrs lvlAttrs = pathattrs(levelFile);
 		auto dom = lvlAttrs.lookup("domain");
 		if(dom != "plat2d")
@@ -519,6 +519,11 @@ continue;
 	}
 
 	virtual void start(double g) {
+		if (g <= 0) {
+			lim = lim0;
+			return;
+		}
+
 		n = 0;
 		if (g > 1)
 			g--;	// leave 1 frame worth of time just incase.
@@ -538,10 +543,11 @@ continue;
 
 	virtual void output(FILE *out) const {
 		dfpair(out, "limit type", "%s", "dynamic limit");
+		dfpair(out, "initial lookahead", "%u", lim0);
 	}
 
-
 private:
+	unsigned int lim0;
 	unsigned int n, lim;
 	std::vector<lsslookup> lsstable;
 };

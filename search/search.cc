@@ -174,10 +174,22 @@ void Limit::output(FILE *f) {
 }
 
 LookaheadLimit *LookaheadLimit::fromArgs(int argc, const char *argv[]) {
+	unsigned int lookahead = 0;
 	for (int i = 0; i < argc; i++) {
-		if (i < argc - 1 && strcmp(argv[i], "-lookahead") == 0)
-			return new ExpansionLimit(strtoul(argv[++i], NULL, 10));
-		if (i < argc - 1 && strcmp(argv[i], "-dynamic") == 0) {
+		if (i < argc - 1 && strcmp(argv[i], "-lookahead") == 0) {
+			char *end = NULL;
+			lookahead = strtoul(argv[i+1], &end, 10);
+			if (end == NULL)
+				fatal("Error parsing lookahead: %s is not an integer", argv[i+1]);
+			break;
+		}
+	}
+
+	if (lookahead < 1)
+		fatal("Lookahead must be at least 1 (use -lookahead)");
+
+	for (int i = 0; i < argc; i++) {
+		if (i < argc - 1 && strcmp(argv[i], "-dynlss") == 0) {
 			std::string root = argv[i+1];
 			std::string level = "";
 			for (i = 0; i < argc; i++) {	// plat2d
@@ -188,9 +200,9 @@ LookaheadLimit *LookaheadLimit::fromArgs(int argc, const char *argv[]) {
 			}
 			if (level == "")
 				fatal("No level file specified for dynamic lookahead");
-			return new MaxTimeLimit(argv[1], root, level);
+			return new MaxTimeLimit(argv[1], root, level, lookahead);
 		}
 	}
-	fatal("No limit given");
-	return NULL;
+
+	return new ExpansionLimit(lookahead);
 }

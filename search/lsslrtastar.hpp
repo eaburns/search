@@ -83,7 +83,7 @@ template <class D> struct Lsslrtastar : public SearchAlgorithm<D> {
 				levelFile = std::string(argv[++i]);
 		}
 
-		if(staticLookahead < 1 && !dynamicLookahead)
+		if(staticLookahead < 1)
 			fatal("Must specify a lookahead ≥1 using -lookahead");
 
 		if(staticLookahead > 0)
@@ -118,11 +118,11 @@ template <class D> struct Lsslrtastar : public SearchAlgorithm<D> {
 
 		while(!d.isgoal(startState) && !this->limit()) {
 
-			Node* s_goal;
-			if(!dynamicLookahead)
-				s_goal = astar(d, start, staticLookahead);
-			else
-				s_goal = astar(d, start, getDynamicLSSSize(nextRequiredEmit));
+			unsigned int num = staticLookahead;
+			if(dynamicLookahead && emitTimes.size() > 0)
+				num = getDynamicLSSSize(nextRequiredEmit);
+
+			Node *s_goal = astar(d, start, num);
 
 			if(s_goal == NULL) break;
 
