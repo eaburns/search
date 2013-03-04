@@ -6,6 +6,15 @@
 #include "../utils/pool.hpp"
 #include <vector>
 
+class LookaheadLimit {
+public:
+	virtual void start(double g) = 0;
+	virtual bool stop() = 0;
+	virtual void output(FILE *out) const = 0;
+
+	static LookaheadLimit *fromArgs(int argc, const char *argv[]);
+};
+
 template <class D>
 class Lsslrtastar2 : public SearchAlgorithm<D> {
 private:
@@ -163,17 +172,11 @@ public:
 	Lsslrtastar2(int argc, const char *argv[]) :
 		SearchAlgorithm<D>(argc, argv),
 		lssNodes(1),
-		nodes(30000001),
-		lookahead(0) {
+		nodes(30000001) {
 
-		for (int i = 0; i < argc; i++) {
-			if (i < argc - 1 && strcmp(argv[i], "-lookahead") == 0)
-				lookahead = strtoul(argv[++i], NULL, 10);
-		}
-		if (lookahead < 1)
-			fatal("Must specify a lookahead ≥1 using -lookahead");
+		lsslim = LookaheadLimit::fromArgs(argc, argv);
 
-		lssNodes.resize(lookahead*3);
+		lssNodes.resize(1024);
 	}
 
 	~Lsslrtastar2() {
@@ -192,11 +195,15 @@ public:
 
 		Node *cur = nodes.get(d, s0);
 
+		lsslim->start(2);	// At least two time-units of search.
+
 		while (!cur->goal && !this->limit()) {
 			LssNode *goal = expandLss(d, cur);
 			if (!goal && !this->limit())
 				hCostLearning(d);
-			cur = move(cur, goal);
+			auto m = move(cur, goal);
+			cur = m.first;
+			lsslim->start(m.second);
 			times.push_back(cputime() - this->res.cpustart);
 		}
 
@@ -253,6 +260,7 @@ public:
 			dfpair(out, "max step length", "%u", max);
 			dfpair(out, "mean step length", "%g", sum / (double) lengths.size());
 		}
+		lsslim->output(out);
 	}
 
 private:
@@ -276,7 +284,7 @@ private:
 
 		LssNode *goal = NULL;
 
-		for (unsigned int exp = 0; !lssOpen.empty() && exp < lookahead && !this->limit(); exp++) {
+		while (!lssOpen.empty() && !lsslim->stop() && !this->limit()) {
 			LssNode *s = *lssOpen.pop();
 
 			nclosed += !s->closed;
@@ -345,7 +353,7 @@ private:
 		}
 	}
 
-	Node *move(Node *cur, LssNode *goal) {
+	std::pair<Node*, double> move(Node *cur, LssNode *goal) {
 		LssNode *best = goal;
 		if (!best) {
 			for (auto n : lssOpen.data()) {
@@ -364,7 +372,7 @@ private:
 		}
 		this->res.ops.insert(this->res.ops.end(), ops.rbegin(), ops.rend());
 		lengths.push_back(ops.size());
-		return best->node;
+		return std::make_pair(best->node, best->g);
 	}
 
 	// Expand returns the successor nodes of a state.
@@ -397,9 +405,160 @@ private:
 	Pool<LssNode> lssPool;
 	unsigned int nclosed;
 
+	LookaheadLimit *lsslim;
 	Nodes nodes;
-	unsigned int lookahead;
 
 	std::vector<double> times;
 	std::vector<unsigned int> lengths;
 };
+
+class ExpansionLimit : public LookaheadLimit {
+public:
+
+	ExpansionLimit(unsigned int n) : lim(n) {
+	}
+
+	virtual void start(double) {
+		n = 0;
+	}
+
+	virtual bool stop() {
+		return n++ >= lim;
+	}
+
+	virtual void output(FILE *out) const {
+		dfpair(out, "limit type", "%s", "expansion limit");
+		dfpair(out, "lookahead", "%u", lim);
+	}
+
+private:
+	unsigned int n, lim;
+};
+
+static void dfMaxStepTime(std::vector<std::string>& toks, void *data) {
+	if(toks[0] != "#pair" || toks[1] != "max step cpu time")
+		return;
+
+	char *end = NULL;
+	double t = strtod(toks[2].c_str(), &end);
+	if (end == NULL)
+		fatal("Unable to convert %s to a double", toks[2].c_str());
+
+	double *max = (double*)data;
+	*max = std::max(*max, t);
+}
+
+class MaxTimeLimit : public LookaheadLimit {
+
+	struct lsslookup {
+		lsslookup(unsigned int size, double t) : size(size), maxTime(t) {
+		}
+
+		bool operator<(const lsslookup &l) const {
+			return size < l.size;
+		}
+
+		unsigned int size;
+		double maxTime;
+	};
+
+public:
+
+	MaxTimeLimit(const std::string &alg, const std::string &dataRoot, const std::string &levelFile) : deadline(0) {
+		RdbAttrs lvlAttrs = pathattrs(levelFile);
+		auto dom = lvlAttrs.lookup("domain");
+		if(dom != "plat2d")
+			fatal("MaxTimeLimit is only implemented for plat2d");
+
+
+		RdbAttrs attrs;
+		attrs.push_back("alg", alg);
+		attrs.push_back("onestep", "no");
+		attrs.push_back("type", "training");
+		attrs.push_back("width", lvlAttrs.lookup("width"));
+		attrs.push_back("height", lvlAttrs.lookup("height"));
+
+		std::string instanceRoot(pathcat(dataRoot, dom));
+		std::vector<std::string> paths = withattrs(instanceRoot, attrs);
+		if (paths.size() == 0)
+			fatal("No data matching for %s in %s", attrs.string().c_str(), instanceRoot.c_str());
+
+		for(unsigned int i = 0; i < paths.size(); i++) {
+			FILE* in = fopen(paths[i].c_str(), "r");
+			if(!in)
+				fatalx(errno, "Failed to open %s while building lss lookup table", paths[i].c_str());
+
+			double max = -1;
+			dfread(in, dfMaxStepTime, &max, NULL);
+			fclose(in);
+
+			if (max < 0)
+				fatal("No 'max step cpu time' key in %s", paths[i].c_str());
+
+			RdbAttrs instanceAttrs = pathattrs(paths[i]);
+
+			auto lastr = instanceAttrs.lookup("lookahead");
+			char *end = NULL;
+			unsigned int lookahead = strtol(lastr.c_str(), &end, 10);
+			if (end == NULL)
+				fatal("Unable to convert %s to an int", lastr.c_str());
+
+			unsigned int i = 0;
+			for( ; i < lsstable.size(); i++) {
+				if(lsstable[i].size == lookahead)
+					break;
+			}
+
+			if(i >= lsstable.size())
+				lsstable.emplace_back(lookahead, max);
+			else
+				lsstable[i].maxTime = std::max(lsstable[i].maxTime, max);
+		}
+
+		if(lsstable.size() == 0)
+			fatal("Failed to load any training data files for building the lss lookup table");
+
+		std::sort(lsstable.begin(), lsstable.end());
+	
+	}
+
+	virtual void start(double g) {
+		if (g > 1)
+			g--;	// leave 1 frame worth of time just incase.
+		deadline = cputime() + g*0.02;	// hard-coded for plat2d
+	}
+
+	virtual bool stop() {
+		return cputime() >= deadline;
+	}
+
+	virtual void output(FILE *out) const {
+		dfpair(out, "limit type", "%s", "dynamic limit");
+	}
+
+
+private:
+	double deadline;
+	std::vector<lsslookup> lsstable;
+};
+
+LookaheadLimit *LookaheadLimit::fromArgs(int argc, const char *argv[]) {
+	for (int i = 0; i < argc; i++) {
+		if (i < argc - 1 && strcmp(argv[i], "-lookahead") == 0)
+			return new ExpansionLimit(strtoul(argv[++i], NULL, 10));
+		if (i < argc - 1 && strcmp(argv[i], "-dynamic") == 0) {
+			std::string level = "";
+			for (i = 0; i < argc; i++) {	// plat2d
+				if (i < argc - 1 && strcmp(argv[i], "-lvl") == 0) {
+					level = argv[i+1];
+					break;
+				}
+			}
+			if (level == "")
+				fatal("No level file specified for dynamic lookahead");
+			return new MaxTimeLimit(argv[0], argv[i+1], level);
+		}
+	}
+	fatal("No limit given");
+	return NULL;
+}

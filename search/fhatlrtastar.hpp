@@ -2,6 +2,7 @@
 #include "../search/search.hpp"
 #include "../utils/geom2d.hpp"
 #include "../utils/pool.hpp"
+#include "lsslrtastar2.hpp"
 #include <vector>
 
 template <class D>
@@ -164,20 +165,12 @@ public:
 
 	Fhatlrtastar(int argc, const char *argv[]) :
 		SearchAlgorithm<D>(argc, argv),
-		lssNodes(1),
+		lssNodes(1024),
 		herror(0),
 		derror(0),
-		nodes(30000001),
-		lookahead(0) {
+		nodes(30000001) {
 
-		for (int i = 0; i < argc; i++) {
-			if (i < argc - 1 && strcmp(argv[i], "-lookahead") == 0)
-				lookahead = strtoul(argv[++i], NULL, 10);
-		}
-		if (lookahead < 1)
-			fatal("Must specify a lookahead ≥1 using -lookahead");
-
-		lssNodes.resize(lookahead*3);
+		lsslim = LookaheadLimit::fromArgs(argc, argv);
 	}
 
 	~Fhatlrtastar() {
@@ -198,11 +191,15 @@ public:
 
 		Node *cur = nodes.get(d, s0);
 
+		lsslim->start(2);
+
 		while (!cur->goal && !this->limit()) {
 			LssNode *goal = expandLss(d, cur);
 			if (!goal && !this->limit())
 				hCostLearning(d);
-			cur = move(cur, goal);
+			auto m = move(cur, goal);
+			cur = m.first;
+			lsslim->start(m.second);
 			times.push_back(cputime() - this->res.cpustart);
 		}
 
@@ -261,6 +258,7 @@ public:
 			dfpair(out, "max step length", "%u", max);
 			dfpair(out, "mean step length", "%g", sum / (double) lengths.size());
 		}
+		lsslim->output(out);
 	}
 
 private:
@@ -287,11 +285,13 @@ private:
 
 		LssNode *goal = NULL;
 
-		for (unsigned int exp = 0; !lssOpen.empty() && exp < lookahead && !this->limit(); exp++) {
+		unsigned int exp = 0;
+		while (!lssOpen.empty() && !lsslim->stop() && !this->limit()) {
 			LssNode *s = *lssOpen.pop();
 
 			nclosed += !s->closed;
 			s->closed = true;
+			exp++;
 
 			LssNode *bestkid = NULL;
 			for (auto e : expand(d, s->node)) {
@@ -381,7 +381,7 @@ private:
 		}
 	}
 
-	Node *move(Node *cur, LssNode *goal) {
+	std::pair<Node*, double> move(Node *cur, LssNode *goal) {
 		LssNode *best = goal;
 		if (!best) {
 			for (auto n : lssOpen.data()) {
@@ -400,7 +400,7 @@ private:
 		}
 		this->res.ops.insert(this->res.ops.end(), ops.rbegin(), ops.rend());
 		lengths.push_back(ops.size());
-		return best->node;
+		return std::make_pair(best->node, best->g);
 	}
 
 	// Expand returns the successor nodes of a state.
@@ -436,8 +436,8 @@ private:
 	double herror;
 	double derror;
 
+	LookaheadLimit *lsslim;
 	Nodes nodes;
-	unsigned int lookahead;
 
 	std::vector<double> times;
 	std::vector<unsigned int> lengths;
