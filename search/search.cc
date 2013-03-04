@@ -6,6 +6,7 @@
 #include <cerrno>
 #include <sys/time.h>
 #include <sys/resource.h>
+#include "lsslrtastar2.hpp"	// LookaheadLimit
 
 static void settimer(int, unsigned long);
 static void stoptimer(int);
@@ -170,4 +171,25 @@ void Limit::output(FILE *f) {
 		dfpair(f, "cpu time limit", "%lu", cputime);
 	if (walltime > 0)
 		dfpair(f, "wall time limit", "%lu", walltime);
+}
+
+LookaheadLimit *LookaheadLimit::fromArgs(int argc, const char *argv[]) {
+	for (int i = 0; i < argc; i++) {
+		if (i < argc - 1 && strcmp(argv[i], "-lookahead") == 0)
+			return new ExpansionLimit(strtoul(argv[++i], NULL, 10));
+		if (i < argc - 1 && strcmp(argv[i], "-dynamic") == 0) {
+			std::string level = "";
+			for (i = 0; i < argc; i++) {	// plat2d
+				if (i < argc - 1 && strcmp(argv[i], "-lvl") == 0) {
+					level = argv[i+1];
+					break;
+				}
+			}
+			if (level == "")
+				fatal("No level file specified for dynamic lookahead");
+			return new MaxTimeLimit(argv[0], argv[i+1], level);
+		}
+	}
+	fatal("No limit given");
+	return NULL;
 }
