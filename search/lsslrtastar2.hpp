@@ -190,7 +190,7 @@ public:
 
 		Node *cur = nodes.get(d, s0);
 
-		lsslim->start(2);	// At least two time-units of search.
+		lsslim->start(1);
 
 		while (!cur->goal && !this->limit()) {
 			LssNode *goal = expandLss(d, cur);

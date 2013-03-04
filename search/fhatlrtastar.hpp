@@ -191,7 +191,7 @@ public:
 
 		Node *cur = nodes.get(d, s0);
 
-		lsslim->start(2);
+		lsslim->start(1);
 
 		while (!cur->goal && !this->limit()) {
 			LssNode *goal = expandLss(d, cur);
