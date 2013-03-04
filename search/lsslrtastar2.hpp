@@ -6,6 +6,30 @@
 #include "../utils/pool.hpp"
 #include <vector>
 
+class LookaheadLimit {
+public:
+	virtual bool stop() = 0;	// Must be called before each expansion of the LSS.
+	virtual void reset() = 0;
+};
+
+class ExpansionLimit : public LookaheadLimit {
+public:
+	ExpansionLimit(unsigned int num) : n(0), lim(num) {
+	}
+
+	virtual bool stop() {
+		return n++ >= lim;
+	}
+
+	virtual void reset() {
+		n = 0;
+	}
+
+private:
+	unsigned int n;
+	unsigned int lim;
+};
+
 template <class D>
 class Lsslrtastar2 : public SearchAlgorithm<D> {
 private:
@@ -163,9 +187,9 @@ public:
 	Lsslrtastar2(int argc, const char *argv[]) :
 		SearchAlgorithm<D>(argc, argv),
 		lssNodes(1),
-		nodes(30000001),
-		lookahead(0) {
+		nodes(30000001) {
 
+		unsigned int lookahead = 0;
 		for (int i = 0; i < argc; i++) {
 			if (i < argc - 1 && strcmp(argv[i], "-lookahead") == 0)
 				lookahead = strtoul(argv[++i], NULL, 10);
@@ -173,10 +197,12 @@ public:
 		if (lookahead < 1)
 			fatal("Must specify a lookahead ≥1 using -lookahead");
 
+		lssLim = new ExpansionLimit(lookahead);
 		lssNodes.resize(lookahead*3);
 	}
 
 	~Lsslrtastar2() {
+		delete lssLim;
 	}
 
 	void reset() {
@@ -276,7 +302,8 @@ private:
 
 		LssNode *goal = NULL;
 
-		for (unsigned int exp = 0; !lssOpen.empty() && exp < lookahead && !this->limit(); exp++) {
+		lssLim->reset();
+		while (!lssOpen.empty() && !lssLim->stop() && !this->limit()) {
 			LssNode *s = *lssOpen.pop();
 
 			nclosed += !s->closed;
@@ -398,7 +425,7 @@ private:
 	unsigned int nclosed;
 
 	Nodes nodes;
-	unsigned int lookahead;
+	LookaheadLimit *lssLim;
 
 	std::vector<double> times;
 	std::vector<unsigned int> lengths;
