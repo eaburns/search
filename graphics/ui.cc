@@ -70,16 +70,16 @@ void Ui::run(unsigned long frametime) {
 	if (record) {
 		if (fileexists("anim.mp4"))
 			remove("anim.mp4");
-	
+
 		std::string cmd = "ffmpeg";
-	
 		char ratestr[128];
 		snprintf(ratestr, sizeof(ratestr), "%lu", 1000/frametime);
 		cmd += " -r " + std::string(ratestr);
-		cmd += " -b 4096k -i /tmp/%08d.ppm anim.mp4";
-	
+		cmd += " -qscale 1";
+		cmd += " -i /tmp/%08d.ppm anim.mp4";
+
 		printf("%s\n", cmd.c_str());
-	
+
 		if (system(cmd.c_str()) != 0)
 			fatal("%s failed", cmd.c_str());
 		for (auto f = frames.begin(); f != frames.end(); f++)
