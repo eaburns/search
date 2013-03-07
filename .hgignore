@@ -45,6 +45,7 @@ search/anyprof/sptcounts
 search/anyprof/sptpolicy
 search/anyprof/bestwt
 search/learnh/hlms
+search/learnh/learnsig
 tiles/generator
 gridnav/randinst
 multi-level
