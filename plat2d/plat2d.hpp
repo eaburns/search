@@ -239,9 +239,13 @@ private:
 		double middy = fabs(loc.y - vg->verts[c].pt.y);
 		double tomid = std::max(middx, middy);
 
-		double h = floor(togoal[c].d - tomid - diag);
-		assert (h >= -geom2d::Threshold);
-		return h <= 0 ? 1 : h;
+		double h = togoal[c].d - tomid - diag;
+		if (h <= 0)
+			h = 1;
+		h = floor(h);
+		if (h <= 0)
+			h = 1;
+		return h;
 	}
 
 	// goalpt returns a point in the goal cell that is closest
