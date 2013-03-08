@@ -32,7 +32,7 @@ static const double H = Tile::Height /  Maxy;
 
 struct Plat2d {
 
-	typedef int Cost;
+	typedef double Cost;
 	typedef int Oper;
 	enum { Nop = -1 };
 
@@ -145,6 +145,7 @@ struct Plat2d {
 		State state;
 
 		Edge(Plat2d &d, State &s, Oper op) : revop(Nop), revcost(-1), state(s) {
+			state.h = -1;
 			state.player.act(d.lvl, (unsigned int) op);
 			cost = 1; // geom2d::Pt::distance(s.player.body.bbox.min, state.player.body.bbox.min));
 			if (s.player.body.bbox.min.y == state.player.body.bbox.min.y) {
@@ -157,8 +158,12 @@ struct Plat2d {
 					revcost = cost;
 				}
 			}
-		}
 
+			double dy = fabs(s.player.body.bbox.center().y - state.player.body.bbox.center().y);
+			double dx = fabs(s.player.body.bbox.center().x - state.player.body.bbox.center().x);
+			assert (dx <= Maxx);
+			assert (dy <= Maxy);
+		}
 	};
 
 	void pack(PackedState &dst, State &src) {
@@ -208,29 +213,34 @@ private:
 
 	void initvg();
 
-	Cost hvis(const State &s) const {
+	double hvis(State &s) const {
 		const Lvl::Blkinfo &bi = lvl.majorblk(s.player.body.bbox);
 		if (bi.x == gx && bi.y == gy)
-			return 0;;
+			return 0;
 
 		geom2d::Pt loc(s.player.body.bbox.center());
-		loc.x /= Maxx;
+		loc.x /= Maxx;	// Pixel to squished vismap coords.
 		loc.y /= Maxy;
 
 		int c = centers[bi.x * lvl.height() + bi.y];
 		geom2d::Pt g = goalpt(bi, loc);
 		if (togoal[c].prev == gcenter || vg->map.isvisible(loc, g)) {
-			double d = geom2d::Pt::distance(loc, g);
-			return d <= 0 ? 1 : ceil(d);
+			double dx = fabs(g.x - loc.x);
+			double dy = fabs(g.y - loc.y);
+			return ceil(std::max(dx, dy));
 		}
 
-		// Length of a tile diagonal, subtracted from the visnav
-		// distance to account for the fact that the goal vertex
-		// is in the center of the goal cell, not on the side.
-		static const double diag = sqrt((W/2)*(W/2) + (H/2)*(H/2));
-		double h = togoal[c].d - geom2d::Pt::distance(loc, vg->verts[c].pt) - diag;
+		// Account for goal vertex being at its tile center.
+		static const double diag = std::max(W/2, H/2);
+
+		// Account for distance from player to center of tile.
+		double middx = fabs(loc.x - vg->verts[c].pt.x);
+		double middy = fabs(loc.y - vg->verts[c].pt.y);
+		double tomid = std::max(middx, middy);
+
+		double h = togoal[c].d - tomid - diag;
 		assert (h >= -geom2d::Threshold);
-		return h <= 0 ? 1 : ceil(h);	// still admissible if we go up to the next int
+		return h <= 0 ? 1 : ceil(h);
 	}
 
 	// goalpt returns a point in the goal cell that is closest

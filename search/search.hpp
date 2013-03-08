@@ -200,7 +200,7 @@ class OpenList <Ops, Node, IntOpenCost> {
 	};
 
 	unsigned long fill;
-	unsigned int min;
+	unsigned long min;
 	std::vector<Maxq> qs;
 
 public:
@@ -222,10 +222,12 @@ public:
 	}
 
 	Node *pop() {
-		for ( ; min < qs.size() && qs[min].empty() ; min++)
+		for ( ; min < qs.size() && qs[min].empty(); min++)
 			;
 		fill--;
-		return qs[min].pop();		
+		auto n = qs[min].pop();
+		assert ((unsigned long) Ops::prio(n) == min);
+		return n;
 	}
 
 	void pre_update(Node*n) {
@@ -241,9 +243,13 @@ public:
 		push(n);
 	}
 
-	bool empty() { return fill == 0; }
+	bool empty() {
+		return fill == 0;
+	}
 
-	bool mem(Node *n) { return Ops::getind(n) >= 0; }
+	bool mem(Node *n) {
+		return Ops::getind(n) >= 0;
+	}
 
 	void clear() {
 		qs.clear();

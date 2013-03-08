@@ -280,6 +280,12 @@ private:
 		LssNode *goal = NULL;
 
 		while (!lssOpen.empty() && !lsslim->stop() && !this->limit()) {
+
+			if (this->res.expd % 10000 == 0) {
+				fprintf(stderr, "expd=%lu, gend=%lu, dups=%lu\n",
+					this->res.expd, this->res.gend, this->res.dups);
+			}
+
 			LssNode *s = *lssOpen.pop();
 
 			nclosed += !s->closed;
@@ -295,8 +301,8 @@ private:
 				if (!kid) {
 					kid = lssPool.construct();
 					kid->node = k;
+					kid->parent = NULL;
 					kid->g = geom2d::Infinity;
-					kid->openind = -1;
 					lssNodes.add(kid);
 				}
 				if (kid->g > s->g + e.outcost) {
@@ -311,7 +317,6 @@ private:
 				if (k->goal && (!goal || kid->g < goal->g))
 					goal = kid;
 			}
-
 
 			if (s->node->goal) {
 				lssOpen.push(s);

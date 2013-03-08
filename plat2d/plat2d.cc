@@ -101,7 +101,15 @@ void Plat2d::initvg() {
 		const std::vector<VisGraph::Edge> &es = vg->verts[n->v].edges;
 		for (unsigned int i = 0; i < es.size(); i++) {
 			const VisGraph::Edge &e = es[i];
-			double d = n->d + e.dist;
+
+			geom2d::Pt &src = vg->verts[e.src].pt;
+			geom2d::Pt &dst = vg->verts[e.dst].pt;
+			double dx = fabs(src.x - dst.x);
+			double dy = fabs(src.y - dst.y);
+			double diag = sqrt(dx*dx+dy*dy)/sqrt(2.0);
+			double c = std::max(std::max(dx, dy), diag);
+
+			double d = n->d + c;
 			if (togoal[e.dst].d <= d)
 				continue;
 			togoal[e.dst].d = d;
@@ -199,13 +207,24 @@ Plat2d::Cost Plat2d::pathcost(const std::vector<State> &path, const std::vector<
 	std::vector<unsigned int> controls;
 	Plat2d::State state = initialstate();
 	Plat2d::Cost cost(0);
-	for (int i = ops.size() - 1; i >= 0; i--) {
+	int i;
+	for (i = ops.size() - 1; i >= 0; i--) {
 		controls.push_back(ops[i]);
 		Plat2d::Edge e(*this, state, ops[i]);
 		cost += e.cost;
+double he = hvis(state);
+assert (he <= i+1);
+/*
+fprintf(stderr, "%d: %g,%g (g=%d, h=%g, case=%d)\n", i, state.player.body.bbox.center().x, state.player.body.bbox.center().y, i+1, he, state.cse);
+*/
 		state = e.state;
 		assert(state.player == path[i].player);
 	}
+/*
+double he = hvis(state);
+fprintf(stderr, "%d: %g,%g (g=%d, h=%g, case=%d)\n", i, state.player.body.bbox.center().x, state.player.body.bbox.center().y, i+1, he, state.cse);
+fprintf(stderr, "cost=%g\n", cost);
+*/
 	const Player &final = path[0].player;
 	assert(lvl.majorblk(final.body.bbox).tile.flags & Tile::Down);
 
@@ -214,6 +233,17 @@ Plat2d::Cost Plat2d::pathcost(const std::vector<State> &path, const std::vector<
 	dfpair(stdout, "final x loc", "%g", final.body.bbox.min.x);
 	dfpair(stdout, "final y loc", "%g", final.body.bbox.min.y);
 	dfpair(stdout, "controls", "%s", controlstr(controls).c_str());
+
+	state = initialstate();
+	Cost c(cost);
+	for (int i = ops.size() - 1; i >= 0; i--) {
+		assert (h(state) <= c);
+
+		Plat2d::Edge e(*this, state, ops[i]);
+		c -= e.cost;
+		state = e.state;
+	}
+
 	return cost;
 }
 
