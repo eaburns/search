@@ -32,7 +32,7 @@ static const double H = Tile::Height /  Maxy;
 
 struct Plat2d {
 
-	typedef double Cost;
+	typedef int Cost;
 	typedef int Oper;
 	enum { Nop = -1 };
 
