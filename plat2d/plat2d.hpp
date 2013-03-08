@@ -227,7 +227,7 @@ private:
 		if (togoal[c].prev == gcenter || vg->map.isvisible(loc, g)) {
 			double dx = fabs(g.x - loc.x);
 			double dy = fabs(g.y - loc.y);
-			return ceil(std::max(dx, dy));
+			return floor(std::max(dx, dy));
 		}
 
 		// Account for goal vertex being at its tile center.
@@ -240,7 +240,7 @@ private:
 
 		double h = togoal[c].d - tomid - diag;
 		assert (h >= -geom2d::Threshold);
-		return h <= 0 ? 1 : ceil(h);
+		return h <= 0 ? 1 : floor(h);
 	}
 
 	// goalpt returns a point in the goal cell that is closest
