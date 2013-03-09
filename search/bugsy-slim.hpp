@@ -20,7 +20,7 @@ template <class D> struct Bugsy_slim : public SearchAlgorithm<D> {
 		Node *parent;
 		PackedState state;
 		Oper op, pop;
-		Cost f, g, h, d;
+		Cost g, h, d;
 		double u, t;
 
 		// The expansion count when this node was
@@ -51,8 +51,10 @@ template <class D> struct Bugsy_slim : public SearchAlgorithm<D> {
 				return a->u > b->u;
 			if (a->t != b->t)
 				return a->t < b->t;
-			if (a->f != b->f)
-				return a->f < b->f;
+			Cost af = a->g + a->h;
+			Cost bf = b->g + b->h;
+			if (af != bf)
+				return af < bf;
 			return a->g > b->g;
 		}
 	};
@@ -187,7 +189,6 @@ private:
 		if (kid->h < parent->h - e.cost)
 			kid->h = parent->h - e.cost;
 
-		kid->f = kid->g + kid->h;
 		Kidinfo kinfo(kid->g, kid->h, kid->d);
 
 		d.pack(kid->state, e.state);
@@ -211,6 +212,7 @@ private:
 		Node *n0 = nodes->construct();
 		d.pack(n0->state, s0);
 		n0->g = Cost(0);
+		n0->h = d.h(s0);
 		n0->d = d.d(s0);
 		computeutil(n0);
 		n0->op = n0->pop = D::Nop;
