@@ -147,15 +147,15 @@ private:
 
 		typename D::Operators ops(d, state);
 		for (unsigned int i = 0; i < ops.size(); i++) {
-			Oper op = ops[i];
-			if (op == n->pop)
+			if (ops[i] == n->pop)
 				continue;
 
 			this->res.gend++;
-	
+			Edge e(d, state, ops[i]);
+
 			Node *kid = nodes.construct();
-			Edge e(d, state, op);
 			d.pack(kid->state, e.state);
+
 			unsigned long hash = kid->state.hash(&d);
 			if (closed.find(kid->state, hash)) {
 				this->res.dups++;
@@ -168,7 +168,7 @@ private:
 			kid->d = std::max(d.d(e.state), n->d - Cost(1));
 			kid->h = std::max(d.h(e.state), n->h - e.cost);
 			kid->parent = n;
-			kid->op = op;
+			kid->op = ops[i];
 			kid->pop = e.revop;
 			computeutil(kid);
 			closed.add(kid, hash);
