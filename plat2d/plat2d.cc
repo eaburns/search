@@ -213,12 +213,12 @@ Plat2d::Cost Plat2d::pathcost(const std::vector<State> &path, const std::vector<
 		Plat2d::Edge e(*this, state, ops[i]);
 		cost += e.cost;
 double he = hvis(state);
-assert (he <= i+1);
 /*
 fprintf(stderr, "%d: %g,%g (g=%d, h=%g, case=%d)\n", i, state.player.body.bbox.center().x, state.player.body.bbox.center().y, i+1, he, state.cse);
 */
 		state = e.state;
 		assert(state.player == path[i].player);
+assert (he <= i+1);
 	}
 /*
 double he = hvis(state);
