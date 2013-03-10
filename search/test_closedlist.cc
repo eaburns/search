@@ -134,7 +134,7 @@ bool closedlist_find_rand_test() {
 	for (unsigned int i = 0; i < N; i++) {
 		Ent *vlp = closed.find(ents[i]);
 		if (!vlp) {
-			testpr("No value mapped to key %u\n", i);
+			testpr("No value mapped to key ents[%u] %u\n", i, ents[i].vl);
 			res = false;
 		} else if (vlp != ents + i) {
 			testpr("Found value wrong entry\n");

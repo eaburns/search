@@ -136,8 +136,11 @@ private:
 			b[i] = NULL;
 
 		for (unsigned int i = 0; i < nbins; i++) {
-		for (Elm *p = bins[i]; p; p = Ops::entry(p).nxt)
-			add(b, sz, p, Ops::hash(Ops::key(p)));
+			Elm *nxt = NULL;
+			for (Elm *p = bins[i]; p; p = nxt) {
+				nxt = Ops::entry(p).nxt;
+				add(b, sz, p, Ops::hash(Ops::key(p)));
+			}
 		}
 
 		if (bins)

@@ -9,6 +9,7 @@ void dfpair(FILE *, const char *key, const char *fmt, ...);	// utils.hpp
 enum { FillFact = 0 };
 
 template<typename Node, typename D> struct ClosedEntry {
+	ClosedEntry() : nxt(NULL) { }
 	Node *nxt;
 };
 
@@ -208,8 +209,11 @@ template<typename Ops, typename Node, typename D> struct ClosedList {
 		}
 
 		for (unsigned int i = 0; i < nbins; i++) {
-		for (Node *p = bins[i]; p; p = Ops::closedentry(p).nxt)
-			add(b, f, sz, p, Ops::key(p).hash(dom));
+			Node *nxt = NULL;
+			for (Node *p = bins[i]; p; p = nxt) {
+				nxt = Ops::closedentry(p).nxt;
+				add(b, f, sz, p, Ops::key(p).hash(dom));
+			}
 		}
 
 		if (bins)
