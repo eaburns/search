@@ -2,11 +2,12 @@
 #include "../search/search.hpp"
 #include "../utils/geom2d.hpp"
 #include "../utils/pool.hpp"
-#include "lsslrtastar2.hpp"
+#include "../rdb/rdb.hpp"
 #include <vector>
+#include <limits>
 
 template <class D>
-class Greedylrtastar : public SearchAlgorithm<D> {
+class Monstar_dump : public SearchAlgorithm<D> {
 private:
 
 	typedef typename D::PackedState PackedState;
@@ -52,7 +53,7 @@ private:
 		}
 
 		PackedState state;
-		double h, horig, d;
+		double h, horig;
 		bool dead;
 		bool expd;	// was this expanded before?
 		bool goal;
@@ -95,9 +96,12 @@ private:
 
 			n->goal = d.isgoal(s);
 			n->h = n->horig = d.h(s);
-			n->d = d.d(s);
 			tbl.add(n, hash);
 			return n;
+		}
+
+		void output(FILE *out) {
+			tbl.prstats(out, "nodes ");
 		}
 
 	private:
@@ -122,19 +126,16 @@ private:
 			}
 		};
 
-		class FHatSort {
+		class FSort {
 		public:
 			static void setind(LssNode *n, int i) {
 				n->openind = i;
 			}
 		
 			static bool pred(LssNode *a, LssNode *b) {	
-				if (geom2d::doubleeq(a->fhat, b->fhat)) {
-					if (geom2d::doubleeq(a->f, b->f))
-						return a->g > b->g;
-					return a->f < b->f;
-				}
-				return a->fhat < b->fhat;
+				if (geom2d::doubleeq(a->f, b->f))
+					return a->g > b->g;
+				return a->f < b->f;
 			}
 		};
 
@@ -151,7 +152,7 @@ private:
 
 		Node *node;
 		LssNode *parent;
-		double g, f, fhat;
+		double g, f;
 		Oper op;
 		long openind;
 		bool updated;
@@ -163,17 +164,31 @@ private:
 
 public:
 
-	Greedylrtastar(int argc, const char *argv[]) :
+	Monstar_dump(int argc, const char *argv[]) :
 		SearchAlgorithm<D>(argc, argv),
+		nodes(30000001),
 		lssNodes(30000001),
-		herror(0),
-		derror(0),
-		nodes(30000001) {
+		lookahead(0),
+		dlook(0),
+		maxlook(0) {
 
-		lsslim = LookaheadLimit::fromArgs(argc, argv);
+		for (int i = 0; i < argc; i++) {
+			if (i < argc - 1 && strcmp(argv[i], "-maxlook") == 0)
+				maxlook = strtoul(argv[++i], NULL, 10);
+			if (i < argc - 1 && strcmp(argv[i], "-dlook") == 0)
+				dlook = strtoul(argv[++i], NULL, 10);
+			if (i < argc - 1 && strcmp(argv[i], "-lookahead") == 0)
+				lookahead = strtoul(argv[++i], NULL, 10);
+		}
+		if (dlook < 1)
+			fatal("Must specify a delta lookahead ≥1 using -dlook");
+		if (maxlook < 1)
+			fatal("Must specify a max lookahead ≥1 using -maxlook");
+		if (lookahead < 1)
+			fatal("Must specify a lookahead to use after the 1st lookahead searhc ≥1 using -lookahead");
 	}
 
-	~Greedylrtastar() {
+	~Monstar_dump() {
 	}
 
 	void reset() {
@@ -182,92 +197,58 @@ public:
 		lssOpen.clear();
 		lssNodes.clear();
 		lssPool.releaseall();
-		herror = 0;
-		derror = 0;
 	}
 
 	void search(D &d, State &s0) {
 		this->start();
 
-		Node *cur = nodes.get(d, s0);
+		dfrowhdr(stdout, "iteration", 5, "number", "lookahead size", "final cost", "delta h", "final time");
 
-		lsslim->start(0);
+		Node *cur = NULL;
+		double h0 = d.h(s0);
+		unsigned long n = 0;
+		for (unsigned int look = 0; look <= maxlook; look += dlook) {
+			unsigned long l = look == 0 ? 1 : look;
+			nodes.clear();
+			cur = nodes.get(d, s0);
 
-		while (!cur->goal && !this->limit()) {
-			LssNode *goal = expandLss(d, cur);
-			if (this->limit())
-				break;
-			if (!goal)
-				hCostLearning(d);
+			LssNode *goal = expandLss(d, cur, l);
+			hCostLearning(d);
 			auto m = move(cur, goal);
 			cur = m.first;
-			lsslim->start(m.second);
-			times.push_back(cputime() - this->res.cpustart);
+
+			double time = walltime() - this->res.wallstart;
+			double hcur = nodes.get(d, s0)->h;
+			double hdiff = hcur - h0;
+
+			double cost = m.second;
+
+			while (!cur->goal) {
+				goal = expandLss(d, cur, lookahead);
+				if (!goal)
+					hCostLearning(d);	
+				auto m = move(cur, goal);
+				cur = m.first;
+				cost += m.second;
+			}
+			this->res.ops.clear();
+
+			dfrow(stdout, "iteration", "uuggg", n++, l, cost, hdiff, time);
 		}
 
 		this->finish();
-
-		if (!cur->goal) {
-			this->res.ops.clear();
-			return;
-		}
-
-		// Rebuild the path from the operators.
-		nodes.clear();
-		this->res.path.push_back(s0);
-		for (auto it = this->res.ops.begin(); it != this->res.ops.end(); it++) {
-			State copy = this->res.path.back();
-			Edge e(d, copy, *it);
-			this->res.path.push_back(e.state);
-		}
-		std::reverse(this->res.ops.begin(), this->res.ops.end());
-		std::reverse(this->res.path.begin(), this->res.path.end());
+		this->res.ops.clear();
 	}
 
 	virtual void output(FILE *out) {
 		SearchAlgorithm<D>::output(out);
-		dfpair(out, "num steps", "%lu", (unsigned long) times.size());
-		assert (lengths.size() == times.size());
-		dfpair(out, "h error last", "%g", herror);
-		dfpair(out, "d error last", "%g", derror);
-		if (times.size() != 0) {
-			double min = times.front();
-			double max = times.front();
-			for (unsigned int i = 1; i < times.size(); i++) {
-				double dt = times[i] - times[i-1];
-				if (dt < min)
-					min = dt;
-				if (dt > max)
-					max = dt;
-			}
-			dfpair(out, "first emit cpu time", "%f", times.front());
-			dfpair(out, "min step cpu time", "%f", min);
-			dfpair(out, "max step cpu time", "%f", max);
-			dfpair(out, "mean step cpu time", "%f", (times.back()-times.front())/times.size());
-		}
-		if (lengths.size() != 0) {
-			unsigned int min = lengths.front();
-			unsigned int max = lengths.front();
-			unsigned long sum = 0;
-			for (auto l : lengths) {
-				if (l < min)
-					min = l;
-				if (l > max)
-					max = l;
-				sum += l;
-			}
-			dfpair(out, "min step length", "%u", min);
-			dfpair(out, "max step length", "%u", max);
-			dfpair(out, "mean step length", "%g", sum / (double) lengths.size());
-		}
-		lsslim->output(out);
 	}
 
 private:
 
 	// ExpandLss returns the cheapest  goal node if one was generated
 	// and NULL otherwise.
-	LssNode *expandLss(D &d, Node *rootNode) {
+	LssNode *expandLss(D &d, Node *rootNode, unsigned int explim) {
 		lssOpen.clear();
 		lssNodes.clear();
 		lssPool.releaseall();
@@ -282,20 +263,17 @@ private:
 		lssOpen.push(a);
 		lssNodes.add(a);
 
-		double herrnext = 0;
-		double derrnext = 0;
-
 		LssNode *goal = NULL;
 
-		unsigned int exp = 0;
-		while (!lssOpen.empty() && !lsslim->stop() && !this->limit()) {
+		unsigned int nexp = 0;
+		while (!lssOpen.empty() && nexp <= explim) {
+			nexp++;
+
 			LssNode *s = *lssOpen.pop();
 
 			nclosed += !s->closed;
 			s->closed = true;
-			exp++;
 
-			LssNode *bestkid = NULL;
 			for (auto e : expand(d, s->node)) {
 				Node *k = e.node;
 				if (s->parent && k == s->parent->node)
@@ -306,36 +284,21 @@ private:
 				if (!kid) {
 					kid = lssPool.construct();
 					kid->node = k;
-					kid->openind = -1;
+					kid->parent = NULL;
+					kid->g = geom2d::Infinity;
+					lssNodes.add(kid);
+				}
+				if (kid->g > s->g + e.outcost) {
+					if (kid->parent)	// !NULL if a dup
+						this->res.dups++;
 					kid->parent = s;
 					kid->g = s->g + e.outcost;
 					kid->f = kid->g + kid->node->h;
-
-					double d = kid->node->d / (1 - derror);
-					double h = kid->node->h + herror*d;
-					kid->fhat = kid->g + h;
-
 					kid->op = e.op;
-					lssNodes.add(kid);
-					lssOpen.push(kid);
+					lssOpen.pushupdate(kid, kid->openind);
 				}
 				if (k->goal && (!goal || kid->g < goal->g))
 					goal = kid;
-
-				if (!bestkid || kid->f < bestkid->f)
-					bestkid = kid;
-			}
-
-			if (bestkid) {
-				double herr =  bestkid->f - s->f;
-				if (herr < 0)
-					herr = 0;
-				herrnext = herrnext + (herr - herrnext)/(exp+1);
-
-				double derr = bestkid->node->d + 1 - s->node->d;
-				if (derr < 0)
-					derr = 0;
-				derrnext = derrnext + (derr - derrnext)/(exp+1);
 			}
 
 			if (s->node->goal) {
@@ -344,10 +307,6 @@ private:
 				break;
 			}
 		}
-
-		herror = herrnext;
-		derror = derrnext;
-
 		return goal;
 	}
 
@@ -390,7 +349,7 @@ private:
 			for (auto n : lssOpen.data()) {
 				if (n->node == cur)
 					continue;
-				if (best == NULL || LssNode::FHatSort::pred(n, best))
+				if (best == NULL || LssNode::FSort::pred(n, best))
 					best = n;
 			}
 		}
@@ -402,7 +361,6 @@ private:
 			ops.push_back(p->op);
 		}
 		this->res.ops.insert(this->res.ops.end(), ops.rbegin(), ops.rend());
-		lengths.push_back(ops.size());
 		return std::make_pair(best->node, best->g);
 	}
 
@@ -432,17 +390,14 @@ private:
 		return n->succs;
 	}
 
-	BinHeap<typename LssNode::HSort, LssNode*> lssOpen;
+	Nodes nodes;
+
+	BinHeap<typename LssNode::FSort, LssNode*> lssOpen;
 	ClosedList<typename LssNode::Nodes, LssNode, D> lssNodes;
 	Pool<LssNode> lssPool;
 	unsigned int nclosed;
 
-	double herror;
-	double derror;
-
-	LookaheadLimit *lsslim;
-	Nodes nodes;
-
-	std::vector<double> times;
-	std::vector<unsigned int> lengths;
+	unsigned int lookahead;	// lookahead to finish up after first lookahead.
+	unsigned int dlook;
+	unsigned int maxlook;
 };

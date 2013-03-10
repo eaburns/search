@@ -63,7 +63,7 @@ private:
 		}
 
 		PackedState state;
-		double h;
+		double h, horig;
 		bool dead;
 		bool expd;	// was this expanded before?
 		bool goal;
@@ -105,7 +105,7 @@ private:
 			}
 
 			n->goal = d.isgoal(s);
-			n->h = d.h(s);
+			n->h = n->horig = d.h(s);
 			tbl.add(n, hash);
 			return n;
 		}
@@ -335,6 +335,8 @@ private:
 
 		open.append(lssOpen.data());
 
+		std::vector<Node*> updated;
+
 		while (nclosed > 0 && !open.empty()) {
 			LssNode *s = *open.pop();
 
@@ -349,11 +351,16 @@ private:
 
 				if (!sp->updated || sprime->h > e.incost + s->node->h) {
 					sprime->h = e.incost + s->node->h;
+					if (!sp->updated)
+						updated.push_back(sprime);
 					sp->updated = true;
 					open.pushupdate(sp, sp->openind);
 				}
 			}
 		}
+
+		for (auto n : updated)
+			n->h = std::max(n->h, n->horig);
 	}
 
 	std::pair<Node*, double> move(Node *cur, LssNode *goal) {
@@ -396,6 +403,7 @@ private:
 			Edge e(d, s, ops[i]);
 			Node *k = nodes.get(d, e.state);
 			k->preds.emplace_back(n, e.cost);
+			k->h = std::max(k->h, n->h - e.cost);
 			n->succs.emplace_back(k, ops[i], e.revcost, e.cost);
 		}
 		n->expd = true;
