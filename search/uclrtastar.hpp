@@ -197,7 +197,9 @@ public:
 
 		while (!cur->goal && !this->limit()) {
 			LssNode *goal = expandLss(d, cur);
-			if (!goal && !this->limit())
+			if (this->limit())
+				break;
+			if (!goal)
 				hCostLearning(d);
 			auto m = move(cur, goal);
 			cur = m.first;
