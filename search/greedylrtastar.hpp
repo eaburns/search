@@ -165,7 +165,7 @@ public:
 
 	Greedylrtastar(int argc, const char *argv[]) :
 		SearchAlgorithm<D>(argc, argv),
-		lssNodes(1024),
+		lssNodes(30000001),
 		herror(0),
 		derror(0),
 		nodes(30000001) {

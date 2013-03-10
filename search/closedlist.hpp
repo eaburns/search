@@ -17,13 +17,13 @@ template<typename Ops, typename Node, typename D> struct ClosedList {
 	enum {
 		Defsz = 1024,
 		Growfact = 2,
-		Fillfact = 0,
+		Fillfact = 3,
 	};
 
 	typedef typename D::PackedState PackedState;
 
 	ClosedList(unsigned long szhint) :
-			fill(0), ncollide(0), nresize(0), nbins(0), bins(NULL) {
+			fill(0), ncollide(0), nresize(0), nbins(0), fills(NULL), bins(NULL) {
 		resize(szhint);
 		nresize = 0;	// don't count the initial resize
 	}
@@ -31,6 +31,8 @@ template<typename Ops, typename Node, typename D> struct ClosedList {
 	~ClosedList() {
 		if (bins)
 			delete []bins;
+		if (fills)
+			delete []fills;
 	}
 
 	void init(D &d) { dom = &d; }
@@ -50,7 +52,7 @@ template<typename Ops, typename Node, typename D> struct ClosedList {
 		if (fill * Fillfact >= nbins)
 			resize(nbins == 0 ? Defsz : nbins * Growfact);
 
-		add(bins, nbins, n, h);
+		add(bins, fills, nbins, n, h);
 		fill++;
 	}
 
@@ -70,20 +72,23 @@ template<typename Ops, typename Node, typename D> struct ClosedList {
 	void prstats(FILE *out, const char *prefix) {
 		dfpair(out, "closed list type", "%s", "hash table");
 
-		char key[strlen(prefix) + strlen("collisions") + 1];
-		strcpy(key, prefix);
+		std::string key = prefix + std::string("fill");
+		dfpair(out, key.c_str(), "%lu", fill);
 
-		strcat(key+strlen(prefix), "fill");
-		dfpair(out, key, "%lu", fill);
+		key = prefix + std::string("collisions");
+		dfpair(out, key.c_str(), "%lu", ncollide);
 
-		strcpy(key+strlen(prefix), "collisions");
-		dfpair(out, key, "%lu", ncollide);
+		key = prefix + std::string("resizes");
+		dfpair(out, key.c_str(), "%lu", nresize);
 
-		strcpy(key+strlen(prefix), "resizes");
-		dfpair(out, key, "%lu", nresize);
+		key = prefix + std::string("buckets");
+		dfpair(out, key.c_str(), "%lu", nbins);
 
-		strcpy(key+strlen(prefix), "buckets");
-		dfpair(out, key, "%lu", nbins);
+		unsigned int m = 0;
+		for (unsigned int i = 0; i < nbins; i++)
+			m = std::max(m, fills[i]);
+		key = prefix + std::string("max bucket fill");
+		dfpair(out, key.c_str(), "%u", m);
 	}
 	
 	Node* remove(PackedState &k) {
@@ -195,19 +200,25 @@ template<typename Ops, typename Node, typename D> struct ClosedList {
 
 	void resize(unsigned int sz) {
 		Node **b = new Node*[sz];
+		unsigned int *f = new unsigned int[sz];
 
-		for (unsigned int i = 0; i < sz; i++)
+		for (unsigned int i = 0; i < sz; i++) {
 			b[i] = NULL;
+			f[i] = 0;
+		}
 
 		for (unsigned int i = 0; i < nbins; i++) {
 		for (Node *p = bins[i]; p; p = Ops::closedentry(p).nxt)
-			add(b, sz, p, Ops::key(p).hash(dom));
+			add(b, f, sz, p, Ops::key(p).hash(dom));
 		}
 
 		if (bins)
 			delete[] bins;
+		if (fills)
+			delete []fills;
 
 		bins = b;
+		fills = f;
 		nbins = sz;
 		nresize++;
 	}
@@ -215,16 +226,18 @@ template<typename Ops, typename Node, typename D> struct ClosedList {
 private:
 	friend struct iterator;
 
-	void add(Node *b[], unsigned int n, Node *e, unsigned long h) {
+	void add(Node *b[], unsigned int f[], unsigned int n, Node *e, unsigned long h) {
 		unsigned int i = h % n;
 		if (b[i])
 			ncollide++;
 		Ops::closedentry(e).nxt = b[i];
 		b[i] = e;
+		f[i]++;
 	}
 
 	D *dom;
 	unsigned long fill, ncollide;
 	unsigned int nresize, nbins;
+	unsigned int *fills;
 	Node** bins;
 };

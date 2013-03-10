@@ -110,6 +110,10 @@ private:
 			return n;
 		}
 
+		void output(FILE *out) {
+			tbl.prstats(out, "nodes ");
+		}
+
 	private:
 		ClosedList<Node, Node, D> tbl;
 		Pool<Node> pool;
@@ -170,7 +174,7 @@ private:
 
 public:
 
-	Lsslrtastar2(int argc, const char *argv[]) : SearchAlgorithm<D>(argc, argv), lssNodes(1024), nodes(30000001) {
+	Lsslrtastar2(int argc, const char *argv[]) : SearchAlgorithm<D>(argc, argv), lssNodes(30000001), nodes(30000001) {
 		lsslim = LookaheadLimit::fromArgs(argc, argv);
 	}
 
@@ -223,6 +227,8 @@ public:
 
 	virtual void output(FILE *out) {
 		SearchAlgorithm<D>::output(out);
+		nodes.output(stdout);
+		lssNodes.prstats(stdout, "lss nodes ");
 		dfpair(out, "num steps", "%lu", (unsigned long) times.size());
 		assert (lengths.size() == times.size());
 		if (times.size() != 0) {
@@ -280,11 +286,6 @@ private:
 		LssNode *goal = NULL;
 
 		while (!lssOpen.empty() && !lsslim->stop() && !this->limit()) {
-
-			if (this->res.expd % 10000 == 0) {
-				fprintf(stderr, "expd=%lu, gend=%lu, dups=%lu\n",
-					this->res.expd, this->res.gend, this->res.dups);
-			}
 
 			LssNode *s = *lssOpen.pop();
 
