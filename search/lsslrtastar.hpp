@@ -2,6 +2,7 @@
 #include "../search/search.hpp"
 #include "../utils/pool.hpp"
 #include "../rdb/rdb.hpp"
+#include <unordered_set>
 
 template <class D> struct Lsslrtastar : public SearchAlgorithm<D> {
 
@@ -22,6 +23,7 @@ template <class D> struct Lsslrtastar : public SearchAlgorithm<D> {
 
 	struct Node {
 		ClosedEntry<Node, D> closedent;
+		ClosedEntry<Node, D> seenent;
 		int openind;
 		Node *parent;
 		PackedState state;
@@ -33,9 +35,27 @@ template <class D> struct Lsslrtastar : public SearchAlgorithm<D> {
 		Node() : openind(-1), iterationCount(0) {
 		}
 
-		static ClosedEntry<Node, D> &closedentry(Node *n) {
-			return n->closedent;
-		}
+		struct Seen {
+			static ClosedEntry<Node, D> &closedentry(Node *n) {
+				return n->seenent;
+			}
+
+			static PackedState &key(Node *n) {
+				return n->state;
+			}
+
+		};
+
+		struct Closed {	
+			static ClosedEntry<Node, D> &closedentry(Node *n) {
+				return n->closedent;
+			}
+
+			static PackedState &key(Node *n) {
+				return n->state;
+			}
+
+		};
 
 		static PackedState &key(Node *n) {
 			return n->state;
@@ -136,12 +156,15 @@ template <class D> struct Lsslrtastar : public SearchAlgorithm<D> {
 			emitTimes.push_back(cputime() - this->res.cpustart);
 
 			Node* oneStepState = NULL;
+			std::unordered_set<Node*> seen;
 			while(start != p) {
+				seen.insert(p);
 				//or until the edge costs change?
 				assert(p->parent);
 				partial.push_back(p->op);
 				oneStepState = p;
 				p = p->parent;
+				assert (seen.find(p) == seen.end());
 			}
 
 
@@ -331,7 +354,7 @@ private:
 
 		open.append(lssopen.data());
 
-		while(lssclosed.getFill() > 0) {
+		while(lssclosed.getFill() > 0 && !this->limit()) {
 
 			Node* s = *open.pop();
 
@@ -453,9 +476,9 @@ private:
 		return n0;
 	}
 
- 	ClosedList<Node, Node, D> seen;
+ 	ClosedList<typename Node::Seen, Node, D> seen;
+ 	ClosedList<typename Node::Closed, Node, D> lssclosed;
 	BinHeap<Node, Node*> lssopen;
- 	ClosedList<Node, Node, D> lssclosed;
 	Pool<Node> *nodes;
 	unsigned int staticLookahead;
 	unsigned int iterationCount;
