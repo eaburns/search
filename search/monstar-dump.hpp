@@ -213,6 +213,9 @@ public:
 			cur = nodes.get(d, s0);
 
 			LssNode *goal = expandLss(d, cur, l);
+			if (this->limit())
+				break;
+
 			hCostLearning(d);
 			auto m = move(cur, goal);
 			cur = m.first;
@@ -223,8 +226,10 @@ public:
 
 			double cost = m.second;
 
-			while (!cur->goal) {
-				goal = expandLss(d, cur, lookahead);
+			while (!cur->goal && !this->limit()) {
+				goal = expandLss(d, cur, lookahead);	
+				if (this->limit())
+					break;
 				if (!goal)
 					hCostLearning(d);	
 				auto m = move(cur, goal);
@@ -232,6 +237,9 @@ public:
 				cost += m.second;
 			}
 			this->res.ops.clear();
+
+			if (this->limit())
+				break;
 
 			dfrow(stdout, "iteration", "uuggg", n++, l, cost, hdiff, time);
 		}
@@ -266,7 +274,7 @@ private:
 		LssNode *goal = NULL;
 
 		unsigned int nexp = 0;
-		while (!lssOpen.empty() && nexp <= explim) {
+		while (!lssOpen.empty() && nexp <= explim && !this->limit()) {
 			nexp++;
 
 			LssNode *s = *lssOpen.pop();
