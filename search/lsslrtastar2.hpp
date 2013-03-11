@@ -475,7 +475,7 @@ class MaxTimeLimit : public LookaheadLimit {
 
 public:
 
-	MaxTimeLimit(const std::string &alg, const std::string &dataRoot, const std::string &levelFile, unsigned int l0) : lim0(l0) {
+	MaxTimeLimit(const std::string &alg, const std::string &dataRoot, const std::string &levelFile, unsigned int l0) : deadline(0), lim0(l0) {
 		RdbAttrs lvlAttrs = pathattrs(levelFile);
 		auto dom = lvlAttrs.lookup("domain");
 		if(dom != "plat2d")
@@ -535,15 +535,20 @@ continue;
 	}
 
 	virtual void start(double g) {
+		n = 0;
+		double now = cputime();
 		if (g <= 0) {
 			lim = lim0;
 			return;
+		} else if (deadline == 0) {
+			deadline = now;
 		}
 
-		n = 0;
+		deadline += g * 0.02;	// hard-coded for plat2d
+
 		if (g > 1)
 			g--;	// leave 1 frame worth of time just incase.
-		double remaining = g*0.02;	// hard-coded for plat2d
+		double remaining = deadline - now;
 		for(unsigned int i = 0; i < lsstable.size(); i++) {
 			if(remaining <= lsstable[i].maxTime) {
 				lim = lsstable[i].size;
@@ -563,6 +568,7 @@ continue;
 	}
 
 private:
+	double deadline;
 	unsigned int lim0;
 	unsigned int n, lim;
 	std::vector<lsslookup> lsstable;
