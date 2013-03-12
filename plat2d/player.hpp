@@ -37,6 +37,11 @@ struct Player {
 		return jframes == o.jframes && body == o.body;
 	}
 
+	bool operator!=(const Player &o) const {
+		return !(*this == o);
+	}
+
+
 	void act(const Lvl&, unsigned int);
 
 	// bottom left

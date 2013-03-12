@@ -174,7 +174,9 @@ public:
 		derror(0),
 		nodes(30000001),
 		nshort(0),
-		nident(0) {
+		nident(0),
+		identStates(0),
+		identCurs(0) {
 
 		lsslim = LookaheadLimit::fromArgs(argc, argv);
 	}
@@ -192,6 +194,8 @@ public:
 		derror = 0;
 		nshort = 0;
 		nident = 0;
+		identStates = 0;
+		identCurs = 0;
 	}
 
 	void search(D &d, State &s0) {
@@ -202,6 +206,10 @@ public:
 		lsslim->start(0);
 
 		while (!cur->goal && !this->limit()) {
+
+			if (cur->ident.first != D::Nop)
+				identCurs++;
+
 			LssNode *goal = expandLss(d, cur);
 			if (this->limit())
 				break;
@@ -269,8 +277,10 @@ public:
 			dfpair(out, "mean step length", "%g", sum / (double) lengths.size());
 		}
 		lsslim->output(out);
-		dfpair(out, "number of short trajectories", "%u", nshort);
-		dfpair(out, "number of identity actions", "%u", nident);
+		dfpair(out, "number of short trajectories taken", "%u", nshort);
+		dfpair(out, "number of identity actions taken", "%u", nident);
+		dfpair(out, "number of expanded states with identity actions", "%lu", identStates);
+		dfpair(out, "number of current states with identity actions", "%lu", identCurs);
 	}
 
 private:
@@ -400,7 +410,6 @@ private:
 	}
 
 	std::pair<Node*, double> move(D &d, Node *cur, LssNode *goal) {
-
 		// Should search at the first node, and we have an identity action, so let's do it.
 		if (!goal && cur->ident.first != D::Nop && shouldSearch(d, cur)) {
 			this->res.ops.push_back(cur->ident.first);
@@ -484,6 +493,10 @@ private:
 
 		this->res.expd++;
 
+		n->ident = d.ident(s);
+		if (n->ident.first != D::Nop)
+			identStates++;
+
 		Operators ops(d, s);
 		for (unsigned int i = 0; i < ops.size(); i++) {
 			this->res.gend++;
@@ -494,7 +507,6 @@ private:
 			k->h = std::max(k->h, n->h - e.cost);
 			n->succs.emplace_back(k, ops[i], e.revcost, e.cost);
 		}
-		n->ident = ops.ident;
 		n->expd = true;
 
 		return n->succs;
@@ -511,7 +523,9 @@ private:
 	LookaheadLimit *lsslim;
 	Nodes nodes;
 
-	unsigned int nshort, nident;
+	unsigned int nshort, nident;	// Number of short and identity trajectories taken.
+	unsigned long identStates;	// Number of expanded states with identity actions.
+	unsigned long identCurs;	// Number of 'current states' with identity actions.
 
 	std::vector<double> times;
 	std::vector<unsigned int> lengths;

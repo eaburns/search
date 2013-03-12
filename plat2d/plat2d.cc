@@ -52,8 +52,10 @@ Plat2d::~Plat2d() {
 }
 
 Plat2d::State Plat2d::initialstate() {
-	return State(x0 * Tile::Width + Player::Offx, y0 * Tile::Height + Player::Offy,
+	State s(x0 * Tile::Width + Player::Offx, y0 * Tile::Height + Player::Offy,
 		0, Player::Width, Player::Height);
+	s.player.act(lvl, 0);
+	return s;
 }
 
 void Plat2d::initvg() {
@@ -209,16 +211,19 @@ Plat2d::Cost Plat2d::pathcost(const std::vector<State> &path, const std::vector<
 	Plat2d::Cost cost(0);
 	int i;
 	for (i = ops.size() - 1; i >= 0; i--) {
-		controls.push_back(ops[i]);
+		Oper o = ops[i];
+		assert (o >= 0);
+		controls.push_back(o);
 		Plat2d::Edge e(*this, state, ops[i]);
-		cost += e.cost;
-double he = hvis(state);
+		cost += e.cost; 
+
+		double he = hvis(state);
 /*
 fprintf(stderr, "%d: %g,%g (g=%d, h=%g, case=%d)\n", i, state.player.body.bbox.center().x, state.player.body.bbox.center().y, i+1, he, state.cse);
 */
 		state = e.state;
 		assert(state.player == path[i].player);
-assert (he <= i+1);
+		assert (he <= i+1);
 	}
 /*
 double he = hvis(state);

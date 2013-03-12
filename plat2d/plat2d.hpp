@@ -113,20 +113,14 @@ struct Plat2d {
 	}
 
 	struct Operators {
-		Operators(const Plat2d&, const State &s) : n(Nops) {
-			if (!s.player.canjump()) {	
-		 		// If jumping will have no effect then allow left, right and jump.
-				// This is a bit of a hack, but the 'jump' action that is allowed
-				// here will end up being a 'do nothing' and just fall action.
-				// Effectively, we prune off the jump/left and jump/right actions
-				// since they are the same as just doing left and right in this case.
+		Operators(const Plat2d &d, const State &s) : n(Nops) {
+	 		// If jumping will have no effect then allow left, right and jump.
+			// This is a bit of a hack, but the 'jump' action that is allowed
+			// here will end up being a 'do nothing' and just fall action.
+			// Effectively, we prune off the jump/left and jump/right actions
+			// since they are the same as just doing left and right in this case.
+			if (!s.player.canjump())
 				n = 3;
-				ident = std::make_pair(Nop, -1);
-			} else {
-				// If we can jump then we are on the ground and the zero
-				// action will be the identity.
-				ident = std::make_pair(0, 1);
-			}
 		}
 
 		unsigned int size() const {
@@ -137,14 +131,21 @@ struct Plat2d {
 			return Ops[i];
 		}
 
-		std::pair<Oper,Cost> ident;
-
 	private:
 		unsigned int n;
 
 		static const unsigned int Ops[];
 		static const unsigned int Nops;
 	};
+
+ 	// Ident returns the (identity action, cost) pair, or (Nop, -1) if there is no identity action in this state.
+	std::pair<Oper, Cost> ident(const State &s) const {
+		Player copy = s.player;
+		copy.act(lvl, 0);
+		if (copy == s.player)
+			return std::make_pair(0, 1);
+		return std::make_pair(Nop, -1);
+	}
 
 	struct Edge {
 		Cost cost;
@@ -166,6 +167,8 @@ struct Plat2d {
 					revcost = cost;
 				}
 			}
+
+			assert (op != 0 || state.player == s.player);
 
 			double dy = fabs(s.player.body.bbox.center().y - state.player.body.bbox.center().y);
 			double dx = fabs(s.player.body.bbox.center().x - state.player.body.bbox.center().x);
