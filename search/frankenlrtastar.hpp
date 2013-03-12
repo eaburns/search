@@ -122,6 +122,21 @@ private:
 			}
 		};
 
+		class FHatSort {
+		public:
+			static void setind(LssNode *n, int i) {
+				n->openind = i;
+			}
+		
+			static bool pred(LssNode *a, LssNode *b) {	
+				if (geom2d::doubleeq(a->fhat, b->fhat)) {
+					if (geom2d::doubleeq(a->f, b->f))
+						return a->g > b->g;
+					return a->f < b->f;
+				}
+				return a->fhat < b->fhat;
+			}
+		};
 
 		class HSort {
 		public:
@@ -136,7 +151,7 @@ private:
 
 		Node *node;
 		LssNode *parent;
-		double g;
+		double g, f, fhat;
 		Oper op;
 		long openind;
 		bool updated;
@@ -151,6 +166,8 @@ public:
 	Greedylrtastar(int argc, const char *argv[]) :
 		SearchAlgorithm<D>(argc, argv),
 		lssNodes(4051),
+		herror(0),
+		derror(0),
 		nodes(30000001) {
 
 		lsslim = LookaheadLimit::fromArgs(argc, argv);
@@ -165,6 +182,8 @@ public:
 		lssOpen.clear();
 		lssNodes.clear();
 		lssPool.releaseall();
+		herror = 0;
+		derror = 0;
 	}
 
 	void search(D &d, State &s0) {
@@ -209,6 +228,8 @@ public:
 		SearchAlgorithm<D>::output(out);
 		dfpair(out, "num steps", "%lu", (unsigned long) times.size());
 		assert (lengths.size() == times.size());
+		dfpair(out, "h error last", "%g", herror);
+		dfpair(out, "d error last", "%g", derror);
 		if (times.size() != 0) {
 			double min = times.front();
 			double max = times.front();
@@ -257,8 +278,12 @@ private:
 		a->parent = NULL;
 		a->op = D::Nop;
 		a->g = 0;
+		a->f = rootNode->h;
 		lssOpen.push(a);
 		lssNodes.add(a);
+
+		double herrnext = 0;
+		double derrnext = 0;
 
 		LssNode *goal = NULL;
 
@@ -270,6 +295,7 @@ private:
 			s->closed = true;
 			exp++;
 
+			LssNode *bestkid = NULL;
 			for (auto e : expand(d, s->node)) {
 				Node *k = e.node;
 				if (s->parent && k == s->parent->node)
@@ -283,12 +309,33 @@ private:
 					kid->openind = -1;
 					kid->parent = s;
 					kid->g = s->g + e.outcost;
+					kid->f = kid->g + kid->node->h;
+
+					double d = kid->node->d / (1 - derror);
+					double h = kid->node->h + herror*d;
+					kid->fhat = kid->g + h;
+
 					kid->op = e.op;
 					lssNodes.add(kid);
 					lssOpen.push(kid);
 				}
 				if (k->goal && (!goal || kid->g < goal->g))
 					goal = kid;
+
+				if (!bestkid || kid->f < bestkid->f)
+					bestkid = kid;
+			}
+
+			if (bestkid) {
+				double herr =  bestkid->f - s->f;
+				if (herr < 0)
+					herr = 0;
+				herrnext = herrnext + (herr - herrnext)/(exp+1);
+
+				double derr = bestkid->node->d + 1 - s->node->d;
+				if (derr < 0)
+					derr = 0;
+				derrnext = derrnext + (derr - derrnext)/(exp+1);
 			}
 
 			if (s->node->goal) {
@@ -297,6 +344,9 @@ private:
 				break;
 			}
 		}
+
+		herror = herrnext;
+		derror = derrnext;
 
 		return goal;
 	}
@@ -340,7 +390,7 @@ private:
 			for (auto n : lssOpen.data()) {
 				if (n->node == cur)
 					continue;
-				if (best == NULL || LssNode::HSort::pred(n, best))
+				if (best == NULL || LssNode::FHatSort::pred(n, best))
 					best = n;
 			}
 		}
@@ -386,6 +436,9 @@ private:
 	ClosedList<typename LssNode::Nodes, LssNode, D> lssNodes;
 	Pool<LssNode> lssPool;
 	unsigned int nclosed;
+
+	double herror;
+	double derror;
 
 	LookaheadLimit *lsslim;
 	Nodes nodes;
