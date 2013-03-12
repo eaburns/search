@@ -18,6 +18,7 @@
 #include "greedylrtastar.hpp"
 #include "uclrtastar.hpp"
 #include "monstar-dump.hpp"
+#include "multilrtastar.hpp"
 #include <cstddef>
 #include <cstdio>
 
@@ -116,6 +117,8 @@ template<class D> SearchAlgorithm<D> *getsearch(int argc, const char *argv[]) {
 		return new Uclrtastar<D>(argc, argv);
 	else if (strcmp(argv[1], "monstar-dump") == 0)
 		return new Monstar_dump<D>(argc, argv);
+	else if (strcmp(argv[1], "multilrtastar") == 0)
+		return new Multilrtastar<D>(argc, argv);
 
 	fatal("Unknown algorithm: %s", argv[1]);
 	return NULL;	// Unreachable

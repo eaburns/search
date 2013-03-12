@@ -173,7 +173,7 @@ private:
 
 public:
 
-	Uclrtastar(int argc, const char *argv[]) : SearchAlgorithm<D>(argc, argv), lssNodes(30000001), nodes(30000001) {
+	Uclrtastar(int argc, const char *argv[]) : SearchAlgorithm<D>(argc, argv), lssNodes(4051), nodes(30000001) {
 		lsslim = LookaheadLimit::fromArgs(argc, argv);
 	}
 

@@ -11,13 +11,13 @@ CC:=gcc
 
 AR:=ar
 
-FLAGS:=-Wall -Werror -g -O3
+FLAGS:=-Wall -Werror -g -pg -O3
 
 CXXFLAGS:=$(FLAGS) -std=c++0x
 
 CFLAGS:=$(FLAGS) -std=c99
 
-LDFLAGS:=$(FLAGS) -std=c++0x #-lprofiler -lunwind
+LDFLAGS:=$(FLAGS) -std=c++0x
 
 EVERYTHING:=
 

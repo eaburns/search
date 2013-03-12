@@ -167,7 +167,7 @@ public:
 	Monstar_dump(int argc, const char *argv[]) :
 		SearchAlgorithm<D>(argc, argv),
 		nodes(30000001),
-		lssNodes(30000001),
+		lssNodes(4051),
 		lookahead(0),
 		dlook(0),
 		maxlook(0) {
