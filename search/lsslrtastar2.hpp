@@ -574,14 +574,18 @@ continue;
 
 		if (g > 1)
 			g--;	// leave 1 frame worth of time just incase.
-		double remaining = deadline - now;
+
+		lim = maxlss(deadline - now);
+	}
+
+	// Maxlss returns the maximum LSS size that should be
+	// searchable in the given amount of time.
+	unsigned long maxlss(double t) const {
 		for(unsigned int i = 0; i < lsstable.size(); i++) {
-			if(remaining <= lsstable[i].maxTime) {
-				lim = lsstable[i].size;
-				return;
-			}
+			if(t <= lsstable[i].maxTime)
+				return lsstable[i].size;
 		}
-		lim = lsstable.back().size;
+		return lsstable.back().size;
 	}
 
 	virtual bool stop() {
