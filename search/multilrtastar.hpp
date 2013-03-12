@@ -348,13 +348,25 @@ public:
 		SearchAlgorithm<D>(argc, argv),
 		graph(*this, 30000001),
 		onestep(false),
+		whereto(Best),
 		lookahead(0) {
 
 		for (int i = 0; i < argc; i++) {
-			if (i < argc - 1 && strcmp(argv[i], "-lookahead") == 0)
+			if (i < argc - 1 && strcmp(argv[i], "-lookahead") == 0) {
 				lookahead = strtoul(argv[++i], NULL, 10);
-			else if (strcmp(argv[i], "-onestep") == 0)
+			} else if (strcmp(argv[i], "-onestep") == 0) {
 				onestep = true;
+			} else if (i < argc - 1 && strcmp(argv[i], "-whereto") == 0) {
+				if (strcmp(argv[i+1], "best") == 0)
+					whereto = Best;
+				else if (strcmp(argv[i+1], "worst") == 0)
+					whereto = Worst;
+				else if (strcmp(argv[i+1], "second") == 0)
+					whereto = Second;
+				else
+					fatal("-whereto must be one of best, worst, or second");
+				i++;
+			}
 		}
 		if (lookahead < 1)
 			fatal("Must specify a lookahead ≥1 using -lookahead");
@@ -421,9 +433,22 @@ public:
 				l->learn();
 		}
 
-		auto p = move(d, *lss.front());
+		std::vector<Lss*> sorted;
+		while (!lss.empty())
+			sorted.push_back(*lss.pop());
 
-		for (auto l : lss.data())
+		auto l = sorted[0];
+		if (sorted.size() > 1 && whereto == Second)
+			l = sorted[1];
+		else if (whereto == Worst)
+			l = sorted.back();
+
+		if (sorted[0]->goal)
+			l = sorted[0];
+
+		auto p = move(d, l);
+
+		for (auto l : sorted)
 			delete l;
 
 		return p;
@@ -478,6 +503,13 @@ public:
 			dfpair(out, "max step length", "%u", maxl);
 			dfpair(out, "mean step length", "%g", nmoves / (double) steps.size());
 		}
+
+		const char *wherestr = "best action";
+		if (whereto == Second)
+			wherestr = "second best action";
+		else if (whereto == Worst)
+			wherestr = "worst action";
+		dfpair(out, "chose the", "%s", wherestr);
 	}
 
 private:
@@ -494,5 +526,6 @@ private:
 
 	Graph graph;
 	bool onestep;
+	enum { Best, Worst, Second } whereto;
 	unsigned int lookahead;
 };
