@@ -499,7 +499,7 @@ class MaxTimeLimit : public LookaheadLimit {
 
 public:
 
-	MaxTimeLimit(const std::string &alg, const std::string &dataRoot, const std::string &levelFile, unsigned int l0) : deadline(0), lim0(l0) {
+	MaxTimeLimit(const std::string &alg, const std::string &dataRoot, const std::string &levelFile, unsigned int l0) : deadline(0), lim0(l0), missed(0) {
 		RdbAttrs lvlAttrs = pathattrs(levelFile);
 		auto dom = lvlAttrs.lookup("domain");
 		if(dom != "plat2d")
@@ -568,6 +568,12 @@ continue;
 			deadline = now;
 		}
 
+		if (now > deadline)
+			missed++;
+
+		if (g > 1)
+			g--;	// Be a bit more conservative.
+
 		deadline += g * 0.02;	// hard-coded for plat2d
 
 		lim = maxlss(deadline - now);
@@ -590,11 +596,13 @@ continue;
 	virtual void output(FILE *out) const {
 		dfpair(out, "limit type", "%s", "dynamic limit");
 		dfpair(out, "initial lookahead", "%u", lim0);
+		dfpair(out, "num missed deadlines", "%u", missed);
 	}
 
 private:
 	double deadline;
 	unsigned int lim0;
 	unsigned int n, lim;
+	unsigned int missed;
 	std::vector<lsslookup> lsstable;
 };
