@@ -1,5 +1,3 @@
-// LSS-LRTA* based on the Lsslrtastar2 implementation.
-
 #pragma once
 #include "../search/search.hpp"
 #include "../utils/geom2d.hpp"
@@ -571,9 +569,6 @@ continue;
 		}
 
 		deadline += g * 0.02;	// hard-coded for plat2d
-
-		if (g > 1)
-			g--;	// leave 1 frame worth of time just incase.
 
 		lim = maxlss(deadline - now);
 	}
