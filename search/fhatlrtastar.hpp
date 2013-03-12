@@ -168,9 +168,15 @@ public:
 		lssNodes(4051),
 		herror(0),
 		derror(0),
-		nodes(30000001) {
+		nodes(30000001),
+		onestep(false) {
 
 		lsslim = LookaheadLimit::fromArgs(argc, argv);
+
+		for (int i = 0; i < argc; i++) {
+			if (strcmp(argv[i], "-onestep") == 0)
+				onestep = true;
+		}
 	}
 
 	~Fhatlrtastar() {
@@ -402,10 +408,24 @@ private:
 		assert (best);
 		assert (best->node != cur);
 		std::vector<Oper> ops;
+		LssNode *q = NULL;
 		for (LssNode *p = best; p->node != cur; p = p->parent) {
 			assert (p->parent != best);	// no cycles
 			ops.push_back(p->op);
+			q = p;
 		}
+
+		assert (ops.size() >= 1);
+
+		if (onestep) {
+			this->res.ops.push_back(ops.back());
+			lengths.push_back(1);
+			assert (q);
+			assert (q->parent);
+			assert (q->parent->node == cur);
+			return std::make_pair(q->node, q->g);
+		}
+
 		this->res.ops.insert(this->res.ops.end(), ops.rbegin(), ops.rend());
 		lengths.push_back(ops.size());
 		return std::make_pair(best->node, best->g);
@@ -447,6 +467,8 @@ private:
 
 	LookaheadLimit *lsslim;
 	Nodes nodes;
+
+	bool onestep;
 
 	std::vector<double> times;
 	std::vector<unsigned int> lengths;
