@@ -477,7 +477,7 @@ private:
 		LssNode *first = *kids.pop();
 		LssNode *second = *kids.pop();
 
-		assert (first->fhat <= second->fhat);
+		assert (first->fhat < second->fhat || geom2d::doubleeq(first->fhat, second->fhat));
 
 		return second->f < first->f;
 	}
