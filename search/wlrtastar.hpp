@@ -1,12 +1,13 @@
+//Weighted Astar lss lrtastar
 #pragma once
 #include "../search/search.hpp"
 #include "../utils/geom2d.hpp"
-#include "../utils/pool.hpp"
-#include "lsslrtastar2.hpp"
+#include "../utils/pool.hpp" 
+#include "../rdb/rdb.hpp"
 #include <vector>
 
 template <class D>
-class Frankenlrtastar : public SearchAlgorithm<D> {
+class Wlrtastar : public SearchAlgorithm<D> {
 private:
 
 	typedef typename D::PackedState PackedState;
@@ -52,7 +53,7 @@ private:
 		}
 
 		PackedState state;
-		double h, horig, d;
+		double h, horig;
 		bool dead;
 		bool expd;	// was this expanded before?
 		bool goal;
@@ -95,9 +96,12 @@ private:
 
 			n->goal = d.isgoal(s);
 			n->h = n->horig = d.h(s);
-			n->d = d.d(s);
 			tbl.add(n, hash);
 			return n;
+		}
+
+		void output(FILE *out) {
+			tbl.prstats(out, "nodes ");
 		}
 
 	private:
@@ -122,19 +126,16 @@ private:
 			}
 		};
 
-		class FHatSort {
+		class FSort {
 		public:
 			static void setind(LssNode *n, int i) {
 				n->openind = i;
 			}
 		
 			static bool pred(LssNode *a, LssNode *b) {	
-				if (geom2d::doubleeq(a->fhat, b->fhat)) {
-					if (geom2d::doubleeq(a->f, b->f))
-						return a->g > b->g;
-					return a->f < b->f;
-				}
-				return a->fhat < b->fhat;
+				if (geom2d::doubleeq(a->f, b->f))
+					return a->g > b->g;
+				return a->f < b->f;
 			}
 		};
 
@@ -151,7 +152,7 @@ private:
 
 		Node *node;
 		LssNode *parent;
-		double g, f, fhat;
+		double g, f;
 		Oper op;
 		long openind;
 		bool updated;
@@ -163,17 +164,30 @@ private:
 
 public:
 
-	Frankenlrtastar(int argc, const char *argv[]) :
+	Wlrtastar(int argc, const char *argv[]) :
 		SearchAlgorithm<D>(argc, argv),
 		lssNodes(4051),
-		herror(0),
-		derror(0),
-		nodes(30000001) {
+		nodes(30000001),
+		weight(1),
+		onestep(false) {
 
+		bool weightSet = false;
 		lsslim = LookaheadLimit::fromArgs(argc, argv);
+
+		for (int i = 0; i < argc; i++) {
+			if (strcmp(argv[i], "-onestep") == 0)
+				onestep = true;
+			else if (strcmp(argv[i], "-wt") == 0) {
+				weight = strtod(argv[++i], NULL);
+				weightSet = true;
+			}
+		}
+
+		if(!weightSet)
+			fatal("need set weight using -wt");
 	}
 
-	~Frankenlrtastar() {
+	~Wlrtastar() {
 	}
 
 	void reset() {
@@ -182,8 +196,6 @@ public:
 		lssOpen.clear();
 		lssNodes.clear();
 		lssPool.releaseall();
-		herror = 0;
-		derror = 0;
 	}
 
 	void search(D &d, State &s0) {
@@ -226,10 +238,10 @@ public:
 
 	virtual void output(FILE *out) {
 		SearchAlgorithm<D>::output(out);
+		nodes.output(stdout);
+		lssNodes.prstats(stdout, "lss nodes ");
 		dfpair(out, "num steps", "%lu", (unsigned long) times.size());
 		assert (lengths.size() == times.size());
-		dfpair(out, "h error last", "%g", herror);
-		dfpair(out, "d error last", "%g", derror);
 		if (times.size() != 0) {
 			double min = times.front();
 			double max = times.front();
@@ -278,24 +290,19 @@ private:
 		a->parent = NULL;
 		a->op = D::Nop;
 		a->g = 0;
-		a->f = rootNode->h;
+		a->f = weight * rootNode->h;
 		lssOpen.push(a);
 		lssNodes.add(a);
 
-		double herrnext = 0;
-		double derrnext = 0;
-
 		LssNode *goal = NULL;
 
-		unsigned int exp = 0;
 		while (!lssOpen.empty() && !lsslim->stop() && !this->limit()) {
+
 			LssNode *s = *lssOpen.pop();
 
 			nclosed += !s->closed;
 			s->closed = true;
-			exp++;
 
-			LssNode *bestkid = NULL;
 			for (auto e : expand(d, s->node)) {
 				Node *k = e.node;
 				if (s->parent && k == s->parent->node)
@@ -306,36 +313,21 @@ private:
 				if (!kid) {
 					kid = lssPool.construct();
 					kid->node = k;
-					kid->openind = -1;
+					kid->parent = NULL;
+					kid->g = geom2d::Infinity;
+					lssNodes.add(kid);
+				}
+				if (kid->g > s->g + e.outcost) {
+					if (kid->parent)	// !NULL if a dup
+						this->res.dups++;
 					kid->parent = s;
 					kid->g = s->g + e.outcost;
-					kid->f = kid->g + kid->node->h;
-
-					double d = kid->node->d / (1 - derror);
-					double h = kid->node->h + herror*d;
-					kid->fhat = kid->g + h;
-
+					kid->f = kid->g + weight * kid->node->h;
 					kid->op = e.op;
-					lssNodes.add(kid);
-					lssOpen.push(kid);
+					lssOpen.pushupdate(kid, kid->openind);
 				}
 				if (k->goal && (!goal || kid->g < goal->g))
 					goal = kid;
-
-				if (!bestkid || kid->f < bestkid->f)
-					bestkid = kid;
-			}
-
-			if (bestkid) {
-				double herr =  bestkid->f - s->f;
-				if (herr < 0)
-					herr = 0;
-				herrnext = herrnext + (herr - herrnext)/(exp+1);
-
-				double derr = bestkid->node->d + 1 - s->node->d;
-				if (derr < 0)
-					derr = 0;
-				derrnext = derrnext + (derr - derrnext)/(exp+1);
 			}
 
 			if (s->node->goal) {
@@ -344,10 +336,6 @@ private:
 				break;
 			}
 		}
-
-		herror = herrnext;
-		derror = derrnext;
-
 		return goal;
 	}
 
@@ -390,17 +378,31 @@ private:
 			for (auto n : lssOpen.data()) {
 				if (n->node == cur)
 					continue;
-				if (best == NULL || LssNode::FHatSort::pred(n, best))
+				if (best == NULL || LssNode::FSort::pred(n, best))
 					best = n;
 			}
 		}
 		assert (best);
 		assert (best->node != cur);
 		std::vector<Oper> ops;
+		LssNode *q = NULL;
 		for (LssNode *p = best; p->node != cur; p = p->parent) {
 			assert (p->parent != best);	// no cycles
 			ops.push_back(p->op);
+			q = p;
 		}
+
+		assert (ops.size() >= 1);
+
+		if (onestep) {
+			this->res.ops.push_back(ops.back());
+			lengths.push_back(1);
+			assert (q);
+			assert (q->parent);
+			assert (q->parent->node == cur);
+			return std::make_pair(q->node, q->g);
+		}			
+
 		this->res.ops.insert(this->res.ops.end(), ops.rbegin(), ops.rend());
 		lengths.push_back(ops.size());
 		return std::make_pair(best->node, best->g);
@@ -432,16 +434,17 @@ private:
 		return n->succs;
 	}
 
-	BinHeap<typename LssNode::HSort, LssNode*> lssOpen;
+	BinHeap<typename LssNode::FSort, LssNode*> lssOpen;
 	ClosedList<typename LssNode::Nodes, LssNode, D> lssNodes;
 	Pool<LssNode> lssPool;
 	unsigned int nclosed;
 
-	double herror;
-	double derror;
-
 	LookaheadLimit *lsslim;
 	Nodes nodes;
+
+	double weight;
+
+	bool onestep;
 
 	std::vector<double> times;
 	std::vector<unsigned int> lengths;

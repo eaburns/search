@@ -19,6 +19,9 @@
 #include "uclrtastar.hpp"
 #include "monstar-dump.hpp"
 #include "multilrtastar.hpp"
+#include "cautiouslrtastar.hpp"
+#include "frankenlrtastar.hpp"
+#include "wlrtastar.hpp"
 #include <cstddef>
 #include <cstdio>
 
@@ -119,6 +122,12 @@ template<class D> SearchAlgorithm<D> *getsearch(int argc, const char *argv[]) {
 		return new Monstar_dump<D>(argc, argv);
 	else if (strcmp(argv[1], "multilrtastar") == 0)
 		return new Multilrtastar<D>(argc, argv);
+	else if (strcmp(argv[1], "cautiouslrtastar") == 0)
+		return new Cautiouslrtastar<D>(argc, argv);
+	else if (strcmp(argv[1], "frankenlrtastar") == 0)
+		return new Frankenlrtastar<D>(argc, argv);
+	else if (strcmp(argv[1], "wlrtastar") == 0)
+		return new Wlrtastar<D>(argc, argv);
 
 	fatal("Unknown algorithm: %s", argv[1]);
 	return NULL;	// Unreachable

@@ -6,7 +6,7 @@
 #include <vector>
 
 template <class D>
-class Frankenlrtastar : public SearchAlgorithm<D> {
+class Cautiouslrtastar : public SearchAlgorithm<D> {
 private:
 
 	typedef typename D::PackedState PackedState;
@@ -52,7 +52,7 @@ private:
 		}
 
 		PackedState state;
-		double h, horig, d;
+		double h, horig;
 		bool dead;
 		bool expd;	// was this expanded before?
 		bool goal;
@@ -95,7 +95,6 @@ private:
 
 			n->goal = d.isgoal(s);
 			n->h = n->horig = d.h(s);
-			n->d = d.d(s);
 			tbl.add(n, hash);
 			return n;
 		}
@@ -122,19 +121,16 @@ private:
 			}
 		};
 
-		class FHatSort {
+		class FSort {
 		public:
 			static void setind(LssNode *n, int i) {
 				n->openind = i;
 			}
 		
 			static bool pred(LssNode *a, LssNode *b) {	
-				if (geom2d::doubleeq(a->fhat, b->fhat)) {
-					if (geom2d::doubleeq(a->f, b->f))
-						return a->g > b->g;
-					return a->f < b->f;
-				}
-				return a->fhat < b->fhat;
+				if (geom2d::doubleeq(a->f, b->f))
+					return a->g > b->g;
+				return a->f < b->f;
 			}
 		};
 
@@ -151,7 +147,7 @@ private:
 
 		Node *node;
 		LssNode *parent;
-		double g, f, fhat;
+		double g, f;
 		Oper op;
 		long openind;
 		bool updated;
@@ -163,7 +159,7 @@ private:
 
 public:
 
-	Frankenlrtastar(int argc, const char *argv[]) :
+	Cautiouslrtastar(int argc, const char *argv[]) :
 		SearchAlgorithm<D>(argc, argv),
 		lssNodes(4051),
 		herror(0),
@@ -173,7 +169,7 @@ public:
 		lsslim = LookaheadLimit::fromArgs(argc, argv);
 	}
 
-	~Frankenlrtastar() {
+	~Cautiouslrtastar() {
 	}
 
 	void reset() {
@@ -282,9 +278,6 @@ private:
 		lssOpen.push(a);
 		lssNodes.add(a);
 
-		double herrnext = 0;
-		double derrnext = 0;
-
 		LssNode *goal = NULL;
 
 		unsigned int exp = 0;
@@ -311,10 +304,6 @@ private:
 					kid->g = s->g + e.outcost;
 					kid->f = kid->g + kid->node->h;
 
-					double d = kid->node->d / (1 - derror);
-					double h = kid->node->h + herror*d;
-					kid->fhat = kid->g + h;
-
 					kid->op = e.op;
 					lssNodes.add(kid);
 					lssOpen.push(kid);
@@ -326,27 +315,12 @@ private:
 					bestkid = kid;
 			}
 
-			if (bestkid) {
-				double herr =  bestkid->f - s->f;
-				if (herr < 0)
-					herr = 0;
-				herrnext = herrnext + (herr - herrnext)/(exp+1);
-
-				double derr = bestkid->node->d + 1 - s->node->d;
-				if (derr < 0)
-					derr = 0;
-				derrnext = derrnext + (derr - derrnext)/(exp+1);
-			}
-
 			if (s->node->goal) {
 				lssOpen.push(s);
 				goal = s;
 				break;
 			}
 		}
-
-		herror = herrnext;
-		derror = derrnext;
 
 		return goal;
 	}
@@ -390,7 +364,7 @@ private:
 			for (auto n : lssOpen.data()) {
 				if (n->node == cur)
 					continue;
-				if (best == NULL || LssNode::FHatSort::pred(n, best))
+				if (best == NULL || LssNode::FSort::pred(n, best))
 					best = n;
 			}
 		}
