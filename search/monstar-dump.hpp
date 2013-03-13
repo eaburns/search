@@ -219,8 +219,6 @@ public:
 				cur = m.first;
 				c += m.second;
 
-fprintf(stderr, "lookahead=%lu, cost=%g goal=%d\n", look, m.second, cur->goal);
-
 				if (isinf(g)) {
 					g = c;
 					break;
@@ -318,7 +316,6 @@ private:
 				break;
 			}
 		}
-fprintf(stderr, "expd=%u\n", nexp-1);
 
 		return goal;
 	}
