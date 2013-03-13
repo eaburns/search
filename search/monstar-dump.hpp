@@ -4,7 +4,7 @@
 #include "../utils/pool.hpp"
 #include "../rdb/rdb.hpp"
 #include <vector>
-#include <limits>
+#include <climits>
 
 template <class D>
 class Monstar_dump : public SearchAlgorithm<D> {
@@ -168,7 +168,6 @@ public:
 		SearchAlgorithm<D>(argc, argv),
 		nodes(30000001),
 		lssNodes(4051),
-		lookahead(0),
 		dlook(0),
 		maxlook(0) {
 
@@ -177,15 +176,11 @@ public:
 				maxlook = strtoul(argv[++i], NULL, 10);
 			if (i < argc - 1 && strcmp(argv[i], "-dlook") == 0)
 				dlook = strtoul(argv[++i], NULL, 10);
-			if (i < argc - 1 && strcmp(argv[i], "-lookahead") == 0)
-				lookahead = strtoul(argv[++i], NULL, 10);
 		}
 		if (dlook < 1)
 			fatal("Must specify a delta lookahead ≥1 using -dlook");
 		if (maxlook < 1)
 			fatal("Must specify a max lookahead ≥1 using -maxlook");
-		if (lookahead < 1)
-			fatal("Must specify a lookahead to use after the 1st lookahead searhc ≥1 using -lookahead");
 	}
 
 	~Monstar_dump() {
@@ -204,45 +199,55 @@ public:
 
 		dfrowhdr(stdout, "iteration", 5, "number", "lookahead size", "final cost", "delta h", "final time");
 
-		Node *cur = NULL;
 		double h0 = d.h(s0);
 		unsigned long n = 0;
-		for (unsigned int look = 0; look <= maxlook; look += dlook) {
-			unsigned long l = look == 0 ? 1 : look;
+		long look = maxlook;
+		double g = std::numeric_limits<double>::infinity();
+
+		while (look > 0 && !this->limit()) {
+			double c = 0;
 			nodes.clear();
-			cur = nodes.get(d, s0);
+			Node *cur = nodes.get(d, s0);
 
-			LssNode *goal = expandLss(d, cur, l);
-			if (this->limit())
-				break;
-
-			hCostLearning(d);
-			auto m = move(cur, goal);
-			cur = m.first;
-
-			double time = walltime() - this->res.wallstart;
-			double hcur = nodes.get(d, s0)->h;
-			double hdiff = hcur - h0;
-
-			double cost = m.second;
-
-			while (!cur->goal && !this->limit()) {
-				goal = expandLss(d, cur, lookahead);	
+			while (!cur->goal && c < g) {
+				LssNode *goal = expandLss(d, cur, look);
 				if (this->limit())
 					break;
-				if (!goal)
-					hCostLearning(d);	
-				auto m = move(cur, goal);
+	
+				hCostLearning(d);
+				auto m = move(cur, goal, g - c);
 				cur = m.first;
-				cost += m.second;
+				c += m.second;
+
+fprintf(stderr, "lookahead=%lu, cost=%g goal=%d\n", look, m.second, cur->goal);
+
+				if (isinf(g)) {
+					g = c;
+					break;
+				}
 			}
-			this->res.ops.clear();
+
+			double t = walltime() - this->res.wallstart;
+			double hcur = nodes.get(d, s0)->h;
+			double dh = hcur - h0;
+
+			if (!cur->goal) {
+				auto goal = expandLss(d, cur, UINT_MAX); // A*
+				c += goal ? goal->g : 0;
+				assert (this->limit() || goal);
+			}
 
 			if (this->limit())
 				break;
 
-			dfrow(stdout, "iteration", "uuggg", n++, l, cost, hdiff, time);
+
+			dfrow(stdout, "iteration", "uuggg", n++, look, c, dh, t);
+			fflush(stdout);
+
+			look -= dlook;
 		}
+
+		dfpair(stdout, "lookahead cost", "%g", g);
 
 		this->finish();
 		this->res.ops.clear();
@@ -256,27 +261,25 @@ private:
 
 	// ExpandLss returns the cheapest  goal node if one was generated
 	// and NULL otherwise.
-	LssNode *expandLss(D &d, Node *rootNode, unsigned int explim) {
+	LssNode *expandLss(D &d, Node *root, unsigned int explim) {
 		lssOpen.clear();
 		lssNodes.clear();
 		lssPool.releaseall();
 		nclosed = 0;
 
 		LssNode *a = lssPool.construct();
-		a->node = rootNode;
+		a->node = root;
 		a->parent = NULL;
 		a->op = D::Nop;
 		a->g = 0;
-		a->f = rootNode->h;
+		a->f = root->h;
 		lssOpen.push(a);
 		lssNodes.add(a);
 
 		LssNode *goal = NULL;
 
 		unsigned int nexp = 0;
-		while (!lssOpen.empty() && nexp <= explim && !this->limit()) {
-			nexp++;
-
+		while (!lssOpen.empty() && nexp++ < explim && !this->limit()) {
 			LssNode *s = *lssOpen.pop();
 
 			nclosed += !s->closed;
@@ -315,6 +318,8 @@ private:
 				break;
 			}
 		}
+fprintf(stderr, "expd=%u\n", nexp-1);
+
 		return goal;
 	}
 
@@ -351,7 +356,7 @@ private:
 			n->h = std::max(n->h, n->horig);
 	}
 
-	std::pair<Node*, double> move(Node *cur, LssNode *goal) {
+	std::pair<Node*, double> move(Node *cur, LssNode *goal, double gleft) {
 		LssNode *best = goal;
 		if (!best) {
 			for (auto n : lssOpen.data()) {
@@ -361,15 +366,15 @@ private:
 					best = n;
 			}
 		}
+
 		assert (best);
 		assert (best->node != cur);
-		std::vector<Oper> ops;
-		for (LssNode *p = best; p->node != cur; p = p->parent) {
+
+		LssNode *p;
+		for (p = best; p->g > gleft && p->node != cur; p = p->parent) {
 			assert (p->parent != best);	// no cycles
-			ops.push_back(p->op);
 		}
-		this->res.ops.insert(this->res.ops.end(), ops.rbegin(), ops.rend());
-		return std::make_pair(best->node, best->g);
+		return std::make_pair(p->node, p->g);
 	}
 
 	// Expand returns the successor nodes of a state.
@@ -405,7 +410,6 @@ private:
 	Pool<LssNode> lssPool;
 	unsigned int nclosed;
 
-	unsigned int lookahead;	// lookahead to finish up after first lookahead.
 	unsigned int dlook;
 	unsigned int maxlook;
 };
