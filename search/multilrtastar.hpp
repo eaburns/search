@@ -110,7 +110,8 @@ private:
 		}
 
 		void clear() {
-			pool.releaseall();
+			for (auto n : nodes)
+				pool.destruct(n);
 			nodes.clear();
 		}
 

@@ -111,7 +111,8 @@ done:
 
 	virtual void reset() {
 		SearchAlgorithm<D>::reset();
-		pool.releaseall();
+		for (auto n : tree)
+			pool.destruct(n->data);
 	}
 
 	virtual void output(FILE *out) {

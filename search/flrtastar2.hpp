@@ -282,9 +282,10 @@ private:
 	// and NULL otherwise.
 	AstarNode *expandLss(D &d, Node *rootNode) {
 		astarOpen.clear();
+		for (auto n : astarNodes)
+			astarPool->destruct(n);
 		astarNodes.clear();
 		astarClosed.clear();
-		astarPool->releaseall();
 
 		AstarNode *a = astarPool->construct();
 		a->node = rootNode;

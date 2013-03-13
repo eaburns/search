@@ -15,14 +15,6 @@ public:
 			delete[] blks[i];
 	}
 
-	// Releaseall releases all memory back to the pool.
-	// No destructors are called.
-	void releaseall() {
-		blk = 0;
-		nxt = 0;
-		freed = NULL;
-	}
-
 	Obj *get() {
 		if (freed) {
 			Ent *res = freed;
@@ -50,6 +42,11 @@ public:
 	void destruct(Obj *o) {
 		o->~Obj();
 		put(o);
+	}
+
+	// Blocks returns the number of allocated blocks.
+	unsigned long blocks() const {
+		return blks.size();
 	}
 
 private:

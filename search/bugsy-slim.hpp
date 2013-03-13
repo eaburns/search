@@ -112,7 +112,8 @@ template <class D> struct Bugsy_slim : public SearchAlgorithm<D> {
 		SearchAlgorithm<D>::reset();
 		open.clear();
 		closed.clear();
-		nodes.releaseall();
+		for (auto n : closed)
+			nodes.destruct(n);
 		timeper = 0.0;
 		lastexpd = 0;
 		delaysum = 0;

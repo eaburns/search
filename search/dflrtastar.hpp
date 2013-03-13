@@ -79,8 +79,9 @@ private:
 		}
 
 		void clear() {
+			for (auto n : tbl)
+				pool.destruct(n);
 			tbl.clear();
-			pool.releaseall();
 		}
 
 		Node *get(D &d, State &s) {
@@ -172,8 +173,9 @@ public:
 		nodes.clear();
 		avgexp = 0;
 		lssFrontier.clear();
+		for (auto n : lssNodes)
+			lssPool.destruct(n);
 		lssNodes.clear();
-		lssPool.releaseall();
 	}
 
 	void search(D &d, State &s0) {
@@ -248,9 +250,10 @@ public:
 private:
 
 	LssNode *expandLss(D &d, Node *rootNode) {
+		for (auto n : lssNodes)
+			lssPool.destruct(n);
 		lssNodes.clear();
 		lssFrontier.clear();
-		lssPool.releaseall();
 		nexpd = nnodes = 0;
 
 		LssNode *a = lssPool.construct();

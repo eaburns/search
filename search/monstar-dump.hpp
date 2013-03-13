@@ -79,8 +79,9 @@ private:
 		}
 
 		void clear() {
+			for (auto n : tbl)
+				pool.destruct(n);
 			tbl.clear();
-			pool.releaseall();
 		}
 
 		Node *get(D &d, State &s) {
@@ -104,7 +105,6 @@ private:
 			tbl.prstats(out, "nodes ");
 		}
 
-	private:
 		ClosedList<Node, Node, D> tbl;
 		Pool<Node> pool;
 	};
@@ -190,19 +190,25 @@ public:
 		SearchAlgorithm<D>::reset();
 		nodes.clear();
 		lssOpen.clear();
+		for (auto n : lssNodes)
+			lssPool.destruct(n);
 		lssNodes.clear();
-		lssPool.releaseall();
 	}
 
 	void search(D &d, State &s0) {
 		this->start();
 
-		dfrowhdr(stdout, "iteration", 5, "number", "lookahead size", "final cost", "delta h", "final time");
-
 		double h0 = d.h(s0);
 		unsigned long n = 0;
 		long look = maxlook;
 		double g = std::numeric_limits<double>::infinity();
+
+		auto goal = expandLss(d, nodes.get(d, s0), UINT_MAX);
+		assert(goal);
+		dfpair(stdout, "optimal sol cost", "%g", goal->g);
+
+		dfrowhdr(stdout, "iteration", 5, "number", "lookahead size", "final cost", "delta h", "final time");
+		dfrowhdr(stdout, "mem", 4, "kilobytes", "nodes", "node blocks", "lss blocks");
 
 		while (look > 0 && !this->limit()) {
 			double c = 0;
@@ -240,6 +246,8 @@ public:
 
 
 			dfrow(stdout, "iteration", "uuggg", n++, look, c, dh, t);
+			dfrow(stdout, "mem", "uuuu", virtmem(), (unsigned long) nodes.tbl.getFill(), nodes.pool.blocks(),
+				lssPool.blocks());
 			fflush(stdout);
 
 			look -= dlook;
@@ -248,7 +256,6 @@ public:
 		dfpair(stdout, "lookahead cost", "%g", g);
 
 		this->finish();
-		this->res.ops.clear();
 	}
 
 	virtual void output(FILE *out) {
@@ -261,8 +268,9 @@ private:
 	// and NULL otherwise.
 	LssNode *expandLss(D &d, Node *root, unsigned int explim) {
 		lssOpen.clear();
+		for (auto n : lssNodes)
+			lssPool.destruct(n);
 		lssNodes.clear();
-		lssPool.releaseall();
 		nclosed = 0;
 
 		LssNode *a = lssPool.construct();
