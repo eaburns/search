@@ -41,8 +41,10 @@ template<typename Ops, typename Node, typename D> struct ClosedList {
 	void clear() {
 		fill = ncollide = 0;
 		nresize = 0;
-		for (unsigned int i = 0; i < nbins; i++)
+		for (unsigned int i = 0; i < nbins; i++) {
 			bins[i] = NULL;
+			fills[i] = 0;
+		}
 	}
 
 	void add(Node *n) {
