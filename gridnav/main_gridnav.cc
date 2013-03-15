@@ -1,14 +1,34 @@
 #include "gridnav.hpp"
 #include "../search/main.hpp"
 #include <cstdio>
+#include <cerrno>
 
 int main(int argc, const char *argv[]) {
 	dfheader(stdout);
-	GridMap map(stdin);
+
+	FILE *lvl = stdin;
+	const char *lvlpath = "";
+	for (int i = 0; i < argc; i++) {
+		if (i < argc - 1 && strcmp(argv[i], "-lvl") == 0)
+			lvlpath = argv[++i];
+	}
+
+	if (lvlpath[0] != '\0') {
+		lvl = fopen(lvlpath, "r");
+		if (!lvl)
+			fatalx(errno, "Failed to open %s for reading", lvlpath);
+	}
+
+	GridMap map(lvl);
 
 	unsigned int x0, y0, xg, yg;
-	if (fscanf(stdin, " %u %u %u %u", &x0, &y0, &xg, &yg) != 4)
+	if (fscanf(lvl, " %u %u %u %u", &x0, &y0, &xg, &yg) != 4)
 		fatal("Failed to read start and end locations");
+
+	if (lvlpath[0] != '\0') {
+		dfpair(stdout, "level", "%s", lvlpath);
+		fclose(lvl);
+ 	}
 
 	dfpair(stdout, "start x", "%u", x0);
 	dfpair(stdout, "start y", "%u", y0);
