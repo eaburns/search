@@ -502,11 +502,11 @@ class MaxTimeLimit : public LookaheadLimit {
 
 public:
 
-	MaxTimeLimit(const std::string &alg, const std::string &dataRoot, const std::string &levelFile, unsigned int l0) : deadline(0), lim0(l0), missed(0) {
+	MaxTimeLimit(const std::string &alg, const std::string &dataRoot, const std::string &levelFile, unsigned int l0, double gs) : gscale(gs), deadline(0), lim0(l0), missed(0) {
 		RdbAttrs lvlAttrs = pathattrs(levelFile);
 		auto dom = lvlAttrs.lookup("domain");
 		if(dom != "plat2d")
-			fatal("MaxTimeLimit is only implemented for plat2d");
+			fatal("MaxTimeLimit is only implemented for plat2d, not %s", dom.c_str());
 
 
 		RdbAttrs attrs;
@@ -577,7 +577,7 @@ continue;
 		if (g > 1)
 			g--;	// Be a bit more conservative.
 
-		deadline += g * 0.02;	// hard-coded for plat2d
+		deadline += g * gscale;
 
 		lim = maxlss(deadline - now);
 	}
@@ -603,6 +603,7 @@ continue;
 	}
 
 private:
+	double gscale;
 	double deadline;
 	unsigned int lim0;
 	unsigned int n, lim;

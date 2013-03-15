@@ -192,15 +192,23 @@ LookaheadLimit *LookaheadLimit::fromArgs(int argc, const char *argv[]) {
 		if (i < argc - 1 && strcmp(argv[i], "-dynlss") == 0) {
 			std::string root = argv[i+1];
 			std::string level = "";
+			double gscale = -1;
 			for (i = 0; i < argc; i++) {	// plat2d
 				if (i < argc - 1 && strcmp(argv[i], "-lvl") == 0) {
-					level = argv[i+1];
-					break;
+					level = argv[++i];
+				} else if (i < argc - 1 && strcmp(argv[i], "-gscale") == 0) {
+					char *end = NULL;
+					gscale = strtod(argv[i+1], &end);
+					if (end == argv[i+1])
+						fatal("Bad -gscale: %s\n", argv[i+1]);
+					i++;
 				}
 			}
+			if (gscale <= 0)
+				fatal("Must provide gscale with -gscale");
 			if (level == "")
 				fatal("No level file specified for dynamic lookahead");
-			return new MaxTimeLimit(argv[1], root, level, lookahead);
+			return new MaxTimeLimit(argv[1], root, level, lookahead, gscale);
 		}
 	}
 
