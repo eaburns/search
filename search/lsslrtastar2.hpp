@@ -505,16 +505,30 @@ public:
 	MaxTimeLimit(const std::string &alg, const std::string &dataRoot, const std::string &levelFile, unsigned int l0, double gs) : gscale(gs), deadline(0), lim0(l0), missed(0) {
 		RdbAttrs lvlAttrs = pathattrs(levelFile);
 		auto dom = lvlAttrs.lookup("domain");
-		if(dom != "plat2d")
-			fatal("MaxTimeLimit is only implemented for plat2d, not %s", dom.c_str());
-
 
 		RdbAttrs attrs;
-		attrs.push_back("alg", alg);
-		attrs.push_back("onestep", "no");
-		attrs.push_back("type", "training");
-		attrs.push_back("width", lvlAttrs.lookup("width"));
-		attrs.push_back("height", lvlAttrs.lookup("height"));
+
+		if(dom == "plat2d") {	
+			attrs.push_back("alg", alg);
+			attrs.push_back("onestep", "no");
+			attrs.push_back("type", "training");
+			attrs.push_back("width", lvlAttrs.lookup("width"));
+			attrs.push_back("height", lvlAttrs.lookup("height"));
+
+		} else if (dom == "grid_instances") {
+			dom = "gridnav";
+			attrs.push_back("alg", alg);
+			attrs.push_back("onestep", "no");
+			attrs.push_back("type", "cpp-seedinst");
+			attrs.push_back("costs", lvlAttrs.lookup("costs"));
+			attrs.push_back("moves", lvlAttrs.lookup("moves"));
+			attrs.push_back("prob", lvlAttrs.lookup("prob"));
+			attrs.push_back("width", lvlAttrs.lookup("width"));
+			attrs.push_back("height", lvlAttrs.lookup("height"));
+
+		} else {
+			fatal("MaxTimeLimit not implemented for domain %s", dom.c_str());
+		}
 
 		std::string instanceRoot(pathcat(dataRoot, dom));
 		std::vector<std::string> paths = withattrs(instanceRoot, attrs);
