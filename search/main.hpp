@@ -22,6 +22,7 @@
 #include "cautiouslrtastar.hpp"
 #include "frankenlrtastar.hpp"
 #include "wlrtastar.hpp"
+#include "dtastar-dump.hpp"
 #include <cstddef>
 #include <cstdio>
 
@@ -128,6 +129,8 @@ template<class D> SearchAlgorithm<D> *getsearch(int argc, const char *argv[]) {
 		return new Frankenlrtastar<D>(argc, argv);
 	else if (strcmp(argv[1], "wlrtastar") == 0)
 		return new Wlrtastar<D>(argc, argv);
+	else if (strcmp(argv[1], "dtastar-dump") == 0)
+		return new Dtastar_dump<D>(argc, argv);
 
 	fatal("Unknown algorithm: %s", argv[1]);
 	return NULL;	// Unreachable

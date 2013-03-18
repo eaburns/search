@@ -80,7 +80,10 @@ struct GridNav {
 	};
 
 	typedef int Oper;	// Index into the ops arrays.
-	enum { Nop = -1 };
+	enum {
+		Nop = -1,
+		Ident = 8,	// 0-7 movement ops (max), so 8 is safe for ident operation.
+	};
 
 	GridNav(GridMap*, unsigned int, unsigned int,
 		unsigned int, unsigned int);
@@ -129,6 +132,11 @@ struct GridNav {
 	Cost d(State &s) const {
 		computeh(s);
 		return Cost(s.d);
+	}
+
+ 	// Ident returns the (identity action, cost) pair, or (Nop, -1) if there is no identity action in this state.
+	std::pair<Oper, Cost> ident(const State &s) const {
+		return std::make_pair(Ident, Cost(1));
 	}
 
 	void computeh(State &s) const {
@@ -184,10 +192,20 @@ struct GridNav {
 		Cost revcost;
 		State state;
 
-		Edge(const GridNav &d, State &s, Oper op) :
-				revop(d.rev[op]),
-				state(s.loc + d.map->mvs[op].delta) {
-			assert (state.loc < d.map->sz);
+		Edge(const GridNav &d, State &s, Oper op) {
+
+			assert (s.loc < d.map->sz);
+
+			if (op == Ident) {
+				revop = Ident;
+				state = s;
+			} else {
+				assert (op >= 0);
+				assert ((unsigned int) op < d.map->nmvs);
+				revop = d.rev[op];
+				state = State(s.loc + d.map->mvs[op].delta);
+			}
+
 			int mul = 1;
 			if (d.map->lifecost) {
 				// -2 because there is 1 layer of boarder
@@ -195,7 +213,9 @@ struct GridNav {
 				// height - y - 1 becomes height - y - 2.
 				mul = (int) d.map->h - d.map->ycoord(s.loc)-2;
 			}
-			if (d.map->mvs[op].cost == 1.0)
+
+			assert (state.loc < d.map->sz);
+			if (op == Ident || d.map->mvs[op].cost == 1.0)
 				cost = Cost(mul, 0);
 			else
 				cost = Cost(0, mul);

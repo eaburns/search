@@ -1,7 +1,10 @@
 #include "gridnav.hpp"
 #include "../search/main.hpp"
+#include "../search/fhatident.hpp"
 #include <cstdio>
 #include <cerrno>
+
+static SearchAlgorithm<GridNav> *get(int, const char*[]);
 
 int main(int argc, const char *argv[]) {
 	dfheader(stdout);
@@ -41,8 +44,14 @@ int main(int argc, const char *argv[]) {
 		fatal("The goal location is blocked");
 
 	GridNav d(&map, x0, y0, xg, yg);
-	search<GridNav>(d, argc, argv);
+	searchGet<GridNav>(get, d, argc, argv);
 	dffooter(stdout);
 
 	return 0;
+}
+
+static SearchAlgorithm<GridNav> *get(int argc, const char *argv[]) {
+	if (strcmp(argv[1], "fhatident") == 0)
+		return new Fhatident<GridNav>(argc, argv);
+	return getsearch<GridNav>(argc, argv);
 }
