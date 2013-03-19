@@ -2,6 +2,7 @@
 #include "../search/search.hpp"
 #include "../utils/geom2d.hpp"
 #include "../utils/pool.hpp"
+#include "../utils/utils.hpp"
 #include "../rdb/rdb.hpp"
 #include <vector>
 

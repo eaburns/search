@@ -3,6 +3,7 @@
 #include "../utils/geom2d.hpp"
 #include "../utils/pool.hpp"
 #include "../rdb/rdb.hpp"
+#include "../utils/utils.hpp"
 #include <vector>
 
 template <class D>
