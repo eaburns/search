@@ -15,13 +15,34 @@ struct DtastarRow {
 	double h, f;
 };
 
+struct DtastarInfo {
+	DtastarInfo() : branching(0), nsamples(0) {
+	}
+
+	double branching;
+	unsigned int nsamples;
+	std::vector<DtastarRow> rows;
+};
+
 static void dfReadRows(std::vector<std::string> &toks, void *data) {
+	auto info = static_cast<DtastarInfo*>(data);
+	char *end = NULL;
+
+	if (toks[0] == "#altrow" && toks[1] == "branching") {	
+	
+		long b = strtol(toks[2].c_str(), &end, 10);
+		if (end == NULL)
+			fatal("Unable to convert %s to a long", toks[2].c_str());
+		if (b < 0)
+			fatal("Branching was negative: %ld", b);
+		info->nsamples++;
+		info->branching += (b - info->branching)/info->nsamples;
+		return;
+	}
+
 	if(toks[0] != "#altrow" || toks[1] != "sample")
 		return;
 
-	auto rows = static_cast<std::vector<DtastarRow>*>(data);
-
-	char *end = NULL;
 	double h = strtod(toks[2].c_str(), &end);
 	if (end == NULL)
 		fatal("Unable to convert %s to a double", toks[2].c_str());
@@ -36,7 +57,7 @@ static void dfReadRows(std::vector<std::string> &toks, void *data) {
 	if (end == NULL)
 		fatal("Unable to convert %s to a double", toks[4].c_str());
 
-	rows->emplace_back(h, d, f);
+	info->rows.emplace_back(h, d, f);
 }
 
 template <class D>
@@ -348,7 +369,7 @@ public:
 		if (levelPath[0] == '\0')
 			fatal("Must specify a level file with -lvl");
 
-		rows = readRows(dataRoot, levelPath);
+		readRows(dataRoot, levelPath);
 		findExtremes(rows);
 		makeProbs(rows);
 //		q.plot("plot.spt");
@@ -469,7 +490,7 @@ public:
 
 private:
 
-	std::vector<DtastarRow> readRows(const char *dataRoot, const char *levelFile) {
+	void readRows(const char *dataRoot, const char *levelFile) {
 		RdbAttrs lvlAttrs = pathattrs(levelFile);
 		auto dom = lvlAttrs.lookup("domain");
 
@@ -499,17 +520,18 @@ private:
 		if (paths.size() == 0)
 			fatal("No data matching for %s in %s", attrs.string().c_str(), instanceRoot.c_str());
 
-		std::vector<DtastarRow> rows;
+		DtastarInfo info;
 
 		for(unsigned int i = 0; i < paths.size(); i++) {
 			FILE* in = fopen(paths[i].c_str(), "r");
 			if(!in)
 				fatalx(errno, "Failed to open %s while building lss lookup table", paths[i].c_str());
-			dfread(in, dfReadRows, &rows, NULL);
+			dfread(in, dfReadRows, &info, NULL);
 			fclose(in);
 		}
 
-		return rows;	
+		rows = info.rows;
+		meanbr = info.branching;	
 	}
 
 	void findExtremes(const std::vector<DtastarRow> &rows) {
@@ -557,6 +579,7 @@ private:
 	}
 
 	std::vector<DtastarRow> rows;
+	double meanbr;
 	unsigned int maxdepth;
 	double hmin, hmax;
 	double fmin, fmax;
