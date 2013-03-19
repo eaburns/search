@@ -210,6 +210,7 @@ public:
 		Node *cur = nodes.get(d, s0);
 
 		dfrowhdr(stdout, "sample", 3, "h", "depth", "f");
+		dfrowhdr(stdout, "branching", 1, "nkids");
 
 		lsslim->start(0);
 		while (!cur->goal && !this->limit()) {
@@ -420,6 +421,8 @@ private:
 		lssNodes.add(a);
 
 		double horig = root->horig;
+
+		dfrow(stdout, "branching", "u", (unsigned long) expand(d, root).size());
  
 		for (unsigned long depth = 1; depth <= horizon; depth++) {
 			alpha = std::numeric_limits<double>::infinity();
