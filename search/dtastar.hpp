@@ -6,6 +6,7 @@
 #include <cerrno>
 #include <cstdio>
 #include <vector>
+#include <algorithm>
 
 struct DtastarRow {
 	DtastarRow(double _h, unsigned int _d, double _f) : d(_d), h(_h), f(_f) {
@@ -327,8 +328,6 @@ private:
 		// the current node.
 		Oper op;
 
-	private:
-
 		GraphNode *cur;
 
 		Pool<Node> pool;
@@ -348,6 +347,7 @@ public:
 	Dtastar(int argc, const char *argv[]) :
 		SearchAlgorithm<D>(argc, argv),
 		graph(*this, 30000001),
+		wf(0),
 		lookahead(0) {
 
 		const char *dataRoot = "";
@@ -358,10 +358,14 @@ public:
 				lookahead = strtoul(argv[++i], NULL, 10);
 			else if (i < argc - 1 && strcmp(argv[i], "-root") == 0)
 				dataRoot = argv[++i];
+			else if (i < argc - 1 && strcmp(argv[i], "-wf") == 0)
+				wf = strtod(argv[++i], NULL);
 			else if (i < argc - 1 && strcmp(argv[i], "-lvl") == 0)
 				levelPath = argv[++i];
 		}
 
+		if (wf <= 0)
+			fatal("Must specify a wf >0 using -wf");
 		if (lookahead < 1)
 			fatal("Must specify a lookahead ≥1 using -lookahead");
 		if (dataRoot[0] == '\0')
@@ -462,20 +466,24 @@ public:
 		std::reverse(this->res.path.begin(), this->res.path.end());
 	}
 
+private:
+
 	std::pair<Oper, Node*> step(D &d, Node *cur) {
 		BinHeap<Lss, Lss*> lss;
 		for (auto s : graph.succs(d, cur))
 			lss.push(new Lss(*this, graph, cur, s.node, s.cost, s.op));
 
-		for (unsigned int e = 0; e < lookahead && !this->limit(); e++) {
-			Lss *l = *lss.front();
-
-			if (l->goal && l->goal->closed)
-				break;
-
-			l->expand(d, 1);
- 			lss.update(0);
-		}
+		do {	
+			for (unsigned int e = 0; e < lookahead && !this->limit(); e++) {
+				Lss *l = *lss.front();
+	
+				if (l->goal && l->goal->closed)
+					break;
+	
+				l->expand(d, 1);
+	 			lss.update(0);
+			}
+		} while(keepGoing(lss));
 
 		Lss *best = *lss.front();
 		auto fg = best->fg();
@@ -489,7 +497,65 @@ public:
 		return p;
 	}
 
-private:
+	bool keepGoing(BinHeap<Lss, Lss*> &lss) {
+		if (lss.size() == 1)
+			return false;
+
+		Lss *best = *lss.pop();
+		Lss *second = *lss.pop();
+		double fbeta = second->fg().first;
+
+		lss.push(second);
+		lss.push(best);
+
+		std::vector<typename Lss::Node*> m;
+		while (!best->open.empty() && (*best->open.front())->f <= fbeta)
+			m.push_back(*best->open.pop());
+
+		bool go = false;
+		unsigned int f0 = fbin(fbeta);
+
+		for (unsigned int d = 1; d <= maxdepth; d++) {
+			while (!best->open.empty()) {
+				m.push_back(*best->open.pop());
+
+				double delta = std::numeric_limits<double>::infinity();
+				if (!best->open.empty())
+					delta = (*best->open.front())->f;
+
+				assert (fbeta < delta);
+
+				unsigned int f1 = fbin(delta);
+				if (f1 > 0)
+					f1--;
+				else
+					continue;
+
+				double sum = 0;
+				for (unsigned int f = f0; f <= f1; f++) {
+					double min = std::numeric_limits<double>::infinity();
+					for (auto n : m) {
+						unsigned int h = hbin(n->node->h);
+						double p = q[h][d][f];
+						min = std::min(min, p);
+					}
+					sum += min;
+				}
+
+				double cost = wf*m.size()*pow(meanbr, d);
+				if (sum >= cost) {
+					go = true;
+					goto out;
+				}
+			}
+		}
+out:
+
+		for (auto n : m)
+			best->open.push(n);
+
+		return go;
+	}
 
 	void readRows(const char *dataRoot, const char *levelFile) {
 		RdbAttrs lvlAttrs = pathattrs(levelFile);
@@ -722,6 +788,7 @@ private:
 	};
 
 	Graph graph;
+	double wf;
 	unsigned int lookahead;
 	std::vector<Step> steps;
 };
