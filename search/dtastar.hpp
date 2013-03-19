@@ -423,6 +423,7 @@ public:
 		dfpair(out, "sample max h", "%g", hmax);
 		dfpair(out, "sample min f", "%g", fmin);
 		dfpair(out, "sample max f", "%g", fmax);
+		dfpair(out, "sample mean branching", "%g", meanbr);
 	}
 
 	void search(D &d, State &s0) {
