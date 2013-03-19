@@ -1,8 +1,43 @@
 #pragma once
 #include "../search/search.hpp"
 #include "../utils/geom2d.hpp"
+#include "../rdb/rdb.hpp"
 #include "../utils/pool.hpp"
+#include <cerrno>
+#include <cstdio>
 #include <vector>
+
+struct DtastarRow {
+	DtastarRow(double _h, unsigned int _d, double _f) : d(_d), h(_h), f(_f) {
+	}
+
+	unsigned int d;
+	double h, f;
+};
+
+static void dfReadRows(std::vector<std::string> &toks, void *data) {
+	if(toks[0] != "#altrow" || toks[1] != "sample")
+		return;
+
+	auto rows = static_cast<std::vector<DtastarRow>*>(data);
+
+	char *end = NULL;
+	double h = strtod(toks[2].c_str(), &end);
+	if (end == NULL)
+		fatal("Unable to convert %s to a double", toks[2].c_str());
+
+	long d = strtol(toks[3].c_str(), &end, 10);
+	if (end == NULL)
+		fatal("Unable to convert %s to a long", toks[3].c_str());
+	if (d < 0)
+		fatal("Lookahead depth was negative: %ld", d);
+
+	double f = strtod(toks[4].c_str(), &end);
+	if (end == NULL)
+		fatal("Unable to convert %s to a double", toks[4].c_str());
+
+	rows->emplace_back(h, d, f);
+}
 
 template <class D>
 class Dtastar : public SearchAlgorithm<D> {
@@ -294,13 +329,29 @@ public:
 		graph(*this, 30000001),
 		lookahead(0) {
 
+		const char *dataRoot = "";
+		const char *levelPath = "";
+
 		for (int i = 0; i < argc; i++) {
 			if (i < argc - 1 && strcmp(argv[i], "-lookahead") == 0)
 				lookahead = strtoul(argv[++i], NULL, 10);
+			else if (i < argc - 1 && strcmp(argv[i], "-root") == 0)
+				dataRoot = argv[++i];
+			else if (i < argc - 1 && strcmp(argv[i], "-lvl") == 0)
+				levelPath = argv[++i];
 		}
 
 		if (lookahead < 1)
 			fatal("Must specify a lookahead ≥1 using -lookahead");
+		if (dataRoot[0] == '\0')
+			fatal("Must specify the data root with -root");
+		if (levelPath[0] == '\0')
+			fatal("Must specify a level file with -lvl");
+
+		rows = readRows(dataRoot, levelPath);
+		findExtremes(rows);
+		makeProbs(rows);
+//		q.plot("plot.spt");
 	}
 
 	~Dtastar() {
@@ -345,6 +396,12 @@ public:
 			dfpair(out, "max step length", "%u", maxl);
 			dfpair(out, "mean step length", "%g", nmoves / (double) steps.size());
 		}
+		dfpair(out, "number of samples", "%lu", (unsigned long) rows.size());
+		dfpair(out, "sample max horizon", "%u", maxdepth);
+		dfpair(out, "sample min h", "%g", hmin);
+		dfpair(out, "sample max h", "%g", hmax);
+		dfpair(out, "sample min f", "%g", fmin);
+		dfpair(out, "sample max f", "%g", fmax);
 	}
 
 	void search(D &d, State &s0) {
@@ -412,6 +469,226 @@ public:
 
 private:
 
+	std::vector<DtastarRow> readRows(const char *dataRoot, const char *levelFile) {
+		RdbAttrs lvlAttrs = pathattrs(levelFile);
+		auto dom = lvlAttrs.lookup("domain");
+
+		RdbAttrs attrs;
+		if(dom == "plat2d") {	
+			attrs.push_back("alg", "dtastar-dump");
+			attrs.push_back("type", "training");
+			attrs.push_back("width", lvlAttrs.lookup("width"));
+			attrs.push_back("height", lvlAttrs.lookup("height"));
+
+		} else if (dom == "grid_instances") {
+			dom = "gridnav";
+			attrs.push_back("alg", "dtastar-dump");
+			attrs.push_back("type", "cpp-seedinst");
+			attrs.push_back("costs", lvlAttrs.lookup("costs"));
+			attrs.push_back("moves", lvlAttrs.lookup("moves"));
+			attrs.push_back("prob", lvlAttrs.lookup("prob"));
+			attrs.push_back("width", lvlAttrs.lookup("width"));
+			attrs.push_back("height", lvlAttrs.lookup("height"));
+
+		} else {
+			fatal("DTA* not implemented for domain %s", dom.c_str());
+		}
+
+		std::string instanceRoot(pathcat(dataRoot, dom));
+		std::vector<std::string> paths = withattrs(instanceRoot, attrs);
+		if (paths.size() == 0)
+			fatal("No data matching for %s in %s", attrs.string().c_str(), instanceRoot.c_str());
+
+		std::vector<DtastarRow> rows;
+
+		for(unsigned int i = 0; i < paths.size(); i++) {
+			FILE* in = fopen(paths[i].c_str(), "r");
+			if(!in)
+				fatalx(errno, "Failed to open %s while building lss lookup table", paths[i].c_str());
+			dfread(in, dfReadRows, &rows, NULL);
+			fclose(in);
+		}
+
+		return rows;	
+	}
+
+	void findExtremes(const std::vector<DtastarRow> &rows) {
+		maxdepth = 0;
+		hmin = std::numeric_limits<double>::infinity();
+		hmax = -std::numeric_limits<double>::infinity();
+		fmin = std::numeric_limits<double>::infinity();
+		fmax = -std::numeric_limits<double>::infinity();
+		for (auto r : rows) {
+			maxdepth = std::max(maxdepth, r.d);
+			hmin = std::min(hmin, r.h);
+			hmax = std::max(hmax, r.h);
+			fmin = std::min(fmin, r.f);
+			fmax = std::max(fmax, r.f);
+		}
+	}
+
+	void makeProbs(const std::vector<DtastarRow> &rows) {
+		q.resize(Nbins, maxdepth);
+		for (auto r : rows) {
+			unsigned int h = hbin(r.h);
+			unsigned int f = fbin(r.f);
+			for (unsigned int i = 0; i < f; i++)
+				q[h][r.d][i]++;
+		}
+		q.normalize();
+	}
+
+	unsigned int hbin(double h) const {
+		double bin = (Nbins-1)*((h - hmin)/(hmax - hmin));
+		if (bin < 0)
+			return 0;
+		if (bin >= Nbins)
+			return Nbins-1;
+		return bin;
+	}
+
+	unsigned int fbin(double f) const {
+		double bin = (Nbins-1)*((f - fmin)/(fmax - fmin));
+		if (bin < 0)
+			return 0;
+		if (bin >= Nbins)
+			return Nbins-1;
+		return bin;
+	}
+
+	std::vector<DtastarRow> rows;
+	unsigned int maxdepth;
+	double hmin, hmax;
+	double fmin, fmax;
+
+	static const unsigned int Nbins = 1000;
+
+	class Fs {
+	public:
+
+		void resize(unsigned int h, unsigned int nbins) {
+			p.resize(nbins, 0);
+
+			// Add 0.1 smoothing.  p[f] < h == 0, so only smooth above h.
+			for (unsigned int f = h; f < nbins; f++)
+				p.at(f) = 0.1;
+		}
+
+		void normalize() {
+			double sum = 0;
+			for (unsigned int i = 0; i < p.size(); i++)
+				sum += p.at(i);
+			for (unsigned int i = 0; i < p.size(); i++)
+				p.at(i) /= sum;
+		}
+
+		double &operator[](unsigned int i) {
+			assert (i < p.size());
+			return p.at(i);
+		}
+
+		std::vector<double> p;
+	};
+
+	class Ds {
+	public:
+		void resize(unsigned int h, unsigned int nbins, unsigned int dmax) {
+			ds.resize(dmax+1);
+			for (Fs &d : ds)
+				d.resize(h, nbins);
+		}
+
+		void normalize() {
+			for (Fs &d : ds)
+				d.normalize();
+		}
+
+		Fs& operator[](unsigned int d) {
+			assert (d < ds.size());
+			return ds.at(d);	
+		}
+
+		std::string plot(FILE *file, unsigned int h) {
+			char pname[128];
+			if ((unsigned int) snprintf(pname, sizeof(pname), "plot-%u", h) > sizeof(pname))
+				fatal("Buffer is too small");
+
+			std::vector<std::string> lines;
+
+			unsigned int fsize = ds.at(0).p.size();
+
+			for (unsigned int f = h; f < fsize; f++) {
+				char points[128];
+				if ((unsigned int) snprintf(points, sizeof(points), "points-%u-%u", h, f) > sizeof(points))
+					fatal("Buffer is too small");
+
+				fprintf(file, "\t(%s (", points);
+				for (unsigned int d = 1; d < ds.size(); d++)
+					fprintf(file, " (%f %f)", (double) d, ds.at(d)[f]);
+				fprintf(file, "))\n");
+
+				char line[128];
+				if ((unsigned int) snprintf(line, sizeof(line), "line-%u-%u", h, f) > sizeof(line))
+					fatal("Buffer is too small");
+				fprintf(file, "\t(%s (line-dataset :name \"%u\" :points %s))\n", line, f, points);
+				lines.push_back(line);
+			}
+
+			fprintf(file, "\t(%s (num-by-num-plot\n", pname);
+			fprintf(file, "\t\t:title \"%u\"\n", h);
+			fprintf(file, "\t\t:x-label \"d\"\n");
+			fprintf(file, "\t\t:y-label \"probability\"\n");
+			for (auto ds : lines)
+				fprintf(file, "\t\t:dataset %s\n", ds.c_str());
+			fprintf(file, "\t))\n");
+
+			return pname;
+		}
+
+		std::vector<Fs> ds;
+	};
+
+	class Hs {
+	public:
+
+		void resize(unsigned int nbins, unsigned int dmax) {
+			hs.resize(nbins);
+			for (unsigned int h = 0; h < hs.size(); h++)
+				hs.at(h).resize(h, nbins, dmax);
+		}
+
+		void normalize() {
+			for (Ds &h : hs)
+				h.normalize();
+		}
+
+		Ds & operator[](unsigned int hbin) {
+			return hs.at(hbin);
+		}
+
+		void plot(const char *path) {
+			FILE *f = fopen(path, "w");
+			if (!f)
+				fatalx(errno, "Failed to open %s for writing", path);
+
+			fprintf(f, "(let* (\n");
+			std::vector<std::string> plots;
+			for (unsigned int h = 0; h < hs.size(); h++)
+				plots.push_back(hs[h].plot(f, h));
+			fprintf(f, ")\n(display ");
+			for (auto p : plots)
+				fprintf(f, " %s", p.c_str());
+			fprintf(f, "))\n");
+
+			fclose(f);
+			exit(0);
+		}
+
+		std::vector<Ds> hs;
+	};
+
+	Hs q;
+
 	struct Step {
 		Step(double t, unsigned int l) : time(t), length(l) {
 		}
@@ -420,8 +697,7 @@ private:
 		unsigned int length;
 	};
 
-	std::vector<Step> steps;
-
 	Graph graph;
 	unsigned int lookahead;
+	std::vector<Step> steps;
 };
