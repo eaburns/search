@@ -210,7 +210,6 @@ Plat2d::Cost Plat2d::pathcost(const std::vector<State> &path, const std::vector<
 	Plat2d::Cost cost(0);
 	int i;
 	for (i = ops.size() - 1; i >= 0; i--) {
-		dumpstate(stderr, state);
 		Oper o = ops[i];
 		assert (o >= 0);
 		controls.push_back(o);

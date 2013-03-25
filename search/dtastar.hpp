@@ -376,6 +376,13 @@ public:
 		readRows(dataRoot, levelPath);
 		findExtremes(rows);
 		makeProbs(rows);
+		dfpair(stdout, "number of samples", "%lu", (unsigned long) rows.size());
+		dfpair(stdout, "sample max horizon", "%u", maxdepth);
+		dfpair(stdout, "sample min h", "%g", hmin);
+		dfpair(stdout, "sample max h", "%g", hmax);
+		dfpair(stdout, "sample min f", "%g", fmin);
+		dfpair(stdout, "sample max f", "%g", fmax);
+		dfpair(stdout, "sample mean branching", "%g", meanbr);
 //		q.plot("plot.spt");
 	}
 
@@ -420,14 +427,8 @@ public:
 			dfpair(out, "min step length", "%u", minl);
 			dfpair(out, "max step length", "%u", maxl);
 			dfpair(out, "mean step length", "%g", nmoves / (double) steps.size());
+			dfpair(out, "average meta-level problems per step", "%g", avgmeta);
 		}
-		dfpair(out, "number of samples", "%lu", (unsigned long) rows.size());
-		dfpair(out, "sample max horizon", "%u", maxdepth);
-		dfpair(out, "sample min h", "%g", hmin);
-		dfpair(out, "sample max h", "%g", hmax);
-		dfpair(out, "sample min f", "%g", fmin);
-		dfpair(out, "sample max f", "%g", fmax);
-		dfpair(out, "sample mean branching", "%g", meanbr);
 	}
 
 	void search(D &d, State &s0) {
@@ -473,6 +474,7 @@ private:
 		for (auto s : graph.succs(d, cur))
 			lss.push(new Lss(*this, graph, cur, s.node, s.cost, s.op));
 
+		unsigned int num = 0;
 		do {	
 			for (unsigned int e = 0; e < lookahead && !this->limit(); e++) {
 				Lss *l = *lss.front();
@@ -483,7 +485,10 @@ private:
 				l->expand(d, 1);
 	 			lss.update(0);
 			}
+			num++;
 		} while(keepGoing(lss));
+
+		avgmeta += (num - avgmeta)/(steps.size()+1);
 
 		Lss *best = *lss.front();
 		auto fg = best->fg();
@@ -505,44 +510,52 @@ private:
 		Lss *second = *lss.pop();
 		double fbeta = second->fg().first;
 
-		lss.push(second);
 		lss.push(best);
+		lss.push(second);
 
-		std::vector<typename Lss::Node*> m;
-		while (!best->open.empty() && (*best->open.front())->f <= fbeta)
-			m.push_back(*best->open.pop());
+		unsigned int origsize = best->open.size();
+		double fmin = best->fg().first;
+
+		std::vector<typename Lss::Node*> nodes = best->open.data();
+		std::sort(nodes.begin(), nodes.end(),
+			[](typename Lss::Node *a, typename Lss::Node *b) -> bool {
+				return Lss::F::pred(a, b);
+		});
+
+		unsigned int msize = 0;
+		for ( ; msize < nodes.size() && nodes[msize]->f <= fbeta; msize++)
+			;
 
 		bool go = false;
 		unsigned int f0 = fbin(fbeta);
 
-		for (unsigned int d = 1; d <= maxdepth; d++) {
-			while (!best->open.empty()) {
-				m.push_back(*best->open.pop());
+		while (msize < nodes.size()) {
+			msize++;
 
-				double delta = std::numeric_limits<double>::infinity();
-				if (!best->open.empty())
-					delta = (*best->open.front())->f;
+			double delta = std::numeric_limits<double>::infinity();
+			if (msize < nodes.size()-1)
+				delta = nodes[msize+1]->f;
 
-				assert (fbeta < delta);
+			assert (fbeta < delta);
 
-				unsigned int f1 = fbin(delta);
-				if (f1 > 0)
-					f1--;
-				else
-					continue;
+			unsigned int f1 = fbin(delta);
 
+			for (unsigned int d = 1; d <= maxdepth; d++) {
 				double sum = 0;
-				for (unsigned int f = f0; f <= f1; f++) {
+				for (unsigned int f = f0; f < f1; f++) {
 					double min = std::numeric_limits<double>::infinity();
-					for (auto n : m) {
-						unsigned int h = hbin(n->node->h);
+					for (unsigned int i = 0; i < msize; i++) {
+						unsigned int h = hbin(nodes[i]->node->h);
 						double p = q[h][d][f];
 						min = std::min(min, p);
+						if (geom2d::doubleeq(p, 0))
+							break;
 					}
 					sum += min;
 				}
 
-				double cost = wf*m.size()*pow(meanbr, d);
+				double cost = wf*msize*pow(meanbr, d);
+
 				if (sum >= cost) {
 					go = true;
 					goto out;
@@ -551,8 +564,8 @@ private:
 		}
 out:
 
-		for (auto n : m)
-			best->open.push(n);
+		assert (best->open.size() == origsize);
+		assert (best->fg().first == fmin);
 
 		return go;
 	}
@@ -577,6 +590,14 @@ out:
 			attrs.push_back("prob", lvlAttrs.lookup("prob"));
 			attrs.push_back("width", lvlAttrs.lookup("width"));
 			attrs.push_back("height", lvlAttrs.lookup("height"));
+
+		} else if (dom == "tiles_instances") {
+			dom = "tiles";
+			attrs.push_back("alg", "dtastar-dump");
+			attrs.push_back("moved", "random_walk");
+			attrs.push_back("length", "1000000");
+			attrs.push_back("rows", lvlAttrs.lookup("rows"));
+			attrs.push_back("cols", lvlAttrs.lookup("cols"));
 
 		} else {
 			fatal("DTA* not implemented for domain %s", dom.c_str());
@@ -614,6 +635,8 @@ out:
 			fmin = std::min(fmin, r.f);
 			fmax = std::max(fmax, r.f);
 		}
+
+		Nbins = ceil(std::max(fmax, hmax)) + 1;
 	}
 
 	void makeProbs(const std::vector<DtastarRow> &rows) {
@@ -621,6 +644,11 @@ out:
 		for (auto r : rows) {
 			unsigned int h = hbin(r.h);
 			unsigned int f = fbin(r.f);
+
+if (f < h) fprintf(stderr, "f=%g (%u), h=%g (%u)\n", r.f, f, r.h, h);
+
+			assert (f >= h);
+			q[h][r.d].count++;
 			for (unsigned int i = 0; i < f; i++)
 				q[h][r.d][i]++;
 		}
@@ -628,21 +656,11 @@ out:
 	}
 
 	unsigned int hbin(double h) const {
-		double bin = (Nbins-1)*((h - hmin)/(hmax - hmin));
-		if (bin < 0)
-			return 0;
-		if (bin >= Nbins)
-			return Nbins-1;
-		return bin;
+		return h;
 	}
 
 	unsigned int fbin(double f) const {
-		double bin = (Nbins-1)*((f - fmin)/(fmax - fmin));
-		if (bin < 0)
-			return 0;
-		if (bin >= Nbins)
-			return Nbins-1;
-		return bin;
+		return f;
 	}
 
 	std::vector<DtastarRow> rows;
@@ -651,25 +669,23 @@ out:
 	double hmin, hmax;
 	double fmin, fmax;
 
-	static const unsigned int Nbins = 1000;
+	unsigned int Nbins;
 
 	class Fs {
 	public:
 
-		void resize(unsigned int h, unsigned int nbins) {
-			p.resize(nbins, 0);
+		Fs() : count(0) {
+		}
 
-			// Add 0.1 smoothing.  p[f] < h == 0, so only smooth above h.
-			for (unsigned int f = h; f < nbins; f++)
-				p.at(f) = 0.1;
+		void resize(unsigned int nbins) {
+			p.resize(nbins, 0);
 		}
 
 		void normalize() {
-			double sum = 0;
+			if (count == 0)
+				return;
 			for (unsigned int i = 0; i < p.size(); i++)
-				sum += p.at(i);
-			for (unsigned int i = 0; i < p.size(); i++)
-				p.at(i) /= sum;
+				p.at(i) /= count;
 		}
 
 		double &operator[](unsigned int i) {
@@ -677,15 +693,16 @@ out:
 			return p.at(i);
 		}
 
+		unsigned int count;
 		std::vector<double> p;
 	};
 
 	class Ds {
 	public:
-		void resize(unsigned int h, unsigned int nbins, unsigned int dmax) {
+		void resize(unsigned int nbins, unsigned int dmax) {
 			ds.resize(dmax+1);
 			for (Fs &d : ds)
-				d.resize(h, nbins);
+				d.resize(nbins);
 		}
 
 		void normalize() {
@@ -725,6 +742,7 @@ out:
 			}
 
 			fprintf(file, "\t(%s (num-by-num-plot\n", pname);
+			fprintf(file, "\t\t:x-min 0\n");
 			fprintf(file, "\t\t:title \"%u\"\n", h);
 			fprintf(file, "\t\t:x-label \"d\"\n");
 			fprintf(file, "\t\t:y-label \"probability\"\n");
@@ -744,7 +762,7 @@ out:
 		void resize(unsigned int nbins, unsigned int dmax) {
 			hs.resize(nbins);
 			for (unsigned int h = 0; h < hs.size(); h++)
-				hs.at(h).resize(h, nbins, dmax);
+				hs.at(h).resize(nbins, dmax);
 		}
 
 		void normalize() {
@@ -786,6 +804,8 @@ out:
 		double time;
 		unsigned int length;
 	};
+
+	double avgmeta;
 
 	Graph graph;
 	double wf;
