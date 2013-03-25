@@ -54,7 +54,6 @@ Plat2d::~Plat2d() {
 Plat2d::State Plat2d::initialstate() {
 	State s(x0 * Tile::Width + Player::Offx, y0 * Tile::Height + Player::Offy,
 		0, Player::Width, Player::Height);
-	s.player.act(lvl, 0);
 	return s;
 }
 
@@ -211,6 +210,7 @@ Plat2d::Cost Plat2d::pathcost(const std::vector<State> &path, const std::vector<
 	Plat2d::Cost cost(0);
 	int i;
 	for (i = ops.size() - 1; i >= 0; i--) {
+		dumpstate(stderr, state);
 		Oper o = ops[i];
 		assert (o >= 0);
 		controls.push_back(o);
