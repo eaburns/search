@@ -222,7 +222,7 @@ private:
 
 			Node *r = pool.construct();
 			r->g = g0;
-			r->f = root->h;
+			r->f = g0 + root->h;
 			r->parent = NULL;
 			r->op = op;
 			r->node = root;
@@ -257,6 +257,9 @@ private:
 					if (e.node == cur || (n->parent && e.node == n->parent->node))
 						continue;
 
+					e.node->h = std::max(e.node->h, n->node->h - e.cost);
+					assert (e.node->h >= 0);
+
 					unsigned long hash = e.node->state.hash(&d);
 					Node *k = nodes.find(e.node->state, hash);
 					double g = n->g + e.cost;
@@ -272,7 +275,9 @@ private:
 					k->parent = n;
 					k->op = e.op;
 					k->g = g;
+					assert (k->node->h >= 0);
 					k->f = g + k->node->h;
+					assert (k->f >= k->g);
 					open.pushupdate(k, k->openind);
 
 					if (k->node->isgoal && (!goal || k->g < goal->g))
@@ -346,6 +351,7 @@ public:
 
 	Dtastar(int argc, const char *argv[]) :
 		SearchAlgorithm<D>(argc, argv),
+		secpergen(0),
 		graph(*this, 30000001),
 		wf(0),
 		lookahead(0) {
@@ -396,6 +402,8 @@ public:
 	void reset() {
 		SearchAlgorithm<D>::reset();
 		steps.clear();
+		secpergen = 0;
+		avgmeta = 0;
 		graph.clear();
 	}
 
@@ -431,7 +439,8 @@ public:
 			dfpair(out, "min step length", "%u", minl);
 			dfpair(out, "max step length", "%u", maxl);
 			dfpair(out, "mean step length", "%g", nmoves / (double) steps.size());
-			dfpair(out, "average meta-level problems per step", "%g", avgmeta);
+			dfpair(out, "mean wall seconds per generation", "%g", secpergen);
+			dfpair(out, "mean meta-level problems per step", "%g", avgmeta);
 		}
 	}
 
@@ -475,11 +484,14 @@ private:
 
 	std::pair<Oper, Node*> step(D &d, Node *cur) {
 		BinHeap<Lss, Lss*> lss;
-		for (auto s : graph.succs(d, cur))
+		for (auto s : graph.succs(d, cur)) {
+			s.node->h = std::max(s.node->h, cur->h - s.cost);
 			lss.push(new Lss(*this, graph, cur, s.node, s.cost, s.op));
+		}
 
 		unsigned int num = 0;
-		do {	
+		do {
+			double start = walltime();
 			for (unsigned int e = 0; e < lookahead && !this->limit(); e++) {
 				Lss *l = *lss.front();
 	
@@ -489,13 +501,20 @@ private:
 				l->expand(d, 1);
 	 			lss.update(0);
 			}
+			secpergen = (walltime() - start) / (meanbr*lookahead);
 			num++;
+
+			if ((*lss.front())->goal)
+				break;
 		} while(keepGoing(lss));
 
 		avgmeta += (num - avgmeta)/(steps.size()+1);
 
 		Lss *best = *lss.front();
 		auto fg = best->fg();
+
+		assert ((best->goal && best->goal->closed) || fg.first >= cur->h);
+
 		cur->h = fg.first * 1.10;	// best + 10%
 
 		auto p = std::make_pair(best->op, best->root);
@@ -533,6 +552,12 @@ private:
 		bool go = false;
 		unsigned int f0 = fbin(fbeta);
 
+		// mintab caches the previous min n∈N of Q_n^d(x) for each d, f value
+		// so that they don't have to be recomputed each time we grow M.
+		std::vector<double> mintab;
+		mintab.resize((maxdepth+1)*fmax, std::numeric_limits<double>::infinity());
+
+		unsigned int mlast = 0;
 		while (msize < nodes.size()) {
 			msize++;
 
@@ -545,34 +570,43 @@ private:
 			unsigned int f1 = fbin(delta);
 
 			for (unsigned int d = 1; d <= maxdepth; d++) {
+
+				double r = secpergen/wf;
+				double cost = r*msize*pow(meanbr, d);
 				double sum = 0;
+
 				for (unsigned int f = f0; f < f1; f++) {
-					double min = std::numeric_limits<double>::infinity();
-					for (unsigned int i = 0; i < msize; i++) {
+					// Seed min with min over the previous, smaller M set.
+					double min = mintab.at(d*fmax + f);
+
+					// Just update min using the new elements in M.
+					// Except on the first iteration, mlast = msize-1.
+					for (unsigned int i = mlast; i < msize; i++) {
 						unsigned int h = hbin(nodes[i]->node->h);
-						assert (h <= f);
+						unsigned int fixedf = f - nodes[i]->g;
 
-						double p = q[h][d][f];
+						double p = q[h][d][fixedf];
 						min = std::min(min, p);
-						if (geom2d::doubleeq(p, 0))
+						if (geom2d::doubleeq(p, 0)) {
 							break;
+						}
 					}
+
+					mintab.at(d*fmax+f) = min;
+
 					sum += min;
-				}
-
-				double cost = wf*msize*pow(meanbr, d);
-
-				if (sum >= cost) {
-					go = true;
-					goto out;
+					if (sum >= cost) {
+						go = true;
+						goto out;
+					}
 				}
 			}
+
+			mlast = msize;
 		}
 out:
-
 		assert (best->open.size() == origsize);
 		assert (best->fg().first == fmin);
-
 		return go;
 	}
 
@@ -812,6 +846,7 @@ if (f < h) fprintf(stderr, "f=%g (%u), h=%g (%u)\n", r.f, f, r.h, h);
 	};
 
 	double avgmeta;
+	double secpergen;
 
 	Graph graph;
 	double wf;
