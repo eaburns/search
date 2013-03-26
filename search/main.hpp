@@ -11,11 +11,11 @@
 #include "fhatlrtastar.hpp"
 #include "dtastar-dump.hpp"
 #include "dtastar.hpp"
+#include "monstar-dump.hpp"
 
 /*
 #include "rtastar.hpp"
 #include "multilrtastar.hpp"
-#include "monstar-dump.hpp"
 #include "lsslrtastar.hpp"
 #include "flrtastar.hpp"
 #include "flrtastar2.hpp"
@@ -112,12 +112,12 @@ template<class D> SearchAlgorithm<D> *getsearch(int argc, const char *argv[]) {
 		return new Fhatlrtastar<D>(argc, argv);
 	else if (strcmp(argv[1], "dtastar") == 0)
 		return new Dtastar<D>(argc, argv);
+	else if (strcmp(argv[1], "monstar-dump") == 0)
+		return new Monstar_dump<D>(argc, argv);
 
 /*
 	else if (strcmp(argv[1], "mrastar") == 0)
 		return new Mrastar<D>(argc, argv);
-	else if (strcmp(argv[1], "monstar-dump") == 0)
-		return new Monstar_dump<D>(argc, argv);
 	else if (strcmp(argv[1], "dflrtastar") == 0)
 		return new Dflrtastar<D>(argc, argv);
 	else if (strcmp(argv[1], "greedylrtastar") == 0)
