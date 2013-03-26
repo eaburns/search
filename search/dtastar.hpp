@@ -352,6 +352,7 @@ public:
 
 		const char *dataRoot = "";
 		const char *levelPath = "";
+		bool plot = false;
 
 		for (int i = 0; i < argc; i++) {
 			if (i < argc - 1 && strcmp(argv[i], "-lookahead") == 0)
@@ -362,6 +363,8 @@ public:
 				wf = strtod(argv[++i], NULL);
 			else if (i < argc - 1 && strcmp(argv[i], "-lvl") == 0)
 				levelPath = argv[++i];
+			else if (strcmp(argv[i], "-plot") == 0)
+				plot = true;
 		}
 
 		if (wf <= 0)
@@ -383,7 +386,8 @@ public:
 		dfpair(stdout, "sample min f", "%g", fmin);
 		dfpair(stdout, "sample max f", "%g", fmax);
 		dfpair(stdout, "sample mean branching", "%g", meanbr);
-//		q.plot("plot.spt");
+		if (plot)
+			q.plot("plot.spt");
 	}
 
 	~Dtastar() {
@@ -546,6 +550,8 @@ private:
 					double min = std::numeric_limits<double>::infinity();
 					for (unsigned int i = 0; i < msize; i++) {
 						unsigned int h = hbin(nodes[i]->node->h);
+						assert (h <= f);
+
 						double p = q[h][d][f];
 						min = std::min(min, p);
 						if (geom2d::doubleeq(p, 0))
@@ -724,7 +730,7 @@ if (f < h) fprintf(stderr, "f=%g (%u), h=%g (%u)\n", r.f, f, r.h, h);
 
 			unsigned int fsize = ds.at(0).p.size();
 
-			for (unsigned int f = h; f < fsize; f++) {
+			for (unsigned int f = h > 0 ? h-1 : 0; f < fsize; f++) {
 				char points[128];
 				if ((unsigned int) snprintf(points, sizeof(points), "points-%u-%u", h, f) > sizeof(points))
 					fatal("Buffer is too small");
@@ -743,7 +749,7 @@ if (f < h) fprintf(stderr, "f=%g (%u), h=%g (%u)\n", r.f, f, r.h, h);
 
 			fprintf(file, "\t(%s (num-by-num-plot\n", pname);
 			fprintf(file, "\t\t:x-min 0\n");
-			fprintf(file, "\t\t:title \"%u\"\n", h);
+			fprintf(file, "\t\t:title \"h=%u\"\n", h);
 			fprintf(file, "\t\t:x-label \"d\"\n");
 			fprintf(file, "\t\t:y-label \"probability\"\n");
 			for (auto ds : lines)
