@@ -555,7 +555,7 @@ private:
 		// mintab caches the previous min n∈N of Q_n^d(x) for each d, f value
 		// so that they don't have to be recomputed each time we grow M.
 		std::vector<double> mintab;
-		mintab.resize((maxdepth+1)*fmax, std::numeric_limits<double>::infinity());
+		mintab.resize((maxdepth+1)*(fmax+1), std::numeric_limits<double>::infinity());
 
 		unsigned int mlast = 0;
 		while (msize < nodes.size()) {
