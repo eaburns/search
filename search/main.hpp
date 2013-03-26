@@ -12,9 +12,9 @@
 #include "dtastar-dump.hpp"
 #include "dtastar.hpp"
 #include "monstar-dump.hpp"
+#include "rtastar.hpp"
 
 /*
-#include "rtastar.hpp"
 #include "multilrtastar.hpp"
 #include "lsslrtastar.hpp"
 #include "flrtastar.hpp"
@@ -114,6 +114,8 @@ template<class D> SearchAlgorithm<D> *getsearch(int argc, const char *argv[]) {
 		return new Dtastar<D>(argc, argv);
 	else if (strcmp(argv[1], "monstar-dump") == 0)
 		return new Monstar_dump<D>(argc, argv);
+	else if (strcmp(argv[1], "rtastar") == 0)
+		return new Rtastar<D>(argc, argv);
 
 /*
 	else if (strcmp(argv[1], "mrastar") == 0)
@@ -132,8 +134,6 @@ template<class D> SearchAlgorithm<D> *getsearch(int argc, const char *argv[]) {
 		return new Frankenlrtastar<D>(argc, argv);
 	else if (strcmp(argv[1], "wlrtastar") == 0)
 		return new Wlrtastar<D>(argc, argv);
-	else if (strcmp(argv[1], "rtastar") == 0)
-		return new Rtastar<D>(argc, argv);
 	else if (strcmp(argv[1], "lsslrtastar") == 0)
 		return new Lsslrtastar<D>(argc, argv);
 	else if (strcmp(argv[1], "flrtastar") == 0)
