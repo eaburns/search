@@ -3,6 +3,7 @@
 #include "../utils/geom2d.hpp"
 #include "../rdb/rdb.hpp"
 #include "../utils/pool.hpp"
+#include "lsslrtastar2.hpp"
 #include <cerrno>
 #include <cstdio>
 #include <vector>
@@ -217,8 +218,8 @@ private:
 			}
 		};
 
-		Lss(Dtastar<D> &s, Graph &g, GraphNode *c, GraphNode *rt, double g0, Oper o) :
-			goal(NULL), root(rt), op(o), cur(c), nodes(s.grainsize), nclosed(0), search(s), graph(g) {
+		Lss(Dtastar<D> &s, Graph &g, GraphNode *c, GraphNode *rt, double cost, Oper o) :
+			goal(NULL), root(rt), op(o), g0(cost), cur(c), nodes(s.grainsize), nclosed(0), search(s), graph(g) {
 
 			Node *r = pool.construct();
 			r->g = g0;
@@ -333,6 +334,8 @@ private:
 		// the current node.
 		Oper op;
 
+		Cost g0;
+
 		GraphNode *cur;
 
 		Pool<Node> pool;
@@ -374,6 +377,7 @@ public:
 				levelPath = argv[++i];
 			else if (strcmp(argv[i], "-plot") == 0)
 				plot = true;
+			lsslim = LookaheadLimit::fromArgs(argc, argv);
 		}
 
 		if (wf <= 0)
@@ -437,28 +441,41 @@ public:
 					maxl = l;
 				nmoves += l;
 			}
-			dfpair(out, "first emit cpu time", "%f", steps.front().time);
-			dfpair(out, "min step cpu time", "%f", mint);
-			dfpair(out, "max step cpu time", "%f", maxt);
-			dfpair(out, "mean step cpu time", "%f", (steps.back().time-steps.front().time)/steps.size());
+			dfpair(out, "first emit wall time", "%f", steps.front().time);
+			dfpair(out, "min step wall time", "%f", mint);
+			dfpair(out, "max step wall time", "%f", maxt);
+			dfpair(out, "mean step wall time", "%f", (steps.back().time-steps.front().time)/steps.size());
 			dfpair(out, "min step length", "%u", minl);
 			dfpair(out, "max step length", "%u", maxl);
 			dfpair(out, "mean step length", "%g", nmoves / (double) steps.size());
 			dfpair(out, "mean wall seconds per generation", "%g", secpergen);
 			dfpair(out, "mean meta-level problems per step", "%g", avgmeta);
 		}
+		lsslim->output(out);
 	}
+
+	struct Move {
+		Move(Oper o, Node *n, Cost c) : oper(o), node(n), cost(c) {
+		}
+
+		Oper oper;
+		Node *node;
+		Cost cost;
+	};
 
 	void search(D &d, State &s0) {
 		this->start();
 
 		Node *cur = graph.node(d, s0);
 
+		lsslim->start(0);
+
 		while (!cur->isgoal && !this->limit()) {
-			auto p = step(d, cur);
-			cur = p.second;
-			this->res.ops.push_back(p.first);
-			steps.emplace_back(cputime() - this->res.cpustart, 1);
+			auto move = step(d, cur);
+			cur = move.node;
+			lsslim->start(move.cost);
+			this->res.ops.push_back(move.oper);
+			steps.emplace_back(walltime() - this->res.wallstart, 1);
 		}
 		this->finish();
 
@@ -487,7 +504,7 @@ public:
 
 private:
 
-	std::pair<Oper, Node*> step(D &d, Node *cur) {
+	Move step(D &d, Node *cur) {
 		BinHeap<Lss, Lss*> lss;
 		for (auto s : graph.succs(d, cur)) {
 			s.node->h = std::max(s.node->h, cur->h - s.cost);
@@ -495,9 +512,10 @@ private:
 		}
 
 		unsigned int num = 0;
+		bool lssstop = false;
 		do {
 			double start = walltime();
-			for (unsigned int e = 0; e < grainsize && !this->limit(); e++) {
+			for (unsigned int e = 0; e < grainsize && !(lssstop = lsslim->stop()) && !this->limit(); e++) {
 				Lss *l = *lss.front();
 	
 				if (l->goal && l->goal->closed)
@@ -511,7 +529,7 @@ private:
 
 			if ((*lss.front())->goal)
 				break;
-		} while(keepGoing(lss));
+		} while(!lssstop && keepGoing(lss));
 
 		avgmeta += (num - avgmeta)/(steps.size()+1);
 
@@ -522,12 +540,12 @@ private:
 
 		cur->h = fg.first * 1.10;	// best + 10%
 
-		auto p = std::make_pair(best->op, best->root);
+		Move step(best->op, best->root, best->g0);
 
 		for (auto l : lss.data())
 			delete l;
 
-		return p;
+		return step;
 	}
 
 	bool keepGoing(BinHeap<Lss, Lss*> &lss) {
@@ -853,6 +871,7 @@ if (f < h) fprintf(stderr, "f=%g (%u), h=%g (%u)\n", r.f, f, r.h, h);
 	double avgmeta;
 	double secpergen;
 
+	LookaheadLimit *lsslim;
 	Graph graph;
 	double wf, wt;
 	unsigned int grainsize;
