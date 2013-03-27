@@ -587,8 +587,8 @@ private:
 					// Just update min using the new elements in M.
 					// Except on the first iteration, mlast = msize-1.
 					for (unsigned int i = mlast; i < msize; i++) {
-						unsigned int h = hbin(nodes[i]->node->h);
-						unsigned int fixedf = f - nodes[i]->g;
+						unsigned int h = hbin(std::min(nodes[i]->node->h, hmax));
+						unsigned int fixedf = std::min(f - nodes[i]->g, fmax);
 
 						double p = q[h][d][fixedf];
 						min = std::min(min, p);
