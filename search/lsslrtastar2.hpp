@@ -475,7 +475,7 @@ private:
 };
 
 static void dfMaxStepTime(std::vector<std::string>& toks, void *data) {
-	if(toks[0] != "#pair" || toks[1] != "max step cpu time")
+	if(toks[0] != "#pair" || toks[1] != "max step wall time")
 		return;
 
 	char *end = NULL;
@@ -535,7 +535,6 @@ public:
 		std::vector<std::string> paths = withattrs(instanceRoot, attrs);
 		if (paths.size() == 0)
 			fatal("No data matching for %s in %s", attrs.string().c_str(), instanceRoot.c_str());
-
 		for(unsigned int i = 0; i < paths.size(); i++) {
 			FILE* in = fopen(paths[i].c_str(), "r");
 			if(!in)
