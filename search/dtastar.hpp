@@ -527,7 +527,7 @@ private:
 			secpergen = (walltime() - start) / (meanbr*grainsize);
 			num++;
 
-			if ((*lss.front())->goal)
+			if (this->limit() || (*lss.front())->goal)
 				break;
 		} while(!lssstop && keepGoing(lss));
 
@@ -575,10 +575,13 @@ private:
 		bool go = false;
 		unsigned int f0 = fbin(fbeta);
 
+		// maximum f value among the nodes that could ever be in the set M.
+		unsigned int realmaxf = ceil(nodes.back()->f);
+
 		// mintab caches the previous min n∈N of Q_n^d(x) for each d, f value
 		// so that they don't have to be recomputed each time we grow M.
 		std::vector<double> mintab;
-		mintab.resize((maxdepth+1)*(fmax+1), std::numeric_limits<double>::infinity());
+		mintab.resize((maxdepth+1)*(realmaxf+1), std::numeric_limits<double>::infinity());
 
 		unsigned int mlast = 0;
 		while (msize < nodes.size()) {
@@ -600,7 +603,7 @@ private:
 
 				for (unsigned int f = f0; f < f1; f++) {
 					// Seed min with min over the previous, smaller M set.
-					double min = mintab.at(d*fmax + f);
+					double min = mintab.at(d*(realmaxf+1) + f);
 
 					// Just update min using the new elements in M.
 					// Except on the first iteration, mlast = msize-1.
@@ -615,7 +618,7 @@ private:
 						}
 					}
 
-					mintab.at(d*fmax+f) = min;
+					mintab.at(d*(realmaxf+1)+f) = min;
 
 					sum += min;
 					if (sum >= cost) {
@@ -719,11 +722,11 @@ if (f < h) fprintf(stderr, "f=%g (%u), h=%g (%u)\n", r.f, f, r.h, h);
 	}
 
 	unsigned int hbin(double h) const {
-		return h;
+		return std::max(h, hmax);
 	}
 
 	unsigned int fbin(double f) const {
-		return f;
+		return std::max(f, fmax);
 	}
 
 	std::vector<DtastarRow> rows;
