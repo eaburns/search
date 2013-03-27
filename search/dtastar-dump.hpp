@@ -411,27 +411,29 @@ private:
 	// Does d-ply lookahead beneath the given node and prints the minimim f value
 	// backed up at each depth.
 	void evaluate(D &d, Node *root) {
+
 		for (auto n : lssNodes)
 			lssPool.destruct(n);
 		lssNodes.clear();
-
+	
 		LssNode *a = lssPool.construct();
 		a->node = root;
 		a->g = 0;
 		lssNodes.add(a);
 
-		double horig = root->horig;
-
 		dfrow(stdout, "branching", "u", (unsigned long) expand(d, root).size());
  
 		for (unsigned long depth = 1; depth <= horizon; depth++) {
+
 			alpha = std::numeric_limits<double>::infinity();
-			dfs(d, a, horig, depth);
-			dfrow(stdout, "sample", "gug", horig, depth, alpha);
+			dfs(d, a, root->horig, root->horig, depth);
+if (alpha < a->node->horig) fprintf(stderr, "alpha=%g, h=%g\n", alpha, root->horig);
+			assert (alpha >= root->horig);
+			dfrow(stdout, "sample", "gug", root->horig, depth, alpha);
 		}
 	} 
 
-	void dfs(D &d, LssNode *n, double f, unsigned int left) {
+	void dfs(D &d, LssNode *n, double f, double h, unsigned int left) {
 		if (f >= alpha || left == 0) {
 			alpha = std::min(alpha, f);
 			return;
@@ -450,15 +452,17 @@ private:
 				lssNodes.add(kid);
 			}
 
-			if (kid->g < g)
+			if (kid->g == 0 || kid->g < g)
 				continue;
 
 			kid->g = g;
 
-			double h = std::max(n->node->horig - e.outcost, kid->node->horig);			
-			double f = g + h;
+			double kidh = std::max(h - e.outcost, kid->node->horig);			
+			double kidf = g + kidh;
 
-			dfs(d, kid, f, left-1);
+			assert (kidf >= f);
+
+			dfs(d, kid, kidf, kidh, left-1);
 		}
 	}
 
