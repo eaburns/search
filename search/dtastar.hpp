@@ -218,7 +218,7 @@ private:
 		};
 
 		Lss(Dtastar<D> &s, Graph &g, GraphNode *c, GraphNode *rt, double g0, Oper o) :
-			goal(NULL), root(rt), op(o), cur(c), nodes(s.lookahead), nclosed(0), search(s), graph(g) {
+			goal(NULL), root(rt), op(o), cur(c), nodes(s.grainsize), nclosed(0), search(s), graph(g) {
 
 			Node *r = pool.construct();
 			r->g = g0;
@@ -354,19 +354,22 @@ public:
 		secpergen(0),
 		graph(*this, 30000001),
 		wf(0),
-		lookahead(0) {
+		wt(0),
+		grainsize(0) {
 
 		const char *dataRoot = "";
 		const char *levelPath = "";
 		bool plot = false;
 
 		for (int i = 0; i < argc; i++) {
-			if (i < argc - 1 && strcmp(argv[i], "-lookahead") == 0)
-				lookahead = strtoul(argv[++i], NULL, 10);
+			if (i < argc - 1 && strcmp(argv[i], "-grainsize") == 0)
+				grainsize = strtoul(argv[++i], NULL, 10);
 			else if (i < argc - 1 && strcmp(argv[i], "-root") == 0)
 				dataRoot = argv[++i];
 			else if (i < argc - 1 && strcmp(argv[i], "-wf") == 0)
 				wf = strtod(argv[++i], NULL);
+			else if (i < argc - 1 && strcmp(argv[i], "-wt") == 0)
+				wt = strtod(argv[++i], NULL);
 			else if (i < argc - 1 && strcmp(argv[i], "-lvl") == 0)
 				levelPath = argv[++i];
 			else if (strcmp(argv[i], "-plot") == 0)
@@ -375,8 +378,10 @@ public:
 
 		if (wf <= 0)
 			fatal("Must specify a wf >0 using -wf");
-		if (lookahead < 1)
-			fatal("Must specify a lookahead ≥1 using -lookahead");
+		if (wt <= 0)
+			fatal("Must specify a wt >0 using -wt");
+		if (grainsize < 1)
+			fatal("Must specify a grainsize ≥1 using -grainsize");
 		if (dataRoot[0] == '\0')
 			fatal("Must specify the data root with -root");
 		if (levelPath[0] == '\0')
@@ -492,7 +497,7 @@ private:
 		unsigned int num = 0;
 		do {
 			double start = walltime();
-			for (unsigned int e = 0; e < lookahead && !this->limit(); e++) {
+			for (unsigned int e = 0; e < grainsize && !this->limit(); e++) {
 				Lss *l = *lss.front();
 	
 				if (l->goal && l->goal->closed)
@@ -501,7 +506,7 @@ private:
 				l->expand(d, 1);
 	 			lss.update(0);
 			}
-			secpergen = (walltime() - start) / (meanbr*lookahead);
+			secpergen = (walltime() - start) / (meanbr*grainsize);
 			num++;
 
 			if ((*lss.front())->goal)
@@ -571,7 +576,7 @@ private:
 
 			for (unsigned int d = 1; d <= maxdepth; d++) {
 
-				double r = secpergen/wf;
+				double r = (wt*secpergen)/wf;
 				double cost = r*msize*pow(meanbr, d);
 				double sum = 0;
 
@@ -849,7 +854,7 @@ if (f < h) fprintf(stderr, "f=%g (%u), h=%g (%u)\n", r.f, f, r.h, h);
 	double secpergen;
 
 	Graph graph;
-	double wf;
-	unsigned int lookahead;
+	double wf, wt;
+	unsigned int grainsize;
 	std::vector<Step> steps;
 };
