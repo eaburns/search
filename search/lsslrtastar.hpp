@@ -153,7 +153,7 @@ template <class D> struct Lsslrtastar : public SearchAlgorithm<D> {
 			std::vector<Oper> partial;
 			Node* p = s_goal;
 
-			emitTimes.push_back(cputime() - this->res.cpustart);
+			emitTimes.push_back(walltime() - this->res.wallstart);
 
 			Node* oneStepState = NULL;
 			std::unordered_set<Node*> seen;
@@ -216,7 +216,7 @@ template <class D> struct Lsslrtastar : public SearchAlgorithm<D> {
 
 		dfpair(out, "num steps", "%lu", emitTimes.size());
 		if (emitTimes.size() > 0) {
-			dfpair(out, "first emit cpu time", "%f", emitTimes[0]);
+			dfpair(out, "first emit wall time", "%f", emitTimes[0]);
 			double minEmit =  emitTimes.front();
 			double maxEmit = emitTimes.front();
 			for(unsigned int i = 1; i < emitTimes.size(); i++) {
@@ -227,9 +227,9 @@ template <class D> struct Lsslrtastar : public SearchAlgorithm<D> {
 
 			dfpair(out, "onestep", "%s", oneStep ? "yes" : "no");
 			dfpair(out, "dynamic lookahead", "%s", dynamicLookahead ? "yes" : "no");
-			dfpair(out, "min step cpu time", "%f", minEmit);
-			dfpair(out, "max step cpu time", "%f", maxEmit);
-			dfpair(out, "mean step cpu time", "%f", (emitTimes.back() - emitTimes.front()) / (double) emitTimes.size());
+			dfpair(out, "min step wall time", "%f", minEmit);
+			dfpair(out, "max step wall time", "%f", maxEmit);
+			dfpair(out, "mean step wall time", "%f", (emitTimes.back() - emitTimes.front()) / (double) emitTimes.size());
 		}
 		if (lengths.size() != 0) {
 			unsigned int min = lengths.front();

@@ -411,7 +411,7 @@ public:
 
 			cur = p.second;
 			this->res.ops.insert(this->res.ops.end(), p.first.rbegin(), p.first.rend());
-			steps.emplace_back(cputime() - this->res.cpustart, (unsigned int) p.first.size());
+			steps.emplace_back(walltime() - this->res.wallstart, (unsigned int) p.first.size());
 		}
 		this->finish();
 
@@ -456,7 +456,7 @@ public:
 				break;
 			}
 
-			double start = cputime();
+			double start = walltime();
 
 			l->expand(d, lookahead);
 
@@ -468,7 +468,7 @@ public:
 			}
 
 			nsearch++;
-			searchtime += ((cputime()-start) - searchtime)/nsearch;
+			searchtime += ((walltime()-start) - searchtime)/nsearch;
 		}
 
 		auto p = move(d, *lss.front());
@@ -636,10 +636,10 @@ public:
 					maxl = l;
 				nmoves += l;
 			}
-			dfpair(out, "first emit cpu time", "%f", steps.front().time);
-			dfpair(out, "min step cpu time", "%f", mint);
-			dfpair(out, "max step cpu time", "%f", maxt);
-			dfpair(out, "mean step cpu time", "%f", (steps.back().time-steps.front().time)/steps.size());
+			dfpair(out, "first emit wall time", "%f", steps.front().time);
+			dfpair(out, "min step wall time", "%f", mint);
+			dfpair(out, "max step wall time", "%f", maxt);
+			dfpair(out, "mean step wall time", "%f", (steps.back().time-steps.front().time)/steps.size());
 			dfpair(out, "min step length", "%u", minl);
 			dfpair(out, "max step length", "%u", maxl);
 			dfpair(out, "mean step length", "%g", nmoves / (double) steps.size());

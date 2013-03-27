@@ -216,7 +216,7 @@ public:
 			auto m = move(cur, goal);
 			cur = m.first;
 			lsslim->start(m.second);
-			times.push_back(cputime() - this->res.cpustart);
+			times.push_back(walltime() - this->res.wallstart);
 		}
 
 		this->finish();
@@ -254,10 +254,10 @@ public:
 				if (dt > max)
 					max = dt;
 			}
-			dfpair(out, "first emit cpu time", "%f", times.front());
-			dfpair(out, "min step cpu time", "%f", min);
-			dfpair(out, "max step cpu time", "%f", max);
-			dfpair(out, "mean step cpu time", "%f", (times.back()-times.front())/times.size());
+			dfpair(out, "first emit wall time", "%f", times.front());
+			dfpair(out, "min step wall time", "%f", min);
+			dfpair(out, "max step wall time", "%f", max);
+			dfpair(out, "mean step wall time", "%f", (times.back()-times.front())/times.size());
 		}
 		if (lengths.size() != 0) {
 			unsigned int min = lengths.front();
@@ -578,7 +578,7 @@ continue;
 
 	virtual void start(double g) {
 		n = 0;
-		double now = cputime();
+		double now = walltime();
 		if (g <= 0) {
 			lim = lim0;
 			return;
