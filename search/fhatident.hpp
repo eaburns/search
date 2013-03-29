@@ -52,8 +52,7 @@ private:
 		}
 
 		PackedState state;
-		double h, horig, d;
-		bool dead;
+		double h, horig, d, derr;
 		bool expd;	// Was this expanded before?
 		bool goal;
 
@@ -67,7 +66,7 @@ private:
 		friend class Nodes;
 		friend class Pool<Node>;
 
-		Node() : dead(false), expd(false) {
+		Node() : expd(false) {
 		}
 
 		ClosedEntry<Node, D> closedent;
@@ -100,7 +99,7 @@ private:
 
 			n->goal = d.isgoal(s);
 			n->h = n->horig = d.h(s);
-			n->d = d.d(s);
+			n->d = n->derr = d.d(s);
 			tbl.add(n, hash);
 			return n;
 		}
@@ -341,7 +340,7 @@ private:
 					kid->f = kid->g + kid->node->h;
 
 					assert (derror != 1);
-					double d = kid->node->d / (1 - derror);
+					double d = kid->node->derr / (1 - derror);
 					double h = kid->node->h + herror*d;
 					kid->fhat = kid->g + h;
 
@@ -364,6 +363,8 @@ private:
 				double derr = bestkid->node->d + 1 - s->node->d;
 				if (derr < 0)
 					derr = 0;
+				if (derr >= 1)
+					derr = 1 - geom2d::Threshold;
 				derrnext = derrnext + (derr - derrnext)/(exp+1);
 			}
 
@@ -403,6 +404,8 @@ private:
 
 				if (!sp->updated || sprime->h > e.incost + s->node->h) {
 					sprime->h = e.incost + s->node->h;
+					sprime->derr = s->node->derr;
+					sprime->d = s->node->d + 1;
 					if (!sp->updated)
 						updated.push_back(sprime);
 					sp->updated = true;
@@ -492,8 +495,6 @@ private:
 
 	// Expand returns the successor nodes of a state.
 	std::vector<outedge> expand(D &d, Node *n) {
-		assert(!n->dead);
-
 		if (n->expd)
 			return n->succs;
 
