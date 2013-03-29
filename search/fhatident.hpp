@@ -340,6 +340,7 @@ private:
 					kid->g = s->g + e.outcost;
 					kid->f = kid->g + kid->node->h;
 
+					assert (derror != 1);
 					double d = kid->node->d / (1 - derror);
 					double h = kid->node->h + herror*d;
 					kid->fhat = kid->g + h;
@@ -374,6 +375,8 @@ private:
 		}
 
 		herror = herrnext;
+		if (derrnext == 1)
+			derrnext = 0;
 		derror = derrnext;
 
 		return goal;
@@ -480,6 +483,8 @@ private:
 		LssNode *first = *kids.pop();
 		LssNode *second = *kids.pop();
 
+		if (!(first->fhat < second->fhat || geom2d::doubleeq(first->fhat, second->fhat)))
+			fprintf(stderr, "first=%g, second=%g\n", first->fhat, second->fhat);
 		assert (first->fhat < second->fhat || geom2d::doubleeq(first->fhat, second->fhat));
 
 		return second->f < first->f;
