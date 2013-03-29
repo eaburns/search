@@ -54,7 +54,6 @@ private:
 
 		PackedState state;
 		double h, horig;
-		bool dead;
 		bool expd;	// was this expanded before?
 		bool goal;
 		std::vector<outedge> succs;
@@ -64,7 +63,7 @@ private:
 		friend class Nodes;
 		friend class Pool<Node>;
 
-		Node() : dead(false), expd(false) {
+		Node() : expd(false) {
 		}
 
 		ClosedEntry<Node, D> closedent;
@@ -383,8 +382,6 @@ private:
 
 	// Expand returns the successor nodes of a state.
 	std::vector<outedge> expand(D &d, Node *n) {
-		assert(!n->dead);
-
 		if (n->expd)
 			return n->succs;
 
@@ -427,8 +424,7 @@ private:
 
 			alpha = std::numeric_limits<double>::infinity();
 			dfs(d, a, root->horig, root->horig, depth);
-if (alpha < a->node->horig) fprintf(stderr, "alpha=%g, h=%g\n", alpha, root->horig);
-			assert (alpha >= root->horig);
+			assert (alpha + geom2d::Threshold >= root->horig);
 			dfrow(stdout, "sample", "gug", root->horig, depth, alpha);
 		}
 	} 
@@ -459,8 +455,7 @@ if (alpha < a->node->horig) fprintf(stderr, "alpha=%g, h=%g\n", alpha, root->hor
 
 			double kidh = std::max(h - e.outcost, kid->node->horig);			
 			double kidf = g + kidh;
-
-			assert (kidf >= f);
+			assert (kidf + geom2d::Threshold >= f);
 
 			dfs(d, kid, kidf, kidh, left-1);
 		}
