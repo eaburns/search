@@ -16,7 +16,10 @@ public:
 
 	typedef int Cost;
 	typedef int Oper;
-	enum { Nop = -1 };
+	enum {
+		Nop = -1,
+		Ident = -2,
+	};
 
 	Tiles();
 

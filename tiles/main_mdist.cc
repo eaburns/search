@@ -1,6 +1,9 @@
 #include "mdist.hpp"
 #include "../search/main.hpp"
+#include "../search/fhatident.hpp"
 #include <cstdio>
+
+static SearchAlgorithm<TilesMdist> *get(int, const char *[]);
 
 int main(int argc, const char *argv[]) {
 	dfheader(stdout);
@@ -25,7 +28,13 @@ int main(int argc, const char *argv[]) {
 		fclose(lvl);
  	}
 
-	search<TilesMdist>(d, argc, argv);
+	searchGet<TilesMdist>(get, d, argc, argv);
 	dffooter(stdout);
 	return 0;
+}
+
+static SearchAlgorithm<TilesMdist> *get(int argc, const char *argv[]) {
+	if (strcmp(argv[1], "fhatident") == 0)
+		return new Fhatident<TilesMdist>(argc, argv);
+	return getsearch<TilesMdist>(argc, argv);
 }

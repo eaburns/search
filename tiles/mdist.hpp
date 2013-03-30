@@ -53,6 +53,10 @@ public:
 		const Pos *mvs;
 	};
 
+	std::pair<Oper, Cost> ident(const State &) const {
+		return std::make_pair(Ident, 1);
+	}
+
 	struct Edge {
 		Cost cost;
 		Oper revop;
@@ -61,6 +65,12 @@ public:
 
 		Edge(TilesMdist &d, State &s, Oper op) :
 				cost(1), revop(s.b), revcost(1), state(s), oldh(s.h) {
+
+			if (op == Ident) {
+				revop = Ident;
+				return;
+			}
+
 			Tile t = state.ts[op];
 			state.ts[state.b] = t;
 			state.h += d.incr[t][op][state.b];
@@ -68,6 +78,8 @@ public:
 		}
 
 		~Edge() {
+			if (revop == Ident)
+				return;
 			state.ts[state.b] = state.ts[revop];
 			state.b = revop;
 			state.h = oldh;
