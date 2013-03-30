@@ -527,6 +527,15 @@ public:
 			attrs.push_back("width", lvlAttrs.lookup("width"));
 			attrs.push_back("height", lvlAttrs.lookup("height"));
 
+		} else if (dom == "tiles_instances") {
+			dom = "tiles";
+			attrs.push_back("alg", alg);
+			attrs.push_back("onestep", "no");
+			attrs.push_back("model", "random_walk");
+			attrs.push_back("length", "1000000");
+			attrs.push_back("rows", lvlAttrs.lookup("rows"));
+			attrs.push_back("cols", lvlAttrs.lookup("cols"));
+
 		} else {
 			fatal("MaxTimeLimit not implemented for domain %s", dom.c_str());
 		}
