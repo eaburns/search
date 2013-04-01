@@ -90,7 +90,10 @@ static void collect(std::string path, RdbAttrs &attrs, std::vector<std::string> 
 		return;
 
 	if (attrs.mem(curkey)) {
-		path = pathcat(path, attrs.lookup(curkey));
+		auto k = attrs.lookup(curkey);
+		if (k == "")
+			fatal("Empty value for key %s", curkey.c_str());
+		path = pathcat(path, k);
 		return addfiles(path, attrs, files);
 	}
 
