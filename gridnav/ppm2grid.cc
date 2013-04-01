@@ -14,7 +14,7 @@ int main() {
 	if (nextline() != "P3")
 		fatal("Expected P3");
 	readsize();
-	fprintf(out, "%u %u\nBoard:\n", w, h);
+	fprintf(out, "%u %u\nBoard:\n", h, w);
 	for (unsigned int y = 0; y < h; y++) {
 		for (unsigned int x = 0; x < w; x++)
 			fputc(white() ? ' ' : '#', out);
