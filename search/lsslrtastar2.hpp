@@ -181,14 +181,17 @@ public:
 		complete(false),
 		onestep(false) {
 
-		lsslim = LookaheadLimit::fromArgs(argc, argv);
-
 		for (int i = 0; i < argc; i++) {
 			if (strcmp(argv[i], "-onestep") == 0)
 				onestep = true;
 			else if (strcmp(argv[i], "-complete") == 0)
 				complete = true;
 		}
+
+		if (complete)
+			argv[1] = "lsslrtastar-complete";
+
+		lsslim = LookaheadLimit::fromArgs(argc, argv);
 	}
 
 	~Lsslrtastar2() {
@@ -555,11 +558,20 @@ public:
 			attrs.push_back("alg", alg);
 			attrs.push_back("onestep", "no");
 			attrs.push_back("type", "cpp-seedinst");
-			attrs.push_back("costs", lvlAttrs.lookup("costs"));
-			attrs.push_back("moves", lvlAttrs.lookup("moves"));
-			attrs.push_back("prob", lvlAttrs.lookup("prob"));
-			attrs.push_back("width", lvlAttrs.lookup("width"));
-			attrs.push_back("height", lvlAttrs.lookup("height"));
+			auto o = lvlAttrs.lookup("obstacles");
+			if (o == "eaburns-cups") {
+				attrs.push_back("costs", "Unit");
+				attrs.push_back("moves", "Four-way");
+				attrs.push_back("prob", "0.35");
+				attrs.push_back("width", "5000");
+				attrs.push_back("height", "5000");
+			} else {
+				attrs.push_back("costs", lvlAttrs.lookup("costs"));
+				attrs.push_back("moves", lvlAttrs.lookup("moves"));
+				attrs.push_back("prob", lvlAttrs.lookup("prob"));
+				attrs.push_back("width", lvlAttrs.lookup("width"));
+				attrs.push_back("height", lvlAttrs.lookup("height"));
+			}
 
 		} else if (dom == "tiles_instances") {
 			dom = "tiles";
