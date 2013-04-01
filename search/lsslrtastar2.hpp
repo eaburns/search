@@ -178,6 +178,7 @@ public:
 		SearchAlgorithm<D>(argc, argv),
 		lssNodes(4051),
 		nodes(30000001),
+		complete(false),
 		onestep(false) {
 
 		lsslim = LookaheadLimit::fromArgs(argc, argv);
@@ -185,6 +186,8 @@ public:
 		for (int i = 0; i < argc; i++) {
 			if (strcmp(argv[i], "-onestep") == 0)
 				onestep = true;
+			else if (strcmp(argv[i], "-complete") == 0)
+				complete = true;
 		}
 	}
 
@@ -376,7 +379,37 @@ private:
 	}
 
 	std::pair<Node*, double> move(Node *cur, LssNode *goal) {
-		LssNode *best = goal;
+		LssNode *best = goal;	
+	
+		if (!best && complete) {
+			// Minimum f value still on open (unexpanded).
+			// Due to consistency, all expanded nodes should have f ≤ minf.
+			// We want to find the last *complete* layer of the onion, that is,
+			// the last layer for which all nodes with that f value have been
+			// expanded.  Clearly that layer's f value is not minf, because the
+			// node at the front of open has f = minf, and it wasn't expanded.
+			// All nodes with f < minf, however, must have been expanded
+			// (Nilsson, 19foreverAgo).  So, we want to move to the node
+			// on closed with the largest f (tie-breaking on high g) for which
+			// f < minf and with the.  This will be the best node in the
+			// last completed onion layer.
+			double minf = (*lssOpen.front())->f;
+	
+			double layer = 0;
+			for (auto n : lssNodes) {
+				if (n->node == cur || !n->closed || n->f == minf || n->f < layer)
+					continue;
+	
+				if (n->f > layer) {
+					layer = n->f;
+					best = n;
+				}
+	
+				if (n->f == layer && (!best || LssNode::FSort::pred(n, best)))
+					best = n;
+			}
+		}
+
 		if (!best) {
 			for (auto n : lssOpen.data()) {
 				if (n->node == cur)
@@ -445,6 +478,7 @@ private:
 	LookaheadLimit *lsslim;
 	Nodes nodes;
 
+	bool complete;	// move only to best node in completed f layer
 	bool onestep;
 
 	std::vector<double> times;
