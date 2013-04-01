@@ -6,6 +6,7 @@ gridnav:\
 	gridnav/mkseedinst\
 	gridnav/scenario2rdb\
 	gridnav/randinst\
+	gridnav/ppm2grid\
 
 GRIDNAVOBJS=\
 	gridnav/gridmap.o\
@@ -105,3 +106,12 @@ gridnav/randinst:\
 
 include gridnav/randinst.d
 CLEAN+=gridnav/randinst gridnav/randinst.o
+
+gridnav/ppm2grid:\
+	gridnav/ppm2grid.cc\
+	utils/utils.a
+	@echo $@
+	@$(CXX) $^ $(LDFLAGS) -o $@
+
+include gridnav/ppm2grid.d
+CLEAN+=gridnav/ppm2grid gridnav/ppm2grid.o
