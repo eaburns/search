@@ -542,7 +542,7 @@ private:
 		Lss *best = *lss.front();
 		auto fg = best->fg();
 
-		assert ((best->goal && best->goal->closed) || fg.first >= cur->h);
+		assert ((best->goal && best->goal->closed) || fg.first + geom2d::Threshold>= cur->h);
 
 		cur->h = fg.first * 1.10;	// best + 10%
 
