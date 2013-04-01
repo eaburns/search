@@ -82,11 +82,11 @@ private:
 		struct Node;
 
 		struct Out {
-			Out(Node *n, double c, Oper o) : node(n), cost(c), op(o) {
+			Out(Node *n, Cost c, Oper o) : node(n), cost(c), op(o) {
 			}
 
 			Node *node;
-			double cost;
+			Cost cost;
 			Oper op;
 		};
 
@@ -218,12 +218,13 @@ private:
 			}
 		};
 
-		Lss(Dtastar<D> &s, Graph &g, GraphNode *c, GraphNode *rt, double cost, Oper o) :
+		Lss(Dtastar<D> &s, Graph &g, GraphNode *c, GraphNode *rt, Cost cost, Oper o) :
 			goal(NULL), root(rt), op(o), g0(cost), cur(c), nodes(s.grainsize), nclosed(0), search(s), graph(g) {
 
 			Node *r = pool.construct();
 			r->g = g0;
 			r->f = g0 + root->h;
+			assert (r->f + geom2d::Threshold >= cur->h);
 			r->parent = NULL;
 			r->op = op;
 			r->node = root;
@@ -276,9 +277,13 @@ private:
 					k->parent = n;
 					k->op = e.op;
 					k->g = g;
+					double h = std::max(k->node->h, n->node->h - e.cost);
 					assert (k->node->h >= 0);
-					k->f = g + k->node->h;
-					assert (k->f >= k->g);
+					assert (h >= 0);
+					assert (g >= 0);
+					assert (g + h + geom2d::Threshold >= n->f);
+					k->f = g + h;
+					assert (k->f + geom2d::Threshold >= cur->h);
 					open.pushupdate(k, k->openind);
 
 					if (k->node->isgoal && (!goal || k->g < goal->g))
@@ -508,6 +513,7 @@ private:
 		BinHeap<Lss, Lss*> lss;
 		for (auto s : graph.succs(d, cur)) {
 			s.node->h = std::max(s.node->h, cur->h - s.cost);
+			assert (s.node->h + s.cost + geom2d::Threshold >= cur->h);
 			lss.push(new Lss(*this, graph, cur, s.node, s.cost, s.op));
 		}
 
