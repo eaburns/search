@@ -90,11 +90,20 @@ private:
 			Oper op;
 		};
 
+		struct In {
+			In(Node *n, double c) : node(n), cost(c) {
+			}
+
+			Node *node;
+			double cost;
+		};
+
 		struct Node {
 			double h;
 			bool isgoal;
 			bool expd;	// Have we generated successors yet?
 			std::vector<Out> succs;
+			std::vector<In> preds;
 			PackedState state;
 
 		private:
@@ -150,6 +159,7 @@ private:
 
 				Edge e(d, s, ops[i]);
 				Node *k = node(d, e.state);
+				k->preds.emplace_back(n, e.cost);
 				n->succs.emplace_back(k, e.cost, ops[i]);
 			}
 
@@ -306,6 +316,32 @@ private:
 			}
 		};
 
+		// Learn backs up the h values on the fringe into the interior.
+		void learn() {
+			BinHeap<H, Node*> o;
+
+			o.append(open.data());
+
+			while (nclosed > 0 && !o.empty()) {
+				Node *n = *o.pop();
+
+				if (n->closed);
+					nclosed--;
+				n->closed = false;
+
+				for (auto e : n->node->preds) {
+					Node *p = nodes.find(e.node->state);
+					if (!p || !p->closed)
+						continue;
+					if (!p->updated || p->node->h > n->node->h + e.cost) {
+						p->node->h = n->node->h + e.cost;
+						p->updated = true;
+						o.pushupdate(p, p->learnind);
+					}
+				}
+			}
+		}
+
 		static void setind(Lss *l, long i) {
 		}
 
@@ -363,7 +399,8 @@ public:
 		graph(*this, 30000001),
 		wf(0),
 		wt(0),
-		grainsize(0) {
+		grainsize(0),
+		learnfull(false) {
 
 		const char *dataRoot = "";
 		const char *levelPath = "";
@@ -380,6 +417,8 @@ public:
 				wt = strtod(argv[++i], NULL);
 			else if (i < argc - 1 && strcmp(argv[i], "-lvl") == 0)
 				levelPath = argv[++i];
+			else if (strcmp(argv[i], "-learnfull") == 0)
+				learnfull = true;
 			else if (strcmp(argv[i], "-plot") == 0)
 				plot = true;
 			lsslim = LookaheadLimit::fromArgs(argc, argv);
@@ -544,7 +583,12 @@ private:
 
 		assert ((best->goal && best->goal->closed) || fg.first + geom2d::Threshold>= cur->h);
 
-		cur->h = fg.first * 1.10;	// best + 10%
+		if (learnfull) {
+			for (auto l : lss.data())
+				l->learn();
+		} else {
+			cur->h = fg.first * 1.10;	// best + 10%
+		}
 
 		Move step(best->op, best->root, best->g0);
 
@@ -884,5 +928,6 @@ if (f < h) fprintf(stderr, "f=%g (%u), h=%g (%u)\n", r.f, f, r.h, h);
 	Graph graph;
 	double wf, wt;
 	unsigned int grainsize;
+	bool learnfull;
 	std::vector<Step> steps;
 };
