@@ -578,17 +578,15 @@ private:
 
 		avgmeta += (num - avgmeta)/(steps.size()+1);
 
-		Lss *best = *lss.front();
-		auto fg = best->fg();
-
-		assert ((best->goal && best->goal->closed) || fg.first + geom2d::Threshold>= cur->h);
-
 		if (learnfull) {
 			for (auto l : lss.data())
 				l->learn();
-		} else {
-			cur->h = fg.first * 1.10;	// best + 10%
+			lss.reinit();
 		}
+
+		Lss *best = *lss.front();
+		double scale = learnfull ? 1 : 1.10;
+		cur->h = best->fg().first * scale;
 
 		Move step(best->op, best->root, best->g0);
 
