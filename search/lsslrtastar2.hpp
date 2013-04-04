@@ -586,6 +586,12 @@ public:
 			fatal("MaxTimeLimit not implemented for domain %s", dom.c_str());
 		}
 
+		auto cachepath = pathfor("/tmp", attrs);
+		if (fileexists(cachepath)) {
+			if (loadtable(cachepath))
+				return;
+		}
+
 		std::string instanceRoot(pathcat(dataRoot, dom));
 		std::vector<std::string> paths = withattrs(instanceRoot, attrs);
 		if (paths.size() == 0)
@@ -627,7 +633,42 @@ continue;
 			fatal("Failed to load any training data files for building the lss lookup table");
 
 		std::sort(lsstable.begin(), lsstable.end());
-	
+		storetable(cachepath);	
+	}
+
+	bool loadtable(std::string path) {
+		FILE *f = fopen(path.c_str(), "r");
+		if (!f)
+			fatalx(errno, "Failed to open %s for reading", path.c_str());
+
+		unsigned int size;
+		if (fscanf(f, "%u\n", &size) != 1) {
+			fprintf(stderr, "Failed to read cached lookahead table size");
+			return false;
+		}
+
+		for (unsigned int i = 0; i < size; i++) {
+			unsigned int s;
+			double t;
+			if (fscanf(f, "%u %lf\n", &s, &t) != 2) {
+				fprintf(stderr, "Failed to read cached entry");
+				return false;
+			}
+			lsstable.emplace_back(s, t);
+		}
+
+		fclose(f);
+		return true;
+	}
+
+	void storetable(std::string path) {
+		FILE *f = fopen(path.c_str(), "w");
+		if (!f)
+			fatalx(errno, "Failed to open %s for writing", path.c_str());
+		fprintf(f, "%u\n", (unsigned int) lsstable.size());
+		for (auto e : lsstable)
+			fprintf(f, "%u %f\n", e.size, e.maxTime);
+		fclose(f);
 	}
 
 	virtual void start(double g) {
