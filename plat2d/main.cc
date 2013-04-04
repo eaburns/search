@@ -3,6 +3,7 @@
 #include "../utils/utils.hpp"
 #include "../search/rrt.hpp"
 #include "../search/fhatident.hpp"
+#include "../search/fhatident2.hpp"
 #include <cstdio>
 #include <cerrno>
 
@@ -48,5 +49,7 @@ static SearchAlgorithm<Plat2d> *get(int argc, const char *argv[]) {
 		return new RRT<Plat2d>(argc, argv);
 	else if (strcmp(argv[1], "fhatident") == 0)
 		return new Fhatident<Plat2d>(argc, argv);
+	else if (strcmp(argv[1], "fhatident2") == 0)
+		return new Fhatident2<Plat2d>(argc, argv);
 	return getsearch<Plat2d>(argc, argv);
 }
