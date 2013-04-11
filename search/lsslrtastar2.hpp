@@ -559,7 +559,7 @@ public:
 			attrs.push_back("onestep", "no");
 			attrs.push_back("type", "cpp-seedinst");
 			auto o = lvlAttrs.lookup("obstacles");
-			if (o == "eaburns-cups") {
+			if (o == "eaburns-cups" || o == "hog2") {
 				attrs.push_back("costs", "Unit");
 				attrs.push_back("moves", "Four-way");
 				attrs.push_back("prob", "0.35");
