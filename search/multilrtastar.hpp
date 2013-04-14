@@ -479,10 +479,10 @@ public:
 		dfpair(out, "one step", "%s", onestep ? "yes" : "no");
 		dfpair(out, "num steps", "%lu", (unsigned long) steps.size());
 		if (steps.size() != 0) {
-			double mint = std::numeric_limits<double>::infinity();
-			double maxt = -std::numeric_limits<double>::infinity();
-			double cpumint = std::numeric_limits<double>::infinity();
-			double cpumaxt = -std::numeric_limits<double>::infinity();
+			double mint = steps.front().time;
+			double maxt = steps.front().time;
+			double cpumint = steps.front().cputime;
+			double cpumaxt = steps.front().cputime;
 
 			unsigned int minl = steps.front().length;
 			unsigned int maxl = steps.front().length;
@@ -494,14 +494,12 @@ public:
 				maxt = std::max(maxt, dt);
 
 				dt = steps[i].cputime - steps[i-1].cputime;
-				cpumint = std::min(mint, dt);
-				cpumaxt = std::max(maxt, dt);
+				cpumint = std::min(cpumint, dt);
+				cpumaxt = std::max(cpumaxt, dt);
 
 				unsigned int l = steps[i].length;
-				if (l < minl)
-					minl = l;
-				if (l > maxl)
-					maxl = l;
+				minl = std::min(minl, l);
+				maxl = std::max(maxl, l);
 				nmoves += l;
 			}
 			dfpair(out, "first emit wall time", "%f", steps.front().time);
@@ -528,7 +526,7 @@ public:
 private:
 
 	struct Step {
-		Step(double t, double cpu, unsigned int l) : time(t), length(l) {
+		Step(double t, double cpu, unsigned int l) : time(t), cputime(cpu), length(l) {
 		}
 
 		double time;

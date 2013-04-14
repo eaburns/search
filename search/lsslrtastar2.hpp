@@ -259,10 +259,10 @@ public:
 		dfpair(out, "num steps", "%lu", (unsigned long) times.size());
 		assert (lengths.size() == times.size());
 		if (times.size() != 0) {
-			double min = std::numeric_limits<double>::infinity();
-			double max = -std::numeric_limits<double>::infinity();
-			double cpumin = std::numeric_limits<double>::infinity();
-			double cpumax = -std::numeric_limits<double>::infinity();
+			double min = times.front();
+			double max = times.front();
+			double cpumin = cputimes.front();
+			double cpumax = cputimes.front();
 			for (unsigned int i = 1; i < times.size(); i++) {
 				double dt = times[i] - times[i-1];
 				min = std::min(min, dt);
