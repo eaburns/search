@@ -387,7 +387,11 @@ public:
 			auto p = step(d, cur);
 			cur = p.second;
 			this->res.ops.insert(this->res.ops.end(), p.first.rbegin(), p.first.rend());
-			steps.emplace_back(walltime() - this->res.wallstart, (unsigned int) p.first.size());
+			steps.emplace_back(
+				walltime() - this->res.wallstart,
+				cputime() - this->res.cpustart,
+				(unsigned int) p.first.size()
+			);
 		}
 		this->finish();
 
@@ -475,8 +479,10 @@ public:
 		dfpair(out, "one step", "%s", onestep ? "yes" : "no");
 		dfpair(out, "num steps", "%lu", (unsigned long) steps.size());
 		if (steps.size() != 0) {
-			double mint = steps.front().time;
-			double maxt = steps.front().time;
+			double mint = std::numeric_limits<double>::infinity();
+			double maxt = -std::numeric_limits<double>::infinity();
+			double cpumint = std::numeric_limits<double>::infinity();
+			double cpumaxt = -std::numeric_limits<double>::infinity();
 
 			unsigned int minl = steps.front().length;
 			unsigned int maxl = steps.front().length;
@@ -484,10 +490,12 @@ public:
 
 			for (unsigned int i = 1; i < steps.size(); i++) {
 				double dt = steps[i].time - steps[i-1].time;
-				if (dt < mint)
-					mint = dt;
-				if (dt > maxt)
-					maxt = dt;
+				mint = std::min(mint, dt);
+				maxt = std::max(maxt, dt);
+
+				dt = steps[i].cputime - steps[i-1].cputime;
+				cpumint = std::min(mint, dt);
+				cpumaxt = std::max(maxt, dt);
 
 				unsigned int l = steps[i].length;
 				if (l < minl)
@@ -500,6 +508,10 @@ public:
 			dfpair(out, "min step wall time", "%f", mint);
 			dfpair(out, "max step wall time", "%f", maxt);
 			dfpair(out, "mean step wall time", "%f", (steps.back().time-steps.front().time)/steps.size());
+			dfpair(out, "first emit cpu time", "%f", steps.front().cputime);
+			dfpair(out, "min step cpu time", "%f", cpumint);
+			dfpair(out, "max step cpu time", "%f", cpumaxt);
+			dfpair(out, "mean step cpu time", "%f", (steps.back().cputime-steps.front().cputime)/steps.size());
 			dfpair(out, "min step length", "%u", minl);
 			dfpair(out, "max step length", "%u", maxl);
 			dfpair(out, "mean step length", "%g", nmoves / (double) steps.size());
@@ -516,10 +528,11 @@ public:
 private:
 
 	struct Step {
-		Step(double t, unsigned int l) : time(t), length(l) {
+		Step(double t, double cpu, unsigned int l) : time(t), length(l) {
 		}
 
 		double time;
+		double cputime;
 		unsigned int length;
 	};
 
