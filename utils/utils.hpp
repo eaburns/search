@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ctime>
 #include <cstdio>
 #include <string>
 #include <vector>

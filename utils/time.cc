@@ -14,5 +14,8 @@ double walltime() {
 }
 
 double cputime() {
-	return clock() / (double) CLOCKS_PER_SEC;
+	struct timespec ts;
+	if (clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &ts) < 0)
+		fatalx(errno, "clock_gettime failed");
+	return ts.tv_sec + (double) ts.tv_nsec/(double) 1e9;
 }

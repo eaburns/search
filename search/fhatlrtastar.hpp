@@ -211,6 +211,7 @@ public:
 			cur = m.first;
 			lsslim->start(m.second);
 			times.push_back(walltime() - this->res.wallstart);
+			cputimes.push_back(cputime() - this->res.cpustart);
 		}
 
 		this->finish();
@@ -241,17 +242,25 @@ public:
 		if (times.size() != 0) {
 			double min = times.front();
 			double max = times.front();
+			double cpumin = cputimes.front();
+			double cpumax = cputimes.front();
 			for (unsigned int i = 1; i < times.size(); i++) {
 				double dt = times[i] - times[i-1];
-				if (dt < min)
-					min = dt;
-				if (dt > max)
-					max = dt;
+				min = std::min(min, dt);
+				max = std::max(max, dt);
+
+				dt = cputimes[i] - cputimes[i-1];
+				cpumin = std::min(cpumin, dt);
+				cpumax = std::max(cpumax, dt);
 			}
 			dfpair(out, "first emit wall time", "%f", times.front());
 			dfpair(out, "min step wall time", "%f", min);
 			dfpair(out, "max step wall time", "%f", max);
 			dfpair(out, "mean step wall time", "%f", (times.back()-times.front())/times.size());
+			dfpair(out, "first emit cpu time", "%f", cputimes.front());
+			dfpair(out, "min step cpu time", "%f", cpumin);
+			dfpair(out, "max step cpu time", "%f", cpumax);
+			dfpair(out, "mean step cpu time", "%f", (cputimes.back()-cputimes.front())/cputimes.size());
 		}
 		if (lengths.size() != 0) {
 			unsigned int min = lengths.front();
@@ -477,5 +486,6 @@ private:
 	bool onestep;
 
 	std::vector<double> times;
+	std::vector<double> cputimes;
 	std::vector<unsigned int> lengths;
 };
