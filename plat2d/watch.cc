@@ -169,12 +169,12 @@ WatchUi::WatchUi(unsigned int w, unsigned int h, bool save,
 	door.tmax = (double)(Tile::Height*4)/door.texh;
 
 	knight = Scene::Img("plat2d/img/knight.png");
-	leftas[Stand] = Anim(knight, 3, Tile::Width, Tile::Height, 1, 1);
-	leftas[Walk] = Anim(knight, 1, Tile::Width, Tile::Height, 8, 2);
-	leftas[Jump] = Anim(knight, 5, Tile::Width, Tile::Height, 1, 1);
-	rightas[Stand] = Anim(knight, 2, Tile::Width, Tile::Height, 1, 1);
-	rightas[Walk] = Anim(knight, 0, Tile::Width, Tile::Height, 8, 2);
-	rightas[Jump] = Anim(knight, 4, Tile::Width, Tile::Height, 1, 1);
+	leftas[Stand] = Anim(knight, 0, Tile::Width, Tile::Height, 1, 1);
+	leftas[Walk] = Anim(knight, 1, Tile::Width, Tile::Height, 4, 10);
+	leftas[Jump] = Anim(knight, 2, Tile::Width, Tile::Height, 1, 1);
+	rightas[Stand] = Anim(knight, 3, Tile::Width, Tile::Height, 1, 1);
+	rightas[Walk] = Anim(knight, 4, Tile::Width, Tile::Height, 4, 10);
+	rightas[Jump] = Anim(knight, 5, Tile::Width, Tile::Height, 1, 1);
 	act = Stand;
 	anim = rightas;
 }
