@@ -55,6 +55,7 @@ private:
 };
 
 static unsigned long frametime = 20;	// in milliseconds
+static long framelim = -1;
 static unsigned long delay = 0;	// in milliseconds
 static bool echo;
 static bool save;
@@ -98,6 +99,8 @@ static void parseargs(int argc, const char *argv[]) {
 			echo = true;
 		} else if (strcmp(argv[i], "-s") == 0) {
 			save = true;
+		} else if (strcmp(argv[i], "-l") == 0) {
+			framelim = strtol(argv[++i], NULL, 10);
 		} else {
 			printf("Unknown option %s", argv[i]);
 			helpmsg(1);
@@ -113,6 +116,7 @@ static void helpmsg(int status) {
 	puts("	-f	frame rate in milliseconds (default 20)");
 	puts("	-e	echo the input to standard output");
 	puts("	-s	saves an mpeg");
+	puts("	-l	limit to the given number of frames");
 	exit(status);
 }
 
@@ -189,6 +193,9 @@ bool WatchUi::frame() {
 			return false;
 		return true;
 	}
+	if (framelim == 0)
+		return false;
+	framelim--;
 	if (delay > 0) {
 		delay -= frametime;
 		return true;
