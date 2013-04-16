@@ -6,7 +6,22 @@
 #include <cstring>
 #include <cerrno>
 #include <vector>
+#include <limits>
 #include <SDL/SDL_opengl.h>
+
+static unsigned long frametime = 20;	// in milliseconds
+static long startdelay;	// in milliseconds
+static long enddelay;	// in milliseconds
+static long mintime;	// in milliseconds
+static long maxtime = std::numeric_limits<long>::max();	// in milliseconds
+static bool echo;
+static bool save;
+static std::string level;
+static std::vector<unsigned int> controls;
+
+static void parseargs(int, const char*[]);
+static void helpmsg(int);
+static void dfline(std::vector<std::string>&, void*);
 
 struct Lvl;
 
@@ -54,18 +69,6 @@ private:
 	Anim *anim;
 };
 
-static unsigned long frametime = 20;	// in milliseconds
-static long framelim = -1;
-static unsigned long delay = 0;	// in milliseconds
-static bool echo;
-static bool save;
-static std::string level;
-static std::vector<unsigned int> controls;
-
-static void parseargs(int, const char*[]);
-static void helpmsg(int);
-static void dfline(std::vector<std::string>&, void*);
-
 int main(int argc, const char *argv[]) {
 	parseargs(argc, argv);
 	dfread(stdin, dfline, NULL, echo ? stdout : NULL);
@@ -90,17 +93,16 @@ static void parseargs(int argc, const char *argv[]) {
 			helpmsg(0);
 		} else if (strcmp(argv[i], "-f") == 0) {
 			frametime = strtol(argv[++i], NULL, 10);
-			i++;
 		} else if (strcmp(argv[i], "-d") == 0) {
-			delay = strtol(argv[++i], NULL, 10);
-			delay *= 1000;
-			i++;
+			startdelay = strtol(argv[++i], NULL, 10);
+		} else if (strcmp(argv[i], "-min") == 0) {
+			mintime = strtol(argv[++i], NULL, 10);
+		} else if (strcmp(argv[i], "-max") == 0) {
+			maxtime = strtol(argv[++i], NULL, 10);
 		} else if (strcmp(argv[i], "-e") == 0) {
 			echo = true;
 		} else if (strcmp(argv[i], "-s") == 0) {
 			save = true;
-		} else if (strcmp(argv[i], "-l") == 0) {
-			framelim = strtol(argv[++i], NULL, 10);
 		} else {
 			printf("Unknown option %s", argv[i]);
 			helpmsg(1);
@@ -112,11 +114,12 @@ static void helpmsg(int status) {
 	puts("Usage: watch [options]");
 	puts("Options:");
 	puts("	-h	print this help message");
-	puts("	-d	delay in seconds before playing");
+	puts("	-d	delay in milliseconds before playing");
+	puts("	-min	minimum play time in milliseconds");
+	puts("	-max	maximum play time in milliseconds");
 	puts("	-f	frame rate in milliseconds (default 20)");
 	puts("	-e	echo the input to standard output");
 	puts("	-s	saves an mpeg");
-	puts("	-l	limit to the given number of frames");
 	exit(status);
 }
 
@@ -184,23 +187,23 @@ WatchUi::WatchUi(unsigned int w, unsigned int h, bool save,
 }
 
 bool WatchUi::frame() {
+	mintime -= frametime;
+	maxtime -= frametime;
+	if (maxtime <= 0)
+		return false;
 	if (iter == controls.end()) {
-		if (delay == 0)
-			delay = 1000;
+		if (enddelay == 0)
+			enddelay = 1000;
 		else
-			delay -= frametime;
-		if (delay <= 0)
+			enddelay -= frametime;
+		if (enddelay <= 0 && mintime <= 0)
 			return false;
 		return true;
 	}
-	if (framelim == 0)
-		return false;
-	framelim--;
-	if (delay > 0) {
-		delay -= frametime;
-		return true;
-	}
-	move();
+	if (startdelay > 0)
+		startdelay -= frametime;
+	else
+		move();
 	draw();
 	return true;
 }
