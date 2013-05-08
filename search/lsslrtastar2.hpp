@@ -181,7 +181,8 @@ public:
 		lssNodes(4051),
 		nodes(30000001),
 		complete(false),
-		onestep(false) {
+		onestep(false),
+		weight(1.0) {
 
 		// ENOENT means that the cpu times reported are bogus.
 		clockid_t id;
@@ -193,6 +194,8 @@ public:
 				onestep = true;
 			else if (strcmp(argv[i], "-complete") == 0)
 				complete = true;
+			else if (i < argc - 1 && strcmp(argv[i], "-wt") == 0)
+				weight = strtod(argv[++i], NULL);
 		}
 
 		if (complete)
@@ -256,6 +259,7 @@ public:
 		SearchAlgorithm<D>::output(out);
 		nodes.output(stdout);
 		lssNodes.prstats(stdout, "lss nodes ");
+		dfpair(out, "wt", "%g", weight);
 		dfpair(out, "num steps", "%lu", (unsigned long) times.size());
 		assert (lengths.size() == times.size());
 		if (times.size() != 0) {
@@ -281,20 +285,6 @@ public:
 			dfpair(out, "max step cpu time", "%f", cpumax);
 			dfpair(out, "mean step cpu time", "%f", (cputimes.back()-cputimes.front())/cputimes.size());
 		}
-
-/*
-		FILE *hist = fopen("hist.spt", "w");
-		if (!hist)
-			fatalx(errno, "Failed to open hist.spt for writing");
-		fprintf(hist, "(let* ((vs (");
-		for (unsigned int i = 1; i < cputimes.size(); i++)
-			fprintf(hist, "%f ", log10(cputimes[i] - cputimes[i-1]));
-		fprintf(hist, "))\n");
-		fprintf(hist, "\t(hist (histogram-dataset :values vs))\n");
-		fprintf(hist, "\t(plot (num-by-num-plot :x-label \"log10 cpu time\" :width (in 6) :dataset hist))\n");
-		fprintf(hist, ")(display (output \"hist.ps\" plot)))\n");
-		fclose(hist);
-*/
 
 		if (lengths.size() != 0) {
 			unsigned int min = lengths.front();
@@ -398,8 +388,9 @@ private:
 				if (!sp || !sp->closed)
 					continue;
 
-				if (!sp->updated || sprime->h > e.incost + s->node->h) {
-					sprime->h = e.incost + s->node->h;
+				double backup = weight*e.incost + s->node->h;
+				if (!sp->updated || sprime->h > backup) {
+					sprime->h = backup;
 					if (!sp->updated)
 						updated.push_back(sprime);
 					sp->updated = true;
@@ -514,6 +505,10 @@ private:
 
 	bool complete;	// move only to best node in completed f layer
 	bool onestep;
+
+	// Weight is applied to the edges when learning.  This implements the
+	// "Weighted Update" technique of Rivera, Baier, and Hernández (2013).
+	double weight;
 
 	std::vector<double> times;
 	std::vector<double> cputimes;
