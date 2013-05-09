@@ -4,6 +4,7 @@
 #include <climits>
 #include <cstdio>
 #include <string>
+#include <iostream>
 
 void fatal(const char*, ...);
 
@@ -114,37 +115,26 @@ struct GridMap {
 			fprintf(out, "%d %d %d %d\n", x, y, dx, dy); 
 		}
 
-		std::pair<int,int> positionAt(unsigned int w, unsigned int h,
-								unsigned int t) const {
-			std::pair<unsigned int,unsigned int> newPoint(x,y);
-			int x_p = abs(x + dx * t);
-			int y_p = abs(y + dy * t);
+		std::pair<int, int> positionAt( int w,  int h, int t) const {
+			std::pair< int, int> newPoint(x,y);
+			 int x_p = abs(x + dx * t);
+			 int y_p = abs(y + dy * t);
 
-			int x_reflections = x_p / (w-1);
-			int y_reflections = y_p / (h-1);
+			 int x_reflections = x_p / (w-1);
+			 int y_reflections = y_p/ (h-1);
 
-			int x_offset = x_p % (w-1);
-			int y_offset = y_p % (h-1);
+			 int x_offset = x_p % (w-1);
+			 int y_offset = y_p % (h-1);
 
-			if(dx >= 0) {
-				if(x_reflections % 2 == 0) newPoint.first = x_offset;
-				else newPoint.first = w - x_offset - 1;
-			}
-			else {
-				if(x_reflections % 2 == 0) newPoint.first = w - x_offset - 1;
-				else newPoint.first = x_offset;
-			}
-			if(dy >= 0) {
-				if(y_reflections % 2 == 0) newPoint.second = y_offset;
-				else newPoint.second = h - y_offset - 1;
-			}
-			else {
-				if(y_reflections % 2 == 0) newPoint.second = h - y_offset - 1;
-				else newPoint.second = y_offset;
-			}
+			if(x_reflections % 2 == 0) newPoint.first = x_offset;
+			else newPoint.first = w - x_offset - 1;
+
+			if(y_reflections % 2 == 0) newPoint.second = y_offset;
+			else newPoint.second = h - y_offset - 1;
+
 			return newPoint;
 		}
-		int x, y, dx, dy;
+		 int x, y, dx, dy;
 	};
 
 

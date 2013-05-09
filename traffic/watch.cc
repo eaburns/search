@@ -173,7 +173,7 @@ void WatchUi::move() {
 
 	for(unsigned int i = 0; i < gridmap->obstacles.size(); i++) {
 		GridMap::Obstacle &o = gridmap->obstacles[i];
-		std::pair<unsigned int,unsigned int> o2 = o.positionAt(gridmap->w, gridmap->h, currentobstacletime);
+		std::pair< int, int> o2 = o.positionAt(gridmap->w, gridmap->h, currentobstacletime);
 
 //		assert(loc.x != o2.first || loc.y != o2.second);
 		if(loc.x == o2.first && loc.y == o2.second)
