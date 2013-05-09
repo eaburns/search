@@ -16,8 +16,7 @@ void GridMap::load(FILE *in) {
 	sz = w * h;
 
 	int x, y, dx, dy;
-	int c = 0;
-	while((c = fscanf(in, "%d %d %d %d\n", &x, &y, &dx, &dy)) == 4) {
+	while(fscanf(in, "%d %d %d %d\n", &x, &y, &dx, &dy) == 4) {
 		obstacles.emplace_back(x,y,dx,dy);
 	}
 	setfourway();
