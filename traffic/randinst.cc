@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include "traffic.hpp"
+#include "../search/greedy.hpp"
 
 int main(int argc, const char *argv[]) {
 	
@@ -15,12 +17,28 @@ int main(int argc, const char *argv[]) {
 
 	srand(seed);
 
-	fprintf(stdout, "%d %d\n", width, height);
-	for(int i = 0; i < num_obs; i++) {
-		int x = (rand() % (width-1)) + 1;
-		int y = (rand() % (height-1)) + 1;
-		int dx = (rand() % 3) - 1;
-		int dy = (rand() % 3) - 1;
-		fprintf(stdout, "%d %d %d %d\n", x, y, dx, dy);
+	while(true) {
+		GridMap map(width, height);
+
+		for(int i = 0; i < num_obs; i++) {
+			map.obstacles.emplace_back( (rand() % (width-1)) + 1, //x
+									(rand() % (height-1)) + 1, //y
+									(rand() % 3) - 1,		//dx
+									(rand() % 3) - 1);		//dy
+		}
+
+		Traffic traffic(&map, 0, 0, width-1, height-1);
+		Greedy<Traffic, true> greedy(0, NULL);
+		Traffic::State start = traffic.initialstate();
+		greedy.search(traffic, start);
+		bool solvable = (greedy.res.ops.size() > 0);
+		if(solvable) {
+			traffic.output(stdout);
+			break;
+		}
+		else {
+			fprintf(stderr, "NOT SOLVABLE\n");
+		}
 	}
+	
 }

@@ -37,8 +37,12 @@ include traffic/watch.d
 CLEAN+=traffic/watch traffic/watch.o
 
 traffic/randinst:\
-	traffic/randinst.cc
+	$(TRAFFICOBJS)\
+	traffic/randinst.cc\
+	utils/utils.a\
+	search/search.a
 	@echo $@
 	@$(CXX) $^ $(LDFLAGS) -o $@
 
-CLEAN+=traffic/randinst
+include traffic/watch.d
+CLEAN+=traffic/randinst traffic/randinst.o

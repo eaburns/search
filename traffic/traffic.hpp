@@ -1,6 +1,7 @@
 #pragma once
 
 #include "gridmap.hpp"
+#include "../utils/utils.hpp"
 #include <cstdio>
 #include <cmath>
 #include <cstdlib>
@@ -92,6 +93,27 @@ struct Traffic {
 
 	Traffic(GridMap*, unsigned int, unsigned int,
 		unsigned int, unsigned int);
+
+	Traffic(FILE *in) {
+		int sx, sy, gx, gy;
+
+		if(fscanf(in, "%u %u %u %u\n", &sx, &sy, &gx, &gy) != 4)
+			fatal("improper file format");
+		
+		map = new GridMap(in);
+
+		start = map->index(sx,sy);
+		finish = map->index(gx,gy);
+
+	}
+
+	void output(FILE* out) const {
+		std::pair<int,int> startLoc = map->coord(start);
+		std::pair<int,int> goalLoc = map->coord(finish);
+
+		fprintf(out, "%d %d %d %d\n", startLoc.first, startLoc.second, goalLoc.first, goalLoc.second);
+		map->output(out);
+	}
 
 	struct State {
 		State &operator=(const State &o) {

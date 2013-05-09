@@ -60,20 +60,25 @@ int main(int argc, const char *argv[]) {
 	FILE *f = fopen(level.c_str(), "r");
 	if (!f)
 		fatalx(errno, "Failed to open %s", level.c_str());
-        GridMap gridmap(f);
-	fclose(f);
 
-	fprintf(stderr, "%d %d\n", gridmap.w, gridmap.h);
+	Traffic traffic(f);
+	fclose(f);
 
 	unsigned int width = 800;
 	unsigned int height = 600;
 
-	scale.x = (double)width / (double)gridmap.w;
-	scale.y = (double)height / (double)gridmap.h;
+	scale.x = (double)width / (double)traffic.map->w;
+	scale.y = (double)height / (double)traffic.map->h;
 
-	WatchUi ui(width, height, save, &gridmap, controls);
-	ui.loc = start;
-	ui.goal = goal;
+	WatchUi ui(width, height, save, traffic.map, controls);
+
+	std::pair<int,int> s = traffic.map->coord(traffic.start);
+	std::pair<int,int> g = traffic.map->coord(traffic.finish);
+
+	ui.loc.x = s.first;
+	ui.loc.y = s.second;
+	ui.goal.x = g.first;
+	ui.goal.y = g.second;
 	ui.run(frametime);
 }
 
@@ -115,14 +120,6 @@ static void dfline(std::vector<std::string> &toks, void*) {
 		level = toks[2];
 	else if (toks[1] == "controls")
 		controls = controlvec(toks[2]);
-	else if (toks[1] == "start x")
-		start.x = strtol(toks[2].c_str(), NULL, 10);
-	else if (toks[1] == "start y")
-		start.y = strtol(toks[2].c_str(), NULL, 10);
-	else if (toks[1] == "goal x")
-		goal.x = strtol(toks[2].c_str(), NULL, 10);
-	else if (toks[1] == "goal y")
-		goal.y = strtol(toks[2].c_str(), NULL, 10);
 }
 
 WatchUi::WatchUi(unsigned int w, unsigned int h, bool save,

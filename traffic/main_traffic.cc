@@ -9,36 +9,26 @@ static SearchAlgorithm<Traffic> *get(int, const char*[]);
 int main(int argc, const char *argv[]) {
 	dfheader(stdout);
 
-	FILE *lvl = stdin;
-	const char *lvlpath = "";
+	FILE *inst = stdin;
+	const char *instpath = "";
 	for (int i = 0; i < argc; i++) {
 		if (i < argc - 1 && strcmp(argv[i], "-lvl") == 0)
-			lvlpath = argv[++i];
+			instpath = argv[++i];
 	}
 
-	if (lvlpath[0] != '\0') {
-		lvl = fopen(lvlpath, "r");
-		if (!lvl)
-			fatalx(errno, "Failed to open %s for reading", lvlpath);
+	if (instpath[0] != '\0') {
+		inst = fopen(instpath, "r");
+		if (!inst)
+			fatalx(errno, "Failed to open %s for reading", instpath);
 	}
 
-	GridMap map(lvl);
+	Traffic d(inst);
 
-	unsigned int x0, y0, xg, yg;
-	if (fscanf(stdin, "%u %u %u %u\n", &x0, &y0, &xg, &yg) != 4)
-		fatal("Failed to read start and end locations");
-
-	if (lvlpath[0] != '\0') {
-		dfpair(stdout, "level", "%s", lvlpath);
-		fclose(lvl);
+	if (instpath[0] != '\0') {
+		dfpair(stdout, "level", "%s", instpath);
+		fclose(inst);
  	}
 
-	dfpair(stdout, "start x", "%u", x0);
-	dfpair(stdout, "start y", "%u", y0);
-	dfpair(stdout, "goal x", "%u", xg);
-	dfpair(stdout, "goal y", "%u", yg);
-
-	Traffic d(&map, x0, y0, xg, yg);
 	searchGet<Traffic>(get, d, argc, argv);
 
 	dffooter(stdout);
