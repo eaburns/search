@@ -1,4 +1,4 @@
-#pragma once
+	#pragma once
 
 #include <vector>
 #include <climits>
@@ -9,11 +9,17 @@ void fatal(const char*, ...);
 
 struct GridMap {
 
-	GridMap(std::string &file);
+	GridMap(unsigned int w, unsigned int h) : w(w), h(h), sz(w*h) { setfourway(); }
 
 	GridMap(FILE *f) : nmvs(0) { load(f); }
 
 	~GridMap();
+
+	void output(FILE* out) const {
+		fprintf(out, "%d %d\n", w, h);
+		for(auto obs : obstacles)
+			obs.output(out);
+	}
 
 	// coord returns x,y coordinate for the given array index.
 	std::pair<int,int> coord(int loc) const {
@@ -102,20 +108,23 @@ struct GridMap {
 	void setfourway();
 
 	struct Obstacle {
-		Obstacle(unsigned int x, unsigned int y,
-			 unsigned int dx, unsigned int dy) : x(x), y(y), dx(dx), dy(dy) {}
+		Obstacle(int x, int y, int dx, int dy) : x(x), y(y), dx(dx), dy(dy) {}
 
-		std::pair<unsigned int,unsigned int> positionAt(unsigned int w, unsigned int h,
+		void output(FILE* out) const {
+			fprintf(out, "%d %d %d %d\n", x, y, dx, dy); 
+		}
+
+		std::pair<int,int> positionAt(unsigned int w, unsigned int h,
 								unsigned int t) const {
 			std::pair<unsigned int,unsigned int> newPoint(x,y);
-			unsigned int x_p = abs(x + dx * t);
-			unsigned int y_p = abs(y + dy * t);
+			int x_p = abs(x + dx * t);
+			int y_p = abs(y + dy * t);
 
-			unsigned int x_reflections = x_p / (w-1);
-			unsigned int y_reflections = y_p / (h-1);
+			int x_reflections = x_p / (w-1);
+			int y_reflections = y_p / (h-1);
 
-			unsigned int x_offset = x_p % (w-1);
-			unsigned int y_offset = y_p % (h-1);
+			int x_offset = x_p % (w-1);
+			int y_offset = y_p % (h-1);
 
 			if(dx >= 0) {
 				if(x_reflections % 2 == 0) newPoint.first = x_offset;
@@ -135,7 +144,7 @@ struct GridMap {
 			}
 			return newPoint;
 		}
-		unsigned int x, y, dx, dy;
+		int x, y, dx, dy;
 	};
 
 

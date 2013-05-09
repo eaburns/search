@@ -9,33 +9,22 @@
 #include <cmath>
 #include <string>
 
-GridMap::GridMap(std::string &fname) :
-	file(fname),
-	nmvs(0) {
-
-	FILE *f = fopen(file.c_str(), "r");
-	if (!f)
-		fatalx(errno, "Unable to open %s for reading\n", file.c_str());
-
-	load(f);
-
-	fclose(f);
-}
-
-GridMap::~GridMap() {}
-
 void GridMap::load(FILE *in) {
 	if (fscanf(in, "%u %u\n", &w, &h) != 2)
 		fatal("Failed to read map header");
 
 	sz = w * h;
 
-	unsigned int x, y, dx, dy;
-	while(fscanf(in, "%u %u %u %u\n", &x, &y, &dx, &dy) == 4) {
+	int x, y, dx, dy;
+	int c = 0;
+	while((c = fscanf(in, "%d %d %d %d\n", &x, &y, &dx, &dy)) == 4) {
 		obstacles.emplace_back(x,y,dx,dy);
 	}
 	setfourway();
 }
+
+GridMap::~GridMap() {}
+
 
 GridMap::Move::Move(const GridMap &m, const char *nme, int deltax, int deltay, unsigned int num, ...) :
 			dx(deltax), dy(deltay), delta(dx + m.w * dy), cost(1.0), n(num + 1), name(nme) {
