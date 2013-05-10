@@ -29,6 +29,14 @@ int main(int argc, const char *argv[]) {
 
 		Traffic traffic(&map, 0, 0, width-1, height-1);
 		Greedy<Traffic, true> greedy(0, NULL);
+
+		const char *lim[4];
+		lim[0] = "-mem";
+		lim[1] = "6G";
+		lim[2] = "-walltime";
+		lim[3] = "300";
+		greedy.lim = Limit(sizeof(lim)/sizeof(lim[0]), lim);
+
 		Traffic::State start = traffic.initialstate();
 		greedy.search(traffic, start);
 		bool solvable = (greedy.res.ops.size() > 0);
