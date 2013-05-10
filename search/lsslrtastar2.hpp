@@ -580,6 +580,15 @@ public:
 			attrs.push_back("width", lvlAttrs.lookup("width"));
 			attrs.push_back("height", lvlAttrs.lookup("height"));
 
+		} else if (dom == "traffic") {
+			dom = "traffic";
+			attrs.push_back("alg", alg);
+			attrs.push_back("onestep", "no");
+			attrs.push_back("type", "training");
+			attrs.push_back("width", lvlAttrs.lookup("width"));
+			attrs.push_back("height", lvlAttrs.lookup("height"));
+			attrs.push_back("obstacles", lvlAttrs.lookup("obstacles"));
+
 		} else if (dom == "grid_instances") {
 			dom = "gridnav";
 			attrs.push_back("alg", alg);
