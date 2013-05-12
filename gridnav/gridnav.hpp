@@ -7,6 +7,11 @@
 #include <cstring>
 #include <cassert>
 
+// controlvec converts a string of controls back into a vector.
+std::vector<unsigned int> controlvec(const std::string&);
+
+std::string controlstr(const std::vector<unsigned int>&);
+
 struct GridNav {
 
 	struct Cost {
@@ -104,6 +109,7 @@ struct GridNav {
 
 	private:
 		friend struct GridNav;
+		friend struct UnknownGridNav;
 		unsigned int loc;
 		Cost h;
 		int d;
@@ -208,7 +214,7 @@ struct GridNav {
 
 			int mul = 1;
 			if (d.map->lifecost) {
-				// -2 because there is 1 layer of boarder
+				// -2 because there is 1 layer of border
 				// around each side of the grid, thus
 				// height - y - 1 becomes height - y - 2.
 				mul = (int) d.map->h - d.map->ycoord(s.loc)-2;
@@ -238,7 +244,7 @@ struct GridNav {
 	}
 
 	// pathcost returns the cost of the given path.
-	Cost pathcost(const std::vector<State>&, const std::vector<Oper>&) const;
+	virtual Cost pathcost(const std::vector<State>&, const std::vector<Oper>&) const;
 
 	unsigned int start, finish;
 	GridMap *map;

@@ -7,6 +7,7 @@ gridnav:\
 	gridnav/scenario2rdb\
 	gridnav/randinst\
 	gridnav/ppm2grid\
+	gridnav/watch\
 
 GRIDNAVOBJS=\
 	gridnav/gridmap.o\
@@ -115,3 +116,15 @@ gridnav/ppm2grid:\
 
 include gridnav/ppm2grid.d
 CLEAN+=gridnav/ppm2grid gridnav/ppm2grid.o
+
+gridnav/watch:\
+	$(GRIDNAVOBJS)\
+	gridnav/watch.cc\
+	graphics/graphics.a\
+	search/search.a\
+	utils/utils.a
+	@echo $@
+	@$(CXX) $^ $(LDFLAGS) $(GRAPHICSLD) -o $@
+
+include gridnav/watch.d
+CLEAN+=gridnav/watch gridnav/watch.o

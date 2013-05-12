@@ -1,4 +1,5 @@
 #include "gridnav.hpp"
+#include "../utils/utils.hpp"
 #include <cstdio>
 #include <limits>
 #include <cassert>
@@ -31,6 +32,7 @@ void GridNav::reverseops() {
 }
 
 GridNav::Cost GridNav::pathcost(const std::vector<State>&, const std::vector<Oper> &ops) const {
+	std::vector<unsigned int> controls;
 	GridNav::State state = initialstate();
 	GridNav::Cost cost(0);
 	for (int i = ops.size() - 1; i >= 0; i--) {
@@ -38,7 +40,27 @@ GridNav::Cost GridNav::pathcost(const std::vector<State>&, const std::vector<Ope
 		GridNav::Edge e(*this, copy, ops[i]);
 		state = e.state;
 		cost += e.cost;
+		controls.push_back(ops[i]);
 	}
+
+	dfpair(stdout, "controls", "%s", controlstr(controls).c_str());
+
 	assert (isgoal(state));
 	return cost;
 }
+
+std::string controlstr(const std::vector<unsigned int> &controls) {
+        std::string bytes;
+        for (unsigned int i = 0; i < controls.size(); i++)
+                bytes.push_back(controls[i] & 0xFF);
+        return base64enc(runlenenc(bytes));
+}
+
+std::vector<unsigned int> controlvec(const std::string &enc) {
+        std::string bytes = runlendec(base64dec(enc));
+	std::vector<unsigned int> v;
+	for (unsigned int i = 0; i < bytes.size(); i++)
+	        v.push_back(bytes[i]);
+        return v;
+}
+

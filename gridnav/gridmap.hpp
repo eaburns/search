@@ -22,7 +22,7 @@ struct GridMap {
 	static GridMap uniform(unsigned int w, unsigned int h,
 		double prob, uint64_t seed);
 
-	~GridMap();
+	virtual ~GridMap();
 
 	// coord returns x,y coordinate for the given array index.
 	std::pair<int,int> coord(int loc) const {
@@ -40,7 +40,7 @@ struct GridMap {
 	}
 
 	// blkd returns true if the given location is blocked.
-	bool blkd(int l) const {
+	virtual bool blkd(int l) const {
 		return !(flags[l] & Passable);
 	}
 
@@ -85,7 +85,7 @@ struct GridMap {
 
 	// ok returns true if the given move is valid from the
 	// given location.
-	bool ok(int loc, const Move &m) const {
+	virtual bool ok(int loc, const Move &m) const {
 		for (unsigned int i = 0; i < m.n; i++) {
 			int nxt = loc + m.chk[i].delta;
 			if (!flagsok(loc, nxt))
@@ -93,8 +93,6 @@ struct GridMap {
 		}
 		return true;
 	}
-
-	void revealCells(unsigned int loc) {}
 
 	// setoctile sets mvs to octile movement. Octile moves
 	// disallow diagonal movements unless the two adjacent
