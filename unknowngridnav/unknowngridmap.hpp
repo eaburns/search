@@ -17,8 +17,9 @@ struct UnknownGridMap : public GridMap {
 	}
 
         void revealCells(unsigned int loc) {
-		for(int dx = -1; dx <= 1; dx++)
-			for(int dy = -1; dy <= 1; dy++)
+		const int visibility = 1;
+		for(int dx = -visibility; dx <= visibility; dx++)
+			for(int dy = -visibility; dy <= visibility; dy++)
 				unknown[loc + dx + w * dy] = false;
         }
 

@@ -30,6 +30,7 @@ private:
 	std::vector<unsigned int>::iterator iter;
 	unsigned int currentframe;
 	bool reset;
+	std::vector<Scene::Poly> terrain;
 };
 
 static unsigned long frametime = 50;	// in milliseconds
@@ -134,6 +135,24 @@ WatchUi::WatchUi(unsigned int w, unsigned int h, bool save,
 	glScaled(1.0, -1.0, 1.0);
 
 	iter = controls.begin();
+
+	for(unsigned int i = 0; i < gridmap->sz; i++) {
+		if(!gridmap->blkd(i)) continue;
+
+		int x = i % gridmap->w;
+		int y = i / gridmap->w;
+
+		geom2d::Poly cell(4,
+			       (double)x, (double)y,
+			       x + 1., (double)y,
+			       x + 1., y + 1.,
+			       (double)x, y + 1.
+			);
+
+			cell.scale(scale.x, scale.y);
+
+			terrain.push_back(Scene::Poly(cell, Image::black, -1));
+	}
 }
 
 bool WatchUi::frame() {
@@ -166,6 +185,9 @@ void WatchUi::move() {
 void WatchUi::draw() {
 	scene.clear();
 
+	for(auto cell : terrain)
+		scene.add(new Scene::Poly(cell)); //watch out for destructor calls....
+
 	geom2d::Poly g(4,
 		       goal.x, goal.y,
 		       goal.x + 1., goal.y,
@@ -173,7 +195,7 @@ void WatchUi::draw() {
 		       goal.x, goal.y + 1.
 		);
 	g.scale(scale.x, scale.y);
-	scene.add(new Scene::Poly(g, Image::green, -1));
+	scene.add(new Scene::Poly(g, Color(0.8,0,0), -1));
 
 	geom2d::Poly l(4,
 		       loc.x, loc.y,
@@ -183,22 +205,4 @@ void WatchUi::draw() {
 		);
 	l.scale(scale.x, scale.y);
 	scene.add(new Scene::Poly(l, Image::red, -1));
-
-	bool blocked;
-	for(unsigned int i = 0; i < gridmap->sz; i++) {
-		blocked = gridmap->blkd(i);
-
-		int x = i % gridmap->w;
-		int y = i / gridmap->w;
-		geom2d::Poly cell(4,
-			       (double)x, (double)y,
-			       x + 1., (double)y,
-			       x + 1., y + 1.,
-			       (double)x, y + 1.
-			);
-		if(blocked) {
-			cell.scale(scale.x, scale.y);
-			scene.add(new Scene::Poly(cell, Image::black, -1));
-		}
-	}
 }

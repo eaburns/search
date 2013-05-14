@@ -1,7 +1,6 @@
 #include "unknowngridnav.hpp"
-#include "../search/main.hpp"
-#include "../search/fhatident.hpp"
-#include "../search/restartingsearch.hpp"
+#include "../search/unknownlsslrtastar2.hpp"
+#include "../search/unknownfhatlrtastar.hpp"
 #include <cstdio>
 #include <cerrno>
 
@@ -43,13 +42,23 @@ int main(int argc, const char *argv[]) {
 		fatal("The goal location is blocked");
 
 	UnknownGridNav d(&map, x0, y0, xg, yg);
-	SearchAlgorithm<UnknownGridNav> *search = getsearch<UnknownGridNav>(argc, argv);
-	RestartingSearch<UnknownGridNav> rsearch(search, argc, argv);
+
+	SearchAlgorithm<UnknownGridNav> *search = NULL;
+	for (int i = 0; i < argc; i++) {
+		if(strcmp(argv[i], "lsslrtastar2") == 0)
+			search = new UnknownLsslrtastar2<UnknownGridNav>(argc, argv);
+		else if(strcmp(argv[i], "fhatlrtastar") == 0)
+			search = new UnknownFhatlrtastar<UnknownGridNav>(argc, argv);
+	}
+
+	if(!search) {
+		fatal("unsupported or missing search algorithm");
+	}
 
 	GridNav::State s0 = d.initialstate();
-	rsearch.search(d, s0);
-	dfpair(stdout, "solution cost", "%g",  d.pathcost(rsearch.res.path, rsearch.res.ops));
-	rsearch.output(stdout);
+	search->search(d, s0);
+	dfpair(stdout, "solution cost", "%g",  d.pathcost(search->res.path, search->res.ops));
+	search->output(stdout);
 
 	dffooter(stdout);
 

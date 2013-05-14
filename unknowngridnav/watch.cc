@@ -156,11 +156,11 @@ bool WatchUi::frame() {
 }
 
 void WatchUi::move() {
-	gridmap->revealCells((int)loc.x + gridmap->w * (int)loc.y);
-
 	loc.x += gridmap->mvs[*iter].dx;
 	loc.y += gridmap->mvs[*iter].dy;
 	*iter++;
+
+	gridmap->revealCells((int)loc.x + gridmap->w * (int)loc.y);
 
 	currentframe++;
 }

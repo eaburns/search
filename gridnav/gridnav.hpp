@@ -15,7 +15,7 @@ std::string controlstr(const std::vector<unsigned int>&);
 struct GridNav {
 
 	struct Cost {
-		Cost() { }
+		Cost() : units(0), sqrts(0), val(0) { }
 
 		explicit Cost(int u, int s = 0) : units(u), sqrts(s) { compute(); }
 
@@ -106,6 +106,10 @@ struct GridNav {
 		State (const State &o) : loc(o.loc), h(o.h), d(o.d) { }
 
 		State(unsigned int l) : loc(l), d(-1) { }
+
+		unsigned int getLoc() const {
+			return loc;
+		}
 
 	private:
 		friend struct GridNav;

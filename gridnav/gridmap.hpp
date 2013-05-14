@@ -129,6 +129,8 @@ private:
 		Water = 1 << 4,
 	};
 
+	unsigned char *flags;
+
 	// flagsok returns true if the flags allow a move from l0 to l1.
         bool flagsok(int l0, int l1) const {
 		char f0 = flags[l0], f1 = flags[l1];
@@ -138,8 +140,6 @@ private:
 			return f1 & Water;
 		return f1 & (Passable | Swamp);
         }
-
-	unsigned char *flags;
 
 	// readfail prints a failure message when loading the grid is not
 	// successful.
