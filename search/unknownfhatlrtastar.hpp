@@ -201,6 +201,8 @@ public:
 
 		lsslim->start(0);
 
+		d.act(s0, -1);
+
 		while (!cur->goal && !this->limit()) {
 			LssNode *goal = expandLss(d, cur);
 			if (this->limit())
@@ -453,9 +455,6 @@ private:
 		assert (ops.size() >= 1);
 
 		if (onestep) {
-			State buf, &s = d.unpack(buf, cur->state);
-			assert(!d.map->blkd(s.getLoc()));
-
 			assert(!d.map->blkd(states.back().getLoc()));
 
 			this->res.ops.push_back(ops.back());
@@ -471,7 +470,6 @@ private:
 
 		int howMany = 0;
 		for(int i = (int)ops.size() -1; i >= 0; i--) {
-
 
 			if(d.map->blkd(states[i].getLoc())) {
 				break;
