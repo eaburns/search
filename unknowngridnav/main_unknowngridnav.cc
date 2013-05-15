@@ -57,7 +57,7 @@ int main(int argc, const char *argv[]) {
 
 	GridNav::State s0 = d.initialstate();
 	search->search(d, s0);
-	dfpair(stdout, "solution cost", "%g",  d.pathcost(search->res.path, search->res.ops));
+	dfpair(stdout, "solution cost", "%g",  d.pathcost(search->res.path, search->res.ops, (lvlpath[0] != '\0')));
 	search->output(stdout);
 
 	dffooter(stdout);

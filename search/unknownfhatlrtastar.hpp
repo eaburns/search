@@ -314,6 +314,15 @@ private:
 			//maybe wasn't visible before and now we should check if it's blocked
 			State buf, &state = d.unpack(buf, s->node->state);
 			if(d.map->blkd(state.getLoc())) {
+
+				s->g = std::numeric_limits<double>::infinity();
+				s->f = s->g;
+				s->fhat = s->g;
+				s->node->h = s->g;
+				s->node->horig = s->g;
+				s->node->d = s->g;
+				s->updated = true;
+
 				for(auto edge : s->node->preds) {
 					for(unsigned int i = 0; i < edge.node->succs.size(); i++) {
 						if(edge.node->succs[i].node == s->node) {
@@ -322,6 +331,18 @@ private:
 						}
 					}
 				}
+
+				for(auto edge : s->node->succs) {
+					for(unsigned int i = 0; i < edge.node->preds.size(); i++) {
+						if(edge.node->preds[i].node == s->node) {
+							edge.node->preds.erase(edge.node->preds.begin() + i);
+							break;
+						}
+					}
+				}
+
+				s->node->preds.clear();
+				s->node->succs.clear();
 				continue;
 			}
 
@@ -344,6 +365,41 @@ private:
 					kid->openind = -1;
 					lssNodes.add(kid);
 				}
+				else {
+					state = d.unpack(buf, kid->node->state);
+					if(d.map->blkd(state.getLoc())) {
+
+						kid->g = std::numeric_limits<double>::infinity();
+						kid->f = kid->g;
+						kid->fhat = kid->g;
+						kid->node->h = kid->g;
+						kid->node->horig = kid->g;
+						kid->node->d = kid->g;
+						kid->updated = true;
+
+						for(auto edge : kid->node->preds) {
+							for(unsigned int i = 0; i < edge.node->succs.size(); i++) {
+								if(edge.node->succs[i].node == kid->node) {
+									edge.node->succs.erase(edge.node->succs.begin() + i);
+									break;
+								}
+							}
+						}
+
+						for(auto edge : kid->node->succs) {
+							for(unsigned int i = 0; i < edge.node->preds.size(); i++) {
+								if(edge.node->preds[i].node == kid->node) {
+									edge.node->preds.erase(edge.node->preds.begin() + i);
+									break;
+								}
+							}
+						}
+
+						kid->node->preds.clear();
+						kid->node->succs.clear();
+						continue;
+					}
+				}
 				if (kid->g > s->g + e.outcost) {
 					if (kid->parent)	// !NULL if a dup
 						this->res.dups++;
@@ -351,12 +407,14 @@ private:
 					kid->g = s->g + e.outcost;
 					kid->f = kid->g + kid->node->h;
 
-					double d = kid->node->derr / (1 - derror);
-					double h = kid->node->h + herror*d;
+					double dval = kid->node->derr / (1 - derror);
+					double h = kid->node->h + herror*dval;
 					kid->fhat = kid->g + h;
 
 					kid->op = e.op;
-					lssOpen.pushupdate(kid, kid->openind);
+					state = d.unpack(buf, kid->node->state);
+					if(!d.map->blkd(state.getLoc()))
+						lssOpen.pushupdate(kid, kid->openind);
 				}
 				if (k->goal && (!goal || kid->g < goal->g))
 					goal = kid;
@@ -389,6 +447,11 @@ private:
 
 		herror = herrnext;
 		derror = derrnext;
+
+		for (auto n : lssOpen.data()) {
+			State buf, &state = d.unpack(buf, n->node->state);
+			assert(!d.map->blkd(state.getLoc()));
+		}
 
 		return goal;
 	}
@@ -455,6 +518,8 @@ private:
 		assert (ops.size() >= 1);
 
 		if (onestep) {
+			assert(!((UnknownGridMap*)d.map)->unknown[states.back().getLoc()]);
+
 			assert(!d.map->blkd(states.back().getLoc()));
 
 			this->res.ops.push_back(ops.back());
