@@ -330,33 +330,7 @@ private:
 					kid->openind = -1;
 					lssNodes.add(kid);
 				}
-				else {
-					State buf, &state = d.unpack(buf, kid->node->state);
-					if(d.map->blkd(state.getLoc())) {
 
-						for(auto edge : kid->node->preds) {
-							for(unsigned int i = 0; i < edge.node->succs.size(); i++) {
-								if(edge.node->succs[i].node == kid->node) {
-									edge.node->succs.erase(edge.node->succs.begin() + i);
-									break;
-								}
-							}
-						}
-
-						for(auto edge : kid->node->succs) {
-							for(unsigned int i = 0; i < edge.node->preds.size(); i++) {
-								if(edge.node->preds[i].node == kid->node) {
-									edge.node->preds.erase(edge.node->preds.begin() + i);
-									break;
-								}
-							}
-						}
-
-						kid->node->preds.clear();
-						kid->node->succs.clear();
-						continue;
-					}
-				}
 				if (kid->g > s->g + e.outcost) {
 					if (kid->parent)	// !NULL if a dup
 						this->res.dups++;
