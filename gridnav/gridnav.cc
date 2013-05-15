@@ -31,19 +31,29 @@ void GridNav::reverseops() {
 	assert (nrev == map->nmvs);
 }
 
-GridNav::Cost GridNav::pathcost(const std::vector<State>&, const std::vector<Oper> &ops) const {
-	std::vector<unsigned int> controls;
+GridNav::Cost GridNav::pathcost(const std::vector<State>&, const std::vector<Oper> &ops, bool printpath) const {
 	GridNav::State state = initialstate();
 	GridNav::Cost cost(0);
-	for (int i = ops.size() - 1; i >= 0; i--) {
-		GridNav::State copy(state);
-		GridNav::Edge e(*this, copy, ops[i]);
-		state = e.state;
-		cost += e.cost;
-		controls.push_back(ops[i]);
-	}
 
-	dfpair(stdout, "controls", "%s", controlstr(controls).c_str());
+	if(printpath) {
+		std::vector<unsigned int> controls;
+		for (int i = ops.size() - 1; i >= 0; i--) {
+			GridNav::State copy(state);
+			GridNav::Edge e(*this, copy, ops[i]);
+			state = e.state;
+			cost += e.cost;
+			controls.push_back(ops[i]);
+		}
+		dfpair(stdout, "controls", "%s", controlstr(controls).c_str());
+	}	
+	else { //I know, I know but sometimes these control vectors are in the MILLIONS so this is better
+		for (int i = ops.size() - 1; i >= 0; i--) {
+			GridNav::State copy(state);
+			GridNav::Edge e(*this, copy, ops[i]);
+			state = e.state;
+			cost += e.cost;
+		}
+	}
 
 	assert (isgoal(state));
 	return cost;

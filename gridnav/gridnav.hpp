@@ -248,7 +248,8 @@ struct GridNav {
 	}
 
 	// pathcost returns the cost of the given path.
-	virtual Cost pathcost(const std::vector<State>&, const std::vector<Oper>&) const;
+	virtual Cost pathcost(const std::vector<State>&, const std::vector<Oper>&, 
+						bool printpath=false) const;
 
 	unsigned int start, finish;
 	GridMap *map;
