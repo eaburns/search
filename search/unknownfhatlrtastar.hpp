@@ -448,11 +448,6 @@ private:
 		herror = herrnext;
 		derror = derrnext;
 
-		for (auto n : lssOpen.data()) {
-			State buf, &state = d.unpack(buf, n->node->state);
-			assert(!d.map->blkd(state.getLoc()));
-		}
-
 		return goal;
 	}
 
