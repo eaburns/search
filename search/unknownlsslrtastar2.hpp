@@ -325,39 +325,6 @@ private:
 
 			LssNode *s = *lssOpen.pop();
 
-			//maybe wasn't visible before and now we should check if it's blocked
-			State buf, &state = d.unpack(buf, s->node->state);
-			if(d.map->blkd(state.getLoc())) {
-
-				s->g = std::numeric_limits<double>::infinity();
-				s->f = s->g;
-				s->node->h = s->g;
-				s->node->horig = s->g;
-				s->updated = true;
-
-				for(auto edge : s->node->preds) {
-					for(unsigned int i = 0; i < edge.node->succs.size(); i++) {
-						if(edge.node->succs[i].node == s->node) {
-							edge.node->succs.erase(edge.node->succs.begin() + i);
-							break;
-						}
-					}
-				}
-
-				for(auto edge : s->node->succs) {
-					for(unsigned int i = 0; i < edge.node->preds.size(); i++) {
-						if(edge.node->preds[i].node == s->node) {
-							edge.node->preds.erase(edge.node->preds.begin() + i);
-							break;
-						}
-					}
-				}
-
-				s->node->preds.clear();
-				s->node->succs.clear();
-				continue;
-			}
-
 			nclosed += !s->closed;
 			s->closed = true;
 
@@ -375,14 +342,8 @@ private:
 					kid->g = geom2d::Infinity;
 					lssNodes.add(kid);
 				} else {
-					state = d.unpack(buf, kid->node->state);
+					State buf, &state = d.unpack(buf, kid->node->state);
 					if(d.map->blkd(state.getLoc())) {
-
-						kid->g = std::numeric_limits<double>::infinity();
-						kid->f = kid->g;
-						kid->node->h = kid->g;
-						kid->node->horig = kid->g;
-						kid->updated = true;
 
 						for(auto edge : kid->node->preds) {
 							for(unsigned int i = 0; i < edge.node->succs.size(); i++) {
@@ -415,7 +376,7 @@ private:
 					kid->g = s->g + e.outcost;
 					kid->f = kid->g + kid->node->h;
 					kid->op = e.op;
-					state = d.unpack(buf, kid->node->state);
+					State buf, &state = d.unpack(buf, kid->node->state);
 					if(!d.map->blkd(state.getLoc()))
 						lssOpen.pushupdate(kid, kid->openind);
 				}
