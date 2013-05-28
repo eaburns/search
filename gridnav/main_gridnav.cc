@@ -44,7 +44,7 @@ int main(int argc, const char *argv[]) {
 		fatal("The goal location is blocked");
 
 	GridNav d(&map, x0, y0, xg, yg);
-	searchGet<GridNav>(get, d, argc, argv);
+	Result<GridNav> res = searchGet<GridNav>(get, d, argc, argv);
 	dffooter(stdout);
 
 	return 0;
