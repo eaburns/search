@@ -29,6 +29,7 @@ gridnav/2poly
 gridnav/draw
 gridnav/mkseedinst
 gridnav/scenario2rdb
+gridnav/watch
 visnav/draw
 visnav/rand
 visnav/inst
@@ -50,3 +51,8 @@ tiles/generator
 gridnav/randinst
 multi-level
 gridnav/ppm2grid
+traffic/randinst
+traffic/watch
+unknowngridnav/watch
+
+labyrinth/*
