@@ -68,8 +68,8 @@ struct Plat2d {
 				geom2d::doubleeq(x, o.x) &&
 				geom2d::doubleeq(y, o.y) &&
 				geom2d::doubleeq(dy, o.dy);
-		}	
-	
+		}
+
 		unsigned long hash(const Plat2d*) {
 			static const unsigned int sz = sizeof(x) +
 				sizeof(y) + sizeof(dy) + sizeof(jframes);
@@ -159,7 +159,7 @@ struct Plat2d {
 			cost = 1; // geom2d::Pt::distance(s.player.body.bbox.min, state.player.body.bbox.min));
 			if (s.player.body.bbox.min.y == state.player.body.bbox.min.y) {
 				if (op == Player::Left) {
-					revop = Player::Right; 
+					revop = Player::Right;
 					revcost = cost;
 				}
 				else if (op == Player::Right) {
@@ -201,7 +201,8 @@ struct Plat2d {
 		fprintf(out, "%g, %g\n", s.player.loc().x, s.player.loc().y);
 	}
 
-	Cost pathcost(const std::vector<State>&, const std::vector<Oper>&);
+	Cost pathcost(const std::vector<State>&, const std::vector<Oper>&,
+		bool printSolution=false);
 
 	// Drawmap returns an image of the map.
 	Image *drawmap() const;
@@ -289,5 +290,5 @@ private:
 	double gleft, gright, gtop, gbottom;
 
 	double maxx, maxy;	// width and height in pixels.
-}; 
+};
 

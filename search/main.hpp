@@ -12,6 +12,7 @@
 #include "dtastar-dump.hpp"
 #include "dtastar.hpp"
 #include "multilrtastar.hpp"
+#include "lsslrtastar-rand.hpp"
 
 /*
 #include "monstar-dump.hpp"
@@ -114,6 +115,8 @@ template<class D> SearchAlgorithm<D> *getsearch(int argc, const char *argv[]) {
 		return new Dtastar<D>(argc, argv);
 	else if (strcmp(argv[1], "multilrtastar") == 0)
 		return new Multilrtastar<D>(argc, argv);
+	else if (strcmp(argv[1], "lsslrtastarrandom") == 0)
+		return new Lsslrtastar2Random<D>(argc, argv);
 
 /*
 	else if (strcmp(argv[1], "monstar-dump") == 0)

@@ -204,7 +204,7 @@ Image* Plat2d::drawmap() const {
 	return img;
 }
 
-Plat2d::Cost Plat2d::pathcost(const std::vector<State> &path, const std::vector<Oper> &ops) {
+Plat2d::Cost Plat2d::pathcost(const std::vector<State> &path, const std::vector<Oper> &ops, bool printSolution) {
 	std::vector<unsigned int> controls;
 	Plat2d::State state = initialstate();
 	Plat2d::Cost cost(0);
@@ -214,7 +214,7 @@ Plat2d::Cost Plat2d::pathcost(const std::vector<State> &path, const std::vector<
 		assert (o >= 0);
 		controls.push_back(o);
 		Plat2d::Edge e(*this, state, ops[i]);
-		cost += e.cost; 
+		cost += e.cost;
 
 		double he = hvis(state);
 /*
@@ -236,7 +236,8 @@ fprintf(stderr, "cost=%g\n", cost);
 	dfpair(stdout, "initial y loc", "%u", y0);
 	dfpair(stdout, "final x loc", "%g", final.body.bbox.min.x);
 	dfpair(stdout, "final y loc", "%g", final.body.bbox.min.y);
-	dfpair(stdout, "controls", "%s", controlstr(controls).c_str());
+	if(printSolution)
+		dfpair(stdout, "controls", "%s", controlstr(controls).c_str());
 
 	state = initialstate();
 	Cost c(cost);
