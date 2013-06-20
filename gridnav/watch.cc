@@ -25,11 +25,10 @@ private:
 	void draw();
 
 	GridMap *gridmap;
-	unsigned int width, height;
+	unsigned int height;
 	std::vector<unsigned int> controls;
 	std::vector<unsigned int>::iterator iter;
 	unsigned int currentframe;
-	bool reset;
 	std::vector<Scene::Poly> terrain;
 };
 
@@ -127,8 +126,8 @@ static void dfline(std::vector<std::string> &toks, void*) {
 
 WatchUi::WatchUi(unsigned int w, unsigned int h, bool save,
 		GridMap *g, std::vector<unsigned int> cs) :
-		Ui(w, h, save), gridmap(g), width(w),
-		height(h), controls(cs), currentframe(0), reset(false) {
+		Ui(w, h, save), gridmap(g), height(h), controls(cs),
+		currentframe(0) {
 
 	// flip everything over
 	glTranslated(0.0, height, 0.0);

@@ -653,16 +653,16 @@ continue;
 			if (end == NULL)
 				fatal("Unable to convert %s to an int", lastr.c_str());
 
-			unsigned int i = 0;
-			for( ; i < lsstable.size(); i++) {
-				if(lsstable[i].size == lookahead)
+			unsigned int j = 0;
+			for( ; j < lsstable.size(); j++) {
+				if(lsstable[j].size == lookahead)
 					break;
 			}
 
-			if(i >= lsstable.size())
+			if(j >= lsstable.size())
 				lsstable.emplace_back(lookahead, max);
 			else
-				lsstable[i].maxTime = std::max(lsstable[i].maxTime, max);
+				lsstable[j].maxTime = std::max(lsstable[j].maxTime, max);
 		}
 
 		if(lsstable.size() == 0)

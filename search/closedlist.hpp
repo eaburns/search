@@ -230,7 +230,7 @@ template<typename Ops, typename Node, typename D> struct ClosedList {
 	}
 
 private:
-	friend struct iterator;
+	friend class iterator;
 
 	void add(Node *b[], unsigned int f[], unsigned int n, Node *e, unsigned long h) {
 		unsigned int i = h % n;

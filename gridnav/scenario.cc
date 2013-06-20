@@ -87,7 +87,7 @@ Result<GridNav> ScenarioEntry::run(unsigned int n, SearchAlgorithm<GridNav> *src
 	Result<GridNav> &res = srch->res;
 	GridNav::Cost cost = d.pathcost(res.path, res.ops);
 	// Scenario file has 0-cost for no-path.  We use -1.
-	if (fabsf((cost - (double) opt) > Eps && !(opt == 0 && cost == GridNav::Cost(-1))))
+	if (fabsf(cost - (double) opt) > Eps && !(opt == 0 && cost == GridNav::Cost(-1)))
 		fatal("Expected optimal cost of %g, got %g\n", opt, (double) cost);
 
 	dfrow(stdout, "run", "uuuuuuuuguugugg",

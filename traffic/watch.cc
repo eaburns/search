@@ -25,7 +25,7 @@ private:
 	void draw();
 
 	GridMap *gridmap;
-	unsigned int width, height;
+	unsigned int height;
 	std::vector<unsigned int> controls;
 	std::vector<unsigned int>::iterator iter;
 	unsigned int currentframe;
@@ -124,7 +124,7 @@ static void dfline(std::vector<std::string> &toks, void*) {
 
 WatchUi::WatchUi(unsigned int w, unsigned int h, bool save,
 		GridMap *g, std::vector<unsigned int> cs) :
-		Ui(w, h, save), gridmap(g), width(w),
+		Ui(w, h, save), gridmap(g),
 		height(h), controls(cs), currentframe(0), currentobstacletime(0), reset(false) {
 
 	// flip everything over
