@@ -39,8 +39,6 @@ include drobot/Make.inc
 include segments/Make.inc
 include vacuum/Make.inc
 include traffic/Make.inc
-include unknowngridnav/Make.inc
-#include labyrinth/Make.inc
 
 everything: $(EVERYTHING)
 
