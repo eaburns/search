@@ -1,6 +1,5 @@
 #include "gridnav.hpp"
 #include "../search/main.hpp"
-#include "../search/fhatident.hpp"
 #include <cstdio>
 #include <cerrno>
 
@@ -51,7 +50,5 @@ int main(int argc, const char *argv[]) {
 }
 
 static SearchAlgorithm<GridNav> *get(int argc, const char *argv[]) {
-	if (strcmp(argv[1], "fhatident") == 0)
-		return new Fhatident<GridNav>(argc, argv);
 	return getsearch<GridNav>(argc, argv);
 }

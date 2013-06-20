@@ -6,7 +6,7 @@
 #include <cerrno>
 #include <sys/time.h>
 #include <sys/resource.h>
-#include "lsslrtastar2.hpp"	// LookaheadLimit
+#include "lsslrtastar.hpp"	// LookaheadLimit
 
 static void settimer(int, unsigned long);
 static void stoptimer(int);

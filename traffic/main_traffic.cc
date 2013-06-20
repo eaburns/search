@@ -1,6 +1,5 @@
 #include "traffic.hpp"
 #include "../search/main.hpp"
-#include "../search/fhatident.hpp"
 #include <cstdio>
 #include <cerrno>
 
@@ -37,7 +36,5 @@ int main(int argc, const char *argv[]) {
 }
 
 static SearchAlgorithm<Traffic> *get(int argc, const char *argv[]) {
-	if (strcmp(argv[1], "fhatident") == 0)
-		return new Fhatident<Traffic>(argc, argv);
 	return getsearch<Traffic>(argc, argv);
 }
