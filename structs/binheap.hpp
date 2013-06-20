@@ -3,6 +3,8 @@
 #include <vector>
 #include <boost/optional.hpp>
 
+void fatal(const char*, ...);
+
 template <class Ops, class Elm> class BinHeap {
 public:
 

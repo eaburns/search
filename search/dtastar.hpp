@@ -325,7 +325,7 @@ private:
 			while (nclosed > 0 && !o.empty()) {
 				Node *n = *o.pop();
 
-				if (n->closed);
+				if (n->closed)
 					nclosed--;
 				n->closed = false;
 

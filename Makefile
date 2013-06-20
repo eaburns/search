@@ -1,13 +1,13 @@
-CXX:=g++
-CC:=gcc
+#CXX:=g++
+#CC:=gcc
 
 #
 # clang 3.0 should work.
 # clang 2.9 is known to be broken, as it can't seem to
 #	compile the GNU header files…
 #
-#CXX:=clang++ -fno-color-diagnostics
-#CC:=clang -fno-color-diagnostics
+CXX:=clang++ -fno-color-diagnostics
+CC:=clang -fno-color-diagnostics
 
 AR:=ar
 

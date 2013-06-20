@@ -313,9 +313,9 @@ private:
 		int upoverdown = costfrom(y, h) + costfrom(h, gy);
 
 		if (upover < upoverdown)
-			return std::make_pair(upover, dx+abs(gy - y));
+			return std::make_pair(Cost(upover), dx+abs(gy - y));
 
-		return std::make_pair(upoverdown, dx + h-1-y + h-1-gy);
+		return std::make_pair(Cost(upoverdown), dx + h-1-y + h-1-gy);
 	}
 
 	// life8cheap returns an admissible heuristic cost
@@ -328,7 +328,7 @@ private:
 		int dy = abs(gy - y);
 
 		if (dx <= dy)
-			return std::make_pair(costfrom(y, gy), dy);
+			return std::make_pair(Cost(costfrom(y, gy)), dy);
 
 		int h = map->h - 2;
 		int maxy = h - 1;
@@ -338,7 +338,7 @@ private:
 		int highy = (y > gy ? y : gy) + up;
 		int across = extra - 2*up;
 		int c = costfrom(y, highy) + across*lifecost(highy) + costfrom(highy, gy);
-		return std::make_pair(c, dx);
+		return std::make_pair(Cost(c), dx);
 	}
 
 	// reverseops computes the reverse operators

@@ -1,2 +1,2 @@
-search/anyprof/profile.d search/anyprof/profile.o: search/anyprof/profile.cc search/anyprof/profile.hpp \
- search/anyprof/../../utils/utils.hpp
+-fno-color-diagnostics/profile.d -fno-color-diagnostics/profile.o: search/anyprof/profile.cc search/anyprof/profile.hpp \
+  search/anyprof/../../utils/utils.hpp
