@@ -1,3 +1,5 @@
+Code for researching heuristic search algorithms.
+
 You can build with either GCC or clang.  If one or the other doesn't
 work then it is a bug so please tell me.
 

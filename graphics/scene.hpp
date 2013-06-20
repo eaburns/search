@@ -1,3 +1,4 @@
+// Copyright © 2013 the Search Authors under the MIT license. See AUTHORS for the list of authors.
 #pragma once
 #include "../graphics/image.hpp"
 #include <SDL/SDL_opengl.h>

@@ -1,3 +1,4 @@
+// Copyright © 2013 the Search Authors under the MIT license. See AUTHORS for the list of authors.
 #include <cassert>
 #include <boost/cstdint.hpp>
 #include <boost/integer/static_log2.hpp>

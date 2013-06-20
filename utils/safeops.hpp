@@ -1,3 +1,4 @@
+// Copyright © 2013 the Search Authors under the MIT license. See AUTHORS for the list of authors.
 // Copyright 2012 © Steve McCoy
 // Licensed under the MIT license.
 #include <limits>

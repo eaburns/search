@@ -1,3 +1,4 @@
+// Copyright © 2013 the Search Authors under the MIT license. See AUTHORS for the list of authors.
 // Same as fhatident.hpp, but uses grainsize to consider moving early.
 #pragma once
 #include "../search/search.hpp"

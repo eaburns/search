@@ -1,3 +1,4 @@
+// Copyright © 2013 the Search Authors under the MIT license. See AUTHORS for the list of authors.
 // Testing for some optional domain methods.
 // This code relies on "substitution failure is not an error" crap
 // in C++.  It is really one of the most ugly hacks that I have

@@ -1,3 +1,4 @@
+// Copyright © 2013 the Search Authors under the MIT license. See AUTHORS for the list of authors.
 //Weighted Astar lss lrtastar
 #pragma once
 #include "../search/search.hpp"

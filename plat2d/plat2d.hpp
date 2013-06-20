@@ -1,3 +1,4 @@
+// Copyright © 2013 the Search Authors under the MIT license. See AUTHORS for the list of authors.
 #include "player.hpp"
 #include "lvl.hpp"
 #include "../visnav/visgraph.hpp"

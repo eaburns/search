@@ -1,3 +1,4 @@
+// Copyright © 2013 the Search Authors under the MIT license. See AUTHORS for the list of authors.
 // Best-first Utility-Guided Search Yes! From:
 // "Best-first Utility-Guided Search," Wheeler Ruml and Minh B. Do,
 // Proceedings of the Twentieth International Joint Conference on
