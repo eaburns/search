@@ -89,6 +89,8 @@ template<class D> SearchAlgorithm<D> *getsearch(int argc, const char *argv[]) {
 		return new Arastar<D>(argc, argv);
 	else if (strcmp(argv[1], "arastarmon") == 0)
 		return new ArastarMon<D>(argc, argv);
+	else if (strcmp(argv[1], "arastarnora") == 0)
+		return new ArastarNORA<D>(argc, argv);
 	else if (strcmp(argv[1], "dtastar-dump") == 0)
 		return new Dtastar_dump<D>(argc, argv);
 	else if (strcmp(argv[1], "lsslrtastar2") == 0)

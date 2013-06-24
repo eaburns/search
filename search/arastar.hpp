@@ -446,3 +446,120 @@ private:
 	double wcost, wtime;
 	AnytimeMonitor mon;
 };
+
+
+// ArastarNORA is a variant of ARA* that uses the NORA stopping
+// criteria of Shekhar and Dutta, IJCAI-89.
+template <class D> struct ArastarNORA : public Arastar<D> {
+
+	typedef typename D::State State;
+	typedef typename D::PackedState PackedState;
+	typedef typename D::Cost Cost;
+	typedef typename D::Oper Oper;
+	typedef typename Arastar<D>::Node Node;
+	typedef typename Arastar<D>::Incons Incons;
+
+	ArastarNORA(int argc, const char *argv[]) : Arastar<D>(argc, argv) {
+		this->wt0 = this->dwt = lambda = -1;
+		wcost = wtime = 1;
+		for (int i = 0; i < argc; i++) {
+			if (i < argc - 1 && strcmp(argv[i], "-wt0") == 0)
+				this->wt0 = strtod(argv[++i], NULL);
+
+			else if (i < argc - 1 && strcmp(argv[i], "-dwt") == 0)
+				this->dwt = strtod(argv[++i], NULL);
+
+			else if (i < argc - 1 && strcmp(argv[i], "-lambda") == 0)
+				lambda = strtod(argv[++i], NULL);
+
+			else if (i < argc -1 && strcmp(argv[i], "-wf") == 0)
+				wcost = strtod(argv[++i], NULL);
+
+			else if (i < argc - 1 && strcmp(argv[i], "-wt") == 0)
+				wtime = strtod(argv[++i], NULL);
+		}
+
+		if (this->wt0 < 1)
+			fatal("Must specify initial weight ≥ 1 using -wt0");
+		if (this->dwt <= 0)
+			fatal("Must specify weight decrement > 0 using -dwt");
+		if (lambda <= 0)
+			fatal("Must specify a λ > 0 using -lambda");
+
+		this->wt = this->wt0;
+		this->nodes = new Pool<Node>();
+	}
+
+	void search(D &d, typename D::State &s0) {
+		bool optimal = false;
+		this->rowhdr();
+		this->start();
+		this->closed.init(d);
+		this->incons.init(d);
+
+		Node *n0 = this->init(d, s0);
+		this->closed.add(n0);
+		this->open.push(n0);
+
+		unsigned long n = 0;
+		do {
+			if (improve(d)) {
+				n++;
+				double epsprime = this->wt == 1.0 ? 1.0 : this->findbound();
+				if (this->wt < epsprime)
+					epsprime = this->wt;
+				this->row(n, epsprime);
+			}
+
+			if (this->wt <= 1.0) {
+				optimal = true;
+				break;
+			}
+			if (shouldstop())
+				break;
+			this->nextwt();
+			this->updateopen();
+			this->closed.clear();
+
+		} while(!this->limit() && !this->open.empty());
+
+		this->finish();
+		dfpair(stdout, "converged", "%s", optimal ? "yes" : "no");
+	}
+
+	virtual void output(FILE *out) {
+		Arastar<D>::output(out);
+		dfpair(stdout, "wf", "%f", wcost);
+		dfpair(stdout, "wt", "%f", wtime);
+		dfpair(stdout, "lambda", "%f", lambda);
+	}
+
+protected:
+
+	bool improve(D &d) {
+		bool goal = false;
+		while (!shouldstop() && !this->limit() && this->goodnodes()) {
+			Node *n = *this->open.pop();
+			State buf, &state = d.unpack(buf, n->state);
+
+			if (d.isgoal(state)) {
+				this->cost = (double) n->g;
+				solpath<D, Node>(d, n, this->res);
+				goal = true;
+			}
+
+			this->expand(d, n, state);
+		}
+		return goal;
+	}
+
+	bool shouldstop() const {
+		if (this->cost < 0)
+			return false;
+		double t = wtime*(walltime() - this->res.wallstart);
+		double c = wcost*this->cost;
+		return t >= c/lambda;
+	}
+
+	double wcost, wtime, lambda;
+};
