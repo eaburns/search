@@ -6,12 +6,16 @@
 # clang 2.9 is known to be broken, as it can't seem to
 #	compile the GNU header files…
 #
-CXX:=clang++ -fno-color-diagnostics
-CC:=clang -fno-color-diagnostics
+CXX:=clang++
+CC:=clang
 
 AR:=ar
 
 FLAGS:=-Wall -Werror -g -O3
+
+ifeq ($(CXX), clang)
+	FLAGS+=-fno-color-diagnostics
+endif
 
 CXXFLAGS:=$(FLAGS) -std=c++0x
 
