@@ -1,3 +1,5 @@
+// © 2013 the Search Authors under the MIT license. See AUTHORS for the list of authors.
+
 // sptpolicy dumps spt-it-out code that draws a
 // a monitoring policy as a scatter plot of Xs and
 // Os, representing stop and go respectively.

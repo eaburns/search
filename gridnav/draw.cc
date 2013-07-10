@@ -1,3 +1,5 @@
+// © 2013 the Search Authors under the MIT license. See AUTHORS for the list of authors.
+
 #include "gridmap.hpp"
 #include "../utils/utils.hpp"
 #include "../utils/geom2d.hpp"

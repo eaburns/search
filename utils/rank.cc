@@ -1,3 +1,5 @@
+// © 2013 the Search Authors under the MIT license. See AUTHORS for the list of authors.
+
 // Based on "Efficient Algorithms to Rank and Unrank
 // Permutations in Lexicograhpic Order," B. Bonet
 

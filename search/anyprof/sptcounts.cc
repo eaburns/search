@@ -1,3 +1,5 @@
+// © 2013 the Search Authors under the MIT license. See AUTHORS for the list of authors.
+
 // sptcounts dumps spt-it-out code that draws a
 // heatmap of the counts of solution costs and times.
 

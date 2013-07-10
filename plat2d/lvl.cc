@@ -1,3 +1,5 @@
+// © 2013 the Search Authors under the MIT license. See AUTHORS for the list of authors.
+
 #include "lvl.hpp"
 #include "tile.hpp"
 #include "../utils/utils.hpp"

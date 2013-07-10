@@ -1,3 +1,5 @@
+// © 2013 the Search Authors under the MIT license. See AUTHORS for the list of authors.
+
 // Learns the standard deviation in heuristic error using corrected heuristics from hlms.
 //
 // This is a mess, and we never used it for anything, it's just here in case we ever

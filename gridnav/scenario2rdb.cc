@@ -1,3 +1,5 @@
+// © 2013 the Search Authors under the MIT license. See AUTHORS for the list of authors.
+
 #include "../utils/utils.hpp"
 #include "../rdb/rdb.hpp"
 #include <fstream>
