@@ -69,27 +69,34 @@ struct GridMap {
 	// ok returns true if the given move is valid from the
 	// given location.
 	bool ok(int loc, int t,  Move &m) const {
-		std::pair<unsigned int, unsigned int> cur = coord(loc);
 
-		int x = cur.first + m.dx;
-		int y = cur.second + m.dy;
+		unsigned int currentLocation = loc;
+		std::pair<unsigned int, unsigned int> currentCoordinate = coord(currentLocation);
 
-		if(x < 0 || y < 0 || x >= (int)w || y >= (int)h)
+		int newX = currentCoordinate.first + m.dx;
+		int newY = currentCoordinate.second + m.dy;
+		unsigned int nextLocation = index(newX, newY);
+
+		if(newX < 0 || newY < 0 || newX >= (int)w || newY >= (int)h)
 		   return false;
 
 		for(auto obs : obstacles) {
+
 			std::pair<unsigned int, unsigned int> o1 = obs.positionAt(w,h,t-1);
 			std::pair<unsigned int, unsigned int> o2 = obs.positionAt(w,h,t);
 
-			//don't let these guys swap places! They shouldn't share the same edge
-			//while moving
-			if(loc == index(o2.first, o2.second) &&
-				index(x,y) == index(o1.first, o1.second))
-			return false;
+			unsigned int obstacleCurrentLocation = index(o1.first, o1.second);
+			unsigned int obstacleNextLocation = index(o2.first, o2.second);
+
+			// don't collide along the same edge
+			if(currentLocation == obstacleNextLocation &&
+				nextLocation == obstacleCurrentLocation) {
+				return false;
+			}
 
 			for (unsigned int i = 0; i < m.n; i++) {
-				int nxt = loc + m.chk[i].delta;
-				if(nxt == index(o2.first, o2.second)) {
+				unsigned int moveCheck = loc + m.chk[i].delta;
+				if(moveCheck == obstacleNextLocation) {
 
 					//in this domain you can get "teleported" back to the start
 					//if you collide with an obstacle -- so allow a collision
