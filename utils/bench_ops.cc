@@ -1,3 +1,5 @@
+// © 2013 the Search Authors under the MIT license. See AUTHORS for the list of authors.
+
 // Benchmarking for some common basic operations.
 //
 // Take care when writing these benchmarks that the calls

@@ -1,7 +1,0 @@
-#include "../gridnav/scenario.hpp"
-#include <iostream>
-
-int main(int argc, const char *argv[]) {
-	Scenario s(argc, argv);
-	s.run(std::cin);
-}

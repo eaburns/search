@@ -1,49 +1,48 @@
 // Copyright © 2013 the Search Authors under the MIT license. See AUTHORS for the list of authors.
 #pragma once
 #include "../search/search.hpp"
-#include "../utils/pool.hpp"
 #include "../utils/geom2d.hpp"
+#include "../utils/pool.hpp"
+#include <vector>
 
+template <class D>
+class Flrtastar2 : public SearchAlgorithm<D> {
+private:
 
-template <class D> struct Flrtastar : public SearchAlgorithm<D> {
-
-	typedef typename D::State State;
 	typedef typename D::PackedState PackedState;
+	typedef typename D::Operators Operators;
+	typedef typename D::State State;
 	typedef typename D::Cost Cost;
 	typedef typename D::Oper Oper;
-	typedef typename D::Operators Operators;
 	typedef typename D::Edge Edge;
 
-	struct Node;
+	class Node;
+	class Nodes;
 
-	struct prededge {
-		prededge(Node* n, double c) : node(n), costFrom(c) {}
-		Node* node;
-		double costFrom;
-	};
-
-	struct succedge {
-		succedge(Node* n, Oper o, double c) : node(n), op(o), costTo(c) {}
-		Node* node;
-		Oper op;
-		double costTo;
-	};
-
-	struct Node {
-		ClosedEntry<Node, D> closedent;
-		int openind;
-		Node *parent;
-		PackedState state;
-		Oper op, pop;
-		double f, g, h, g_local;
-		unsigned int iterationCount;
-		std::vector<prededge> preds;
-		std::vector<succedge> succs;
-		bool dead;
-
-		Node() : openind(-1), iterationCount(0), dead(false) {
+	struct inedge {
+		inedge(Node *n, double c) : node(n), incost(c) {
 		}
 
+		Node *node;
+		double incost;
+	};
+
+	struct outedge {
+		outedge(Node *n, Oper o, Cost rc, Cost c) :
+			node(n),
+			op(o),
+			revcost(rc == Cost(-1) ? geom2d::Infinity : rc),
+			outcost(c == Cost(-1) ? geom2d::Infinity : c) {
+		}
+
+		Node *node;
+		Oper op;
+		double revcost;
+		double outcost;
+	};
+
+	class Node {
+	public:
 		static ClosedEntry<Node, D> &closedentry(Node *n) {
 			return n->closedent;
 		}
@@ -52,151 +51,214 @@ template <class D> struct Flrtastar : public SearchAlgorithm<D> {
 			return n->state;
 		}
 
-		static void setind(Node *n, int i) {
-			n->openind = i;
+		PackedState state;
+		double gglobal, h, hdef;
+		bool dead;
+		bool expd;	// was this expanded before?
+		bool goal;
+		std::vector<outedge> succs;
+		std::vector<inedge> preds;
+
+	private:
+		friend class Nodes;
+		friend class Pool<Node>;
+
+		Node() : gglobal(geom2d::Infinity), dead(false), expd(false) {
 		}
 
-		static bool pred(const Node *a, const Node *b) {
-			if (a->f == b->f)
-				return a->g_local > b->g_local;
-			return a->f < b->f;
-		}
+		ClosedEntry<Node, D> closedent;
 	};
 
-	struct HSort {
-		static void setind(Node *n, int i) {
-			n->openind = i;
+	class Nodes {
+	public:
+		Nodes(unsigned int sz) : tbl(sz) {
+			pool = new Pool<Node>();
 		}
 
-		static bool pred(const Node *a, const Node *b) {
-			return a->h < b->h;
+		~Nodes() {
+			delete pool;
 		}
+
+		void clear() {
+			tbl.clear();
+			delete pool;
+			pool = new Pool<Node>();
+		}
+
+		Node *get(D &d, State &s) {
+			Node *n = pool->construct();
+			d.pack(n->state, s);
+
+			unsigned long hash = n->state.hash(&d);
+			Node *found = tbl.find(n->state, hash);
+			if (found) {
+				pool->destruct(n);
+				return found;
+			}
+
+			n->goal = d.isgoal(s);
+			n->h = n->hdef = d.h(s);
+			tbl.add(n, hash);
+			return n;
+		}
+
+	private:
+		ClosedList<Node, Node, D> tbl;
+		Pool<Node> *pool;
 	};
 
-	struct GSort {
-		static void setind(Node *n, int i) {
-			n->openind = i;
-		}
+	class AstarNode {
+	public:
 
-		static bool pred(const Node *a, const Node *b) {
-			return a->g < b->g;
+		AstarNode() : openind(-1), updated(false) {
 		}
+	
+		class Nodes {
+		public:
+			static ClosedEntry<AstarNode, D> &closedentry(AstarNode *n) {
+				return n->nodesent;
+			}
+	
+			static PackedState &key(AstarNode *n) {
+				return n->node->state;
+			}
+		};
+	
+		class Closed {
+		public:
+			static ClosedEntry<AstarNode, D> &closedentry(AstarNode *n) {
+				return n->closedent;
+			}
+	
+			static PackedState &key(AstarNode *n) {
+				return n->node->state;
+			}
+		};
+
+		class FSort {
+		public:
+			static void setind(AstarNode *n, int i) {
+				n->openind = i;
+			}
+		
+			static bool pred(AstarNode *a, AstarNode *b) {	
+				if (geom2d::doubleeq(a->f, b->f))
+					return a->glocal > b->glocal;
+				return a->f < b->f;
+			}
+		};
+
+		class HSort {
+		public:
+			static void setind(AstarNode *n, int i) {
+				n->openind = i;
+			}
+		
+			static bool pred(AstarNode *a, AstarNode *b) {
+				return a->node->h < b->node->h;
+			}
+		};
+
+		Node *node;
+		AstarNode *parent;
+		double glocal, f;
+		Oper op;
+		long openind;
+		bool updated;
+
+	private:
+		ClosedEntry<AstarNode, D> closedent, nodesent;
 	};
 
-	Flrtastar(int argc, const char *argv[]) :
-		SearchAlgorithm<D>(argc, argv), seen(30000001), lssclosed(1), iterationCount(0) {
+public:
 
-		lookahead = 0;
-		weight = 0;
+	Flrtastar2(int argc, const char *argv[]) :
+		SearchAlgorithm<D>(argc, argv),
+		astarClosed(1),
+		astarNodes(1),
+		nodes(30000001),
+		lookahead(0) {
 
 		for (int i = 0; i < argc; i++) {
 			if (i < argc - 1 && strcmp(argv[i], "-lookahead") == 0)
-				lookahead = strtod(argv[++i], NULL);
-			else if (i < argc - 1 && strcmp(argv[i], "-wt") == 0)
-				weight = strtod(argv[++i], NULL);
+				lookahead = strtoul(argv[++i], NULL, 10);
 		}
-
 		if (lookahead < 1)
 			fatal("Must specify a lookahead ≥1 using -lookahead");
 
-		if (weight < 1)
-			fatal("Must specify a weight ≥1 using -wt");
-
-		lssclosed.resize(lookahead * 3);
-
-		nodes = new Pool<Node>();
+		astarPool = new Pool<AstarNode>();
+		astarNodes.resize(lookahead*3);
+		astarClosed.resize(lookahead*3);
 	}
 
-	~Flrtastar() {
-		delete nodes;
+	~Flrtastar2() {
+		delete astarPool;
 	}
 
-	void search(D &d, typename D::State &s0) {
+	void reset() {
+		SearchAlgorithm<D>::reset();
+		nodes.clear();
+		astarOpen.clear();
+		astarClosed.clear();
+		astarNodes.clear();
+		delete astarPool;
+		astarPool = new Pool<AstarNode>();
+	}
+
+	void search(D &d, State &s0) {
 		this->start();
 
-		lssclosed.init(d);
+		Node *cur = nodes.get(d, s0);
+		cur->gglobal = 0;
 
-		Node* start = init(d, s0);
-		seen.add(start);
-
-		State buf, &startState = d.unpack(buf, start->state);
-
-		while(!d.isgoal(startState) && !this->limit()) {
-			Node* dest = expandLSS(d, start);
-
-			if(!dest && !this->limit()) { //we didn't find a goal
+		while (!cur->goal && !this->limit()) {
+			AstarNode *goal = expandLss(d, cur);
+			if (!goal && !this->limit()) {
 				gCostLearning(d);
-
-				lsslrtastarHCostLearning(d);
-
-				dest = markDead(d); // returns NULL if all of open is dead, or best node otherwise
+				hCostLearning(d);
+				markDeadRedundant(d);
 			}
-//			else fprintf(stderr, "expandLSS\n");
-
-			if(!dest) { //all of open was dead
-				dest = getNeighborWithLowestG(d, start);
-//				fprintf(stderr, "neighbor\n");
-			}
-//			else fprintf(stderr, "markDead\n");
-
-			std::vector<Oper> partial;
-			Node* p = dest;
-
-			while(start != p) {
-				//or until the edge costs change?
-				assert(p->parent);
-				partial.push_back(p->op);
-				p = p->parent;
-			}
-			lengths.push_back(partial.size());
-
-//			testMoves(d, start, dest, partial);
-
-			this->res.ops.insert(	this->res.ops.end(), partial.rbegin(), partial.rend());
-
-			start = dest;
-
-			emitTimes.push_back(walltime() - this->res.wallstart);
-
-			startState = d.unpack(buf, start->state);
+			cur = move(cur, goal);
+			times.push_back(walltime() - this->res.wallstart);
 		}
 
 		this->finish();
 
-		if (!d.isgoal(startState)) {
+		if (!cur->goal) {
 			this->res.ops.clear();
 			return;
 		}
 
-		// Rebuild the path from the operators to avoid storing very long
-		// paths as we go.
-		seen.clear();
+		// Rebuild the path from the operators.
+		nodes.clear();
 		this->res.path.push_back(s0);
 		for (auto it = this->res.ops.begin(); it != this->res.ops.end(); it++) {
 			State copy = this->res.path.back();
-			typename D::Edge e(d, copy, *it);
+			Edge e(d, copy, *it);
 			this->res.path.push_back(e.state);
 		}
-
 		std::reverse(this->res.ops.begin(), this->res.ops.end());
 		std::reverse(this->res.path.begin(), this->res.path.end());
 	}
 
 	virtual void output(FILE *out) {
 		SearchAlgorithm<D>::output(out);
-		dfpair(out, "num steps", "%lu", emitTimes.size());
-		if (emitTimes.size() > 0) {
-			dfpair(out, "first emit wall time", "%f", emitTimes[0]);
-			double minEmit =  emitTimes.front();
-			double maxEmit = emitTimes.front();
-			for(unsigned int i = 1; i < emitTimes.size(); i++) {
-				double stepTime = emitTimes[i] - emitTimes[i-1];
-				if(stepTime < minEmit) minEmit = stepTime;
-				if(stepTime > maxEmit) maxEmit = stepTime;
+		dfpair(out, "num steps", "%lu", (unsigned long) times.size());
+		assert (lengths.size() == times.size());
+		if (times.size() != 0) {
+			double min = times.front();
+			double max = times.front();
+			for (unsigned int i = 1; i < times.size(); i++) {
+				double dt = times[i] - times[i-1];
+				if (dt < min)
+					min = dt;
+				if (dt > max)
+					max = dt;
 			}
-			dfpair(out, "min step wall time", "%f", minEmit);
-			dfpair(out, "max step wall time", "%f", maxEmit);
-			dfpair(out, "mean step wall time", "%f", (emitTimes.back() - emitTimes.front()) / (double) emitTimes.size());
+			dfpair(out, "first emit wall time", "%f", times.front());
+			dfpair(out, "min step wall time", "%f", min);
+			dfpair(out, "max step wall time", "%f", max);
+			dfpair(out, "mean step wall time", "%f", (times.back()-times.front())/times.size());
 		}
 		if (lengths.size() != 0) {
 			unsigned int min = lengths.front();
@@ -215,419 +277,269 @@ template <class D> struct Flrtastar : public SearchAlgorithm<D> {
 		}
 	}
 
-	virtual void reset() {
-		fatal("reset not implemented");
-	}
-
 private:
 
-	void testMoves(D& d, Node* start, Node* end, std::vector<Oper> &path) {
-		Node* s = start;
-		Node n;
-		for(auto iter = path.rbegin();iter != path.rend(); iter++) {
-			Oper op = *iter;
-			State buf, &state = d.unpack(buf, s->state);
-			Edge edge(d, state, op);
-
-			d.pack(n.state, edge.state);
-
-			s = seen.find(n.state);
-			assert(s);
-		}
-		if(s != end) fprintf(stderr, "path length: %d\n", (int)path.size());
-		assert(s == end);
-	}
-
-	//if a goal is found, it is be returned, otherwise NULL
-	Node* expandLSS(D& d, Node* s_cur) {
-		iterationCount++;
-
-		lssopen.clear();
-		lssclosed.clear();
-
-		Node* goal = NULL;
-
-		s_cur->g_local = 0;
-		s_cur->parent = NULL;
-		s_cur->iterationCount = iterationCount;
-		s_cur->pop = D::Nop;
-
-		lssopen.push(s_cur);
-
-		for(unsigned int exp = 0; exp < lookahead && !lssopen.empty() && !this->limit(); exp++) {
-
-			Node* s  = *lssopen.pop();
-
-			if(goal != NULL && goal->f <= s->f) {
-				lssopen.push(s);
-				return goal;
-			}
-
-			unsigned long hash = s->state.hash(&d);
-			if(!lssclosed.find(s->state, hash))
-				lssclosed.add(s, hash);
-
-			if(s->dead) continue;
-
-			expandAndPropagate(d, s, &goal, true);
-		}
-
-		return NULL;
-	}
-
-	void expandAndPropagate(D& d, Node* s, Node** goal, bool expand, bool debug=false) {
-
-		if (this->limit())
-			return;
-
-		State buf, &state = d.unpack(buf, s->state);
-		Operators ops(d, state);
-		bool populateSuccessors = s->succs.size() == 0;
-
-		this->res.expd++;
-		for(unsigned int i = 0; i < ops.size(); i++) {
-
-			Edge e(d, state, ops[i]);
-			Node *kid = nodes->construct();
-
-			this->res.gend++;
-			d.pack(kid->state, e.state);
-
-			unsigned long hash = kid->state.hash(&d);
-			Node *dup = seen.find(kid->state, hash);
-
-			double newLocalG = s->g_local + e.cost;
-
-			if(expand) {
-				if(dup) {
-					nodes->destruct(kid);
-					kid = dup;
-
-					if(kid->iterationCount < iterationCount) {
-						kid->g_local = std::numeric_limits<double>::infinity();
-//						kid->preds.clear();
-						kid->openind = -1;
-					}
-
-					if(kid->g_local > newLocalG) {
-						if (dup)
-							this->res.dups++;
-						kid->g_local = newLocalG;
-						kid->parent = s;
-						kid->f = kid->g_local + kid->h;
-						kid->op = ops[i];
-						kid->pop = e.revop;
-
-						lssopen.pushupdate(kid, kid->openind);
-					}
-				}
-				else {
-					kid->g_local = newLocalG;
-					kid->g = s->g + e.cost;
-					kid->h = d.h(e.state);
-					kid->parent = s;
-					kid->f = kid->g_local + kid->h;
-					kid->op = ops[i];
-					kid->pop = e.revop;
-
-					seen.add(kid, hash);
-					lssopen.push(kid);
-
-
-					if(d.isgoal(e.state) && (*goal == NULL || kid->g_local < (*goal)->g_local)) {
-						*goal = kid;
-					}
-				}
-
-				kid->iterationCount = iterationCount;
-				bool found = false;
-				for(unsigned int j = 0; j < kid->preds.size(); j++) {
-					if(kid->preds[j].node == s) { found = true; break; }
-				}
-				if(!found)
-					kid->preds.emplace_back(s, e.cost);
-				if(populateSuccessors)
-					s->succs.emplace_back(kid, ops[i], e.cost);
-			}
-			else {
-				nodes->destruct(kid);
-				if(!dup) continue;
-				kid = dup;
-			}
-
-			double newGCost = s->g + e.cost;
-
-			if(kid->g > newGCost) {
-				bool wasDead = kid->dead;
-				kid->dead = false;
-				kid->g = newGCost;
-//				kid->h = d.h(e.state); //only for optimality over trials
-				//pushupdate if on open? Nathan doesn't
-
-				bool onClosed = lssclosed.find(kid->state) != NULL;
-				if(onClosed && wasDead) {
-					expandAndPropagate(d, kid, goal, true);
-				}
-				else if(onClosed || kid->openind >= 0) {
-					expandAndPropagate(d, kid, goal, false);
-				}
-			}
-
-			double revEdgeCost = e.revcost == Cost(-1) ? std::numeric_limits<double>::infinity() : e.revcost;
-
-			if(!kid->dead && s->g > kid->g + revEdgeCost) {
-				s->g = kid->g + revEdgeCost;
-//				s->h = d.h(state);
-				if(i != 0) i = -1;
-			}
-		}
-	}
-
-	void gCostLearning(D& d) {
-		Node* dummy = NULL; // this is ignored
-		std::vector<Node*> &openData = lssopen.data();
-		for(unsigned int i = 0; i < openData.size(); i++) {
-			expandAndPropagate(d, openData[i], &dummy, false);
-		}
-	}
-
-	void lsslrtastarHCostLearning(D& d) {
-		iterationCount++;
-
-		BinHeap<HSort, Node*> open;
-
-		open.append(lssopen.data());
-
-		std::vector<Node*> oldClosed;
-
-		while(lssclosed.getFill() > 0) {
-
-//TODO: Nathan does this and we needed it to but I'm not convinced it is correct
-//with respect to the original LSSLRTA* Algorithm
-			if(open.size() == 0) break;
-
-			Node* s = *open.pop();
-
-			unsigned long hash = s->state.hash(&d);
-			if(lssclosed.find(s->state, hash)) {
-				oldClosed.push_back(lssclosed.remove(s->state, hash));
-			}
-
-			for(unsigned int i = 0; i < s->preds.size(); i++) {
-				Node* p = s->preds[i].node;
-
-				bool inClosed = lssclosed.find(p->state) != NULL;
-
-				if(inClosed && p->iterationCount < iterationCount) {
-					p->iterationCount = iterationCount;
-					p->h = std::numeric_limits<double>::infinity();
-				}
-
-				double newH = s->h + s->preds[i].costFrom;
-				if(inClosed && p->h > newH) {
-					p->h = newH;
-					open.pushupdate(p, p->openind);
-				}
-			}
-		}
-
-		for(unsigned int i = 0; i < oldClosed.size(); i++) {
-			lssclosed.add(oldClosed[i]);
-		}
-	}
-
-	Node* markDead(D& d) {
-int count = 0;
-		for(auto s : lssclosed) {
-			if(s->dead) continue;
-			s->dead = isDeadEnd(d, s) || isRedundant(d, s);
-			if(s->dead) count++;
-		}
-
-		Node* minNode = NULL;
-//		double minCost = std::numeric_limits<double>::infinity();
-		bool openIsDead = true;
-		auto openData = lssopen.data();
-		for(auto s : openData) {
-			if(s->dead) continue;
-
-			s->dead =  isDeadEnd(d, s) || isRedundant(d, s);
-			if(s->dead) count++;
-
-			if(s->dead) continue;
-
-			openIsDead = false;
-
-//			double cost = s->g + weight * s->h;
-//			double cost = s->g_local + weight * s->h;
-			if(minNode == NULL || Node::pred(s, minNode)) { //cost < minCost) {
-				minNode = s;
-//				minCost = cost;
-			}
-		}
-
-		if(openIsDead)
-			return NULL;
-
-		return minNode;
-	}
-
-	bool isDeadEnd(D& d, Node* s) {
-		State buf, &state = d.unpack(buf, s->state);
-		Operators ops(d, state);
-
-		if(ops.size() == 0) return true;
-
-		this->res.expd++;
-		for(unsigned int i = 0; i < ops.size(); i++) {
-
-			Edge edge(d, state, ops[i]);
-			PackedState key;
-
-			this->res.gend++;
-			d.pack(key, edge.state);
-
-			Node *kid = seen.find(key);
-
-			double value = s->g + edge.cost;
-			if(!kid || kid->g >= value)
-				return false;
-		}
-
-		return true;
-	}
-
-	bool isRedundant(D& d, Node* s) {
-		State buf, &state = d.unpack(buf, s->state);
-		Operators ops(d, state);
-
-		if(ops.size() == 0) return true;
-
-		this->res.expd++;
-		for(unsigned int i = 0; i < ops.size(); i++) {
-
-			Edge edge(d, state, ops[i]);
-			PackedState key;
-
-			this->res.gend++;
-			d.pack(key, edge.state);
-
-			Node *kid = seen.find(key);
-
-			if(!kid)
-				return false;
-			else if(kid->dead)
+	// ExpandLss returns the cheapest  goal node if one was generated
+	// and NULL otherwise.
+	AstarNode *expandLss(D &d, Node *rootNode) {
+		astarOpen.clear();
+		for (auto n : astarNodes)
+			astarPool->destruct(n);
+		astarNodes.clear();
+		astarClosed.clear();
+
+		AstarNode *a = astarPool->construct();
+		a->node = rootNode;
+		a->parent = NULL;
+		a->op = D::Nop;
+		a->glocal = 0;
+		a->f = rootNode->h;
+		astarOpen.push(a);
+		astarNodes.add(a);
+
+		AstarNode *goal = NULL;
+
+		for (unsigned int exp = 0; !astarOpen.empty() && exp < lookahead && !this->limit(); exp++) {
+			AstarNode *s = *astarOpen.pop();
+
+			if (!astarClosed.find(s->node->state))
+				astarClosed.add(s);
+
+			if (s->node->dead)
 				continue;
 
+			AstarNode *g = expandPropagate(d, s, true);
+			if (g && (!goal || g->glocal < goal->glocal))
+				goal = g;
 
-			Node* minNode = NULL;
-			double minCost = std::numeric_limits<double>::infinity();
+			if (s->node->goal) {
+				astarOpen.push(s);
+				goal = s;
+				break;
+			}
+		}
+		return goal;
+	}
 
-			for(unsigned int j = 0; j < kid->preds.size(); j++) {
+	// ExpandPropagate returns the cheapest goal node if one is generated
+	// and NULL otherwise.
+	AstarNode *expandPropagate(D &d, AstarNode *s, bool doExpand) {
+		AstarNode *goal = NULL;
 
-			 	const prededge &p = kid->preds[j];
+		if (this->limit())
+			return NULL;
 
-				if(p.node->dead)
-					continue;
+		auto kids = expand(d, s->node);
+		for (unsigned int i = 0; i < kids.size(); i++) {
+			auto e = kids[i];
+			Node *k = e.node;
+			AstarNode *kid = astarNodes.find(k->state);
 
-				double cost = p.node->g + p.costFrom;
-
-				if(minNode == NULL || minCost > cost) {
-					minCost = cost;
-					minNode = p.node;
+			if (doExpand && astarNodes.find(s->node->state)) {
+				if (!kid) {
+					kid = astarPool->construct();
+					kid->node = k;
+					kid->glocal = geom2d::Infinity;
+					kid->openind = -1;
+					astarNodes.add(kid);
+				}
+				if (kid->glocal > s->glocal + e.outcost) {
+					if (kid->parent)	// !NULL if a dup
+						this->res.dups++;
+					kid->parent = s;
+					kid->glocal = s->glocal + e.outcost;
+					kid->f = kid->glocal + kid->node->h;
+					kid->op = e.op;
+					astarOpen.pushupdate(kid, kid->openind);
 				}
 			}
 
-			if(s == minNode)
+			if (k->goal && kid && (!goal || kid->glocal < goal->glocal))
+				goal = kid;
+
+			if (s->node->gglobal + e.outcost < k->gglobal) {
+				bool wasDead = k->dead;
+				k->dead = false;
+				k->gglobal = s->node->gglobal + e.outcost;
+//				k->h = k->hdef;
+
+				bool onClosed = astarClosed.find(k->state);
+				if (kid && onClosed && wasDead)
+					expandPropagate(d, kid, true);
+
+				else if (kid && (kid->openind >= 0 || onClosed))
+					expandPropagate(d, kid, false);
+			}
+
+			if (k->gglobal + e.revcost < s->node->gglobal && !k->dead) {
+				s->node->gglobal = k->gglobal + e.revcost;
+//				s->node->h = s->node->hdef;
+				if (i > 0)
+					i = -1;
+			}
+		}
+
+		return goal;
+	}
+
+	void gCostLearning(D &d) {
+		std::vector<AstarNode*> &o = astarOpen.data();
+		for (unsigned int i = 0; i < o.size(); i++) {
+			if (!o[i]->node->dead)
+				expandPropagate(d, o[i], false);
+		}
+	}
+
+	void hCostLearning(D &d) {
+		BinHeap<typename AstarNode::HSort, AstarNode*> open;
+
+		open.append(astarOpen.data());
+
+		unsigned long left = astarClosed.getFill();
+
+		while (left > 0 && !open.empty()) {
+			AstarNode *s = *open.pop();
+
+			if (astarClosed.find(s->node->state))
+				left--;
+
+			for (auto e : s->node->preds) {
+				Node *sprime = e.node;
+
+				AstarNode *sp = astarClosed.find(sprime->state);
+				if (!sp)
+					continue;
+
+				if (!sp->updated || sprime->h > e.incost + s->node->h) {
+					sprime->h = e.incost + s->node->h;
+					sp->updated = true;
+					open.pushupdate(sp, sp->openind);
+				}
+			}
+		}
+	}
+
+	void markDeadRedundant(D &d) {
+		for (auto n : astarClosed) {
+			assert(!n->node->goal);
+			if (n->node->dead) // || n->node->goal)
+				continue;
+			n->node->dead = isDead(d, n->node) || isRedundant(d, n->node);
+		}
+
+		for (auto n : astarOpen.data()) {
+			if (n->node->dead || n->node->goal)
+				continue;
+			assert (!std::isinf(n->node->gglobal));
+			n->node->dead = isDead(d, n->node) || isRedundant(d, n->node);
+		}
+	}
+
+	bool isDead(D &d, Node *n) {
+		for (auto succ : expand(d, n)) {
+			if (succ.node->gglobal >= n->gglobal + succ.outcost)
+				return false;
+		}
+		return true;
+	}
+
+	bool isRedundant(D &d, Node *n) {
+		for (auto succ : expand(d, n)) {
+			if (succ.node->dead)
+				continue;
+
+			// The distinct predecessor with minimum f was the earliest
+			// to be expanded.
+			Node *distinct = NULL;
+			double bestc = geom2d::Infinity;
+
+			for (auto pred : succ.node->preds) {
+				if (pred.node->dead)
+					continue;
+
+				double c = pred.node->gglobal + pred.incost;
+				if (!distinct || c < bestc) {
+					distinct = pred.node;
+					bestc = c;
+				}
+
+				assert (distinct == n || !std::isinf(succ.node->gglobal));
+			}
+
+			if (distinct == n)
 				return false;
 		}
 
 		return true;
 	}
 
-	Node* getNeighborWithLowestG(D& d, Node* s) {
-		if(s->succs.size() > 0) {
-//			fprintf(stderr, "cached\n");
-			Node* minGKid = s->succs[0].node;
-			minGKid->op = s->succs[0].op;
-
-			for(unsigned int i = 1; i < s->succs.size(); i++) {
-				Node *kid = s->succs[i].node;
-
-				if(kid->g < minGKid->g) {
-					minGKid = kid;
-					minGKid->op = s->succs[i].op;
-				}
+	Node *move(Node *cur, AstarNode *goal) {
+		AstarNode *best = goal;
+		if (!best) {
+			for (auto n : astarOpen.data()) {
+				if (n->node == cur || n->node->dead)
+					continue;
+				if (best == NULL || AstarNode::FSort::pred(n, best))
+					best = n;
 			}
-
-			minGKid->parent = s;
-
-			return minGKid;
 		}
-//fprintf(stderr, "generated\n");
-		Node* minGKid = NULL;
-		double minGCost = std::numeric_limits<double>::infinity();
+		if (best) {
+			assert (best->node != cur);
+			std::vector<Oper> ops;
+			for (AstarNode *p = best; p->node != cur; p = p->parent) {
+				assert (p->parent != best);	// no cycles
+				ops.push_back(p->op);
+			}
+			this->res.ops.insert(this->res.ops.end(), ops.rbegin(), ops.rend());
+			lengths.push_back(ops.size());
+			return best->node;
+		}
 
-		State buf, &state = d.unpack(buf, s->state);
-		Operators ops(d, state);
+		outedge next = cur->succs[0];
+		for (unsigned int i = 1; i < cur->succs.size(); i++) {
+			if (cur->succs[i].node->gglobal < next.node->gglobal)
+				next = cur->succs[i];
+		}
+		this->res.ops.push_back(next.op);
+		lengths.push_back(1);
+		return next.node;
+	}
+
+	// Expand returns the successor nodes of a state.
+	std::vector<outedge> expand(D &d, Node *n) {
+		assert(!n->dead);
+
+		if (n->expd)
+			return n->succs;
+
+		State buf, &s = d.unpack(buf, n->state);
+
 		this->res.expd++;
-		for(unsigned int i = 0; i < ops.size(); i++) {
 
-			Edge edge(d, state, ops[i]);
-			Node *kid = nodes->construct();
-
+		Operators ops(d, s);
+		for (unsigned int i = 0; i < ops.size(); i++) {
 			this->res.gend++;
-			d.pack(kid->state, edge.state);
 
-			unsigned long hash = kid->state.hash(&d);
-			Node *dup = seen.find(kid->state, hash);
-
-			if(dup) {
-				nodes->destruct(kid);
-				kid = dup;
-				kid->op = ops[i];
-				kid->pop = edge.revop;
-				kid->parent = s;
-			}
-			else {
-				kid->g = s->g + edge.cost;
-				kid->h = d.h(edge.state);
-				kid->f = kid->g + kid->h;
-				kid->op = ops[i];
-				kid->pop = edge.revop;
-				kid->parent = s;
-
-				seen.add(kid, hash);
-			}
-
-			if(kid->g < minGCost) {
-				minGKid = kid;
-				minGCost = kid->g;
-			}
-			s->succs.emplace_back(kid, ops[i], edge.cost);
+			Edge e(d, s, ops[i]);
+			Node *k = nodes.get(d, e.state);
+			if (std::isinf(k->gglobal))
+				k->gglobal = n->gglobal + e.cost;
+			k->preds.emplace_back(n, e.cost);
+			n->succs.emplace_back(k, ops[i], e.revcost, e.cost);
 		}
+		n->expd = true;
 
-		assert(minGKid != NULL);
-		return minGKid;
+		return n->succs;
 	}
 
-	Node *init(D &d, State &s0) {
-		Node *n0 = nodes->construct();
-		d.pack(n0->state, s0);
-		n0->g = 0;
-		n0->f = d.h(s0);
-		n0->pop = n0->op = D::Nop;
-		n0->parent = NULL;
-		return n0;
-	}
+	BinHeap<typename AstarNode::FSort, AstarNode*> astarOpen;
+	ClosedList<typename AstarNode::Closed, AstarNode, D> astarClosed;
+	ClosedList<typename AstarNode::Nodes, AstarNode, D> astarNodes;
+	Pool<AstarNode> *astarPool;
 
- 	ClosedList<Node, Node, D> seen;
-	BinHeap<Node, Node*> lssopen;
- 	ClosedList<Node, Node, D> lssclosed;
-	Pool<Node> *nodes;
+	Nodes nodes;
 	unsigned int lookahead;
-	double weight;
-	unsigned int iterationCount;
-	std::vector<double> emitTimes;
+
+	std::vector<double> times;
 	std::vector<unsigned int> lengths;
 };

@@ -1,6 +1,7 @@
+// © 2013 the Search Authors under the MIT license. See AUTHORS for the list of authors.
+
 #include "mdist.hpp"
 #include "../search/main.hpp"
-#include "../search/fhatident.hpp"
 #include <cstdio>
 
 static SearchAlgorithm<TilesMdist> *get(int, const char *[]);
@@ -34,7 +35,5 @@ int main(int argc, const char *argv[]) {
 }
 
 static SearchAlgorithm<TilesMdist> *get(int argc, const char *argv[]) {
-	if (strcmp(argv[1], "fhatident") == 0)
-		return new Fhatident<TilesMdist>(argc, argv);
 	return getsearch<TilesMdist>(argc, argv);
 }

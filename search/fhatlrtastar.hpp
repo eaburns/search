@@ -3,7 +3,7 @@
 #include "../search/search.hpp"
 #include "../utils/geom2d.hpp"
 #include "../utils/pool.hpp"
-#include "lsslrtastar2.hpp"
+#include "lsslrtastar.hpp"
 #include <vector>
 
 template <class D>

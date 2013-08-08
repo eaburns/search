@@ -1,3 +1,5 @@
+// © 2013 the Search Authors under the MIT license. See AUTHORS for the list of authors.
+
 // addattrs adds the attributes specified on the command-line
 // to the datafile just before the first #pair key in the datafile.
 

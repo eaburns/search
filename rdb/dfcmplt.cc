@@ -1,3 +1,5 @@
+// © 2013 the Search Authors under the MIT license. See AUTHORS for the list of authors.
+
 // returns success if stdin or the argument is a complete datafile
 #include "rdb.hpp"
 #include "../utils/utils.hpp"
