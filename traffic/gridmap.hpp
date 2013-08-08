@@ -78,11 +78,18 @@ struct GridMap {
 		   return false;
 
 		for(auto obs : obstacles) {
-			std::pair<unsigned int, unsigned int> o = obs.positionAt(w,h,t);
+			std::pair<unsigned int, unsigned int> o1 = obs.positionAt(w,h,t-1);
+			std::pair<unsigned int, unsigned int> o2 = obs.positionAt(w,h,t);
+
+			//don't let these guys swap places! They shouldn't share the same edge
+			//while moving
+			if(loc == index(o2.first, o2.second) &&
+				index(x,y) == index(o1.first, o1.second))
+			return false;
 
 			for (unsigned int i = 0; i < m.n; i++) {
 				int nxt = loc + m.chk[i].delta;
-				if(nxt == index(o.first, o.second)) {
+				if(nxt == index(o2.first, o2.second)) {
 
 					//in this domain you can get "teleported" back to the start
 					//if you collide with an obstacle -- so allow a collision
