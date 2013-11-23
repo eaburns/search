@@ -243,7 +243,10 @@ namespace geom2d {
 		// contains returns true if the given point is on
 		// the line.
 		bool contains(const Pt &p) const {
-			return doubleeq(p.y, p.x*m + b);
+			if(std::isinf(m))
+				return doubleeq(p.x, b);
+			else
+				return doubleeq(p.y, p.x*m + b);
 		}
 
 		// isabove returns true if the point is above the given line.
