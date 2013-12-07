@@ -48,7 +48,7 @@ public:
 
 	Cost h(const State &s) const {
 		unsigned int i;
-		for (i = 0; i < s.dirt->size() && !dirt[i]; i++)
+		for (i = 0; i < s.dirt->size() && !s.dirt->at(i); i++)
 			;
 
 		int minx = dirtLocs[i].first;
@@ -57,7 +57,7 @@ public:
 		int maxy = miny;
 
 		for (i++; i < s.dirt->size(); i++) {
-			if (!dirt[i])
+			if (!s.dirt->at(i))
 				continue;
 			int x = dirtLocs[i].first, y = dirtLocs[i].second;
 			if (x < minx)
