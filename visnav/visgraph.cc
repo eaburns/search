@@ -175,6 +175,7 @@ void VisGraph::addpoly(const geom2d::Poly &p, const std::vector<unsigned int> &v
 }
 
 void VisGraph::visedges() {
+	if(verts.size() > 0)
 	for (unsigned int i = 0; i < verts.size() - 1; i++) {
 	for (unsigned int j = i + 1; j < verts.size(); j++)
 		consideredge(i, j);
