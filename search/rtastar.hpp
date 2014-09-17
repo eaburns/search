@@ -62,9 +62,9 @@ template <class D> struct Rtastar : public SearchAlgorithm<D> {
 				this->res.ops.clear();
 				break;	// deadend;
 			}
+			storenode(d, cur.state, *cur);
 			cur = bests.at(randgen.integer(0, bests.size()-1));
 			this->res.ops.push_back(cur.op);
-			curh = storenode(d, cur.state, cur.f);
 		}
 
 		this->finish();
@@ -116,8 +116,6 @@ private:
 		this->res.expd++;
 		typename D::Operators ops(d, cur.state);
 		for (unsigned int n = 0; n < ops.size(); n++) {
-			if (ops[n] == cur.pop)
-				continue;
 
 			this->res.gend++;
 			typename D::Edge e(d, cur.state, ops[n]);
@@ -154,9 +152,8 @@ private:
 			return dup->h;
 		}
 		Cost alpha = Cost(-1);
-		n->h = look(d, cur, alpha, pop, Cost(0), nlook);
-		seen.add(n, hash);
-		return n->h;
+		nodes->destruct(n);
+		return look(d, cur, alpha, pop, Cost(0), nlook);
 	}
 
 	// look returns the lookahead cost via a depth-limited,
