@@ -62,7 +62,7 @@ template <class D> struct Rtastar : public SearchAlgorithm<D> {
 				this->res.ops.clear();
 				break;	// deadend;
 			}
-			storenode(d, cur.state, *cur);
+			storenode(d, cur.state, *curh);
 			cur = bests.at(randgen.integer(0, bests.size()-1));
 			this->res.ops.push_back(cur.op);
 		}
