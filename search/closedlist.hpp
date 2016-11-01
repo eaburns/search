@@ -4,6 +4,7 @@
 #include <cstdio>
 #include <typeinfo>
 #include <cstring>
+#include <string>
 
 void dfpair(FILE *, const char *key, const char *fmt, ...);	// utils.hpp
 

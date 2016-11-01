@@ -3,6 +3,7 @@
 #include "profile.hpp"
 #include "../../utils/utils.hpp"
 #include <limits>
+#include <errno.h>
 
 AnytimeProfile::AnytimeProfile(unsigned int cb, unsigned int tb,
 		const std::vector<SolutionStream> &stream) {
