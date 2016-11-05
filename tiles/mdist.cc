@@ -25,11 +25,12 @@ TilesMdist::State TilesMdist::initialstate() {
 
 void TilesMdist::initmd() {
 	for (unsigned int t = 1; t < Ntiles; t++) {
-		unsigned int row = goalpos[t] / Width;
-		unsigned int col = goalpos[t] % Width;
+		int row = goalpos[t] / Width;
+		int col = goalpos[t] % Width;
 		for (int i = 0; i < Ntiles; i++) {
-			unsigned int r = i / Width;
-			unsigned int c = i % Width;
+			int r = i / Width;
+			int c = i % Width;
+
 			md[t][i] = abs(r - row) + abs(c - col);
 		}
 	}

@@ -185,10 +185,12 @@ public:
 		onestep(false),
 		weight(1.0) {
 
+#ifndef __MACH__
 		// ENOENT means that the cpu times reported are bogus.
 		clockid_t id;
 		if (clock_getcpuclockid(0, &id) == ENOENT)
 			fatal("Bad CPU timers");
+#endif
 
 		for (int i = 0; i < argc; i++) {
 			if (strcmp(argv[i], "-onestep") == 0)

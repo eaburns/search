@@ -21,7 +21,14 @@ CXXFLAGS:=$(FLAGS) -std=c++0x
 
 CFLAGS:=$(FLAGS) -std=c99
 
-LDFLAGS:=$(FLAGS) -std=c++0x -lrt
+OS := $(shell uname)
+ifeq ($(OS), Darwin)
+LIB_RT_UNLESS_OSX := ""
+else
+LIB_RT_UNLESS_OSX := "-lrt"
+endif
+
+LDFLAGS:=$(FLAGS) -std=c++0x $(LIB_RT_UNLESS_OSX)
 
 EVERYTHING:=
 
