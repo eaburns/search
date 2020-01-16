@@ -4,6 +4,7 @@
 #include "../../rdb/rdb.hpp"
 #include "leastsquares.hpp"
 #include <cassert>
+#include <cerrno>
 #include <cstring>
 
 // If this is not the empty string then spt-it-out

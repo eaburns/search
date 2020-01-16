@@ -41,7 +41,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	if (stats)
-		fprintf(stderr, "seed: %lu\n", randgen.seed());
+		fprintf(stderr, "seed: %llu\n", randgen.seed());
 
 	std::vector<geom2d::Poly> polys;
 	double start = walltime();
@@ -75,7 +75,7 @@ redo:
 		assert (r >= 0.0);
 
 		geom2d::Poly p = geom2d::Poly::random(randgen.integer(3, Maxverts), x, y, r);
-			
+
 		for (unsigned int i = 0; i < polys.size(); i++) {
 			if (polys[i].bbox.hits(p.bbox))
 				goto redo;

@@ -17,7 +17,7 @@ segments/segments_solver:\
 	utils/utils.a\
 	search/search.a
 	@echo $@
-	@$(CXX) $^ $(LDFLAGS) -static -o $@
+	@$(CXX) $^ $(LDFLAGS) -o $@
 
 include segments/main.d
 CLEAN+=segments/segments_solver segments/main.o

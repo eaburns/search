@@ -23,7 +23,7 @@ vacuum/vacuum_solver:\
 	structs/structs.a\
 	search/search.a
 	@echo $@
-	@$(CXX) -static $(VACUUMOBJS)\
+	@$(CXX) $(VACUUMOBJS)\
 		vacuum/main.cc\
 		gridnav/gridmap.o\
 		utils/utils.a\
@@ -42,7 +42,7 @@ vacuum/vacuum_cs730:\
 	structs/structs.a\
 	search/search.a
 	@echo $@
-	@$(CXX) -static $(VACUUMOBJS)\
+	@$(CXX) $(VACUUMOBJS)\
 		vacuum/main_cs730.cc\
 		gridnav/gridmap.o\
 		utils/utils.a\

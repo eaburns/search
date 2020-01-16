@@ -5,7 +5,10 @@ GRAPHICSOBJS:=\
 	graphics/scene.o\
 	graphics/ui.o\
 
-GRAPHICSLD:=-lSDL -lSDL_image -lGLU -lGL
+GRAPHICSLD:=-lSDL -lSDL_image
+
+# -framework OpenGL is needed to tell osx to link opengl.
+GRAPHICSLD += -framework OpenGL
 
 include $(GRAPHICSOBJS:.o=.d)
 

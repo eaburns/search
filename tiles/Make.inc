@@ -7,7 +7,7 @@ CLEAN+=\
 	tiles/15md_solver\
 	tiles/24md_solver\
 	tiles/generator\
-	
+
 EVERYTHING+=tiles
 
 TILESSRC:=\
@@ -17,13 +17,6 @@ TILESSRC:=\
 
 CLEAN+=$(TILESSRC:.cc=.o)
 
-OS := $(shell uname)
-ifeq ($(OS), Darwin)
-STATIC_UNLESS_OSX := ""
-else
-STATIC_UNLESS_OSX := "-static"
-endif
-
 tiles/%md_solver:\
 	tiles/main_mdist.d\
 	$(TILESSRC)\
@@ -32,7 +25,7 @@ tiles/%md_solver:\
 	structs/structs.a\
 	search/search.a
 	@echo $@
-	@$(CXX) $(STATIC_UNLESS_OSX) $(TILESSRC)\
+	@$(CXX) $(TILESSRC)\
 		tiles/main_mdist.cc\
 		utils/utils.a\
 		structs/structs.a\

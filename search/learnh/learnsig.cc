@@ -10,6 +10,7 @@
 #include "../../rdb/rdb.hpp"
 #include "leastsquares.hpp"
 #include <cassert>
+#include <cerrno>
 #include <cstring>
 #include <map>
 #include <cmath>

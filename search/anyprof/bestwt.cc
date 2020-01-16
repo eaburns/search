@@ -5,6 +5,7 @@
 #include <map>
 #include <limits>
 #include <cerrno>
+#include <cmath>
 
 static double wf, wt;
 static std::map<double, unsigned long> nsols;
@@ -63,7 +64,7 @@ int main(int argc, const char *argv[]) {
 		double val = wf*fields.cost + wt*fields.time;
 		avg[fields.weight] += (val - cur) / nsols[fields.weight];
 
-		fclose(f);		
+		fclose(f);
 	}
 
 	double weight = avg.begin()->first;

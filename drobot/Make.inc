@@ -28,7 +28,7 @@ drobot/drobot_solver:\
 	structs/structs.a\
 	search/search.a
 	@echo $@
-	@$(CXX) -static $^ $(LDFLAGS) -o $@
+	@$(CXX) $^ $(LDFLAGS) -o $@
 
 include drobot/main.d
 CLEAN+=drobot/drobot_solver drobot/main.o

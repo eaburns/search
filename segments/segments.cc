@@ -390,8 +390,8 @@ Segments::Cost Segments::d(const State &s) const {
 		if (s.poses[i] == segs[i].goal)
 			continue;
 
-		double dx = labs((double)segs[i].goal.x - s.poses[i].x);
-		double dy = labs((double)segs[i].goal.y - s.poses[i].y);
+		double dx = fabs((double)segs[i].goal.x - s.poses[i].x);
+		double dy = fabs((double)segs[i].goal.y - s.poses[i].y);
 		d += dx > dy? dx : dy;
 
 		int adist = wrapind(segs[i].goal.rot - s.poses[i].rot, nangles);

@@ -206,9 +206,9 @@ std::string Ui::saveframe(unsigned long n) {
 				fatal("Failed to write the pixel data");
 			rem -= n;
 		} while (rem > 0);
-		
+
 	}
-	delete pixels;
+	delete[] pixels;
 
 	fclose(out);
 	return name;

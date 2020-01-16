@@ -22,7 +22,7 @@ plat2d/plat2d_solver:\
 	structs/structs.a\
 	search/search.a
 	@echo $@
-	@$(CXX) -static $^ $(LDFLAGS) -o $@
+	@$(CXX) $^ $(LDFLAGS) -o $@
 
 include plat2d/main.d plat2d/plat2d.d
 CLEAN+=plat2d/plat2d_solver plat2d/main.o plat2d/plat2d.o

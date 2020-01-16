@@ -13,7 +13,7 @@ Pdb::Pdb(unsigned long csz, unsigned int psz, const Tiles::Tile p[]) :
 }
 
 SparsePdb::SparsePdb(unsigned int psz, const Tiles::Tile p[]) :
-	Pdb(pow(Tiles::Ntiles, psz), psz, p) { }
+	Pdb(pow((double) Tiles::Ntiles, psz), psz, p) { }
 
 CompactPdb::CompactPdb(unsigned int psz, const Tiles::Tile p[]) :
 	Pdb(fallfact(Tiles::Ntiles, psz), psz, p),

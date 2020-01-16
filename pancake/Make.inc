@@ -21,7 +21,7 @@ pancake/%pancake_solver:\
 	structs/structs.a\
 	search/search.a
 	@echo $@
-	@$(CXX) -static $(PANCAKESRC)\
+	@$(CXX) $(PANCAKESRC)\
 		pancake/main.cc\
 		utils/utils.a\
 		structs/structs.a\

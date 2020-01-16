@@ -38,7 +38,7 @@ gridnav/gridnav_solver:\
 	structs/structs.a\
 	search/search.a
 	@echo $@
-	@$(CXX) -static $^ $(LDFLAGS) -o $@
+	@$(CXX) $^ $(LDFLAGS) -o $@
 
 include gridnav/main_gridnav.d
 CLEAN+=gridnav/gridnav_solver gridnav/main_gridnav.o

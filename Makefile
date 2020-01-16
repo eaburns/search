@@ -13,6 +13,9 @@ AR:=ar
 
 FLAGS:=-Wall -Werror -g -O3
 
+# GL_SILENCE_DEPRECATION silences opengl deprecation errors on osx.
+FLAGS +=-DGL_SILENCE_DEPRECATION
+
 ifeq ($(CXX), clang)
 	FLAGS+=-fno-color-diagnostics
 endif

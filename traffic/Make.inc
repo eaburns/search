@@ -18,7 +18,7 @@ traffic/traffic_solver:\
 	structs/structs.a\
 	search/search.a
 	@echo $@
-	@$(CXX) -static $^ $(LDFLAGS) -o $@
+	@$(CXX) $^ $(LDFLAGS) -o $@
 
 include traffic/main_traffic.d
 CLEAN+=traffic/traffic_solver traffic/main_traffic.o
