@@ -463,7 +463,7 @@ void DockRobot::initheuristic() {
 		float cost = adj[i][j];
 		if (i == j)
 			shortest[i*nlocs + j] = std::pair<float, float>(0, 0);
-		else if (isinf(cost))
+		else if (std::isinf(cost))
 			shortest[i*nlocs + j] = std::pair<float, float>(cost, cost);
 		else
 			shortest[i*nlocs + j] = std::pair<float, float>(cost, 1);

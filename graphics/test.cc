@@ -2,9 +2,15 @@
 
 #include "../utils/utils.hpp"
 #include "ui.hpp"
+#if __APPLE__
 #include <OpenGL/gl.h>
 #include <OpenGL/glu.h>
 #include <SDL/SDL.h>
+#elif __linux__
+#include <GL/gl.h>
+#include <GL/glu.h>
+#include <SDL/SDL.h>
+#endif
 
 // Not sure why, but SDL_main is not found.
 // Just remove the define and hope everything is OK.

@@ -41,7 +41,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	if (stats)
-		fprintf(stderr, "seed: %llu\n", randgen.seed());
+		fprintf(stderr, "seed: %llu\n", (long long unsigned int)randgen.seed());
 
 	std::vector<geom2d::Poly> polys;
 	double start = walltime();
