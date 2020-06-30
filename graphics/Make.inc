@@ -8,7 +8,13 @@ GRAPHICSOBJS:=\
 GRAPHICSLD:=-lSDL -lSDL_image
 
 # -framework OpenGL is needed to tell osx to link opengl.
-GRAPHICSLD += -framework OpenGL
+UNAME_S := $(shell uname -s)
+ifeq ($(UNAME_S),Darwin)
+     GRAPHICSLD += -framework OpenGL
+endif
+ifeq ($(UNAME_S),Linux)
+     GRAPHICSLD += -lGL
+endif
 
 include $(GRAPHICSOBJS:.o=.d)
 
