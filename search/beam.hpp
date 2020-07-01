@@ -2,7 +2,6 @@
 #pragma once                                                                    
 #include "../search/search.hpp"                                                 
 #include "../utils/pool.hpp"
-#include <iostream>
                                                                                 
 template <class D> struct BeamSearch : public SearchAlgorithm<D> {
 
@@ -68,7 +67,6 @@ template <class D> struct BeamSearch : public SearchAlgorithm<D> {
       if (i < argc - 1 && strcmp(argv[i], "-width") == 0)
         width = atoi(argv[++i]);
       if (strcmp(argv[i], "-dropdups") == 0)
-        std::cout << "Duplicate dropping enabled." << std::endl;
         dropdups = true;
     }
 
@@ -92,14 +90,14 @@ template <class D> struct BeamSearch : public SearchAlgorithm<D> {
 
     int depth = 0;
 
-    //std::cout << "Before first beam depth." << std::endl;
 
     bool solved = false;
     
     while (!open.empty() && !solved && !SearchAlgorithm<D>::limit()) {
+      depth++;
+      
       Node **beam = new Node*[width];
       int c;
-      //std::cout << "Beam depth: " << depth << std::endl;
       for(c = 0; c < width && !open.empty(); c++) {
         Node *n = open.pop();
 
@@ -113,15 +111,14 @@ template <class D> struct BeamSearch : public SearchAlgorithm<D> {
         State buf, &state = d.unpack(buf, n->state);
 
         if (d.isgoal(state)) {
-          //std::cout << "Solution depth: " << depth << std::endl;
           solpath<D, Node>(d, n, this->res);
           solved = true;
+          break;
         }
 
         expand(d, n, state);
       }
 
-      depth++;
       delete[] beam;
     }
     this->finish();
