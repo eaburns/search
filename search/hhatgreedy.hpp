@@ -2,8 +2,6 @@
 #include "../search/search.hpp"
 #include "../utils/pool.hpp"
 
-#include<iostream>
-
 template <class D> struct Hhatgreedy : public SearchAlgorithm<D> {
 
 	typedef typename D::State State;
@@ -119,16 +117,12 @@ private:
 		double derrnext = 0;
 
         Node *bestkid = NULL;
-        //Node *kid = NULL;
-
-        //std::cout << "EXPANSION START" << std::endl;
         
 		typename D::Operators ops(d, state);
 		for (unsigned int i = 0; i < ops.size(); i++) {
 			if (ops[i] == n->pop)
 				continue;
 			SearchAlgorithm<D>::res.gend++;
-			//considerkid(d, n, state, ops[i], kid);
 
             Node *kid = nodes->construct();
 
@@ -157,29 +151,23 @@ private:
               closed.add(kid, hash);
               open.push(kid);
 
-              //std::cout << "h diff: " << kid->h - n->h << std::endl;
-
               if (!bestkid || kid->hhat < bestkid->hhat)
                 bestkid = kid;
             }
 		}
 
-        //std::cout << "EXPANSION END" << std::endl;
         
 
         if (bestkid) {
           double herr =  bestkid->f - n->f;
-          //std::cout << "herr: " << herr << std::endl;
           if (herr < 0)
             herr = 0;
           double pastErrSum = herror * ((SearchAlgorithm<D>::res.expd)+imExp-1);
           herrnext = (herr + pastErrSum)/((SearchAlgorithm<D>::res.expd)+imExp);
           // imagine imExp of expansions with no error
           // regulates error change in beginning of search
-          //std::cout << "herrnext: " << herrnext << std::endl;
 
           double derr = (bestkid->d+1) - n->d;
-          //std::cout << "derr: " << derr << std::endl;
           if (derr < 0)
             derr = 0;
           if (derr >= 1)
@@ -188,7 +176,6 @@ private:
           derrnext = (derr + pastDSum)/((SearchAlgorithm<D>::res.expd)+imExp);
           // imagine imExp of expansions with no error
           // regulates error change in beginning of search
-          //std::cout << "derrnext: " << derrnext << std::endl;
 
           herror = herrnext;
           derror = derrnext;
