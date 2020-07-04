@@ -37,7 +37,11 @@ template <class D, bool speedy = false> struct Greedy : public SearchAlgorithm<D
 		}
 	
 		static bool pred(Node *a, Node *b) {
+          if(a->h == b->h) {
+            return a->g < b->g;
+          } else {
 			return a->h < b->h;
+          }
 		}
 
 		static typename D::Cost prio(Node *n) {
@@ -52,6 +56,11 @@ template <class D, bool speedy = false> struct Greedy : public SearchAlgorithm<D
 	Greedy(int argc, const char *argv[]) :
 		SearchAlgorithm<D>(argc, argv), closed(30000001) {
 		nodes = new Pool<Node>();
+        dropdups = false;
+        for (int i = 0; i < argc; i++) {
+          if (strcmp(argv[i], "-dropdups") == 0)
+            dropdups = true;
+        }
 	}
 
 	~Greedy() {
@@ -117,18 +126,35 @@ private:
 
 		unsigned long hash = kid->state.hash(&d);
 		Node *dup = closed.find(kid->state, hash);
+        
 		if (dup) {
 			this->res.dups++;
+            if (dropdups || kid->g >= dup->g) {
+				nodes->destruct(kid);
+				return;
+			}
+            bool isopen = open.mem(dup);
+			if (isopen)
+              open.pre_update(dup);
+			dup->g = kid->g;
+			dup->parent = parent;
+			dup->op = op;
+			dup->pop = e.revop;
+            if (isopen) {
+				open.post_update(dup);
+			} else {
+				this->res.reopnd++;
+				open.push(dup);
+			}
 			nodes->destruct(kid);
 		} else {
-			kid->h = speedy ? d.d(e.state) : d.h(e.state);
-			assert ((double) kid->h >= 0);
+			kid->h = d.h(e.state);
 			kid->parent = parent;
 			kid->op = op;
 			kid->pop = e.revop;
 			closed.add(kid, hash);
 			open.push(kid);
-		}
+        }
 	}
 
 	Node *init(D &d, State &s0) {
@@ -141,6 +167,7 @@ private:
 		return n0;
 	}
 
+    bool dropdups;
 	OpenList<Node, Node, Cost> open;
  	ClosedList<Node, Node, D> closed;
 	Pool<Node> *nodes;

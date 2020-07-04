@@ -60,7 +60,12 @@ template <class D> struct Hhatgreedy : public SearchAlgorithm<D> {
       herror(0),
       derror(0),
       closed(30000001) {
+        dropdups = false;
 		nodes = new Pool<Node>();
+        for (int i = 0; i < argc; i++) {
+          if (strcmp(argv[i], "-dropdups") == 0)
+            dropdups = true;
+        }
 	}
 
 	~Hhatgreedy() {
@@ -134,6 +139,28 @@ private:
             Node *dup = closed.find(kid->state, hash);
             if (dup) {
               this->res.dups++;
+              if (dropdups || kid->g >= dup->g) {
+                nodes->destruct(kid);
+                return;
+              }
+              bool isopen = open.mem(dup);
+              if (isopen)
+				open.pre_update(dup);
+              dup->f = dup->f - dup->g + kid->g;
+              dup->g = kid->g;
+              dup->parent = n;
+              dup->op = ops[i];
+              dup->pop = e.revop;
+              double dhat = dup->d / (1 - derror);
+              double hhat = dup->h + (herror * dhat);
+              dup->hhat = hhat;
+              dup->fhat = dup->g + dup->hhat;
+              if (isopen) {
+				open.post_update(dup);
+              } else {
+				this->res.reopnd++;
+				open.push(dup);
+              }
               nodes->destruct(kid);
             } else {
               kid->h = d.h(e.state);
@@ -198,6 +225,8 @@ private:
 
 	double herror;
 	double derror;
+  
+    bool dropdups;
 
 	OpenList<Node, Node, double> open;
  	ClosedList<Node, Node, D> closed;
