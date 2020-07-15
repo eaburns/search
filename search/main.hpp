@@ -12,6 +12,7 @@
 #include "fhatlrtastar.hpp"
 #include "dtastar-dump.hpp"
 #include "dtastar.hpp"
+#include "beam.hpp"
 
 #include <cstddef>
 #include <cstdio>
@@ -99,6 +100,8 @@ template<class D> SearchAlgorithm<D> *getsearch(int argc, const char *argv[]) {
 		return new Fhatlrtastar<D>(argc, argv);
 	else if (strcmp(argv[1], "dtastar") == 0)
 		return new Dtastar<D>(argc, argv);
+	else if (strcmp(argv[1], "beam") == 0)
+		return new BeamSearch<D>(argc, argv);
 
 	fatal("Unknown algorithm: %s", argv[1]);
 	return NULL;	// Unreachable
